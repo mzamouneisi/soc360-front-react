@@ -90,6 +90,23 @@ function dayBackground(dayType: DayType | undefined): string {
   }
 }
 
+function statusAdjective(status: CraDto['status'], indispo: boolean): string {
+  const label = CRA_STATUS_LABELS[status] ?? status
+  if (!indispo) return label.toLowerCase()
+  switch (status) {
+    case 'SUBMITTED':
+      return 'soumise'
+    case 'VALIDATED':
+      return 'validée'
+    case 'REJECTED':
+      return 'rejetée'
+    case 'CANCELLED':
+      return 'annulée'
+    default:
+      return label.toLowerCase()
+  }
+}
+
 function ActivityChip({
   color,
   name,
@@ -534,7 +551,7 @@ export function CraDetail({
 
   function handleFillAllDays(activityId: string) {
     if (!activityId) {
-      setFormError('Aucune activité correspondant à ce mois pour remplir le CRA.')
+      setFormError(`Aucune activité correspondant à ce mois pour remplir ${isIndispo ? "l'Indispo" : 'le CRA'}.`)
       return
     }
     const emptyDays = days.filter((d) => d.activities.length === 0)
@@ -646,7 +663,7 @@ export function CraDetail({
 
       {!formEditable && !consultantAddsToValidated && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          Ce CRA est {CRA_STATUS_LABELS[cra.status]?.toLowerCase() ?? cra.status.toLowerCase()} et n'est
+          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)} et n'est
           plus modifiable.
         </div>
       )}
@@ -994,6 +1011,7 @@ export function CraDetail({
         <HistoryModal
           exchanges={exchanges}
           loading={historyLoading}
+          isIndispo={isIndispo}
           onClose={() => setHistoryOpen(false)}
         />
       )}
@@ -1043,10 +1061,12 @@ export function CraDetail({
 function HistoryModal({
   exchanges,
   loading,
+  isIndispo,
   onClose,
 }: {
   exchanges: CraExchangeDto[]
   loading: boolean
+  isIndispo: boolean
   onClose: () => void
 }) {
   return (
@@ -1059,7 +1079,7 @@ function HistoryModal({
       {loading && <p className="px-4 py-6 text-center text-sm text-gray-400">Chargement…</p>}
       {!loading && exchanges.length === 0 && (
         <p className="rounded-lg border border-dashed border-gray-300 px-3 py-6 text-center text-sm text-gray-400">
-          Aucun échange pour ce CRA.
+          Aucun échange pour {isIndispo ? 'cette Indispo' : 'ce CRA'}.
         </p>
       )}
       {!loading && exchanges.length > 0 && (
