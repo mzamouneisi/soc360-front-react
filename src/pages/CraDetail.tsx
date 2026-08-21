@@ -16,7 +16,7 @@ import {
   formatDateTime,
   statusBadge,
 } from '../lib/format'
-import type { CraDto, DayType, ActivityDto, CraExchangeDto } from '../api/types'
+import type { CraDto, DayType, ActivityDto, CraExchangeDto, SaveCraRequest } from '../api/types'
 import type { ReactNode } from 'react'
 
 interface EditableActivity {
@@ -114,8 +114,8 @@ function ActivityChip({
         style={{ backgroundColor: color ?? '#9ca3af' }}
       />
       <span className="truncate">{name}</span>
-      {valid && <span className="shrink-0 text-green-600">✓</span>}
       <span className="ml-auto shrink-0 text-gray-400">×{days}</span>
+      {valid && <span className="shrink-0 text-green-600">✓</span>}
     </button>
   )
 }
@@ -250,12 +250,18 @@ export function CraDetail({
     return null
   }
 
-  const editable = cra.status === 'DRAFT' || cra.status === 'REJECTED' || cra.status === 'CANCELLED'
-  const canValidate =
-    user?.role === 'ADMIN' ||
-    user?.role === 'RESPONSIBLE_SOC' ||
-    (user?.role === 'MANAGER' && cra.managerId === user.id)
+  const isIndispo = cra.type === 'CONGE'
   const isConsultant = user?.role === 'CONSULTANT'
+  const isAdminOrResp = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
+  const isManagerOfConsultant = user?.role === 'MANAGER' && cra.managerId === user.id
+  const canValidate = isAdminOrResp || isManagerOfConsultant
+
+  const editable = cra.status === 'DRAFT' || cra.status === 'REJECTED' || cra.status === 'CANCELLED'
+  const isValidatedIndispo = isIndispo && cra.status === 'VALIDATED'
+  const managerEditsValidated = isValidatedIndispo && canValidate
+  const consultantAddsToValidated = isValidatedIndispo && isConsultant
+  const formEditable = editable || managerEditsValidated
+  const canAddEvents = formEditable || consultantAddsToValidated
 
   // Le consultant ne peut pas modifier une activité validée (le manager peut).
   function canModifyActivity(act: EditableActivity): boolean {
@@ -263,10 +269,10 @@ export function CraDetail({
     return !act.valid
   }
 
-  const isIndispo = cra?.type === 'CONGE'
   const managerCanAct =
     canValidate &&
-    (cra.status === 'SUBMITTED' || (isIndispo && cra.status === 'PENDING_SEND'))
+    (cra.status === 'SUBMITTED' ||
+      (isIndispo && (cra.status === 'PENDING_SEND' || cra.status === 'VALIDATED')))
   const canCancel = isConsultant && isIndispo && cra.status === 'VALIDATED'
 
   function updateDay(index: number, patch: Partial<EditableDay>) {
@@ -339,42 +345,52 @@ export function CraDetail({
     setDays((prev) => prev.map((d) => ({ ...d, activities: [] })))
   }
 
-  async function handleSave() {
-    if (!cra) return
+  function buildSaveRequest(): SaveCraRequest {
+    return {
+      month: cra!.month,
+      year: cra!.year,
+      days: days.map((d) => {
+        const dayActivities = d.activities
+          .filter((a) => a.activityId)
+          .map((a) => ({
+            activityId: Number(a.activityId),
+            hours: 0,
+            days: Number(a.days) || 0,
+            valid: a.valid,
+            comment: a.comment || null,
+          }))
+        const dayDays = dayActivities.reduce((sum, a) => sum + (a.days ?? 0), 0)
+        return {
+          date: d.date,
+          dayType: d.dayType,
+          workedHours: d.dayType === 'WORKED' ? Number(d.workedHours) || 0 : 0,
+          hours: dayActivities.length > 0 ? dayDays : null,
+          comment: d.comment || null,
+          activities: dayActivities,
+        }
+      }),
+    }
+  }
+
+  async function doSave(): Promise<boolean> {
+    if (!cra) return false
     setSaving(true)
     setFormError(null)
     try {
-      const request = {
-        month: cra.month,
-        year: cra.year,
-        days: days.map((d) => {
-          const dayActivities = d.activities
-            .filter((a) => a.activityId)
-            .map((a) => ({
-              activityId: Number(a.activityId),
-              hours: 0,
-              days: Number(a.days) || 0,
-              comment: a.comment || null,
-            }))
-          const dayDays = dayActivities.reduce((sum, a) => sum + (a.days ?? 0), 0)
-          return {
-            date: d.date,
-            dayType: d.dayType,
-            workedHours: d.dayType === 'WORKED' ? Number(d.workedHours) || 0 : 0,
-            hours: dayActivities.length > 0 ? dayDays : null,
-            comment: d.comment || null,
-            activities: dayActivities,
-          }
-        }),
-      }
-      const updated = await crasApi.save(cra.id, request)
+      const updated = await crasApi.save(cra.id, buildSaveRequest())
       setData(updated)
       onChange?.()
+      return true
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      return false
     } finally {
       setSaving(false)
     }
+  }
+
+  async function handleSave() {
+    await doSave()
   }
 
   async function handleSubmit() {
@@ -386,7 +402,8 @@ export function CraDetail({
     setSubmitting(true)
     setFormError(null)
     try {
-      await handleSave()
+      const saved = await doSave()
+      if (!saved) return
       const updated = await crasApi.submit(cra.id)
       setData(updated)
       onChange?.()
@@ -399,7 +416,12 @@ export function CraDetail({
 
   async function handleValidate() {
     if (!cra) return
+    setFormError(null)
     try {
+      if (formEditable) {
+        const saved = await doSave()
+        if (!saved) return
+      }
       const updated = await crasApi.validate(cra.id)
       setData(updated)
       onChange?.()
@@ -412,7 +434,12 @@ export function CraDetail({
     if (!cra) return
     const comment = window.prompt('Motif du rejet :')
     if (comment === null) return
+    setFormError(null)
     try {
+      if (formEditable) {
+        const saved = await doSave()
+        if (!saved) return
+      }
       const updated = await crasApi.reject(cra.id, comment)
       setData(updated)
       onChange?.()
@@ -617,10 +644,17 @@ export function CraDetail({
         </div>
       )}
 
-      {!editable && (
+      {!formEditable && !consultantAddsToValidated && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           Ce CRA est {CRA_STATUS_LABELS[cra.status]?.toLowerCase() ?? cra.status.toLowerCase()} et n'est
           plus modifiable.
+        </div>
+      )}
+
+      {consultantAddsToValidated && (
+        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+          Cette Indispo est validée. Vous pouvez ajouter de nouveaux événements puis les soumettre pour
+          validation. Les événements validés ne sont pas modifiables.
         </div>
       )}
 
@@ -700,7 +734,7 @@ export function CraDetail({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-500">{dayNum}</span>
-                    {day?.dayType === 'WORKED' && editable && (
+                    {day?.dayType === 'WORKED' && canAddEvents && (
                       <button
                         onClick={() => setEventModal(dayIndex)}
                         className="rounded p-0.5 text-gray-400 transition hover:bg-gray-200 hover:text-gray-600"
@@ -723,7 +757,7 @@ export function CraDetail({
                           days={Number(act.days) || 0}
                           valid={act.valid}
                           onClick={
-                            editable && canModifyActivity(act) && dayIndex >= 0
+                            canAddEvents && canModifyActivity(act) && dayIndex >= 0
                               ? () => setEventModal(dayIndex)
                               : undefined
                           }
@@ -793,7 +827,7 @@ export function CraDetail({
                         })}
                       </td>
                       <td className="px-4 py-3">
-                        {editable ? (
+                        {formEditable ? (
                           <Select
                             className="w-36"
                             value={day.dayType}
@@ -828,7 +862,7 @@ export function CraDetail({
                         <div className="space-y-2">
                           {day.activities.map((act, j) => (
                             <div key={j} className="flex flex-wrap items-center gap-2">
-                              {editable && canModifyActivity(act) ? (
+                              {canAddEvents && canModifyActivity(act) ? (
                                 <>
                                   <Select
                                     className="w-48"
@@ -872,7 +906,7 @@ export function CraDetail({
                               )}
                             </div>
                           ))}
-                          {editable && (
+                          {canAddEvents && (
                             <button
                               onClick={() => addActivity(i)}
                               disabled={total >= 1}
@@ -884,7 +918,7 @@ export function CraDetail({
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {editable ? (
+                        {formEditable ? (
                           <input
                             value={day.comment}
                             onChange={(e) => updateDay(i, { comment: e.target.value })}
@@ -906,20 +940,20 @@ export function CraDetail({
 
       <div className="flex flex-wrap items-center gap-2">
         {editable && (
-          <>
-            <Button className="w-auto" onClick={handleSave} disabled={saving}>
-              {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-              Enregistrer
-            </Button>
-            <Button
-              className="w-auto bg-green-600 hover:bg-green-700"
-              onClick={handleSubmit}
-              disabled={submitting || saving || (isIndispo ? false : !craValid)}
-            >
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              Envoyer pour validation
-            </Button>
-          </>
+          <Button className="w-auto" onClick={handleSave} disabled={saving}>
+            {saving ? <Spinner className="border-white border-t-transparent" /> : null}
+            Enregistrer
+          </Button>
+        )}
+        {canAddEvents && !managerCanAct && (
+          <Button
+            className="w-auto bg-green-600 hover:bg-green-700"
+            onClick={handleSubmit}
+            disabled={submitting || saving || (isIndispo ? false : !craValid)}
+          >
+            {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
+            Envoyer pour validation
+          </Button>
         )}
         {managerCanAct && (
           <>
@@ -967,7 +1001,8 @@ export function CraDetail({
       {eventModal !== null && eventModal >= 0 && eventModal < days.length && (
         <EventModal
           day={days[eventModal]}
-          editable={editable}
+          editable={canAddEvents}
+          formEditable={formEditable}
           isConsultant={isConsultant}
           managerCanAct={managerCanAct}
           activities={filteredActivities}
@@ -1183,6 +1218,7 @@ function FillRangeModal({
 function EventModal({
   day,
   editable,
+  formEditable,
   isConsultant,
   managerCanAct,
   activities,
@@ -1194,6 +1230,7 @@ function EventModal({
 }: {
   day: EditableDay
   editable: boolean
+  formEditable: boolean
   isConsultant: boolean
   managerCanAct: boolean
   activities: ActivityDto[]
@@ -1292,7 +1329,11 @@ function EventModal({
                     <input
                       type="checkbox"
                       checked={act.valid}
-                      onChange={(e) => onToggleValid(Number(act.id), e.target.checked)}
+                      onChange={(e) =>
+                        formEditable
+                          ? onUpdateActivity(j, { valid: e.target.checked })
+                          : onToggleValid(Number(act.id), e.target.checked)
+                      }
                       className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
                     />
                     Valid
