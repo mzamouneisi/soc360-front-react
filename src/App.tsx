@@ -33,6 +33,7 @@ import { Profile } from './pages/Profile'
 import { Settings } from './pages/Settings'
 import { Users } from './pages/Users'
 import { SocAdmin } from './pages/SocAdmin'
+import { DemoSoc } from './pages/DemoSoc'
 import { Tables } from './pages/Tables'
 import { Logs } from './pages/Logs'
 import { NotFound } from './pages/NotFound'
@@ -140,6 +141,14 @@ const router = createBrowserRouter(
             { path: '/utilisateurs', element: <Users /> },
             { path: '/soc', element: <SocAdmin scope="mine" /> },
             { path: '/soc/toutes', element: <SocAdmin scope="all" /> },
+            {
+              path: '/soc/demo',
+              element: (
+                <AdminRoute>
+                  <DemoSoc />
+                </AdminRoute>
+              ),
+            },
             {
               path: '/tables',
               element: (

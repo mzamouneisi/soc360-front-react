@@ -164,13 +164,13 @@ export function MainLayout() {
   ]
 
   if (user.role === 'ADMIN' || user.role === 'RESPONSIBLE_SOC') {
-    sections.splice(1, 0, {
-      title: 'Sociétés',
-      items: [
-        { to: '/soc', label: 'Mes sociétés', icon: ICONS.soc, end: true },
-        { to: '/soc/toutes', label: 'Toutes les sociétés', icon: ICONS.soc },
-      ],
-    })
+    const socItems: NavItem[] = []
+    if (isAdmin) {
+      socItems.push({ to: '/soc/demo', label: 'Société démo', icon: ICONS.soc })
+    }
+    socItems.push({ to: '/soc', label: 'Mes sociétés', icon: ICONS.soc, end: true })
+    socItems.push({ to: '/soc/toutes', label: 'Toutes les sociétés', icon: ICONS.soc })
+    sections.splice(1, 0, { title: 'Sociétés', items: socItems })
   }
 
   if (isAdmin) {
