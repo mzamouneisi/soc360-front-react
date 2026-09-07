@@ -22,10 +22,23 @@ export interface SocDependency {
   label: string
 }
 
+export interface DemoSocDto {
+  number: number
+  socId: number
+  socName: string
+  username: string
+  password: string
+  clientName: string
+  projectName: string
+  activityName: string
+  consultantName: string
+}
+
 export const socsApi = {
   findAll: () => api.get<SocDto[]>('/socs'),
   getById: (id: number) => api.get<SocDetailDto>(`/socs/${id}`),
   create: (request: SocRequest) => api.post<SocDto>('/socs', request),
+  createDemo: () => api.post<DemoSocDto>('/socs/demo'),
   update: (id: number, request: Partial<SocDto>) =>
     api.put<SocDto>(`/socs/${id}`, request),
   remove: (id: number) => api.delete<void>(`/socs/${id}`),

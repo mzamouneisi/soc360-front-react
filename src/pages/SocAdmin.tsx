@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
 import { AddSocModal } from '../soc/AddSocModal'
-import { socsApi, type SocDependency } from '../api/socs'
+import { socsApi, type DemoSocDto, type SocDependency } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { AddSocPayload, SocDto, SocLiteDto } from '../api/types'
 import { useAsync } from '../lib/useAsync'
@@ -51,6 +51,8 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
   const [deleting, setDeleting] = useState<SocDto | null>(null)
   const [dependencies, setDependencies] = useState<SocDependency[]>([])
   const [dependencyLoading, setDependencyLoading] = useState(false)
+  const [demoCreating, setDemoCreating] = useState(false)
+  const [demoResult, setDemoResult] = useState<DemoSocDto | null>(null)
 
   const mine = scope === 'mine' && !isAdmin
 
@@ -96,6 +98,20 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           : null,
     })
     return { id: soc.id, name: soc.name }
+  }
+
+  async function createDemoSoc() {
+    setActionError(null)
+    setDemoCreating(true)
+    try {
+      const demo = await socsApi.createDemo()
+      setDemoResult(demo)
+      reload()
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : 'Impossible de créer la société démo')
+    } finally {
+      setDemoCreating(false)
+    }
   }
 
   function openEdit(soc: SocDto) {
@@ -217,6 +233,12 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
             <Button className="w-auto" onClick={() => setAddOpen(true)}>
               + Nouvelle société
             </Button>
+            {isAdmin && (
+              <Button className="w-auto" variant="yellow" onClick={() => void createDemoSoc()} disabled={demoCreating}>
+                {demoCreating ? <Spinner className="border-white border-t-transparent" /> : null}
+                + Société démo
+              </Button>
+            )}
           </>
         }
       />
@@ -428,6 +450,38 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           </div>
         </Modal>
       )}
+
+      {demoResult && (
+        <Modal
+          open
+          onClose={() => setDemoResult(null)}
+          title={`Société démo ${demoResult.number} créée`}
+          footer={
+            <Button type="button" className="!w-auto" onClick={() => setDemoResult(null)}>
+              Fermer
+            </Button>
+          }
+        >
+          <div className="space-y-2 text-sm">
+            <Row label="Société" value={demoResult.socName} />
+            <Row label="Responsable" value={demoResult.username} />
+            <Row label="Mot de passe" value={demoResult.password} />
+            <Row label="Client" value={demoResult.clientName} />
+            <Row label="Projet" value={demoResult.projectName} />
+            <Row label="Activité (mission)" value={demoResult.activityName} />
+            <Row label="Consultant" value={demoResult.consultantName} />
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-gray-200 px-3 py-2">
+      <span className="w-32 shrink-0 font-medium text-gray-500">{label}</span>
+      <span className="font-mono text-gray-900">{value}</span>
     </div>
   )
 }
