@@ -100,6 +100,22 @@ const cra = (overrides: Partial<CraDto> = {}): CraDto => ({
   ...overrides,
 })
 
+function stubFixedNow() {
+  const RealDate = Date
+  const fixed = new RealDate(2026, 7, 15, 12, 0, 0)
+  vi.stubGlobal(
+    'Date',
+    class extends RealDate {
+      constructor() {
+        super(fixed.getTime())
+      }
+      static now() {
+        return RealDate.now()
+      }
+    },
+  )
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.clearAllMocks()
@@ -183,6 +199,7 @@ describe('CraList', () => {
     findByConsultantMock.mockResolvedValue([])
     getOrCreateMock.mockResolvedValue(cra({ id: 99 }))
     getByIdMock.mockResolvedValue(cra({ id: 99 }))
+    stubFixedNow()
 
     renderList()
 

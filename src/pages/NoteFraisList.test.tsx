@@ -125,6 +125,22 @@ const nf = (overrides: Partial<NoteFraisDto> = {}): NoteFraisDto => ({
   ...overrides,
 })
 
+function stubFixedNow() {
+  const RealDate = Date
+  const fixed = new RealDate(2026, 7, 15, 12, 0, 0)
+  vi.stubGlobal(
+    'Date',
+    class extends RealDate {
+      constructor() {
+        super(fixed.getTime())
+      }
+      static now() {
+        return RealDate.now()
+      }
+    },
+  )
+}
+
 afterEach(() => {
   vi.unstubAllGlobals()
   ocrImageTextMock.mockReset()
@@ -242,6 +258,7 @@ describe('NoteFraisList', () => {
       { id: 10, fullName: 'Alice Martin', position: 'Consultante', email: 'alice@soc.fr' },
     ])
     createMock.mockResolvedValue(nf())
+    stubFixedNow()
 
     renderList()
 
