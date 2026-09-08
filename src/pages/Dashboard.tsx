@@ -51,7 +51,7 @@ export function Dashboard() {
         <>
           {user.role === 'ADMIN' && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label="Utilisateurs" value={data.totalUsers ?? 0} to="/utilisateurs" />
+              <StatCard label="Utilisateurs" value={data.totalUsers ?? 0} to="/consultants" />
               <StatCard label="Sociétés" value={data.totalSocs ?? 0} to="/soc" />
               <StatCard label="Collaborateurs" value={data.totalConsultants ?? 0} to="/consultants" />
               <StatCard label="Abonnements actifs" value={data.activeSubscriptions ?? 0} to="/soc" />

@@ -147,10 +147,17 @@ export interface SocDetailDto {
 
 export interface ConsultantDto {
   id: number
+  username: string
+  email: string
   firstName: string
   lastName: string
-  email: string | null
   phone: string | null
+  role: string
+  active: boolean
+  socId: number | null
+  socName: string | null
+  managerId: number | null
+  managerName: string | null
   position: string | null
   hireDate: string | null
   birthDate: string | null
@@ -158,15 +165,9 @@ export interface ConsultantDto {
   baseSalary: number | null
   currency: string | null
   nationality: string | null
-  active: boolean
-  socId: number
-  socName: string
-  managerId: number | null
-  managerName: string | null
-  hasUserAccount: boolean
-  username: string | null
-  role: string
-  person: boolean
+  emergencyContact: string | null
+  mustChangePassword: boolean
+  lastLoginAt: string | null
 }
 
 export interface ConsultantRequest {
@@ -181,11 +182,13 @@ export interface ConsultantRequest {
   baseSalary?: number | null
   currency?: string | null
   nationality?: string | null
+  emergencyContact?: string | null
   socId: number
   managerId?: number | null
   username?: string | null
   password?: string | null
   role?: string
+  active?: boolean | null
 }
 
 export interface ConsultantSummary {

@@ -31,7 +31,6 @@ import { Messages } from './pages/Messages'
 import { Support } from './pages/Support'
 import { Profile } from './pages/Profile'
 import { Settings } from './pages/Settings'
-import { Users } from './pages/Users'
 import { SocAdmin } from './pages/SocAdmin'
 import { DemoSoc } from './pages/DemoSoc'
 import { Tables } from './pages/Tables'
@@ -138,7 +137,6 @@ const router = createBrowserRouter(
             { path: '/profil', element: <Profile /> },
             { path: '/parametres', element: <Settings /> },
             { path: '/change-password', element: <ChangePassword /> },
-            { path: '/utilisateurs', element: <Users /> },
             { path: '/soc', element: <SocAdmin scope="mine" /> },
             { path: '/soc/toutes', element: <SocAdmin scope="all" /> },
             {

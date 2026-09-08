@@ -33,10 +33,12 @@ interface FormState {
   baseSalary: string
   currency: string
   nationality: string
+  emergencyContact: string
   socId: string
   managerId: string
   username: string
   password: string
+  active: boolean
 }
 
 const emptyForm: FormState = {
@@ -52,13 +54,16 @@ const emptyForm: FormState = {
   baseSalary: '',
   currency: 'EUR',
   nationality: '',
+  emergencyContact: '',
   socId: '',
   managerId: '',
   username: '',
   password: '',
+  active: true,
 }
 
 const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Administrateur',
   CONSULTANT: 'Consultant',
   MANAGER: 'Manager',
   RESPONSIBLE_SOC: 'Responsable société',
@@ -68,10 +73,11 @@ export function Consultants() {
   const { user } = useAuth()
   const { selectedSocId: workingSocContextId } = useSoc()
   const isAdmin = user?.role === 'ADMIN'
-  const isManager = user?.role === 'MANAGER'
   const isResponsible = user?.role === 'RESPONSIBLE_SOC'
-  const canEdit = isAdmin || isResponsible
-  const canCreate = canEdit || isManager
+  const isManager = user?.role === 'MANAGER'
+  const isConsultant = user?.role === 'CONSULTANT'
+  const canEdit = isAdmin || isResponsible || isManager || isConsultant
+  const canCreate = isAdmin || isResponsible || isManager
   const canCreateManager = isAdmin || isResponsible
   const workingSocId = isAdmin ? undefined : (workingSocContextId ?? user?.socId ?? undefined)
 
@@ -142,38 +148,26 @@ export function Consultants() {
   }
 
   function openEdit(c: ConsultantDto) {
-    if (c.person) {
-      setForm({
-        ...emptyForm,
-        role: c.role,
-        firstName: c.firstName,
-        lastName: c.lastName,
-        email: c.email ?? '',
-        phone: c.phone ?? '',
-        socId: String(c.socId ?? workingSocId ?? user?.socId ?? ''),
-        managerId: c.managerId != null ? String(c.managerId) : '',
-      })
-    } else {
-      if (c.role !== 'CONSULTANT') return
-      setForm({
-        role: 'CONSULTANT',
-        firstName: c.firstName,
-        lastName: c.lastName,
-        email: c.email ?? '',
-        phone: c.phone ?? '',
-        position: c.position ?? '',
-        hireDate: c.hireDate ?? '',
-        birthDate: c.birthDate ?? '',
-        socialNumber: c.socialNumber ?? '',
-        baseSalary: c.baseSalary != null ? String(c.baseSalary) : '',
-        currency: c.currency ?? 'EUR',
-        nationality: c.nationality ?? '',
-        socId: String(c.socId ?? workingSocId ?? user?.socId ?? ''),
-        managerId: c.managerId != null ? String(c.managerId) : '',
-        username: c.username ?? '',
-        password: '',
-      })
-    }
+    setForm({
+      ...emptyForm,
+      role: c.role,
+      firstName: c.firstName,
+      lastName: c.lastName,
+      email: c.email ?? '',
+      phone: c.phone ?? '',
+      position: c.position ?? '',
+      hireDate: c.hireDate ?? '',
+      birthDate: c.birthDate ?? '',
+      socialNumber: c.socialNumber ?? '',
+      baseSalary: c.baseSalary != null ? String(c.baseSalary) : '',
+      currency: c.currency ?? 'EUR',
+      nationality: c.nationality ?? '',
+      emergencyContact: c.emergencyContact ?? '',
+      socId: String(c.socId ?? workingSocId ?? user?.socId ?? ''),
+      managerId: c.managerId != null ? String(c.managerId) : '',
+      username: c.username ?? '',
+      active: c.active,
+    })
     setEditing(c)
     setFormError(null)
     setModalOpen(true)
@@ -190,50 +184,37 @@ export function Consultants() {
       return
     }
     const creatingPerson = !editing && (form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC')
-    const creatingAccount = !editing && !!form.username.trim()
     if (creatingPerson && (!form.username.trim() || !form.email.trim() || !form.password.trim())) {
       setFormError('Ligne de compte : nom d’utilisateur, email et mot de passe sont requis')
-      return
-    }
-    if (creatingAccount && (!form.email.trim() || !form.password.trim())) {
-      setFormError('Email et mot de passe requis pour créer un compte utilisateur')
       return
     }
     setSubmitting(true)
     setFormError(null)
     try {
-      if (editing && editing.person) {
-        await consultantsApi.updatePerson(editing.id, {
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim() || null,
-          phone: form.phone.trim() || null,
-          role: form.role,
-        })
+      const payload = {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim() || null,
+        phone: form.phone || null,
+        position: form.position || null,
+        hireDate: form.hireDate || null,
+        birthDate: form.birthDate || null,
+        socialNumber: form.socialNumber || null,
+        baseSalary: form.baseSalary ? Number(form.baseSalary) : null,
+        currency: form.currency || 'EUR',
+        nationality: form.nationality || null,
+        emergencyContact: form.emergencyContact || null,
+        socId: isAdmin ? Number(form.socId) : Number(workingSocId ?? user?.socId ?? 0),
+        managerId: form.managerId ? Number(form.managerId) : null,
+        username: form.username.trim() || null,
+        password: form.password || null,
+        role: form.role,
+        active: form.active,
+      }
+      if (editing) {
+        await consultantsApi.update(editing.id, payload)
       } else {
-        const payload = {
-          role: creatingPerson ? form.role : 'CONSULTANT',
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim() || null,
-          phone: form.phone || null,
-          position: form.position || null,
-          hireDate: form.hireDate || null,
-          birthDate: form.birthDate || null,
-          socialNumber: form.socialNumber || null,
-          baseSalary: form.baseSalary ? Number(form.baseSalary) : null,
-          currency: form.currency || 'EUR',
-          nationality: form.nationality || null,
-          socId: isAdmin ? Number(form.socId) : Number(workingSocId ?? user?.socId ?? 0),
-          managerId: form.managerId ? Number(form.managerId) : null,
-          username: creatingPerson ? form.username.trim() : creatingAccount ? form.username.trim() : null,
-          password: creatingPerson ? form.password : creatingAccount ? form.password : null,
-        }
-        if (editing) {
-          await consultantsApi.update(editing.id, payload)
-        } else {
-          await consultantsApi.create(payload)
-        }
+        await consultantsApi.create(payload)
       }
       setModalOpen(false)
       reload()
@@ -245,23 +226,9 @@ export function Consultants() {
   }
 
   async function handleDelete(c: ConsultantDto) {
-    if (c.person) {
-      handleDeletePerson(c)
-      return
-    }
-    if (!window.confirm(`Supprimer le consultant ${c.firstName} ${c.lastName} ?\nLes CRA, notes de frais et documents associés seront supprimés.`)) return
+    if (!window.confirm(`Supprimer le collaborateur ${c.firstName} ${c.lastName} ?\nLes CRA, notes de frais et documents associés seront supprimés.`)) return
     try {
       await consultantsApi.delete(c.id)
-      setData({ ...data!, items: data?.items.filter((x) => x.id !== c.id) ?? [] })
-    } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
-    }
-  }
-
-  async function handleDeletePerson(c: ConsultantDto) {
-    if (!window.confirm(`Supprimer ${c.firstName} ${c.lastName} (${ROLE_LABELS[c.role] ?? c.role}) ?`)) return
-    try {
-      await consultantsApi.deletePerson(c.id)
       setData({ ...data!, items: data?.items.filter((x) => x.id !== c.id) ?? [] })
     } catch (err) {
       window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
@@ -342,7 +309,7 @@ export function Consultants() {
         <>
           <Table
             rowKey={(c) => `${c.role}-${c.id}`}
-            onRowClick={canEdit || isManager ? (c) => { if (!c.person) openEdit(c) } : undefined}
+            onRowClick={canEdit ? (c) => openEdit(c) : undefined}
             rows={data.items}
             columns={[
               {
@@ -358,13 +325,9 @@ export function Consultants() {
                 ),
               },
               {
-                key: 'role',
-                label: 'Rôle',
-                render: (c) => (
-                  <Badge kind={c.role === 'RESPONSIBLE_SOC' ? 'info' : c.role === 'MANAGER' ? 'warning' : 'muted'}>
-                    {ROLE_LABELS[c.role] ?? c.role}
-                  </Badge>
-                ),
+                key: 'username',
+                label: 'Username',
+                render: (c) => <span className="text-gray-700">@{c.username}</span>,
               },
               {
                 key: 'contact',
@@ -375,6 +338,15 @@ export function Consultants() {
                     {c.phone && <p className="text-xs text-gray-500">{c.phone}</p>}
                     {!c.email && !c.phone && <span className="text-gray-400">—</span>}
                   </div>
+                ),
+              },
+              {
+                key: 'role',
+                label: 'Rôle',
+                render: (c) => (
+                  <Badge kind={c.role === 'RESPONSIBLE_SOC' ? 'info' : c.role === 'MANAGER' ? 'warning' : c.role === 'ADMIN' ? 'success' : 'muted'}>
+                    {ROLE_LABELS[c.role] ?? c.role}
+                  </Badge>
                 ),
               },
               {
@@ -395,16 +367,6 @@ export function Consultants() {
                 render: (c) => <span className="text-gray-500">{formatDate(c.hireDate)}</span>,
               },
               {
-                key: 'account',
-                label: 'Compte',
-                render: (c) =>
-                  c.hasUserAccount ? (
-                    <Badge kind="success">Oui</Badge>
-                  ) : (
-                    <Badge kind="muted">Non</Badge>
-                  ),
-              },
-              {
                 key: 'active',
                 label: 'Statut',
                 render: (c) => (
@@ -417,25 +379,20 @@ export function Consultants() {
                 key: 'actions',
                 label: '',
                 render: (c) => {
-                  const isSelf = c.person && user != null && c.id === user.id
-                  const canEditPerson = canEdit
-                  const canEditConsultant = canEdit || isManager
-                  const canEditRow = c.person ? canEditPerson : canEditConsultant
-                  if (!canEditRow) return <></>
+                  const isSelf = user != null && c.id === user.id
+                  if (!canEdit) return <></>
                   return (
                     <div className="flex justify-end gap-1">
                       <InlineButton onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
                         Modifier
                       </InlineButton>
-                      {!c.person && (
-                        <InlineButton
-                          className="text-brand-600 hover:bg-brand-50"
-                          onClick={(e) => { e.stopPropagation(); openHistory(c) }}
-                        >
-                          Historique
-                        </InlineButton>
-                      )}
-                      {!isSelf && (
+                      <InlineButton
+                        className="text-brand-600 hover:bg-brand-50"
+                        onClick={(e) => { e.stopPropagation(); openHistory(c) }}
+                      >
+                        Historique
+                      </InlineButton>
+                      {!isSelf && c.role !== 'ADMIN' && (
                         <InlineButton
                           className="text-red-600 hover:bg-red-50"
                           onClick={(e) => { e.stopPropagation(); handleDelete(c) }}
@@ -460,8 +417,8 @@ export function Consultants() {
 
       {!loading && data && data.items.length === 0 && (
         <EmptyState
-          title="Aucun consultant"
-          description="Ajoutez un consultant ou importez un fichier CSV."
+          title="Aucun collaborateur"
+          description="Ajoutez un collaborateur ou importez un fichier CSV."
         />
       )}
 
@@ -492,7 +449,7 @@ export function Consultants() {
               {formError}
             </div>
           )}
-          {((!editing && canCreateManager) || (editing?.person && canEdit)) && (
+          {((!editing && canCreateManager) || (editing && canEdit)) && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Type de collaborateur">
                 <Select
@@ -522,6 +479,13 @@ export function Consultants() {
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </Field>
           </div>
+          {editing && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Nom d'utilisateur">
+                <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+              </Field>
+            </div>
+          )}
           {form.role === 'CONSULTANT' && (
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -610,9 +574,7 @@ export function Consultants() {
                 </Field>
               </div>
               <p className="mt-2 text-xs text-brand-700">
-                {form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC'
-                  ? 'Le collaborateur devra changer son mot de passe à la première connexion.'
-                  : 'Le collaborateur devra changer son mot de passe à la première connexion.'}
+                Le collaborateur devra changer son mot de passe à la première connexion.
               </p>
             </div>
           )}
