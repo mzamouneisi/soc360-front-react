@@ -67,7 +67,11 @@ export function IndispoList() {
   const safePage = Math.min(page, totalPages - 1)
   const pageItems = list.slice(safePage * pageSize, safePage * pageSize + pageSize)
 
-  const editable = (c: CraDto) => c.status !== 'SUBMITTED' && c.status !== 'PENDING_SEND' && c.status !== 'VALIDATED'
+  const editable = (c: CraDto) =>
+    c.status !== 'SUBMITTED' &&
+    c.status !== 'PENDING_SEND' &&
+    c.status !== 'VALIDATED' &&
+    c.status !== 'SEMI_VALID'
 
   function openPeriod(newYear: number, newMonth: number) {
     const sameYear = newYear === year

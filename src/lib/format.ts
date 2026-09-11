@@ -80,6 +80,7 @@ export const CRA_STATUS_LABELS: Record<CraStatus, string> = {
   SUBMITTED: 'Soumis',
   PENDING_SEND: 'En attente d’envoi',
   VALIDATED: 'Validé',
+  SEMI_VALID: 'Semi-validé',
   REJECTED: 'Rejeté',
   CANCELLED: 'Annulé',
 }
@@ -188,6 +189,8 @@ export function statusBadge(status: string): string {
       return 'muted'
     case 'WARNING':
       return 'warning'
+    case 'SEMI_VALID':
+      return 'info'
     case 'CANCELLED':
       return 'warning'
     default:

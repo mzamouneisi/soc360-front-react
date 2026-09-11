@@ -19,6 +19,8 @@ export const crasApi = {
   validate: (id: number) => api.post<CraDto>(`/cras/${id}/validate`),
   reject: (id: number, comment: string) =>
     api.post<CraDto>(`/cras/${id}/reject`, { comment }),
+  sendBack: (id: number, comment: string) =>
+    api.post<CraDto>(`/cras/${id}/send-back`, { comment }),
   delete: (id: number) => api.delete<void>(`/cras/${id}`),
   // Indispos (congés) : validation par le manager
   setActivityValid: (id: number, cdaId: number) =>

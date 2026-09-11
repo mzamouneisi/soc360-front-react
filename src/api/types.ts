@@ -1,6 +1,6 @@
 export type Role = 'ADMIN' | 'RESPONSIBLE_SOC' | 'MANAGER' | 'CONSULTANT'
 
-export type CraStatus = 'DRAFT' | 'SUBMITTED' | 'PENDING_SEND' | 'VALIDATED' | 'REJECTED' | 'CANCELLED'
+export type CraStatus = 'DRAFT' | 'SUBMITTED' | 'PENDING_SEND' | 'VALIDATED' | 'SEMI_VALID' | 'REJECTED' | 'CANCELLED'
 
 export type DayType =
   | 'WORKED'
@@ -54,6 +54,15 @@ export interface AddSocPayload {
   mine?: boolean
 }
 
+export interface ManagerInfo {
+  id: number
+  fullName: string
+  username: string
+  email: string
+  phone: string | null
+  role: string | null
+}
+
 export interface UserDto {
   id: number
   username: string
@@ -73,6 +82,7 @@ export interface UserDto {
   tableHeaderColor: string
   tableBorderColor: string
   pageSize: number
+  manager: ManagerInfo | null
 }
 
 export interface AuthResponse {

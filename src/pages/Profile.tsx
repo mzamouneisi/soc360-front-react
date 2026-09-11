@@ -234,6 +234,35 @@ export function Profile() {
               </dd>
             </div>
           </dl>
+          {user.manager && (
+            <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <h4 className="text-sm font-semibold text-gray-900">Manager</h4>
+              <dl className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <dt className="text-sm text-gray-500">Nom complet</dt>
+                  <dd className="text-sm font-medium text-gray-900">{user.manager.fullName}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-500">Username</dt>
+                  <dd className="text-sm font-medium text-gray-900">{user.manager.username}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-500">E-mail</dt>
+                  <dd className="text-sm font-medium text-gray-900">{user.manager.email}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-500">Téléphone</dt>
+                  <dd className="text-sm font-medium text-gray-900">{user.manager.phone ?? '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-500">Rôle</dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {user.manager.role ? <Badge kind="warning">{ROLE_LABELS[user.manager.role as keyof typeof ROLE_LABELS] ?? user.manager.role}</Badge> : '—'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          )}
           {user.role === 'RESPONSIBLE_SOC' && editingSoc && (
             <div className="mt-4 grid grid-cols-1 gap-4 rounded-lg border border-brand-100 bg-brand-50/40 p-4 sm:grid-cols-2">
               <Field label="Nom de la société"><Input value={editingSoc.name} onChange={(e) => setEditingSoc({ ...editingSoc, name: e.target.value })} /></Field>

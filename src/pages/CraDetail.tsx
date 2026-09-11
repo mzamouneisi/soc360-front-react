@@ -7,7 +7,7 @@ import { holidaysApi } from '../api/holidays'
 import { socHolidaysApi } from '../api/socHolidays'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal } from '../components/data'
 import {
   CRA_STATUS_LABELS,
@@ -98,6 +98,8 @@ function statusAdjective(status: CraDto['status'], indispo: boolean): string {
       return 'soumise'
     case 'VALIDATED':
       return 'validée'
+    case 'SEMI_VALID':
+      return 'semi-validée'
     case 'REJECTED':
       return 'rejetée'
     case 'CANCELLED':
@@ -174,6 +176,7 @@ export function CraDetail({
   const [rangeModal, setRangeModal] = useState<'validate' | 'invalidate' | null>(null)
   const [sending, setSending] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [sendBackOpen, setSendBackOpen] = useState(false)
 
   useEffect(() => {
     if (cra) setDays(cra.days.map(dayToEditable))
@@ -274,11 +277,16 @@ export function CraDetail({
   const canValidate = isAdminOrResp || isManagerOfConsultant
 
   const editable = cra.status === 'DRAFT' || cra.status === 'REJECTED' || cra.status === 'CANCELLED'
-  const isValidatedIndispo = isIndispo && cra.status === 'VALIDATED'
-  const managerEditsValidated = isValidatedIndispo && canValidate
-  const consultantAddsToValidated = isValidatedIndispo && isConsultant
+  const managerEditsValidated =
+    canValidate &&
+    (cra.status === 'SUBMITTED' ||
+      cra.status === 'PENDING_SEND' ||
+      cra.status === 'VALIDATED' ||
+      cra.status === 'SEMI_VALID')
+  const consultantAddsToValidated = isConsultant && isIndispo && cra.status === 'VALIDATED'
+  const consultantEditsSemiValid = isConsultant && cra.status === 'SEMI_VALID'
   const formEditable = editable || managerEditsValidated
-  const canAddEvents = formEditable || consultantAddsToValidated
+  const canAddEvents = formEditable || consultantAddsToValidated || consultantEditsSemiValid
 
   // Le consultant ne peut pas modifier une activité validée (le manager peut).
   function canModifyActivity(act: EditableActivity): boolean {
@@ -289,7 +297,10 @@ export function CraDetail({
   const managerCanAct =
     canValidate &&
     (cra.status === 'SUBMITTED' ||
-      (isIndispo && (cra.status === 'PENDING_SEND' || cra.status === 'VALIDATED')))
+      cra.status === 'PENDING_SEND' ||
+      cra.status === 'VALIDATED' ||
+      cra.status === 'SEMI_VALID' ||
+      cra.status === 'CANCELLED')
   const canCancel = isConsultant && isIndispo && cra.status === 'VALIDATED'
 
   function updateDay(index: number, patch: Partial<EditableDay>) {
@@ -447,24 +458,6 @@ export function CraDetail({
     }
   }
 
-  async function handleReject() {
-    if (!cra) return
-    const comment = window.prompt('Motif du rejet :')
-    if (comment === null) return
-    setFormError(null)
-    try {
-      if (formEditable) {
-        const saved = await doSave()
-        if (!saved) return
-      }
-      const updated = await crasApi.reject(cra.id, comment)
-      setData(updated)
-      onChange?.()
-    } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
-    }
-  }
-
   async function handleToggleValid(cdaId: number, valid: boolean) {
     if (!cra) return
     try {
@@ -496,6 +489,25 @@ export function CraDetail({
     }
   }
 
+  async function handleInvalidateAll() {
+    if (!cra) return
+    setFormError(null)
+    try {
+      if (formEditable) {
+        const saved = await doSave()
+        if (!saved) return
+      }
+      const mm = String(cra.month).padStart(2, '0')
+      const monthStart = `${cra.year}-${mm}-01`
+      const monthEnd = `${cra.year}-${mm}-${String(new Date(cra.year, cra.month, 0).getDate()).padStart(2, '0')}`
+      const updated = await crasApi.invalidateRange(cra.id, monthStart, monthEnd)
+      setData(updated)
+      onChange?.()
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+    }
+  }
+
   async function handleCancel(comment: string) {
     if (!cra) return
     setSending(true)
@@ -505,6 +517,24 @@ export function CraDetail({
       setData(updated)
       onChange?.()
       setCancelOpen(false)
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function handleSendBack(comment: string) {
+    if (!cra) return
+    setSending(true)
+    setFormError(null)
+    try {
+      const saved = await doSave()
+      if (!saved) return
+      await crasApi.sendBack(cra.id, comment)
+      setSendBackOpen(false)
+      if (onClose) onClose()
+      else navigate(cra.type === 'CONGE' ? '/indispos' : '/cras')
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
     } finally {
@@ -661,7 +691,13 @@ export function CraDetail({
         </div>
       )}
 
-      {!formEditable && !consultantAddsToValidated && (
+      {managerCanAct && (cra.status === 'VALIDATED' || cra.status === 'SEMI_VALID') && (
+        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)}.
+        </div>
+      )}
+
+      {!formEditable && !consultantAddsToValidated && !consultantEditsSemiValid && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)} et n'est
           plus modifiable.
@@ -672,6 +708,14 @@ export function CraDetail({
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           Cette Indispo est validée. Vous pouvez ajouter de nouveaux événements puis les soumettre pour
           validation. Les événements validés ne sont pas modifiables.
+        </div>
+      )}
+
+      {consultantEditsSemiValid && (
+        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)}.
+          Vous pouvez modifier les événements non validés et remplir les événements libres puis les
+          soumettre pour validation. Les événements validés ne sont pas modifiables.
         </div>
       )}
 
@@ -955,8 +999,8 @@ export function CraDetail({
         </Card>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        {editable && (
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {canAddEvents && (
           <Button className="w-auto" onClick={handleSave} disabled={saving}>
             {saving ? <Spinner className="border-white border-t-transparent" /> : null}
             Enregistrer
@@ -969,20 +1013,20 @@ export function CraDetail({
             disabled={submitting || saving || (isIndispo ? false : !craValid)}
           >
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Envoyer pour validation
+            Soumettre
           </Button>
         )}
         {managerCanAct && (
           <>
             <Button className="w-auto bg-green-600 hover:bg-green-700" onClick={handleValidate}>
-              Valider
+              Valider tout
             </Button>
-            <InlineButton
-              className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-              onClick={handleReject}
-            >
-              Rejeter
-            </InlineButton>
+            <Button className="w-auto bg-red-600 hover:bg-red-700" onClick={handleInvalidateAll}>
+              Invalider tout
+            </Button>
+            <Button className="w-auto bg-blue-600 hover:bg-blue-700" onClick={() => setSendBackOpen(true)}>
+              Envoyer
+            </Button>
           </>
         )}
       </div>
@@ -1052,6 +1096,14 @@ export function CraDetail({
           submitting={sending}
           onConfirm={(comment) => void handleCancel(comment)}
           onClose={() => setCancelOpen(false)}
+        />
+      )}
+
+      {sendBackOpen && (
+        <SendBackModal
+          submitting={sending}
+          onConfirm={(comment) => void handleSendBack(comment)}
+          onClose={() => setSendBackOpen(false)}
         />
       )}
     </div>
@@ -1480,6 +1532,51 @@ function CancelModal({
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Motif de l'annulation"
+        />
+      </Field>
+    </Modal>
+  )
+}
+
+function SendBackModal({
+  submitting,
+  onConfirm,
+  onClose,
+}: {
+  submitting?: boolean
+  onConfirm: (comment: string) => void
+  onClose: () => void
+}) {
+  const [comment, setComment] = useState('')
+  const canSubmit = comment.trim().length > 0
+  return (
+    <Modal
+      open
+      title="Envoyer au consultant"
+      onClose={onClose}
+      footer={
+        <>
+          <InlineButton onClick={onClose}>Annuler</InlineButton>
+          <Button
+            className="w-auto"
+            onClick={() => onConfirm(comment.trim())}
+            disabled={!canSubmit || submitting}
+          >
+            {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
+            Envoyer
+          </Button>
+        </>
+      }
+    >
+      <p className="mb-3 text-sm text-gray-500">
+        Indiquez un commentaire (obligatoire) :
+      </p>
+      <Field label="Commentaire *">
+        <Textarea
+          rows={4}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Commentaire à transmettre au consultant"
         />
       </Field>
     </Modal>
