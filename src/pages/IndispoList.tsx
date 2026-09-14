@@ -73,6 +73,8 @@ export function IndispoList() {
     c.status !== 'VALIDATED' &&
     c.status !== 'SEMI_VALID'
 
+  const hasIndispoThisMonth = (data ?? []).some((c) => c.month === month)
+
   function openPeriod(newYear: number, newMonth: number) {
     const sameYear = newYear === year
     setYear(newYear)
@@ -312,10 +314,27 @@ export function IndispoList() {
       </Card>
 
       {isConsultant && user.consultantId && (
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <Button className="w-auto" variant="yellow" onClick={createIndispo}>
-            Nouvelle Indispo
-          </Button>
+        <div className="mt-4 flex flex-col items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-3">
+            <Button
+              className="w-auto"
+              variant="yellow"
+              onClick={createIndispo}
+              disabled={hasIndispoThisMonth}
+              title={
+                hasIndispoThisMonth
+                  ? 'Une Indispo existe déjà pour ce mois'
+                  : 'Créer une nouvelle Indispo pour ce mois'
+              }
+            >
+              Nouvelle Indispo
+            </Button>
+          </div>
+          {hasIndispoThisMonth && (
+            <p className="text-sm text-gray-500">
+              Une Indispo existe déjà pour ce mois. Cliquez sur « Éditer » dans la liste ci-dessus.
+            </p>
+          )}
         </div>
       )}
 
