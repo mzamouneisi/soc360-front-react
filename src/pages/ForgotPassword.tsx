@@ -7,7 +7,6 @@ import { Alert, Button, Card, Field, Input, Spinner } from '../components/ui'
 export function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState<string | null>(null)
-  const [resetUrl, setResetUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -19,7 +18,6 @@ export function ForgotPassword() {
     try {
       const response = await authApi.forgotPassword(email)
       setMessage(response.message)
-      setResetUrl(response.resetUrl)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
     } finally {
@@ -44,19 +42,8 @@ export function ForgotPassword() {
         )}
 
         {message && (
-          <div className="mb-4 space-y-2">
+          <div className="mb-4">
             <Alert variant="success">{message}</Alert>
-            {resetUrl && (
-              <Alert variant="info">
-                Lien de réinitialisation :{' '}
-                <a
-                  href={resetUrl}
-                  className="font-medium text-brand-700 underline"
-                >
-                  {resetUrl}
-                </a>
-              </Alert>
-            )}
           </div>
         )}
 

@@ -92,7 +92,6 @@ export interface AuthResponse {
 
 export interface ResetResponse {
   message: string
-  resetUrl: string
 }
 
 export interface EmailSentResponse {
