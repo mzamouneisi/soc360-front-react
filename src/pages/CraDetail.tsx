@@ -268,6 +268,7 @@ export function CraDetail({
     return days.filter((d) => !dayIsValid(d))
   }, [days, cra])
   const craValid = incompleteDays.length === 0
+  const hasAnyActivity = days.some((d) => d.activities.length > 0)
 
   if (!cra) {
     if (loading) return <LoadingBlock />
@@ -766,7 +767,7 @@ export function CraDetail({
         )}
       </div>
 
-      {!craValid && editable && (
+      {!craValid && editable && hasAnyActivity && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           <strong>CRA incomplet :</strong> {incompleteDays.length} jour
           {incompleteDays.length > 1 ? 's' : ''} travaillé
@@ -1017,6 +1018,11 @@ export function CraDetail({
             className="w-auto bg-green-600 hover:bg-green-700"
             onClick={handleSubmit}
             disabled={submitting || saving || (isIndispo ? false : !craValid)}
+            title={
+              !isIndispo && !craValid
+                ? 'CRA incomplet : chaque jour travaillé doit totaliser 1 jour.'
+                : 'Soumettre pour validation'
+            }
           >
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             Soumettre
