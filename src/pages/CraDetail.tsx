@@ -157,8 +157,13 @@ export function CraDetail({
   )
 
   const { data: activities } = useAsync(
-    () => activitiesApi.findAll(user?.socId ? { socId: user.socId } : undefined),
-    [user?.socId],
+    () => {
+      const params: { socId?: number; consultantId?: number } = {}
+      if (user?.socId) params.socId = user.socId
+      if (cra?.consultantId) params.consultantId = cra.consultantId
+      return activitiesApi.findAll(params)
+    },
+    [user?.socId, cra?.consultantId],
   )
 
   const [tab, setTab] = useState<'calendar' | 'ligne'>('calendar')
