@@ -584,13 +584,13 @@ export function CraDetail({
       setFormError(`Aucune activité correspondant à ce mois pour remplir ${isIndispo ? "l'Indispo" : 'le CRA'}.`)
       return
     }
-    const emptyDays = days.filter((d) => d.activities.length === 0)
+    const emptyDays = days.filter((d) => d.dayType === 'WORKED' && d.activities.length === 0)
     if (emptyDays.length === 0) {
-      setFormError('Tous les jours du mois sont déjà renseignés.')
+      setFormError('Tous les jours ouvrables du mois sont déjà renseignés.')
     } else {
       setDays((prev) =>
         prev.map((d) => {
-          if (d.activities.length > 0) return d
+          if (d.activities.length > 0 || d.dayType !== 'WORKED') return d
           return {
             ...d,
             activities: [{ id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`, activityId, days: '1', comment: '', valid: false }],
@@ -612,17 +612,18 @@ export function CraDetail({
       return
     }
     const fillable = days.filter(
-      (d) => d.date >= start && d.date <= end && d.activities.length === 0,
+      (d) =>
+        d.dayType === 'WORKED' && d.date >= start && d.date <= end && d.activities.length === 0,
     )
     if (fillable.length === 0) {
-      setFormError('Aucune cellule à remplir dans cette plage (déjà remplie).')
+      setFormError('Aucun jour ouvrable à remplir dans cette plage (déjà renseigné ou week-end).')
       setFillRangeOpen(false)
       return
     }
     setDays((prev) =>
       prev.map((d) => {
         if (d.date < start || d.date > end) return d
-        if (d.activities.length > 0) return d
+        if (d.dayType !== 'WORKED' || d.activities.length > 0) return d
         return {
           ...d,
           activities: [{ id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`, activityId, days: '1', comment: '', valid: false }],
