@@ -306,8 +306,11 @@ export function CraDetail({
       cra.status === 'PENDING_SEND' ||
       cra.status === 'VALIDATED' ||
       cra.status === 'SEMI_VALID' ||
-      cra.status === 'CANCELLED')
+      cra.status === 'CANCELLED' ||
+      cra.status === 'REJECTED')
   const canCancel = isConsultant && isIndispo && cra.status === 'VALIDATED'
+
+  const allEventsInvalid = days.every((d) => d.activities.every((a) => !a.valid))
 
   function updateDay(index: number, patch: Partial<EditableDay>) {
     setDays((prev) => prev.map((d, i) => (i === index ? { ...d, ...patch } : d)))
@@ -1008,14 +1011,14 @@ export function CraDetail({
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         {canAddEvents && (
-          <Button className="w-auto" onClick={handleSave} disabled={saving}>
+          <Button className="flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <Spinner className="border-white border-t-transparent" /> : null}
             Enregistrer
           </Button>
         )}
         {canAddEvents && !managerCanAct && (
           <Button
-            className="w-auto bg-green-600 hover:bg-green-700"
+            className="flex-1 bg-green-600 hover:bg-green-700"
             onClick={handleSubmit}
             disabled={submitting || saving || (isIndispo ? false : !craValid)}
             title={
@@ -1030,13 +1033,25 @@ export function CraDetail({
         )}
         {managerCanAct && (
           <>
-            <Button className="w-auto bg-green-600 hover:bg-green-700" onClick={handleValidate}>
-              Valider tout
-            </Button>
-            <Button className="w-auto bg-red-600 hover:bg-red-700" onClick={handleInvalidateAll}>
-              Invalider tout
-            </Button>
-            <Button className="w-auto bg-blue-600 hover:bg-blue-700" onClick={() => setSendBackOpen(true)}>
+            <span className="flex-1" title={cra.status === 'VALIDATED' ? 'CRA déjà validé' : undefined}>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+                onClick={handleValidate}
+                disabled={cra.status === 'VALIDATED'}
+              >
+                Valider tout
+              </Button>
+            </span>
+            <span className="flex-1" title={allEventsInvalid ? 'tout est invalide' : undefined}>
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                onClick={handleInvalidateAll}
+                disabled={allEventsInvalid}
+              >
+                Invalider tout
+              </Button>
+            </span>
+            <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={() => setSendBackOpen(true)}>
               Envoyer
             </Button>
           </>
