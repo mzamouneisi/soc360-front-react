@@ -29,7 +29,7 @@ describe('Login', () => {
   it('affiche le formulaire de connexion', () => {
     renderLogin()
     expect(screen.getByText('SOC360')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('votre.identifiant')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('email ou identifiant')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('••••••••')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Se connecter' })).toBeInTheDocument()
   })
@@ -38,7 +38,7 @@ describe('Login', () => {
     loginMock.mockResolvedValue({ id: 1 })
 
     renderLogin()
-    fireEvent.change(screen.getByPlaceholderText('votre.identifiant'), {
+    fireEvent.change(screen.getByPlaceholderText('email ou identifiant'), {
       target: { value: 'alice' },
     })
     fireEvent.change(screen.getByPlaceholderText('••••••••'), {
@@ -53,7 +53,7 @@ describe('Login', () => {
     loginMock.mockRejectedValue(new ApiError(401, 'Identifiants invalides'))
 
     renderLogin()
-    fireEvent.change(screen.getByPlaceholderText('votre.identifiant'), {
+    fireEvent.change(screen.getByPlaceholderText('email ou identifiant'), {
       target: { value: 'alice' },
     })
     fireEvent.change(screen.getByPlaceholderText('••••••••'), {
@@ -68,7 +68,7 @@ describe('Login', () => {
     loginMock.mockRejectedValue(new Error('boom'))
 
     renderLogin()
-    fireEvent.change(screen.getByPlaceholderText('votre.identifiant'), {
+    fireEvent.change(screen.getByPlaceholderText('email ou identifiant'), {
       target: { value: 'alice' },
     })
     fireEvent.change(screen.getByPlaceholderText('••••••••'), {

@@ -48,14 +48,14 @@ export function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Nom d'utilisateur">
+          <Field label="Email ou identifiant">
             <Input
               type="text"
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="votre.identifiant"
+              placeholder="email ou identifiant"
             />
           </Field>
 
