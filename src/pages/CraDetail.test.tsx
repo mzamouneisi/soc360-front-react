@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { CraDetail } from './CraDetail'
 import type { CraDto, UserDto } from '../api/types'
 
@@ -130,9 +130,7 @@ const managerUser = {
 function renderDetail() {
   return render(
     <MemoryRouter initialEntries={['/cras/1']}>
-      <Routes>
-        <Route path="/cras/:id" element={<CraDetail />} />
-      </Routes>
+      <CraDetail id={1} />
     </MemoryRouter>,
   )
 }
