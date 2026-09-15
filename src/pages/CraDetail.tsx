@@ -805,7 +805,8 @@ export function CraDetail({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-500">{dayNum}</span>
-                    {day?.dayType === 'WORKED' && canAddEvents && (
+                    {(day?.dayType === 'WORKED' || (day?.dayType === 'WEEKEND' && !isIndispo)) &&
+                      canAddEvents && (
                       <button
                         onClick={() => setEventModal(dayIndex)}
                         className="rounded p-0.5 text-gray-400 transition hover:bg-gray-200 hover:text-gray-600"
