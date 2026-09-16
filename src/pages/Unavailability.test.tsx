@@ -240,4 +240,36 @@ describe('Unavailability', () => {
     await screen.findByText('Alice Martin')
     expect(screen.queryByRole('button', { name: 'Éditer' })).not.toBeInTheDocument()
   })
+
+  it('garde le filtre visible même sans indisponibilité', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    expect(await screen.findByText('Aucune indisponibilité')).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText('Filtrer par type, statut, consultant ou dates…'),
+    ).toBeInTheDocument()
+  })
+
+  it('filtre par commentaire', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({ id: 1, consultantName: 'Alice Martin', comment: 'Congé d’été' }),
+      item({ id: 2, consultantName: 'Bob Dupont', comment: 'Rendez-vous médical' }),
+    ])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    await screen.findByText('Alice Martin')
+    fireEvent.change(screen.getByPlaceholderText('Filtrer par type, statut, consultant ou dates…'), {
+      target: { value: 'médical' },
+    })
+
+    expect(await screen.findByText('Bob Dupont')).toBeInTheDocument()
+    expect(screen.queryByText('Alice Martin')).not.toBeInTheDocument()
+  })
 })

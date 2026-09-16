@@ -75,10 +75,12 @@ export function Unavailability() {
         const type = (UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type).toLowerCase()
         const status = (UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status).toLowerCase()
         const consultant = (u.consultantName ?? '').toLowerCase()
+        const comment = (u.comment ?? '').toLowerCase()
         return (
           type.includes(q) ||
           status.includes(q) ||
           consultant.includes(q) ||
+          comment.includes(q) ||
           u.startDate.includes(q) ||
           u.endDate.includes(q)
         )
@@ -219,21 +221,30 @@ export function Unavailability() {
         }
       />
 
-      {!isConsultant && (consultants.data?.length ?? 0) > 0 && (
-        <div className="mb-4 flex max-w-xs items-center gap-2">
-          <Select
-            value={consultantFilter ?? ''}
-            onChange={(e) => setConsultantFilter(e.target.value ? Number(e.target.value) : null)}
-          >
-            <option value="">Tous les consultants</option>
-            {consultants.data?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.fullName}
-              </option>
-            ))}
-          </Select>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {!isConsultant && (
+          <div className="max-w-xs flex-1">
+            <Select
+              value={consultantFilter ?? ''}
+              onChange={(e) => setConsultantFilter(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">Tous les consultants</option>
+              {consultants.data?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.fullName}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
+        <div className="min-w-[16rem] flex-1">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Filtrer par type, statut, consultant ou dates…"
+          />
         </div>
-      )}
+      </div>
 
       {showForm && (
         <Card className="mb-4 p-4">
@@ -314,14 +325,6 @@ export function Unavailability() {
 
       {!list.loading && filtered.length > 0 && (
         <>
-          <div className="mb-4">
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filtrer par type, statut, consultant ou dates…"
-            />
-          </div>
-
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
