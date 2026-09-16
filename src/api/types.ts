@@ -12,6 +12,15 @@ export type DayType =
 
 export type NoteFraisStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED' | 'PAID'
 
+export type UnavailabilityStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED'
+
+export type UnavailabilityType =
+  | 'CONGE_PAYE'
+  | 'CONGE_RTT'
+  | 'CONGE_NON_PAYE'
+  | 'CONGE_MALADIE'
+  | 'CONGE_MATERNITE'
+
 export type PaymentMethod = 'CARD' | 'TRANSFER' | 'CHECK' | 'OTHER'
 
 export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'CANCELLED'
@@ -481,6 +490,42 @@ export interface HrDocumentDto {
   uploadedBy: string
   visibility: string
   createdAt: string
+}
+
+export interface UnavailabilityDto {
+  id: number
+  consultantId: number
+  consultantName: string
+  socId: number
+  type: UnavailabilityType
+  startDate: string
+  endDate: string
+  status: UnavailabilityStatus
+  comment: string | null
+  rejectedReason: string | null
+  submittedAt: string | null
+  validatedAt: string | null
+  durationDays: number
+}
+
+export interface UnavailabilityRequest {
+  consultantId?: number | null
+  socId?: number | null
+  type: UnavailabilityType
+  startDate: string
+  endDate: string
+  comment?: string | null
+}
+
+export interface UnavailabilityHistoryDto {
+  id: number
+  dateModifIndispo: string
+  unavailabilityId: number
+  modifierId: number | null
+  modifierName: string | null
+  comment: string | null
+  nbEventsBefore: number
+  nbEventsAfter: number
 }
 
 export interface FichePaieDto {

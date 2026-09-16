@@ -308,9 +308,10 @@ export function CraDetail({
       cra.status === 'SEMI_VALID' ||
       cra.status === 'CANCELLED' ||
       cra.status === 'REJECTED')
-  const canCancel = isConsultant && isIndispo && cra.status === 'VALIDATED'
+  const canCancel = isConsultant && isIndispo && (cra.status === 'VALIDATED' || cra.status === 'SUBMITTED' || cra.status === 'PENDING_SEND')
 
-  const allEventsInvalid = days.every((d) => d.activities.every((a) => !a.valid))
+  const hasInactiveEvent = days.some((d) => d.activities.some((a) => !a.valid))
+  const hasActiveEvent = days.some((d) => d.activities.some((a) => a.valid))
 
   function updateDay(index: number, patch: Partial<EditableDay>) {
     setDays((prev) => prev.map((d, i) => (i === index ? { ...d, ...patch } : d)))
@@ -1034,20 +1035,20 @@ export function CraDetail({
         )}
         {managerCanAct && (
           <>
-            <span className="flex-1" title={cra.status === 'VALIDATED' ? 'CRA déjà validé' : undefined}>
+            <span className="flex-1" title={!hasInactiveEvent ? 'aucun événement à valider' : undefined}>
               <Button
                 className="bg-green-600 hover:bg-green-700"
                 onClick={handleValidate}
-                disabled={cra.status === 'VALIDATED'}
+                disabled={!hasInactiveEvent}
               >
                 Valider tout
               </Button>
             </span>
-            <span className="flex-1" title={allEventsInvalid ? 'tout est invalide' : undefined}>
+            <span className="flex-1" title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
               <Button
                 className="bg-red-600 hover:bg-red-700"
                 onClick={handleInvalidateAll}
-                disabled={allEventsInvalid}
+                disabled={!hasActiveEvent}
               >
                 Invalider tout
               </Button>
@@ -1122,6 +1123,7 @@ export function CraDetail({
       {cancelOpen && (
         <CancelModal
           submitting={sending}
+          commentRequired={cra.status === 'VALIDATED'}
           onConfirm={(comment) => void handleCancel(comment)}
           onClose={() => setCancelOpen(false)}
         />
@@ -1524,15 +1526,17 @@ function RangeValidModal({
 
 function CancelModal({
   submitting,
+  commentRequired = true,
   onConfirm,
   onClose,
 }: {
   submitting?: boolean
+  commentRequired?: boolean
   onConfirm: (comment: string) => void
   onClose: () => void
 }) {
   const [comment, setComment] = useState('')
-  const canSubmit = comment.trim().length > 0
+  const canSubmit = !commentRequired || comment.trim().length > 0
   return (
     <Modal
       open
@@ -1547,15 +1551,17 @@ function CancelModal({
             disabled={!canSubmit || submitting}
           >
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Confirmer l'annulation
+            Confirmer
           </Button>
         </>
       }
     >
       <p className="mb-3 text-sm text-gray-500">
-        Indiquez le motif de l'annulation (obligatoire) :
+        {commentRequired
+          ? 'Indiquez le motif de l\'annulation (obligatoire) :'
+          : 'Retirer cette Indispo (elle repassera en brouillon). Motif (facultatif) :'}
       </p>
-      <Field label="Commentaire *">
+      <Field label={commentRequired ? 'Commentaire *' : 'Commentaire'}>
         <Input
           value={comment}
           onChange={(e) => setComment(e.target.value)}

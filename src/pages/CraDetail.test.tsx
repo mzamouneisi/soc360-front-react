@@ -170,4 +170,44 @@ describe('CraDetail', () => {
     await waitFor(() => expect(invalider).toBeEnabled())
     expect(validateMock).toHaveBeenCalledWith(1)
   })
+
+  it('active Valider tout et Invalider tout si des événements actifs et inactifs coexistent', async () => {
+    userMock.value = managerUser
+    const mixed = cra(true, 'SUBMITTED')
+    mixed.days[2].activities[0].valid = false
+
+    getByIdMock.mockResolvedValue(mixed)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const valider = screen.getByRole('button', { name: 'Valider tout' })
+    const invalider = screen.getByRole('button', { name: 'Invalider tout' })
+
+    await waitFor(() => expect(valider).toBeEnabled())
+    await waitFor(() => expect(invalider).toBeEnabled())
+  })
+
+  it('désactive Valider tout et Invalider tout si aucun événement n’est présent', async () => {
+    userMock.value = managerUser
+    const empty = cra(true, 'SUBMITTED')
+    empty.days = empty.days.map((d) => ({ ...d, activities: [] }))
+
+    getByIdMock.mockResolvedValue(empty)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const valider = screen.getByRole('button', { name: 'Valider tout' })
+    const invalider = screen.getByRole('button', { name: 'Invalider tout' })
+
+    await waitFor(() => expect(valider).toBeDisabled())
+    await waitFor(() => expect(invalider).toBeDisabled())
+  })
 })

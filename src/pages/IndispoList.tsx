@@ -13,6 +13,7 @@ import {
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import { CraDetail } from './CraDetail'
+import { IndispoCalendar } from './IndispoCalendar'
 
 function shiftMonth(year: number, month: number, delta: number): { year: number; month: number } {
   const total = year * 12 + (month - 1) + delta
@@ -26,6 +27,7 @@ export function IndispoList() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [page, setPage] = useState(0)
   const [openId, setOpenId] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
   const [search, setSearch] = useState('')
 
   const isConsultant = user?.role === 'CONSULTANT'
@@ -80,6 +82,7 @@ export function IndispoList() {
     setYear(newYear)
     setMonth(newMonth)
     setOpenId(null)
+    setSelectedId(null)
     if (isConsultant && sameYear) {
       const ind = (data ?? []).find((c) => c.month === newMonth)
       if (ind) setOpenId(ind.id)
@@ -110,6 +113,7 @@ export function IndispoList() {
     try {
       await crasApi.delete(c.id)
       if (openId === c.id) setOpenId(null)
+      if (selectedId === c.id) setSelectedId(null)
       reload()
     } catch (err) {
       window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
@@ -206,8 +210,9 @@ export function IndispoList() {
                   {pageItems.map((ind) => (
                     <tr
                       key={ind.id}
-                      className={`align-top ${
-                        ind.id === openId
+                      onClick={() => setSelectedId(ind.id)}
+                      className={`align-top cursor-pointer ${
+                        ind.id === selectedId
                           ? '[&>td]:border-y-2 [&>td]:border-blue-400 [&>td:first-child]:border-l-2 [&>td:last-child]:border-r-2 [&>td]:bg-blue-50'
                           : 'bg-yellow-50 even:bg-yellow-100'
                       }`}
@@ -235,7 +240,12 @@ export function IndispoList() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <InlineButton onClick={() => setOpenId(ind.id)}>
+                          <InlineButton
+                            onClick={() => {
+                              setSelectedId(ind.id)
+                              setOpenId(ind.id)
+                            }}
+                          >
                             {editable(ind) ? 'Éditer' : 'Ouvrir'}
                           </InlineButton>
                           {editable(ind) && (
@@ -271,6 +281,17 @@ export function IndispoList() {
               </InlineButton>
             </div>
           )}
+
+          {selectedId != null &&
+            (() => {
+              const sel = (data ?? []).find((c) => c.id === selectedId)
+              if (!sel) return null
+              return (
+                <div className="mt-4">
+                  <IndispoCalendar selected={sel} indispos={data ?? []} year={year} />
+                </div>
+              )
+            })()}
         </>
       )}
 

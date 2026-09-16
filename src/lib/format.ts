@@ -6,6 +6,8 @@ import type {
   SubscriptionStatus,
   TicketPriority,
   TicketStatus,
+  UnavailabilityStatus,
+  UnavailabilityType,
 } from '../api/types'
 
 export const MONTHS_FR = [
@@ -91,6 +93,21 @@ export const NOTE_FRAIS_STATUS_LABELS: Record<NoteFraisStatus, string> = {
   VALIDATED: 'Validée',
   REJECTED: 'Rejetée',
   PAID: 'Payée',
+}
+
+export const UNAVAILABILITY_STATUS_LABELS: Record<UnavailabilityStatus, string> = {
+  DRAFT: 'Brouillon',
+  SUBMITTED: 'Soumise',
+  VALIDATED: 'Validée',
+  REJECTED: 'Rejetée',
+}
+
+export const UNAVAILABILITY_TYPE_LABELS: Record<UnavailabilityType, string> = {
+  CONGE_PAYE: 'Congé payé',
+  CONGE_RTT: 'Congé RTT',
+  CONGE_NON_PAYE: 'Congé non payé',
+  CONGE_MALADIE: 'Congé maladie',
+  CONGE_MATERNITE: 'Congé maternité',
 }
 
 export const DAY_TYPE_LABELS: Record<DayType, string> = {
