@@ -33,6 +33,7 @@ export function CraList() {
 
   const isConsultant = user?.role === 'CONSULTANT'
   const isManager = user?.role === 'MANAGER'
+  const isAdmin = user?.role === 'ADMIN'
   const canValidate = (c: CraDto) =>
     user?.role === 'ADMIN' ||
     user?.role === 'RESPONSIBLE_SOC' ||
@@ -53,10 +54,15 @@ export function CraList() {
 
   const socCras = useAsync(
     () =>
-      !isConsultant && !isManager && user?.socId
+      !isConsultant && !isManager && !isAdmin && user?.socId
         ? crasApi.findBySocYear(user.socId, year)
         : Promise.resolve([] as CraDto[]),
-    [isConsultant, isManager, user?.socId, year],
+    [isConsultant, isManager, isAdmin, user?.socId, year],
+  )
+
+  const allCras = useAsync(
+    () => (isAdmin ? crasApi.findAllYear(year) : Promise.resolve([] as CraDto[])),
+    [isAdmin, year],
   )
 
   const consultants = useAsync(
@@ -71,7 +77,9 @@ export function CraList() {
     ? ownCras
     : isManager
       ? teamCras
-      : socCras
+      : isAdmin
+        ? allCras
+        : socCras
 
   useEffect(() => {
     setPage(0)

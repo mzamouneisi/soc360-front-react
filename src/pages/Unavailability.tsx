@@ -26,6 +26,7 @@ const TYPES = Object.keys(UNAVAILABILITY_TYPE_LABELS) as UnavailabilityType[]
 export function Unavailability() {
   const { user } = useAuth()
   const isConsultant = user?.role === 'CONSULTANT'
+  const isAdmin = user?.role === 'ADMIN'
 
   const [consultantFilter, setConsultantFilter] = useState<number | null>(null)
   const [page, setPage] = useState(0)
@@ -47,8 +48,11 @@ export function Unavailability() {
     () =>
       isConsultant
         ? unavailabilityApi.list()
-        : unavailabilityApi.list({ socId: user?.socId ?? undefined, consultantId: consultantFilter ?? undefined }),
-    [isConsultant, user?.socId, consultantFilter],
+        : unavailabilityApi.list({
+            socId: isAdmin ? undefined : (user?.socId ?? undefined),
+            consultantId: consultantFilter ?? undefined,
+          }),
+    [isConsultant, isAdmin, user?.socId, consultantFilter],
   )
 
   const consultants = useAsync(

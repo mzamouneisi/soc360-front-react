@@ -77,6 +77,8 @@ const baseUser = {
 
 const managerUser = { ...baseUser, id: 1, role: 'MANAGER', consultantId: null } as UserDto
 
+const adminUser = { ...managerUser, id: 9, role: 'ADMIN' } as UserDto
+
 const item = (overrides: Partial<UnavailabilityDto> = {}): UnavailabilityDto => ({
   id: 1,
   consultantId: 10,
@@ -174,6 +176,17 @@ describe('Unavailability', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Rejeter' }))
 
     await waitFor(() => expect(rejectMock).toHaveBeenCalledWith(1, 'Période non couverte'))
+  })
+
+  it('charge toutes les indisponibilités pour un admin (sans filtre société)', async () => {
+    userMock.value = adminUser
+    listMock.mockResolvedValue([item({ consultantName: 'Alice Martin' })])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    await screen.findByText('Alice Martin')
+    expect(listMock).toHaveBeenCalledWith({ socId: undefined, consultantId: undefined })
   })
 
   it('affiche l’historique des modifications', async () => {

@@ -14,6 +14,8 @@ export const crasApi = {
     api.get<CraDto[]>(`/cras/soc/${socId}/${year}`, { type }),
   findByManager: (year: number, type = 'CRA') =>
     api.get<CraDto[]>(`/cras/manager/${year}`, { type }),
+  findAllYear: (year: number, type = 'CRA') =>
+    api.get<CraDto[]>(`/cras/all/${year}`, { type }),
   save: (id: number, request: SaveCraRequest) =>
     api.put<CraDto>(`/cras/${id}/days`, request),
   submit: (id: number) => api.post<CraDto>(`/cras/${id}/submit`),

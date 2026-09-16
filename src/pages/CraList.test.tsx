@@ -9,6 +9,7 @@ const {
   findByConsultantMock,
   findBySocYearMock,
   findByManagerMock,
+  findAllYearMock,
   getOrCreateMock,
   getByIdMock,
   validateMock,
@@ -20,6 +21,7 @@ const {
   findByConsultantMock: vi.fn(),
   findBySocYearMock: vi.fn(),
   findByManagerMock: vi.fn(),
+  findAllYearMock: vi.fn(),
   getOrCreateMock: vi.fn(),
   getByIdMock: vi.fn(),
   validateMock: vi.fn(),
@@ -53,6 +55,7 @@ vi.mock('../api/cras', () => ({
     findByConsultant: findByConsultantMock,
     findBySocYear: findBySocYearMock,
     findByManager: findByManagerMock,
+    findAllYear: findAllYearMock,
     save: vi.fn(),
     submit: vi.fn(),
     validate: validateMock,
@@ -95,6 +98,12 @@ const responsibleUser = {
   ...managerUser,
   id: 3,
   role: 'RESPONSIBLE_SOC',
+} as UserDto
+
+const adminUser = {
+  ...managerUser,
+  id: 4,
+  role: 'ADMIN',
 } as UserDto
 
 const cra = (overrides: Partial<CraDto> = {}): CraDto => ({
@@ -258,6 +267,23 @@ describe('CraList', () => {
 
     expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
     expect(findBySocYearMock).toHaveBeenCalledWith(5, 2026)
+    expect(findByManagerMock).not.toHaveBeenCalled()
+    expect(findAllYearMock).not.toHaveBeenCalled()
+  })
+
+  it('affiche les CRA de tous les consultants pour un admin', async () => {
+    userMock.value = adminUser
+    findAllYearMock.mockResolvedValue([
+      cra({ consultantName: 'Alice Martin' }),
+      cra({ id: 2, consultantName: 'Bob Dupont', month: 7 }),
+    ])
+
+    renderList()
+
+    expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
+    expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
+    expect(findAllYearMock).toHaveBeenCalledWith(2026)
+    expect(findBySocYearMock).not.toHaveBeenCalled()
     expect(findByManagerMock).not.toHaveBeenCalled()
   })
 
