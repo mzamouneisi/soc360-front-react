@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { unavailabilityApi } from '../api/unavailability'
 import { consultantsApi } from '../api/consultants'
@@ -25,6 +26,7 @@ const TYPES = Object.keys(UNAVAILABILITY_TYPE_LABELS) as UnavailabilityType[]
 
 export function Unavailability() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const isConsultant = user?.role === 'CONSULTANT'
   const isAdmin = user?.role === 'ADMIN'
 
@@ -67,6 +69,11 @@ export function Unavailability() {
     setPage(0)
     setSelectedId(null)
   }, [search, consultantFilter])
+
+  useEffect(() => {
+    const open = searchParams.get('open')
+    if (open) setSelectedId(Number(open))
+  }, [searchParams])
 
   const data = list.data ?? []
   const selected = useMemo(() => data.find((u) => u.id === selectedId) ?? null, [list.data, selectedId])

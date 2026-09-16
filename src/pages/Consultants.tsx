@@ -133,7 +133,19 @@ export function Consultants() {
   const [importError, setImportError] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
 
-  const managerOptions = useMemo(() => managers ?? [], [managers])
+  const managerOptions = useMemo(
+    () => (managers ?? []).filter((m) => m.id !== editing?.id),
+    [managers, editing?.id],
+  )
+
+  const roleOptions = useMemo(() => {
+    const base = isAdmin || isResponsible
+      ? ['CONSULTANT', 'MANAGER', 'RESPONSIBLE_SOC']
+      : isManager
+        ? ['CONSULTANT', 'MANAGER']
+        : []
+    return base.includes(form.role) ? base : [form.role, ...base]
+  }, [isAdmin, isResponsible, isManager, form.role])
 
   function openCreate() {
     setForm({
@@ -186,6 +198,10 @@ export function Consultants() {
     const creatingPerson = !editing && (form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC')
     if (creatingPerson && (!form.username.trim() || !form.email.trim() || !form.password.trim())) {
       setFormError('Ligne de compte : nom d’utilisateur, email et mot de passe sont requis')
+      return
+    }
+    if ((form.role === 'CONSULTANT' || form.role === 'MANAGER') && !form.managerId) {
+      setFormError('Un consultant ou un manager doit avoir un manager (MANAGER ou RESPONSIBLE_SOC)')
       return
     }
     setSubmitting(true)
@@ -456,9 +472,11 @@ export function Consultants() {
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value, username: '', password: '' })}
                 >
-                  {!editing && <option value="CONSULTANT">Consultant</option>}
-                  <option value="MANAGER">Manager</option>
-                  <option value="RESPONSIBLE_SOC">Responsable société</option>
+                  {roleOptions.map((r) => (
+                    <option key={r} value={r}>
+                      {ROLE_LABELS[r] ?? r}
+                    </option>
+                  ))}
                 </Select>
               </Field>
             </div>

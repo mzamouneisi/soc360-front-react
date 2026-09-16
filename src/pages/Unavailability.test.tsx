@@ -111,6 +111,22 @@ function renderPage() {
 }
 
 describe('Unavailability', () => {
+  it('ouvre l’indisponibilité ciblée via le paramètre ?open', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item()])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+    historyMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter initialEntries={['/indisponibilites?open=1']}>
+        <Unavailability />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText(/Calendrier/)).toBeInTheDocument()
+  })
+
   it('affiche la liste du consultant et le calendrier de l’intervalle sélectionné', async () => {
     userMock.value = baseUser
     listMock.mockResolvedValue([item()])
