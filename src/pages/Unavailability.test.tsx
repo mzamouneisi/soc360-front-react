@@ -51,7 +51,7 @@ vi.mock('../api/unavailability', () => ({
 }))
 
 vi.mock('../api/consultants', () => ({
-  consultantsApi: { summaries: summariesMock },
+  consultantsApi: { summaries: summariesMock, filterList: summariesMock },
 }))
 
 vi.mock('../api/cras', () => ({

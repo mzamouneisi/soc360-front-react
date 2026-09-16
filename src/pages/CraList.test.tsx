@@ -8,20 +8,24 @@ import type { CraDto, UserDto } from '../api/types'
 const {
   findByConsultantMock,
   findBySocYearMock,
+  findByManagerMock,
   getOrCreateMock,
   getByIdMock,
   validateMock,
   rejectMock,
   deleteMock,
+  filterListMock,
   userMock,
 } = vi.hoisted(() => ({
   findByConsultantMock: vi.fn(),
   findBySocYearMock: vi.fn(),
+  findByManagerMock: vi.fn(),
   getOrCreateMock: vi.fn(),
   getByIdMock: vi.fn(),
   validateMock: vi.fn(),
   rejectMock: vi.fn(),
   deleteMock: vi.fn(),
+  filterListMock: vi.fn().mockResolvedValue([]),
   userMock: { value: null as unknown as UserDto },
 }))
 
@@ -48,6 +52,7 @@ vi.mock('../api/cras', () => ({
     getById: getByIdMock,
     findByConsultant: findByConsultantMock,
     findBySocYear: findBySocYearMock,
+    findByManager: findByManagerMock,
     save: vi.fn(),
     submit: vi.fn(),
     validate: validateMock,
@@ -55,6 +60,10 @@ vi.mock('../api/cras', () => ({
     delete: deleteMock,
     exchanges: vi.fn(),
   },
+}))
+
+vi.mock('../api/consultants', () => ({
+  consultantsApi: { filterList: filterListMock },
 }))
 
 const managerUser = {
@@ -80,6 +89,12 @@ const consultantUser = {
   socId: null,
   socName: null,
   consultantId: 10,
+} as UserDto
+
+const responsibleUser = {
+  ...managerUser,
+  id: 3,
+  role: 'RESPONSIBLE_SOC',
 } as UserDto
 
 const cra = (overrides: Partial<CraDto> = {}): CraDto => ({
@@ -131,9 +146,9 @@ function renderList() {
 }
 
 describe('CraList', () => {
-  it('affiche les CRA de l’année pour un manager', async () => {
+  it('affiche les CRA de l’équipe du manager', async () => {
     userMock.value = managerUser
-    findBySocYearMock.mockResolvedValue([
+    findByManagerMock.mockResolvedValue([
       cra(),
       cra({ id: 2, consultantName: 'Bob Dupont', month: 7 }),
     ])
@@ -141,7 +156,7 @@ describe('CraList', () => {
     renderList()
 
     expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
-    expect(findBySocYearMock).toHaveBeenCalledWith(5, 2026)
+    expect(findByManagerMock).toHaveBeenCalledWith(2026)
     expect(screen.getAllByText('Soumis').length).toBeGreaterThan(0)
     expect(screen.getAllByText('21 j').length).toBeGreaterThan(0)
     expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
@@ -149,7 +164,7 @@ describe('CraList', () => {
 
   it('valide un CRA soumis', async () => {
     userMock.value = managerUser
-    findBySocYearMock.mockResolvedValue([cra()])
+    findByManagerMock.mockResolvedValue([cra()])
     validateMock.mockResolvedValue(cra({ status: 'VALIDATED' }))
 
     renderList()
@@ -161,7 +176,7 @@ describe('CraList', () => {
 
   it('rejette un CRA avec le motif saisi', async () => {
     userMock.value = managerUser
-    findBySocYearMock.mockResolvedValue([cra()])
+    findByManagerMock.mockResolvedValue([cra()])
     rejectMock.mockResolvedValue(cra({ status: 'REJECTED' }))
     vi.stubGlobal('prompt', vi.fn().mockReturnValue('Facture en double'))
 
@@ -174,7 +189,7 @@ describe('CraList', () => {
 
   it('supprime un CRA non soumis et n’affiche pas l’action pour un CRA soumis', async () => {
     userMock.value = managerUser
-    findBySocYearMock.mockResolvedValue([
+    findByManagerMock.mockResolvedValue([
       cra({ status: 'DRAFT', consultantName: 'Carla Draft' }),
       cra({ id: 2, consultantName: 'Bob Soumis', status: 'SUBMITTED' }),
     ])
@@ -228,10 +243,45 @@ describe('CraList', () => {
 
   it('affiche l’erreur API dans un bloc d’erreur', async () => {
     userMock.value = managerUser
-    findBySocYearMock.mockRejectedValue(new ApiError(500, 'Erreur serveur'))
+    findByManagerMock.mockRejectedValue(new ApiError(500, 'Erreur serveur'))
 
     renderList()
 
     expect(await screen.findByText('Erreur serveur')).toBeInTheDocument()
+  })
+
+  it('affiche les CRA de toute la société pour un responsable', async () => {
+    userMock.value = responsibleUser
+    findBySocYearMock.mockResolvedValue([cra({ consultantName: 'Alice Martin' })])
+
+    renderList()
+
+    expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
+    expect(findBySocYearMock).toHaveBeenCalledWith(5, 2026)
+    expect(findByManagerMock).not.toHaveBeenCalled()
+  })
+
+  it('affiche la liste de ses consultants et filtre par consultant', async () => {
+    userMock.value = managerUser
+    findByManagerMock.mockResolvedValue([
+      cra({ consultantId: 10, consultantName: 'Alice Martin' }),
+      cra({ id: 2, consultantId: 11, consultantName: 'Bob Dupont', month: 7 }),
+    ])
+    filterListMock.mockResolvedValue([
+      { id: 10, fullName: 'Alice Martin', position: 'Dev', email: null },
+      { id: 11, fullName: 'Bob Dupont', position: 'Dev', email: null },
+    ])
+
+    renderList()
+
+    await screen.findAllByText('Alice Martin')
+    expect(filterListMock).toHaveBeenCalled()
+    expect(screen.getByRole('option', { name: 'Alice Martin' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Bob Dupont' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByTitle('Consultants'), { target: { value: '11' } })
+
+    await waitFor(() => expect(screen.getAllByText('Alice Martin')).toHaveLength(1))
+    expect(screen.getAllByText('Bob Dupont').length).toBeGreaterThan(0)
   })
 })

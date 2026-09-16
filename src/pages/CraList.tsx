@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ApiError } from '../api/client'
+import { consultantsApi } from '../api/consultants'
 import { crasApi } from '../api/cras'
-import type { CraDto } from '../api/types'
+import type { ConsultantSummary, CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { Button, Card, InlineButton, Input, Select } from '../components/ui'
@@ -28,8 +29,10 @@ export function CraList() {
   const [page, setPage] = useState(0)
   const [openCraId, setOpenCraId] = useState<number | null>(null)
   const [search, setSearch] = useState('')
+  const [consultantFilter, setConsultantFilter] = useState<number | null>(null)
 
   const isConsultant = user?.role === 'CONSULTANT'
+  const isManager = user?.role === 'MANAGER'
   const canValidate = (c: CraDto) =>
     user?.role === 'ADMIN' ||
     user?.role === 'RESPONSIBLE_SOC' ||
@@ -43,23 +46,41 @@ export function CraList() {
     [user?.consultantId, year],
   )
 
-  const socCras = useAsync(
-    () =>
-      user?.socId
-        ? crasApi.findBySocYear(user.socId, year)
-        : Promise.resolve([] as CraDto[]),
-    [user?.socId, year],
+  const teamCras = useAsync(
+    () => (isManager ? crasApi.findByManager(year) : Promise.resolve([] as CraDto[])),
+    [isManager, year],
   )
 
-  const { data, loading, error, reload } = isConsultant ? ownCras : socCras
+  const socCras = useAsync(
+    () =>
+      !isConsultant && !isManager && user?.socId
+        ? crasApi.findBySocYear(user.socId, year)
+        : Promise.resolve([] as CraDto[]),
+    [isConsultant, isManager, user?.socId, year],
+  )
+
+  const consultants = useAsync(
+    () =>
+      !isConsultant
+        ? consultantsApi.filterList()
+        : Promise.resolve([] as ConsultantSummary[]),
+    [isConsultant],
+  )
+
+  const { data, loading, error, reload } = isConsultant
+    ? ownCras
+    : isManager
+      ? teamCras
+      : socCras
 
   useEffect(() => {
     setPage(0)
-  }, [year, month, search])
+  }, [year, month, search, consultantFilter])
 
   if (!user) return null
 
   const list = (data ?? []).filter((c) => {
+    if (consultantFilter != null && c.consultantId !== consultantFilter) return false
     if (!search.trim()) return true
     const q = search.trim().toLowerCase()
     const yearMonth = `${c.year}-${String(c.month).padStart(2, '0')}`
@@ -174,7 +195,13 @@ export function CraList() {
     <div>
       <PageHeader
         title="CRA"
-        subtitle="Comptes rendus d'activité par consultant et par mois"
+        subtitle={
+          isConsultant
+            ? 'Mes comptes rendus d’activité'
+            : isManager
+              ? 'CRA des consultants de mon équipe'
+              : "Comptes rendus d'activité par consultant et par mois"
+        }
         actions={
           <>
             <InlineButton onClick={reload} title="Recharger la liste des CRA">
@@ -191,12 +218,30 @@ export function CraList() {
       {loading && <LoadingBlock />}
 
       {!loading && (
-        <div className="mb-4">
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filtrer par année-mois, consultant ou statut…"
-          />
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {!isConsultant && (
+            <div className="max-w-xs flex-1">
+              <Select
+                value={consultantFilter ?? ''}
+                onChange={(e) => setConsultantFilter(e.target.value ? Number(e.target.value) : null)}
+                title="Consultants"
+              >
+                <option value="">Tous les consultants</option>
+                {consultants.data?.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.fullName}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
+          <div className="min-w-[16rem] flex-1">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filtrer par année-mois, consultant ou statut…"
+            />
+          </div>
         </div>
       )}
 

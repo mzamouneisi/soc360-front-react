@@ -53,10 +53,10 @@ export function Unavailability() {
 
   const consultants = useAsync(
     () =>
-      isConsultant || !user?.socId
+      isConsultant
         ? Promise.resolve([] as ConsultantSummary[])
-        : consultantsApi.summaries(user.socId),
-    [isConsultant, user?.socId],
+        : consultantsApi.filterList(),
+    [isConsultant],
   )
 
   useEffect(() => {
