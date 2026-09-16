@@ -34,6 +34,9 @@ export function CraList() {
   const isConsultant = user?.role === 'CONSULTANT'
   const isManager = user?.role === 'MANAGER'
   const isAdmin = user?.role === 'ADMIN'
+  // Peut avoir ses propres CRA : tout utilisateur rattaché à un manager (consultant, manager…).
+  const canOwnCra = isConsultant || user?.manager != null
+  const ownerId = user?.consultantId ?? user?.id
   const canValidate = (c: CraDto) =>
     user?.role === 'ADMIN' ||
     user?.role === 'RESPONSIBLE_SOC' ||
@@ -41,15 +44,27 @@ export function CraList() {
 
   const ownCras = useAsync(
     () =>
-      user?.consultantId
-        ? crasApi.findByConsultant(user.consultantId, year)
+      canOwnCra && ownerId
+        ? crasApi.findByConsultant(ownerId, year)
         : Promise.resolve([] as CraDto[]),
-    [user?.consultantId, year],
+    [canOwnCra, ownerId, year],
   )
 
-  const teamCras = useAsync(
-    () => (isManager ? crasApi.findByManager(year) : Promise.resolve([] as CraDto[])),
-    [isManager, year],
+  const managerCras = useAsync(
+    async () => {
+      if (!isManager || !ownerId) {
+        return [] as CraDto[]
+      }
+      const [team, own] = await Promise.all([
+        crasApi.findByManager(year),
+        canOwnCra ? crasApi.findByConsultant(ownerId, year) : Promise.resolve([] as CraDto[]),
+      ])
+      const byId = new Map<number, CraDto>()
+      for (const c of own) byId.set(c.id, c)
+      for (const c of team) if (!byId.has(c.id)) byId.set(c.id, c)
+      return [...byId.values()]
+    },
+    [isManager, ownerId, canOwnCra, year],
   )
 
   const socCras = useAsync(
@@ -76,7 +91,7 @@ export function CraList() {
   const { data, loading, error, reload } = isConsultant
     ? ownCras
     : isManager
-      ? teamCras
+      ? managerCras
       : isAdmin
         ? allCras
         : socCras
@@ -165,12 +180,11 @@ export function CraList() {
   }
 
   async function findFreePeriod(): Promise<{ year: number; month: number }> {
-    const consultantId = user?.consultantId
-    if (!consultantId) return { year, month }
+    if (!ownerId) return { year, month }
     let y = year
     let m = month
     for (let i = 0; i < 24; i++) {
-      const cras = y === year ? (data ?? []) : await crasApi.findByConsultant(consultantId, y)
+      const cras = await crasApi.findByConsultant(ownerId, y)
       const cra = cras.find((c) => c.year === y && c.month === m && c.type === 'CRA')
       if (!cra || cra.status === 'DRAFT' || cra.status === 'REJECTED') {
         return { year: y, month: m }
@@ -185,10 +199,10 @@ export function CraList() {
   }
 
   async function createCra(type: string) {
-    if (!user?.consultantId) return
+    if (!ownerId) return
     try {
       const period = await findFreePeriod()
-      const cra = await crasApi.getOrCreate(user.consultantId, period.year, period.month, type)
+      const cra = await crasApi.getOrCreate(ownerId, period.year, period.month, type)
       setOpenCraId(cra.id)
       if (period.year !== year || period.month !== month) {
         setYear(period.year)
@@ -430,7 +444,7 @@ export function CraList() {
         </div>
       </Card>
 
-      {isConsultant && user.consultantId && (
+      {canOwnCra && ownerId && (
         <div className="mt-4 flex items-center justify-center gap-3">
           <Button className="w-auto" onClick={() => createCra('CRA')}>
             Nouveau Cra

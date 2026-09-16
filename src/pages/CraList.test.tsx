@@ -18,7 +18,7 @@ const {
   filterListMock,
   userMock,
 } = vi.hoisted(() => ({
-  findByConsultantMock: vi.fn(),
+  findByConsultantMock: vi.fn().mockResolvedValue([]),
   findBySocYearMock: vi.fn(),
   findByManagerMock: vi.fn(),
   findAllYearMock: vi.fn(),
@@ -98,6 +98,19 @@ const responsibleUser = {
   ...managerUser,
   id: 3,
   role: 'RESPONSIBLE_SOC',
+} as UserDto
+
+const managerWithManagerUser = {
+  ...managerUser,
+  id: 1,
+  manager: {
+    id: 9,
+    fullName: 'Top Manager',
+    username: 'top',
+    email: 'top@soc.fr',
+    phone: null,
+    role: 'RESPONSIBLE_SOC',
+  },
 } as UserDto
 
 const adminUser = {
@@ -285,6 +298,22 @@ describe('CraList', () => {
     expect(findAllYearMock).toHaveBeenCalledWith(2026)
     expect(findBySocYearMock).not.toHaveBeenCalled()
     expect(findByManagerMock).not.toHaveBeenCalled()
+  })
+
+  it('permet à un manager rattaché à un manager de créer son propre CRA', async () => {
+    userMock.value = managerWithManagerUser
+    findByManagerMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+    getOrCreateMock.mockResolvedValue(cra({ id: 99 }))
+    getByIdMock.mockResolvedValue(cra({ id: 99 }))
+    stubFixedNow()
+
+    renderList()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouveau Cra' }))
+
+    await waitFor(() => expect(getOrCreateMock).toHaveBeenCalledWith(1, 2026, 8, 'CRA'))
+    expect(findByConsultantMock).toHaveBeenCalledWith(1, 2026)
   })
 
   it('affiche la liste de ses consultants et filtre par consultant', async () => {

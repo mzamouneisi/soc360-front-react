@@ -268,6 +268,7 @@ export function Unavailability() {
                 <Select
                   value={formConsultantId ?? ''}
                   onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
+                  title="Consultant"
                 >
                   <option value="">— Choisir —</option>
                   {consultants.data?.map((c) => (

@@ -230,6 +230,22 @@ describe('Unavailability', () => {
     expect(historyMock).toHaveBeenCalledWith(1)
   })
 
+  it('permet à un manager de créer une indisponibilité pour lui-même', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([{ id: 1, fullName: 'M Manager', position: null, email: null }])
+    createMock.mockResolvedValue(item({ consultantId: 1 }))
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    fireEvent.change(screen.getByTitle('Consultant'), { target: { value: '1' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
+
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+    expect(createMock.mock.calls[0][0].consultantId).toBe(1)
+  })
+
   it('exige la sélection d’un consultant pour la création par un manager', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([])
