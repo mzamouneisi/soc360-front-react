@@ -5,6 +5,7 @@ import { crasApi } from '../api/cras'
 import type { ConsultantSummary, CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { CraHistoryModal } from '../components/CraHistoryModal'
 import { Button, Card, InlineButton, Input, MonthInput, Select } from '../components/ui'
 import {
   CRA_STATUS_LABELS,
@@ -28,6 +29,7 @@ export function CraList() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [page, setPage] = useState(0)
   const [openCraId, setOpenCraId] = useState<number | null>(null)
+  const [historyCra, setHistoryCra] = useState<CraDto | null>(null)
   const [search, setSearch] = useState('')
   const [consultantFilter, setConsultantFilter] = useState<number | null>(null)
   const [monthFilter, setMonthFilter] = useState('')
@@ -370,6 +372,7 @@ export function CraList() {
                           <InlineButton onClick={() => setOpenCraId(cra.id)}>
                             {editable(cra) ? 'Éditer' : 'Ouvrir'}
                           </InlineButton>
+                          <InlineButton onClick={() => setHistoryCra(cra)}>Historique</InlineButton>
                           {editable(cra) && (
                             <InlineButton
                               className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
@@ -424,7 +427,7 @@ export function CraList() {
 
       <Card className="mt-4 flex flex-wrap items-center gap-3 p-4">
         <label className="flex items-center gap-2 whitespace-nowrap text-sm text-gray-600">
-          <span className="min-w-[4.5rem]">Période :</span>
+          <span className="min-w-[4.5rem]">Mois :</span>
           <Select
             className="w-auto"
             value={month}
@@ -480,6 +483,14 @@ export function CraList() {
             onChange={reload}
           />
         </div>
+      )}
+
+      {historyCra && (
+        <CraHistoryModal
+          craId={historyCra.id}
+          isIndispo={historyCra.type === 'CONGE'}
+          onClose={() => setHistoryCra(null)}
+        />
       )}
     </div>
   )

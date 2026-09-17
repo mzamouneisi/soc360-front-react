@@ -404,6 +404,17 @@ export interface CraExchangeDto {
   comment: string | null
 }
 
+export interface CraHistoryDto {
+  id: number
+  dateModif: string
+  craId: number
+  modifierId: number | null
+  modifierName: string | null
+  comment: string | null
+  statusBefore: CraStatus | null
+  statusAfter: CraStatus
+}
+
 export interface CraDayActivityRequest {
   activityId: number
   hours?: number | null

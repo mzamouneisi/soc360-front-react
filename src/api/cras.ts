@@ -1,11 +1,12 @@
 import { api } from './client'
-import type { CraDto, CraExchangeDto, SaveCraRequest } from './types'
+import type { CraDto, CraExchangeDto, CraHistoryDto, SaveCraRequest } from './types'
 
 export const crasApi = {
   getOrCreate: (consultantId: number, year: number, month: number, type = 'CRA') =>
     api.get<CraDto>(`/cras/consultant/${consultantId}/${year}/${month}`, { type }),
   getById: (id: number) => api.get<CraDto>(`/cras/${id}`),
   exchanges: (id: number) => api.get<CraExchangeDto[]>(`/cras/${id}/exchanges`),
+  history: (id: number) => api.get<CraHistoryDto[]>(`/cras/${id}/history`),
   findByConsultant: (consultantId: number, year: number, type = 'CRA') =>
     api.get<CraDto[]>(`/cras/consultant/${consultantId}/${year}`, { type }),
   findByMonth: (year: number, month: number, socId?: number, type = 'CRA') =>

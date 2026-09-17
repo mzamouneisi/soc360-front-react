@@ -15,6 +15,7 @@ const {
   validateMock,
   rejectMock,
   deleteMock,
+  historyMock,
   filterListMock,
   userMock,
 } = vi.hoisted(() => ({
@@ -27,6 +28,7 @@ const {
   validateMock: vi.fn(),
   rejectMock: vi.fn(),
   deleteMock: vi.fn(),
+  historyMock: vi.fn(),
   filterListMock: vi.fn().mockResolvedValue([]),
   userMock: { value: null as unknown as UserDto },
 }))
@@ -62,6 +64,7 @@ vi.mock('../api/cras', () => ({
     reject: rejectMock,
     delete: deleteMock,
     exchanges: vi.fn(),
+    history: historyMock,
   },
 }))
 
@@ -356,5 +359,32 @@ describe('CraList', () => {
 
     await waitFor(() => expect(screen.getAllByText('Alice Martin')).toHaveLength(1))
     expect(screen.getAllByText('Bob Dupont').length).toBeGreaterThan(0)
+  })
+
+  it('ouvre l’historique d’un CRA depuis la liste', async () => {
+    userMock.value = managerUser
+    findByManagerMock.mockResolvedValue([
+      cra({ id: 2, consultantName: 'Bob Dupont', month: 7 }),
+    ])
+    historyMock.mockResolvedValue([
+      {
+        id: 1,
+        dateModif: '2026-07-01T10:00:00Z',
+        craId: 2,
+        modifierId: 10,
+        modifierName: 'Bob Dupont',
+        comment: 'Soumission',
+        statusBefore: 'DRAFT',
+        statusAfter: 'SUBMITTED',
+      },
+    ])
+
+    renderList()
+
+    await screen.findAllByText('Bob Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Historique' }))
+
+    await waitFor(() => expect(historyMock).toHaveBeenCalledWith(2))
+    expect(await screen.findByText('Soumission')).toBeInTheDocument()
   })
 })

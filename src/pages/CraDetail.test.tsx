@@ -9,6 +9,7 @@ const {
   saveMock,
   validateMock,
   invalidateRangeMock,
+  historyMock,
   activitiesFindAllMock,
   holidaysFindByCountryYearMock,
   socHolidaysListMock,
@@ -18,6 +19,7 @@ const {
   saveMock: vi.fn(),
   validateMock: vi.fn(),
   invalidateRangeMock: vi.fn(),
+  historyMock: vi.fn(),
   activitiesFindAllMock: vi.fn(),
   holidaysFindByCountryYearMock: vi.fn(),
   socHolidaysListMock: vi.fn(),
@@ -41,6 +43,7 @@ vi.mock('../api/cras', () => ({
     save: saveMock,
     validate: validateMock,
     invalidateRange: invalidateRangeMock,
+    history: historyMock,
   },
 }))
 
@@ -209,5 +212,37 @@ describe('CraDetail', () => {
 
     await waitFor(() => expect(valider).toBeDisabled())
     await waitFor(() => expect(invalider).toBeDisabled())
+  })
+
+  it('affiche l’historique des modifications du CRA', async () => {
+    userMock.value = managerUser
+    const validated = cra(true, 'VALIDATED')
+
+    getByIdMock.mockResolvedValue(validated)
+    historyMock.mockResolvedValue([
+      {
+        id: 1,
+        dateModif: '2026-08-01T10:00:00Z',
+        craId: 1,
+        modifierId: 10,
+        modifierName: 'Alice Martin',
+        comment: 'Soumission',
+        statusBefore: 'DRAFT',
+        statusAfter: 'SUBMITTED',
+      },
+    ])
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Historique' }))
+
+    await waitFor(() => expect(historyMock).toHaveBeenCalledWith(1))
+    expect(await screen.findByText('Soumission')).toBeInTheDocument()
+    expect(screen.getByText('Brouillon')).toBeInTheDocument()
+    expect(screen.getByText('Soumis')).toBeInTheDocument()
   })
 })
