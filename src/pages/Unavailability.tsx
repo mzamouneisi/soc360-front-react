@@ -31,6 +31,7 @@ export function Unavailability() {
   const isAdmin = user?.role === 'ADMIN'
 
   const [consultantFilter, setConsultantFilter] = useState<number | null>(null)
+  const [monthFilter, setMonthFilter] = useState('')
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -68,7 +69,7 @@ export function Unavailability() {
   useEffect(() => {
     setPage(0)
     setSelectedId(null)
-  }, [search, consultantFilter])
+  }, [search, consultantFilter, monthFilter])
 
   useEffect(() => {
     const open = searchParams.get('open')
@@ -80,23 +81,36 @@ export function Unavailability() {
 
   if (!user) return null
 
-  const filtered = search.trim()
-    ? data.filter((u) => {
-        const q = search.trim().toLowerCase()
-        const type = (UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type).toLowerCase()
-        const status = (UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status).toLowerCase()
-        const consultant = (u.consultantName ?? '').toLowerCase()
-        const comment = (u.comment ?? '').toLowerCase()
-        return (
-          type.includes(q) ||
-          status.includes(q) ||
-          consultant.includes(q) ||
-          comment.includes(q) ||
-          u.startDate.includes(q) ||
-          u.endDate.includes(q)
-        )
-      })
-    : data
+  const monthBounds = monthFilter
+    ? (() => {
+        const [y, m] = monthFilter.split('-').map(Number)
+        const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate()
+        return {
+          start: `${monthFilter}-01`,
+          end: `${monthFilter}-${String(lastDay).padStart(2, '0')}`,
+        }
+      })()
+    : null
+
+  const filtered = data.filter((u) => {
+    if (monthBounds && (u.endDate < monthBounds.start || u.startDate > monthBounds.end)) {
+      return false
+    }
+    if (!search.trim()) return true
+    const q = search.trim().toLowerCase()
+    const type = (UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type).toLowerCase()
+    const status = (UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status).toLowerCase()
+    const consultant = (u.consultantName ?? '').toLowerCase()
+    const comment = (u.comment ?? '').toLowerCase()
+    return (
+      type.includes(q) ||
+      status.includes(q) ||
+      consultant.includes(q) ||
+      comment.includes(q) ||
+      u.startDate.includes(q) ||
+      u.endDate.includes(q)
+    )
+  })
 
   const pageSize = user?.pageSize ?? 5
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
@@ -248,6 +262,14 @@ export function Unavailability() {
             </Select>
           </div>
         )}
+        <div className="max-w-[12rem] flex-1">
+          <Input
+            type="month"
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            title="Filtrer par mois"
+          />
+        </div>
         <div className="min-w-[16rem] flex-1">
           <Input
             value={search}

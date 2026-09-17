@@ -30,6 +30,7 @@ export function CraList() {
   const [openCraId, setOpenCraId] = useState<number | null>(null)
   const [search, setSearch] = useState('')
   const [consultantFilter, setConsultantFilter] = useState<number | null>(null)
+  const [monthFilter, setMonthFilter] = useState('')
 
   const isConsultant = user?.role === 'CONSULTANT'
   const isManager = user?.role === 'MANAGER'
@@ -98,11 +99,15 @@ export function CraList() {
 
   useEffect(() => {
     setPage(0)
-  }, [year, month, search, consultantFilter])
+  }, [year, month, search, consultantFilter, monthFilter])
 
   if (!user) return null
 
   const list = (data ?? []).filter((c) => {
+    if (monthFilter) {
+      const [filterYear, filterMonth] = monthFilter.split('-').map(Number)
+      if (c.year !== filterYear || c.month !== filterMonth) return false
+    }
     if (consultantFilter != null && c.consultantId !== consultantFilter) return false
     if (!search.trim()) return true
     const q = search.trim().toLowerCase()
@@ -257,6 +262,19 @@ export function CraList() {
               </Select>
             </div>
           )}
+          <div className="max-w-[12rem] flex-1">
+            <Input
+              type="month"
+              value={monthFilter}
+              onChange={(e) => {
+                const value = e.target.value
+                setMonthFilter(value)
+                const nextYear = value ? Number(value.split('-')[0]) : NaN
+                if (nextYear) setYear(nextYear)
+              }}
+              title="Filtrer par mois"
+            />
+          </div>
           <div className="min-w-[16rem] flex-1">
             <Input
               value={search}

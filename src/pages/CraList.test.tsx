@@ -316,6 +316,24 @@ describe('CraList', () => {
     expect(findByConsultantMock).toHaveBeenCalledWith(1, 2026)
   })
 
+  it('filtre les CRA par mois', async () => {
+    userMock.value = managerUser
+    findByManagerMock.mockResolvedValue([
+      cra({ id: 1, consultantName: 'Alice Martin', month: 8 }),
+      cra({ id: 2, consultantName: 'Bob Dupont', month: 7 }),
+    ])
+
+    renderList()
+
+    expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
+    expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByTitle('Filtrer par mois'), { target: { value: '2026-07' } })
+
+    expect(await screen.findByText('Bob Dupont')).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText('Alice Martin')).not.toBeInTheDocument())
+  })
+
   it('affiche la liste de ses consultants et filtre par consultant', async () => {
     userMock.value = managerUser
     findByManagerMock.mockResolvedValue([

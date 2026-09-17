@@ -299,6 +299,23 @@ describe('Unavailability', () => {
     ).toBeInTheDocument()
   })
 
+  it('filtre par mois', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({ id: 1, consultantName: 'Alice Martin', startDate: '2026-09-01', endDate: '2026-09-10' }),
+      item({ id: 2, consultantName: 'Bob Dupont', startDate: '2026-11-01', endDate: '2026-11-05' }),
+    ])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    await screen.findByText('Alice Martin')
+    fireEvent.change(screen.getByTitle('Filtrer par mois'), { target: { value: '2026-11' } })
+
+    expect(await screen.findByText('Bob Dupont')).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText('Alice Martin')).not.toBeInTheDocument())
+  })
+
   it('filtre par commentaire', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([
