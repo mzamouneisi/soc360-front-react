@@ -504,32 +504,26 @@ export function Consultants() {
               </Field>
             </div>
           )}
-          {form.role === 'CONSULTANT' && (
-            <>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Poste">
-                  <Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
-                </Field>
-                <Field label="Nationalité">
-                  <Input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder="FR" />
-                </Field>
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Date d'embauche">
-                  <Input type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
-                </Field>
-                <Field label="Date de naissance">
-                  <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
-                </Field>
-              </div>
-            </>
-          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {form.role === 'CONSULTANT' && (
-              <Field label="N° de sécurité sociale">
-                <Input value={form.socialNumber} onChange={(e) => setForm({ ...form, socialNumber: e.target.value })} />
-              </Field>
-            )}
+            <Field label="Poste">
+              <Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
+            </Field>
+            <Field label="Nationalité">
+              <Input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder="FR" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Date d'embauche">
+              <Input type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
+            </Field>
+            <Field label="Date de naissance">
+              <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="N° de sécurité sociale">
+              <Input value={form.socialNumber} onChange={(e) => setForm({ ...form, socialNumber: e.target.value })} />
+            </Field>
             <Field label="Manager">
               <Select value={form.managerId} onChange={(e) => setForm({ ...form, managerId: e.target.value })}>
                 <option value="">Aucun</option>
@@ -541,26 +535,24 @@ export function Consultants() {
               </Select>
             </Field>
           </div>
-          {form.role === 'CONSULTANT' && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Salaire de base">
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={form.baseSalary}
-                  onChange={(e) => setForm({ ...form, baseSalary: e.target.value })}
-                />
-              </Field>
-              <Field label="Devise">
-                <Select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
-                  <option value="EUR">EUR</option>
-                  <option value="USD">USD</option>
-                  <option value="CHF">CHF</option>
-                </Select>
-              </Field>
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Salaire de base">
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.baseSalary}
+                onChange={(e) => setForm({ ...form, baseSalary: e.target.value })}
+              />
+            </Field>
+            <Field label="Devise">
+              <Select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="CHF">CHF</option>
+              </Select>
+            </Field>
+          </div>
           {isAdmin && (
             <Field label="Société">
               <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
