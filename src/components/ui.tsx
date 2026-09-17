@@ -36,6 +36,34 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   )
 }
 
+let monthInputSupported: boolean | null = null
+
+function supportsMonthInput(): boolean {
+  if (monthInputSupported === null) {
+    const probe = document.createElement('input')
+    probe.setAttribute('type', 'month')
+    monthInputSupported = probe.type === 'month'
+  }
+  return monthInputSupported
+}
+
+export function MonthInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  const { className = '', ...rest } = props
+  if (supportsMonthInput()) {
+    return <Input type="month" className={className} {...rest} />
+  }
+  return (
+    <Input
+      type="text"
+      inputMode="numeric"
+      placeholder="AAAA-MM"
+      pattern="\d{4}-\d{2}"
+      className={className}
+      {...rest}
+    />
+  )
+}
+
 export function Button({
   className = '',
   variant = 'primary',

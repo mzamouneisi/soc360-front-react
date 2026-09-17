@@ -11,7 +11,7 @@ import type {
 } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
-import { Alert, Button, Card, Field, InlineButton, Input, Select, Textarea } from '../components/ui'
+import { Alert, Button, Card, Field, InlineButton, Input, MonthInput, Select, Textarea } from '../components/ui'
 import {
   formatDate,
   formatDateTime,
@@ -263,13 +263,9 @@ export function Unavailability() {
           </div>
         )}
         <div className="max-w-[12rem] flex-1">
-          <Input
-            type="date"
-            value={monthFilter ? `${monthFilter}-01` : ''}
-            onChange={(e) => {
-              const value = e.target.value
-              setMonthFilter(value ? value.slice(0, 7) : '')
-            }}
+          <MonthInput
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value.slice(0, 7))}
             title="Filtrer par mois"
           />
         </div>

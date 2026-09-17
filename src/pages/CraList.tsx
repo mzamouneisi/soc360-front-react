@@ -5,7 +5,7 @@ import { crasApi } from '../api/cras'
 import type { ConsultantSummary, CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
-import { Button, Card, InlineButton, Input, Select } from '../components/ui'
+import { Button, Card, InlineButton, Input, MonthInput, Select } from '../components/ui'
 import {
   CRA_STATUS_LABELS,
   formatDate,
@@ -263,12 +263,10 @@ export function CraList() {
             </div>
           )}
           <div className="max-w-[12rem] flex-1">
-            <Input
-              type="date"
-              value={monthFilter ? `${monthFilter}-01` : ''}
+            <MonthInput
+              value={monthFilter}
               onChange={(e) => {
-                const value = e.target.value
-                const ym = value ? value.slice(0, 7) : ''
+                const ym = e.target.value.slice(0, 7)
                 setMonthFilter(ym)
                 const nextYear = ym ? Number(ym.slice(0, 4)) : NaN
                 if (nextYear) setYear(nextYear)
@@ -454,8 +452,8 @@ export function CraList() {
           <InlineButton onClick={goPrev} title="Mois précédent">
             ◀
           </InlineButton>
-          <InlineButton onClick={goToday} title="Revenir au mois actuel">
-            Aujourd'hui
+          <InlineButton onClick={goToday} title="Revenir au mois courant">
+            Mois Courant
           </InlineButton>
           <InlineButton onClick={goNext} title="Mois suivant">
             ▶
