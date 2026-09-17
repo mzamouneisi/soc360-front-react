@@ -328,7 +328,7 @@ describe('CraList', () => {
     expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
     expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByTitle('Filtrer par mois'), { target: { value: '2026-07' } })
+    fireEvent.change(screen.getByTitle('Filtrer par mois'), { target: { value: '2026-07-01' } })
 
     expect(await screen.findByText('Bob Dupont')).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByText('Alice Martin')).not.toBeInTheDocument())

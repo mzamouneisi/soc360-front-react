@@ -264,9 +264,12 @@ export function Unavailability() {
         )}
         <div className="max-w-[12rem] flex-1">
           <Input
-            type="month"
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
+            type="date"
+            value={monthFilter ? `${monthFilter}-01` : ''}
+            onChange={(e) => {
+              const value = e.target.value
+              setMonthFilter(value ? value.slice(0, 7) : '')
+            }}
             title="Filtrer par mois"
           />
         </div>

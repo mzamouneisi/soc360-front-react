@@ -264,12 +264,13 @@ export function CraList() {
           )}
           <div className="max-w-[12rem] flex-1">
             <Input
-              type="month"
-              value={monthFilter}
+              type="date"
+              value={monthFilter ? `${monthFilter}-01` : ''}
               onChange={(e) => {
                 const value = e.target.value
-                setMonthFilter(value)
-                const nextYear = value ? Number(value.split('-')[0]) : NaN
+                const ym = value ? value.slice(0, 7) : ''
+                setMonthFilter(ym)
+                const nextYear = ym ? Number(ym.slice(0, 4)) : NaN
                 if (nextYear) setYear(nextYear)
               }}
               title="Filtrer par mois"
@@ -424,8 +425,8 @@ export function CraList() {
       )}
 
       <Card className="mt-4 flex flex-wrap items-center gap-3 p-4">
-        <label className="flex items-center gap-2 text-sm text-gray-600">
-          Période :
+        <label className="flex items-center gap-2 whitespace-nowrap text-sm text-gray-600">
+          <span className="min-w-[4.5rem]">Période :</span>
           <Select
             className="w-auto"
             value={month}
@@ -454,7 +455,7 @@ export function CraList() {
             ◀
           </InlineButton>
           <InlineButton onClick={goToday} title="Revenir au mois actuel">
-            auj
+            Aujourd'hui
           </InlineButton>
           <InlineButton onClick={goNext} title="Mois suivant">
             ▶

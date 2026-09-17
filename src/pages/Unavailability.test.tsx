@@ -310,7 +310,7 @@ describe('Unavailability', () => {
     renderPage()
 
     await screen.findByText('Alice Martin')
-    fireEvent.change(screen.getByTitle('Filtrer par mois'), { target: { value: '2026-11' } })
+    fireEvent.change(screen.getByTitle('Filtrer par mois'), { target: { value: '2026-11-01' } })
 
     expect(await screen.findByText('Bob Dupont')).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByText('Alice Martin')).not.toBeInTheDocument())
