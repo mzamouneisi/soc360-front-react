@@ -73,7 +73,7 @@ export function IndispoList() {
     c.status !== 'SUBMITTED' &&
     c.status !== 'PENDING_SEND' &&
     c.status !== 'VALIDATED' &&
-    c.status !== 'SEMI_VALID'
+    c.status !== 'VALREJ'
 
   const hasIndispoThisMonth = (data ?? []).some((c) => c.month === month)
 

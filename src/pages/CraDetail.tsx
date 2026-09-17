@@ -98,8 +98,8 @@ function statusAdjective(status: CraDto['status'], indispo: boolean): string {
       return 'soumise'
     case 'VALIDATED':
       return 'validée'
-    case 'SEMI_VALID':
-      return 'semi-validée'
+    case 'VALREJ':
+      return 'partiellement validée'
     case 'REJECTED':
       return 'rejetée'
     case 'CANCELLED':
@@ -286,9 +286,9 @@ export function CraDetail({
     (cra.status === 'SUBMITTED' ||
       cra.status === 'PENDING_SEND' ||
       cra.status === 'VALIDATED' ||
-      cra.status === 'SEMI_VALID')
+      cra.status === 'VALREJ')
   const consultantAddsToValidated = isConsultant && isIndispo && cra.status === 'VALIDATED'
-  const consultantEditsSemiValid = isConsultant && cra.status === 'SEMI_VALID'
+  const consultantEditsSemiValid = isConsultant && cra.status === 'VALREJ'
   const formEditable = editable || managerEditsValidated
   const canAddEvents = formEditable || consultantAddsToValidated || consultantEditsSemiValid
 
@@ -303,7 +303,7 @@ export function CraDetail({
     (cra.status === 'SUBMITTED' ||
       cra.status === 'PENDING_SEND' ||
       cra.status === 'VALIDATED' ||
-      cra.status === 'SEMI_VALID' ||
+      cra.status === 'VALREJ' ||
       cra.status === 'CANCELLED' ||
       cra.status === 'REJECTED')
   const canCancel = isConsultant && isIndispo && (cra.status === 'VALIDATED' || cra.status === 'SUBMITTED' || cra.status === 'PENDING_SEND')
@@ -691,7 +691,7 @@ export function CraDetail({
         </div>
       )}
 
-      {managerCanAct && (cra.status === 'VALIDATED' || cra.status === 'SEMI_VALID') && (
+      {managerCanAct && (cra.status === 'VALIDATED' || cra.status === 'VALREJ') && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)}.
         </div>
