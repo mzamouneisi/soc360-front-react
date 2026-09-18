@@ -50,6 +50,7 @@ export function Activities() {
   const { selectedSocId } = useSoc()
   const navigate = useNavigate()
   const isAdmin = user?.role === 'ADMIN'
+  const isManager = user?.role === 'MANAGER'
   const canEdit =
     user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC' || user?.role === 'MANAGER'
   const workingSocId = selectedSocId ?? user?.socId ?? null
@@ -76,8 +77,13 @@ export function Activities() {
     [effectiveSocId],
   )
   const { data: consultants } = useAsync(
-    () => (effectiveSocId ? consultantsApi.summaries(effectiveSocId) : Promise.resolve([] as ConsultantSummary[])),
-    [effectiveSocId],
+    () =>
+      isManager
+        ? consultantsApi.managed()
+        : effectiveSocId
+          ? consultantsApi.summaries(effectiveSocId)
+          : Promise.resolve([] as ConsultantSummary[]),
+    [effectiveSocId, isManager],
   )
   const { data: socs } = useAsync(
     () => (isAdmin ? socsApi.findAll() : Promise.resolve([] as SocDto[])),
@@ -127,6 +133,10 @@ export function Activities() {
     }
     if (!form.name.trim() || !form.typeId || !form.projectId) {
       setFormError('Nom, type et projet sont obligatoires')
+      return
+    }
+    if (isManager && !form.consultantId) {
+      setFormError('Sélectionnez un de vos consultants.')
       return
     }
     if (form.startDate && form.endDate && form.endDate < form.startDate) {
@@ -448,12 +458,18 @@ export function Activities() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Consultant">
+            <Field label={isManager ? 'Consultant *' : 'Consultant'}>
               <Select
                 value={form.consultantId}
                 onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
               >
-                <option value="">Aucun</option>
+                {isManager ? (
+                  <option value="" disabled>
+                    Sélectionner…
+                  </option>
+                ) : (
+                  <option value="">Aucun</option>
+                )}
                 {(consultants ?? []).map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.fullName}
