@@ -278,6 +278,20 @@ export function Activities() {
               ),
             },
             {
+              key: 'allowed',
+              label: 'Week-end / Jours fériés',
+              render: (a) => (
+                <div className="flex flex-col gap-1">
+                  <Badge kind={a.weekendAllowed ? 'success' : 'muted'}>
+                    Week-end : {a.weekendAllowed ? 'Oui' : 'Non'}
+                  </Badge>
+                  <Badge kind={a.holidayAllowed ? 'success' : 'muted'}>
+                    Jours fériés : {a.holidayAllowed ? 'Oui' : 'Non'}
+                  </Badge>
+                </div>
+              ),
+            },
+            {
               key: 'soc',
               label: 'Société',
               render: (a) => <span className="text-gray-500">{a.soc?.name ?? '—'}</span>,

@@ -12,6 +12,7 @@ interface NavItem {
   label: string
   icon: string
   end?: boolean
+  roles?: Role[]
 }
 
 interface NavSection {
@@ -54,8 +55,11 @@ const ICONS = {
 }
 
 function NavSection({ section, role }: { section: NavSection; role: Role }) {
-  const items =
-    role === 'CONSULTANT' ? section.items.filter((item) => !HIDDEN_FOR_CONSULTANT.has(item.to)) : section.items
+  const items = section.items.filter((item) => {
+    if (item.roles && !item.roles.includes(role)) return false
+    if (role === 'CONSULTANT' && HIDDEN_FOR_CONSULTANT.has(item.to)) return false
+    return true
+  })
   if (items.length === 0) return null
 
   return (
@@ -139,7 +143,7 @@ export function MainLayout() {
     {
       title: 'Activité',
       items: [
-        { to: '/mes-activites', label: 'Mes Activités', icon: ICONS.activities },
+        { to: '/mes-activites', label: 'Mes Activités', icon: ICONS.activities, roles: ['CONSULTANT'] },
         { to: '/cras', label: 'CRA', icon: ICONS.cra },
         { to: '/indisponibilites', label: 'Indisponibilités', icon: ICONS.holiday },
         { to: '/notes-frais', label: 'Notes de frais', icon: ICONS.expenses },
