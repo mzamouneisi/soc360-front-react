@@ -17,7 +17,30 @@ export function Logs() {
   const [lines, setLines] = useState(100)
   const [query, setQuery] = useState(100)
   const [filter, setFilter] = useState('')
+  const [copied, setCopied] = useState(false)
   const { data, loading, error, reload } = useAsync(() => logsApi.tail(query), [query])
+
+  async function copyText(text: string) {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+      }
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -93,6 +116,14 @@ export function Logs() {
                       {data.file}
                     </span>
                   )}
+                  <InlineButton
+                    className="ml-auto"
+                    onClick={() => void copyText(visible.join('\n'))}
+                    disabled={visible.length === 0}
+                    title="Copier les lignes affichées dans le presse-papiers"
+                  >
+                    {copied ? 'Copié !' : 'Copier'}
+                  </InlineButton>
                 </div>
 
                 {visible.length > 0 ? (

@@ -64,6 +64,24 @@ describe('Logs', () => {
     expect(screen.getByText(/1 ligne \/ 3/)).toBeInTheDocument()
   })
 
+  it('copie les lignes affichées dans le presse-papiers', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+
+    tailMock.mockResolvedValue({ file: 'log.txt', lines: ['ligne-a', 'ligne-b'] })
+
+    render(<Logs />)
+    await screen.findByText(/ligne-a/)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copier' }))
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('ligne-a\nligne-b'))
+    expect(await screen.findByRole('button', { name: 'Copié !' })).toBeInTheDocument()
+  })
+
   it('affiche l’erreur API', async () => {
     tailMock.mockRejectedValue(new ApiError(403, 'Accès refusé'))
 
