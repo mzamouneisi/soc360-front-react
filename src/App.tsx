@@ -18,6 +18,7 @@ import { Projects } from './pages/Projects'
 import { Missions } from './pages/Missions'
 import { Consultants } from './pages/Consultants'
 import { Activities } from './pages/Activities'
+import { MyActivities } from './pages/MyActivities'
 import { ActivityTypes } from './pages/ActivityTypes'
 import { CraList } from './pages/CraList'
 import { CraDetailRoute } from './pages/CraDetail'
@@ -118,6 +119,7 @@ const router = createBrowserRouter(
                 </NotConsultantRoute>
               ),
             },
+            { path: '/mes-activites', element: <MyActivities /> },
             { path: '/cras', element: <CraList /> },
             { path: '/cras/:id', element: <CraDetailRoute /> },
             { path: '/indispos', element: <IndispoList /> },
