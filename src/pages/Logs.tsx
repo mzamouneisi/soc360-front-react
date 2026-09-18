@@ -117,7 +117,7 @@ export function Logs() {
                     </span>
                   )}
                   <InlineButton
-                    className="ml-auto"
+                    className="ml-3"
                     onClick={() => void copyText(visible.join('\n'))}
                     disabled={visible.length === 0}
                     title="Copier les lignes affichées dans le presse-papiers"
