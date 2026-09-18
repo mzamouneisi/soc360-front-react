@@ -281,7 +281,8 @@ describe('CraDetail', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: '+ Ajouter un événement' }))
 
-    const messages = await screen.findAllByText(/autorise pas le week-end/)
-    expect(messages.length).toBeGreaterThan(0)
+    expect(await screen.findByText('Information')).toBeInTheDocument()
+    expect(screen.getByText(/autorise pas le week-end/)).toBeInTheDocument()
+    expect(screen.getByText('Aucun événement pour ce jour.')).toBeInTheDocument()
   })
 })

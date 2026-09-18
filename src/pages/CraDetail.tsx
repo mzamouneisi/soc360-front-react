@@ -194,6 +194,7 @@ export function CraDetail({
   const [sending, setSending] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
   const [sendBackOpen, setSendBackOpen] = useState(false)
+  const [restrictionDialog, setRestrictionDialog] = useState<string | null>(null)
 
   useEffect(() => {
     if (cra) setDays(cra.days.map(dayToEditable))
@@ -341,6 +342,15 @@ export function CraDetail({
   }
 
   function updateActivity(dayIndex: number, actIndex: number, patch: Partial<EditableActivity>) {
+    if (patch.activityId !== undefined) {
+      const day = days[dayIndex]
+      const activity = activityMap.get(patch.activityId) ?? null
+      const restriction = day ? activityDayRestriction(day.dayType, activity) : null
+      if (restriction) {
+        setRestrictionDialog(restriction)
+        return
+      }
+    }
     if (patch.days !== undefined) {
       const day = days[dayIndex]
       const act = day?.activities[actIndex]
@@ -369,7 +379,21 @@ export function CraDetail({
       setFormError('Le total du jour ne peut pas dépasser 1 jour.')
       return
     }
-    const fallback = filteredActivities.find((a) => a.id === currentActivity?.id) ?? currentActivity
+    const allowedForDay = filteredActivities.filter(
+      (a) => !activityDayRestriction(day.dayType, a),
+    )
+    if (allowedForDay.length === 0) {
+      setRestrictionDialog(
+        day.dayType === 'WEEKEND'
+          ? 'Cette activité n’autorise pas le week-end.'
+          : day.dayType === 'PUBLIC_HOLIDAY'
+            ? 'Cette activité n’autorise pas les jours fériés.'
+            : 'Aucune activité disponible.',
+      )
+      return
+    }
+    const fallback =
+      allowedForDay.find((a) => a.id === currentActivity?.id) ?? allowedForDay[0]
     const remaining = 1 - dayTotal(day)
     const defaultDays = remaining >= 1 ? '1' : '0.5'
     setDays((prev) =>
@@ -437,6 +461,7 @@ export function CraDetail({
   async function doSave(): Promise<boolean> {
     if (!cra) return false
     if (activityRestriction) {
+      setRestrictionDialog(activityRestriction)
       setFormError(null)
       return false
     }
@@ -708,12 +733,6 @@ export function CraDetail({
       </div>
 
       {formError && <ErrorBlock message={formError} />}
-
-      {activityRestriction && (
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {activityRestriction} Modifiez l'activité ou choisissez-en une autre autorisée ce jour-là.
-        </div>
-      )}
 
       {cra.status === 'REJECTED' && cra.comment && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -1163,6 +1182,21 @@ export function CraDetail({
           onClose={() => setSendBackOpen(false)}
         />
       )}
+
+      {restrictionDialog && (
+        <Modal
+          open
+          title="Information"
+          onClose={() => setRestrictionDialog(null)}
+          footer={
+            <Button className="w-auto" onClick={() => setRestrictionDialog(null)}>
+              OK
+            </Button>
+          }
+        >
+          <p className="text-sm text-gray-700">{restrictionDialog}</p>
+        </Modal>
+      )}
     </div>
   )
 }
@@ -1355,7 +1389,6 @@ function EventModal({
         <div className="space-y-2">
           {day.activities.map((act, j) => {
             const info = activities.find((a) => String(a.id) === act.activityId)
-            const restriction = activityDayRestriction(day.dayType, info)
             return (
               <div
                 key={j}
@@ -1425,9 +1458,6 @@ function EventModal({
                     />
                     Valid
                   </label>
-                )}
-                {restriction && (
-                  <p className="w-full text-xs font-medium text-amber-600">{restriction}</p>
                 )}
               </div>
             )
