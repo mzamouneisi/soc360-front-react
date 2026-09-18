@@ -245,4 +245,43 @@ describe('CraDetail', () => {
     expect(screen.getByText('Brouillon')).toBeInTheDocument()
     expect(screen.getByText('Soumis')).toBeInTheDocument()
   })
+
+  it('affiche un message info si l’activité choisie n’autorise pas le week-end', async () => {
+    userMock.value = managerUser
+    const draft = cra(true, 'DRAFT')
+
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Développement',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const addButtons = await screen.findAllByRole('button', { name: 'Ajouter un événement' })
+    fireEvent.click(addButtons[0])
+
+    fireEvent.click(await screen.findByRole('button', { name: '+ Ajouter un événement' }))
+
+    const messages = await screen.findAllByText(/autorise pas le week-end/)
+    expect(messages.length).toBeGreaterThan(0)
+  })
 })

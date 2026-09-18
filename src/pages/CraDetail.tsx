@@ -90,6 +90,20 @@ function dayBackground(dayType: DayType | undefined): string {
   }
 }
 
+function activityDayRestriction(
+  dayType: DayType,
+  activity?: ActivityDto | null,
+): string | null {
+  if (!activity) return null
+  if (dayType === 'WEEKEND' && !activity.weekendAllowed) {
+    return 'Cette activité n’autorise pas le week-end.'
+  }
+  if (dayType === 'PUBLIC_HOLIDAY' && !activity.holidayAllowed) {
+    return 'Cette activité n’autorise pas les jours fériés.'
+  }
+  return null
+}
+
 function statusAdjective(status: CraDto['status'], indispo: boolean): string {
   const label = CRA_STATUS_LABELS[status] ?? status
   if (!indispo) return label.toLowerCase()
@@ -229,13 +243,6 @@ export function CraDetail({
     return acts.filter((a) => !a.indispo)
   }, [activities, cra?.type])
 
-  function activitiesForDay(day: EditableDay | null): ActivityDto[] {
-    if (!day) return filteredActivities
-    if (day.dayType === 'WEEKEND') return filteredActivities.filter((a) => a.weekendAllowed)
-    if (day.dayType === 'PUBLIC_HOLIDAY') return filteredActivities.filter((a) => a.holidayAllowed)
-    return filteredActivities
-  }
-
   const currentActivity = useMemo(() => {
     const acts = filteredActivities
     const today = new Date().toISOString().slice(0, 10)
@@ -267,6 +274,17 @@ export function CraDetail({
     if (consultantMonth.length > 0) return consultantMonth
     return acts.filter(overlapsMonth)
   }, [filteredActivities, cra])
+
+  const activityRestriction = useMemo(() => {
+    for (const d of days) {
+      for (const a of d.activities) {
+        if (!a.activityId) continue
+        const msg = activityDayRestriction(d.dayType, activityMap.get(a.activityId) ?? null)
+        if (msg) return msg
+      }
+    }
+    return null
+  }, [days, activityMap])
 
   const incompleteDays = useMemo(() => {
     if (cra?.type === 'CONGE') return []
@@ -351,18 +369,7 @@ export function CraDetail({
       setFormError('Le total du jour ne peut pas dépasser 1 jour.')
       return
     }
-    const allowed = activitiesForDay(day)
-    if (allowed.length === 0) {
-      setFormError(
-        day.dayType === 'WEEKEND'
-          ? 'Aucune activité n’est autorisée le week-end.'
-          : day.dayType === 'PUBLIC_HOLIDAY'
-            ? 'Aucune activité n’est autorisée les jours fériés.'
-            : 'Aucune activité disponible.',
-      )
-      return
-    }
-    const fallback = allowed.find((a) => a.id === currentActivity?.id) ?? allowed[0]
+    const fallback = filteredActivities.find((a) => a.id === currentActivity?.id) ?? currentActivity
     const remaining = 1 - dayTotal(day)
     const defaultDays = remaining >= 1 ? '1' : '0.5'
     setDays((prev) =>
@@ -374,7 +381,7 @@ export function CraDetail({
                  ...d.activities,
                  {
                    id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-                   activityId: String(fallback.id),
+                   activityId: fallback ? String(fallback.id) : '',
                    days: defaultDays,
                    comment: '',
                    valid: false,
@@ -429,6 +436,10 @@ export function CraDetail({
 
   async function doSave(): Promise<boolean> {
     if (!cra) return false
+    if (activityRestriction) {
+      setFormError(null)
+      return false
+    }
     setSaving(true)
     setFormError(null)
     try {
@@ -698,6 +709,12 @@ export function CraDetail({
 
       {formError && <ErrorBlock message={formError} />}
 
+      {activityRestriction && (
+        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+          {activityRestriction} Modifiez l'activité ou choisissez-en une autre autorisée ce jour-là.
+        </div>
+      )}
+
       {cra.status === 'REJECTED' && cra.comment && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <strong>Rejeté :</strong> {cra.comment}
@@ -816,7 +833,6 @@ export function CraDetail({
                     <span className="text-xs font-semibold text-gray-500">{dayNum}</span>
                     {canAddEvents &&
                       day &&
-                      activitiesForDay(day).length > 0 &&
                       (day.dayType === 'WORKED' ||
                         day.dayType === 'WEEKEND' ||
                         day.dayType === 'PUBLIC_HOLIDAY') && (
@@ -957,7 +973,7 @@ export function CraDetail({
                                     }
                                   >
                                     <option value="">Activité…</option>
-                                    {activitiesForDay(day).map((a) => (
+                                    {filteredActivities.map((a) => (
                                       <option key={a.id} value={a.id}>
                                         {a.name}
                                       </option>
@@ -1107,7 +1123,7 @@ export function CraDetail({
           formEditable={formEditable}
           isConsultant={isConsultant}
           managerCanAct={managerCanAct}
-          activities={activitiesForDay(days[eventModal])}
+          activities={filteredActivities}
           onUpdateActivity={(actIndex, patch) => updateActivity(eventModal, actIndex, patch)}
           onAddActivity={() => addActivity(eventModal)}
           onRemoveActivity={(actIndex) => removeActivity(eventModal, actIndex)}
@@ -1339,6 +1355,7 @@ function EventModal({
         <div className="space-y-2">
           {day.activities.map((act, j) => {
             const info = activities.find((a) => String(a.id) === act.activityId)
+            const restriction = activityDayRestriction(day.dayType, info)
             return (
               <div
                 key={j}
@@ -1408,6 +1425,9 @@ function EventModal({
                     />
                     Valid
                   </label>
+                )}
+                {restriction && (
+                  <p className="w-full text-xs font-medium text-amber-600">{restriction}</p>
                 )}
               </div>
             )
