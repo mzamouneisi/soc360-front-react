@@ -68,6 +68,18 @@ vi.mock('../api/cras', () => ({
   },
 }))
 
+vi.mock('../api/holidays', () => ({
+  holidaysApi: {
+    findByCountryYear: vi.fn().mockResolvedValue([]),
+  },
+}))
+
+vi.mock('../api/socHolidays', () => ({
+  socHolidaysApi: {
+    list: vi.fn().mockResolvedValue([]),
+  },
+}))
+
 vi.mock('../api/consultants', () => ({
   consultantsApi: { filterList: filterListMock },
 }))

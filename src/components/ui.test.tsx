@@ -119,7 +119,7 @@ describe('Field', () => {
 describe('Select', () => {
   it('affiche les options', () => {
     render(
-      <Select value="1">
+      <Select value="1" onChange={() => {}}>
         <option value="1">Un</option>
         <option value="2">Deux</option>
       </Select>,
