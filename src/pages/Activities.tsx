@@ -51,6 +51,8 @@ export function Activities() {
   const navigate = useNavigate()
   const isAdmin = user?.role === 'ADMIN'
   const isManager = user?.role === 'MANAGER'
+  const isResponsibleSoc = user?.role === 'RESPONSIBLE_SOC'
+  const needsConsultant = isManager || isResponsibleSoc
   const canEdit =
     user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC' || user?.role === 'MANAGER'
   const workingSocId = selectedSocId ?? user?.socId ?? null
@@ -135,8 +137,12 @@ export function Activities() {
       setFormError('Nom, type et projet sont obligatoires')
       return
     }
-    if (isManager && !form.consultantId) {
-      setFormError('Sélectionnez un de vos consultants.')
+    if (needsConsultant && !form.consultantId) {
+      setFormError(
+        isManager
+          ? 'Sélectionnez un de vos consultants.'
+          : 'Sélectionnez un consultant (une activité ne peut pas être sans consultant).',
+      )
       return
     }
     if (form.startDate && form.endDate && form.endDate < form.startDate) {
@@ -458,12 +464,12 @@ export function Activities() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={isManager ? 'Consultant *' : 'Consultant'}>
+            <Field label={needsConsultant ? 'Consultant *' : 'Consultant'}>
               <Select
                 value={form.consultantId}
                 onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
               >
-                {isManager ? (
+                {needsConsultant ? (
                   <option value="" disabled>
                     Sélectionner…
                   </option>

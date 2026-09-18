@@ -108,7 +108,7 @@ describe('Activities — ajout selon le rôle', () => {
     expect(summariesMock).not.toHaveBeenCalled()
   })
 
-  it('un responsable_soc peut choisir Aucun (activité partagée) et voit les consultants de la société', async () => {
+  it('un responsable_soc doit aussi choisir un consultant (pas d’option Aucun)', async () => {
     userMock.value = { ...baseUser, role: 'RESPONSIBLE_SOC' } as UserDto
     findAllMock.mockResolvedValue([])
     managedMock.mockResolvedValue([])
@@ -126,8 +126,30 @@ describe('Activities — ajout selon le rôle', () => {
     await openCreateModal()
 
     expect(await screen.findByRole('option', { name: 'Bob Durand' })).toBeInTheDocument()
-    expect(screen.getByRole('option', { name: 'Aucun' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Aucun' })).not.toBeInTheDocument()
     expect(summariesMock).toHaveBeenCalledWith(5)
+    expect(managedMock).not.toHaveBeenCalled()
+  })
+
+  it('un admin peut choisir Aucun (activité partagée)', async () => {
+    userMock.value = { ...baseUser, role: 'ADMIN' } as UserDto
+    findAllMock.mockResolvedValue([])
+    managedMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([])
+    typesFindAllMock.mockResolvedValue([])
+    projectsFindAllMock.mockResolvedValue([])
+    socsFindAllMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter>
+        <Activities />
+      </MemoryRouter>,
+    )
+
+    await openCreateModal()
+
+    expect(screen.getByRole('option', { name: 'Aucun' })).toBeInTheDocument()
+    expect(summariesMock).not.toHaveBeenCalled()
     expect(managedMock).not.toHaveBeenCalled()
   })
 })
