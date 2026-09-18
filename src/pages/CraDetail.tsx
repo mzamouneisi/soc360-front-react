@@ -55,8 +55,12 @@ function dayToEditable(day: CraDto['days'][number]): EditableDay {
   }
 }
 
+function activityDays(a: EditableActivity): number {
+  return a.activityId ? Number(a.days) || 0 : 0
+}
+
 function dayTotal(day: EditableDay): number {
-  return day.activities.reduce((sum, a) => sum + (Number(a.days) || 0), 0)
+  return day.activities.reduce((sum, a) => sum + activityDays(a), 0)
 }
 
 function dayIsValid(day: EditableDay): boolean {
@@ -65,7 +69,7 @@ function dayIsValid(day: EditableDay): boolean {
 
 function allowedDaysFor(day: EditableDay, actIndex: number): string[] {
   const act = day.activities[actIndex]
-  const current = Number(act?.days) || 0
+  const current = act ? activityDays(act) : 0
   const other = dayTotal(day) - current
   const allowed = DAY_VALUES.filter((v) => other + Number(v) <= 1 + 1e-9)
   if (act?.days && !allowed.includes(act.days)) allowed.push(act.days)
@@ -244,21 +248,6 @@ export function CraDetail({
     return acts.filter((a) => !a.indispo)
   }, [activities, cra?.type])
 
-  const currentActivity = useMemo(() => {
-    const acts = filteredActivities
-    const today = new Date().toISOString().slice(0, 10)
-    return (
-      acts.find(
-        (a) =>
-          a.active &&
-          (!a.startDate || a.startDate <= today) &&
-          (!a.endDate || a.endDate >= today),
-      ) ??
-      acts.find((a) => a.active) ??
-      acts[0]
-    )
-  }, [filteredActivities])
-
   const monthActivities = useMemo(() => {
     if (!cra) return []
     const mm = String(cra.month).padStart(2, '0')
@@ -354,7 +343,7 @@ export function CraDetail({
     if (patch.days !== undefined) {
       const day = days[dayIndex]
       const act = day?.activities[actIndex]
-      const current = Number(act?.days) || 0
+      const current = act ? activityDays(act) : 0
       const other = day ? dayTotal(day) - current : 0
       if (other + Number(patch.days) > 1 + 1e-9) {
         setFormError('Le total du jour ne peut pas dépasser 1 jour.')
@@ -379,21 +368,6 @@ export function CraDetail({
       setFormError('Le total du jour ne peut pas dépasser 1 jour.')
       return
     }
-    const allowedForDay = filteredActivities.filter(
-      (a) => !activityDayRestriction(day.dayType, a),
-    )
-    if (allowedForDay.length === 0) {
-      setRestrictionDialog(
-        day.dayType === 'WEEKEND'
-          ? 'Cette activité n’autorise pas le week-end.'
-          : day.dayType === 'PUBLIC_HOLIDAY'
-            ? 'Cette activité n’autorise pas les jours fériés.'
-            : 'Aucune activité disponible.',
-      )
-      return
-    }
-    const fallback =
-      allowedForDay.find((a) => a.id === currentActivity?.id) ?? allowedForDay[0]
     const remaining = 1 - dayTotal(day)
     const defaultDays = remaining >= 1 ? '1' : '0.5'
     setDays((prev) =>
@@ -401,16 +375,16 @@ export function CraDetail({
         i === dayIndex
           ? {
               ...d,
-               activities: [
-                 ...d.activities,
-                 {
-                   id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-                   activityId: fallback ? String(fallback.id) : '',
-                   days: defaultDays,
-                   comment: '',
-                   valid: false,
-                 },
-               ],
+              activities: [
+                ...d.activities,
+                {
+                  id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                  activityId: '',
+                  days: defaultDays,
+                  comment: '',
+                  valid: false,
+                },
+              ],
             }
           : d,
       ),
@@ -867,7 +841,9 @@ export function CraDetail({
                     )}
                   </div>
                   <div className="mt-1 space-y-1">
-                    {day?.activities.map((act, j) => {
+                    {day?.activities
+                      .filter((act) => act.activityId)
+                      .map((act, j) => {
                       const info = activityMap.get(act.activityId)
                       return (
                         <ActivityChip

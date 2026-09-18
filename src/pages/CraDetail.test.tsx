@@ -281,8 +281,11 @@ describe('CraDetail', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: '+ Ajouter un événement' }))
 
+    const selects = await screen.findAllByRole('combobox')
+    fireEvent.change(selects[0], { target: { value: '5' } })
+
     expect(await screen.findByText('Information')).toBeInTheDocument()
     expect(screen.getByText(/autorise pas le week-end/)).toBeInTheDocument()
-    expect(screen.getByText('Aucun événement pour ce jour.')).toBeInTheDocument()
+    expect((screen.getAllByRole('combobox')[0] as HTMLSelectElement).value).toBe('')
   })
 })
