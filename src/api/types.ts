@@ -341,6 +341,8 @@ export interface ActivityDto {
   soc?: { id: number; name: string } | null
   active: boolean
   indispo: boolean
+  weekendAllowed: boolean
+  holidayAllowed: boolean
 }
 
 export interface ActivityRequest {
@@ -356,6 +358,8 @@ export interface ActivityRequest {
   socId: number
   active: boolean
   indispo?: boolean
+  weekendAllowed?: boolean
+  holidayAllowed?: boolean
 }
 
 export interface CraDayActivityDto {

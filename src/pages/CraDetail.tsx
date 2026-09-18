@@ -229,6 +229,13 @@ export function CraDetail({
     return acts.filter((a) => !a.indispo)
   }, [activities, cra?.type])
 
+  function activitiesForDay(day: EditableDay | null): ActivityDto[] {
+    if (!day) return filteredActivities
+    if (day.dayType === 'WEEKEND') return filteredActivities.filter((a) => a.weekendAllowed)
+    if (day.dayType === 'PUBLIC_HOLIDAY') return filteredActivities.filter((a) => a.holidayAllowed)
+    return filteredActivities
+  }
+
   const currentActivity = useMemo(() => {
     const acts = filteredActivities
     const today = new Date().toISOString().slice(0, 10)
@@ -344,6 +351,18 @@ export function CraDetail({
       setFormError('Le total du jour ne peut pas dépasser 1 jour.')
       return
     }
+    const allowed = activitiesForDay(day)
+    if (allowed.length === 0) {
+      setFormError(
+        day.dayType === 'WEEKEND'
+          ? 'Aucune activité n’est autorisée le week-end.'
+          : day.dayType === 'PUBLIC_HOLIDAY'
+            ? 'Aucune activité n’est autorisée les jours fériés.'
+            : 'Aucune activité disponible.',
+      )
+      return
+    }
+    const fallback = allowed.find((a) => a.id === currentActivity?.id) ?? allowed[0]
     const remaining = 1 - dayTotal(day)
     const defaultDays = remaining >= 1 ? '1' : '0.5'
     setDays((prev) =>
@@ -355,7 +374,7 @@ export function CraDetail({
                  ...d.activities,
                  {
                    id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-                   activityId: currentActivity ? String(currentActivity.id) : '',
+                   activityId: String(fallback.id),
                    days: defaultDays,
                    comment: '',
                    valid: false,
@@ -795,8 +814,12 @@ export function CraDetail({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-500">{dayNum}</span>
-                    {(day?.dayType === 'WORKED' || (day?.dayType === 'WEEKEND' && !isIndispo)) &&
-                      canAddEvents && (
+                    {canAddEvents &&
+                      day &&
+                      activitiesForDay(day).length > 0 &&
+                      (day.dayType === 'WORKED' ||
+                        day.dayType === 'WEEKEND' ||
+                        day.dayType === 'PUBLIC_HOLIDAY') && (
                       <button
                         onClick={() => setEventModal(dayIndex)}
                         className="rounded p-0.5 text-gray-400 transition hover:bg-gray-200 hover:text-gray-600"
@@ -934,7 +957,7 @@ export function CraDetail({
                                     }
                                   >
                                     <option value="">Activité…</option>
-                                    {filteredActivities.map((a) => (
+                                    {activitiesForDay(day).map((a) => (
                                       <option key={a.id} value={a.id}>
                                         {a.name}
                                       </option>
@@ -1084,7 +1107,7 @@ export function CraDetail({
           formEditable={formEditable}
           isConsultant={isConsultant}
           managerCanAct={managerCanAct}
-          activities={filteredActivities}
+          activities={activitiesForDay(days[eventModal])}
           onUpdateActivity={(actIndex, patch) => updateActivity(eventModal, actIndex, patch)}
           onAddActivity={() => addActivity(eventModal)}
           onRemoveActivity={(actIndex) => removeActivity(eventModal, actIndex)}

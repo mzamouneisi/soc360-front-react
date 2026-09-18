@@ -25,6 +25,8 @@ interface FormState {
   consultantId: string
   socId: string
   active: boolean
+  weekendAllowed: boolean
+  holidayAllowed: boolean
 }
 
 const emptyForm: FormState = {
@@ -39,6 +41,8 @@ const emptyForm: FormState = {
   consultantId: '',
   socId: '',
   active: true,
+  weekendAllowed: false,
+  holidayAllowed: false,
 }
 
 export function Activities() {
@@ -106,6 +110,8 @@ export function Activities() {
       consultantId: activity.consultant ? String(activity.consultant.id) : '',
       socId: activity.soc ? String(activity.soc.id) : '',
       active: activity.active,
+      weekendAllowed: activity.weekendAllowed,
+      holidayAllowed: activity.holidayAllowed,
     })
     setEditing(activity)
     setFormError(null)
@@ -142,6 +148,8 @@ export function Activities() {
         consultantId: form.consultantId ? Number(form.consultantId) : null,
         socId,
         active: form.active,
+        weekendAllowed: form.weekendAllowed,
+        holidayAllowed: form.holidayAllowed,
       }
       if (editing) {
         await activitiesApi.update(editing.id, payload)
@@ -462,6 +470,24 @@ export function Activities() {
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
             Activité active
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={form.weekendAllowed}
+              onChange={(e) => setForm({ ...form, weekendAllowed: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            />
+            Activité possible le week-end
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={form.holidayAllowed}
+              onChange={(e) => setForm({ ...form, holidayAllowed: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            />
+            Activité possible les jours fériés
           </label>
         </form>
       </Modal>
