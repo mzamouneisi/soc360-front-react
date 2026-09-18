@@ -288,4 +288,45 @@ describe('CraDetail', () => {
     expect(screen.getByText(/autorise pas le week-end/)).toBeInTheDocument()
     expect((screen.getAllByRole('combobox')[0] as HTMLSelectElement).value).toBe('')
   })
+
+  it('ajoute l’activité sélectionnée si elle autorise le week-end', async () => {
+    userMock.value = managerUser
+    const draft = cra(true, 'DRAFT')
+
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 7,
+        name: 'Astreinte',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: true,
+        holidayAllowed: false,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const addButtons = await screen.findAllByRole('button', { name: 'Ajouter un événement' })
+    fireEvent.click(addButtons[0])
+    fireEvent.click(await screen.findByRole('button', { name: '+ Ajouter un événement' }))
+
+    const selects = await screen.findAllByRole('combobox')
+    fireEvent.change(selects[0], { target: { value: '7' } })
+
+    expect(screen.queryByText('Information')).not.toBeInTheDocument()
+    expect((screen.getAllByRole('combobox')[0] as HTMLSelectElement).value).toBe('7')
+  })
 })
