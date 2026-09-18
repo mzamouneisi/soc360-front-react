@@ -62,6 +62,8 @@ export function Activities() {
   const [modalOpen, setModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [consultantFilter, setConsultantFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
 
   const formSocId = form.socId ? Number(form.socId) : null
   const effectiveSocId = isAdmin ? formSocId : workingSocId
@@ -91,8 +93,23 @@ export function Activities() {
     () => (isAdmin ? socsApi.findAll() : Promise.resolve([] as SocDto[])),
     [isAdmin],
   )
+  const { data: filterConsultants } = useAsync(
+    () => consultantsApi.filterList(),
+    [user?.role],
+    { enabled: !!user && user.role !== 'CONSULTANT' },
+  )
+  const { data: filterTypes } = useAsync(
+    () => (workingSocId ? activityTypesApi.findAll(workingSocId) : Promise.resolve([] as ActivityTypeDto[])),
+    [workingSocId],
+  )
 
   if (!user) return null
+
+  const filtered = (data ?? []).filter((a) => {
+    if (consultantFilter && String(a.consultant?.id) !== consultantFilter) return false
+    if (typeFilter && String(a.type?.id) !== typeFilter) return false
+    return true
+  })
 
   function openCreate() {
     setForm({
@@ -213,6 +230,47 @@ export function Activities() {
         }
       />
 
+      <div className="mb-4 flex flex-wrap items-end gap-3">
+        <div className="w-56">
+          <Field label="Consultant">
+            <Select
+              value={consultantFilter}
+              onChange={(e) => setConsultantFilter(e.target.value)}
+            >
+              <option value="">Tous les consultants</option>
+              {(filterConsultants ?? []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.fullName}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+        <div className="w-56">
+          <Field label="Type d’activité">
+            <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+              <option value="">Tous les types</option>
+              {(filterTypes ?? []).map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.labelFr}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+        {(consultantFilter || typeFilter) && (
+          <InlineButton
+            className="mb-0.5"
+            onClick={() => {
+              setConsultantFilter('')
+              setTypeFilter('')
+            }}
+          >
+            Réinitialiser
+          </InlineButton>
+        )}
+      </div>
+
       <div className="mb-6 flex flex-wrap gap-2">
         {(types ?? []).map((t: ActivityTypeDto) => (
           <span
@@ -231,11 +289,11 @@ export function Activities() {
       {error && <ErrorBlock message={error} />}
       {loading && <LoadingBlock />}
 
-      {!loading && data && data.length > 0 && (
+      {!loading && filtered.length > 0 && (
         <Table
           paginate
           rowKey={(a) => a.id}
-          rows={data}
+          rows={filtered}
           onRowClick={canEdit ? openEdit : undefined}
           columns={[
             {
@@ -348,6 +406,13 @@ export function Activities() {
                 ),
             },
           ]}
+        />
+      )}
+
+      {!loading && data && data.length > 0 && filtered.length === 0 && (
+        <EmptyState
+          title="Aucun résultat"
+          description="Aucune activité ne correspond aux filtres sélectionnés."
         />
       )}
 

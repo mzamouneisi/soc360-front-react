@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { Activities } from './Activities'
@@ -8,6 +8,7 @@ const {
   findAllMock,
   managedMock,
   summariesMock,
+  filterListMock,
   typesFindAllMock,
   projectsFindAllMock,
   socsFindAllMock,
@@ -16,6 +17,7 @@ const {
   findAllMock: vi.fn(),
   managedMock: vi.fn(),
   summariesMock: vi.fn(),
+  filterListMock: vi.fn(),
   typesFindAllMock: vi.fn(),
   projectsFindAllMock: vi.fn(),
   socsFindAllMock: vi.fn(),
@@ -52,7 +54,7 @@ vi.mock('../api/projects', () => ({
 }))
 
 vi.mock('../api/consultants', () => ({
-  consultantsApi: { managed: managedMock, summaries: summariesMock },
+  consultantsApi: { managed: managedMock, summaries: summariesMock, filterList: filterListMock },
 }))
 
 vi.mock('../api/socs', () => ({
@@ -74,10 +76,41 @@ const baseUser = {
   lastLoginAt: null,
 }
 
+beforeEach(() => {
+  filterListMock.mockResolvedValue([])
+})
+
 afterEach(() => {
   vi.clearAllMocks()
   userMock.value = null as unknown as UserDto
 })
+
+function activity(
+  id: number,
+  name: string,
+  consultantId: number | null,
+  typeId: number | null,
+  typeLabel: string | null,
+) {
+  return {
+    id,
+    name,
+    description: null,
+    price: 0,
+    currency: 'EUR',
+    startDate: null,
+    endDate: null,
+    type: typeId == null ? null : { id: typeId, code: `T${typeId}`, labelFr: typeLabel, color: null },
+    project: null,
+    consultant:
+      consultantId == null ? null : { id: consultantId, firstName: 'X', lastName: 'Y' },
+    soc: { id: 5, name: 'SOC Test' },
+    active: true,
+    indispo: false,
+    weekendAllowed: false,
+    holidayAllowed: false,
+  }
+}
 
 async function openCreateModal() {
   const buttons = await screen.findAllByRole('button', { name: '+ Nouvelle activité' })
@@ -151,5 +184,47 @@ describe('Activities — ajout selon le rôle', () => {
     expect(screen.getByRole('option', { name: 'Aucun' })).toBeInTheDocument()
     expect(summariesMock).not.toHaveBeenCalled()
     expect(managedMock).not.toHaveBeenCalled()
+  })
+
+  it('filtre les activités par consultant et par type', async () => {
+    userMock.value = { ...baseUser, role: 'MANAGER' } as UserDto
+    findAllMock.mockResolvedValue([
+      activity(1, 'Mission A', 50, 1, 'Développement'),
+      activity(2, 'Mission B', 51, 2, 'Réunion'),
+    ])
+    managedMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([])
+    filterListMock.mockResolvedValue([
+      { id: 50, fullName: 'Alice Martin', position: null, email: null },
+      { id: 51, fullName: 'Bob Durand', position: null, email: null },
+    ])
+    typesFindAllMock.mockResolvedValue([
+      { id: 1, code: 'DEV', labelFr: 'Développement', color: null, active: true },
+      { id: 2, code: 'REU', labelFr: 'Réunion', color: null, active: true },
+    ])
+    projectsFindAllMock.mockResolvedValue([])
+    socsFindAllMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter>
+        <Activities />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Mission A')).toBeInTheDocument()
+    expect(screen.getByText('Mission B')).toBeInTheDocument()
+
+    const selects = screen.getAllByRole('combobox')
+    fireEvent.change(selects[0], { target: { value: '50' } })
+
+    expect(screen.getByText('Mission A')).toBeInTheDocument()
+    expect(screen.queryByText('Mission B')).not.toBeInTheDocument()
+
+    fireEvent.change(selects[0], { target: { value: '' } })
+    fireEvent.change(selects[1], { target: { value: '2' } })
+
+    expect(screen.queryByText('Mission A')).not.toBeInTheDocument()
+    expect(screen.getByText('Mission B')).toBeInTheDocument()
+    expect(filterListMock).toHaveBeenCalled()
   })
 })
