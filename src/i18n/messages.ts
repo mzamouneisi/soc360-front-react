@@ -126,6 +126,8 @@ const fr: Messages = {
   'settings.example': 'Exemple',
   'settings.row': 'Ligne',
   'settings.content': 'Contenu',
+  'languages.searchRows': 'Rechercher une ligne',
+  'languages.searchPlaceholder': 'clé ou valeur…',
 }
 
 const en: Messages = {
@@ -226,10 +228,17 @@ const en: Messages = {
   'settings.example': 'Sample',
   'settings.row': 'Row',
   'settings.content': 'Content',
+  'languages.searchRows': 'Search a row',
+  'languages.searchPlaceholder': 'key or value…',
+}
+
+const ar: Messages = {
+  'languages.searchRows': 'بحث عن صف',
+  'languages.searchPlaceholder': 'مفتاح أو قيمة…',
 }
 
 export const MESSAGES: Record<string, Messages> = {
   fr: { ...fr, ...EXTRACTED_FR },
   en: { ...en, ...EXTRACTED_EN },
-  ar: { ...EXTRACTED_AR },
+  ar: { ...ar, ...EXTRACTED_AR },
 }

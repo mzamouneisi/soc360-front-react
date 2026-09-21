@@ -6,8 +6,9 @@ import { useI18n } from '../i18n'
 import { languageLabel } from '../i18n/messages'
 import { filterKnownLanguages, findKnownLanguage } from '../i18n/languages'
 import { translateTexts } from '../lib/translate'
+import { useAuth } from '../auth/AuthContext'
 import { Button, Card, Field, InlineButton, Input, Spinner } from '../components/ui'
-import { EmptyState, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { EmptyState, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 
 function downloadJson(data: unknown, filename: string) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -23,12 +24,15 @@ function downloadJson(data: unknown, filename: string) {
 
 export function Languages() {
   const { t, refresh: refreshI18n } = useI18n()
+  const { user } = useAuth()
   const [bundle, setBundle] = useState<AdminBundle | null>(null)
   const [drafts, setDrafts] = useState<Record<number, Record<string, string>>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
 
   const [languageFilter, setLanguageFilter] = useState('')
   const [selectedCode, setSelectedCode] = useState('')
@@ -230,6 +234,33 @@ export function Languages() {
 
   const languages = useMemo(() => bundle?.languages ?? [], [bundle])
   const entryCount = bundle?.entries.length ?? 0
+  const pageSize = user?.pageSize ?? 5
+  const filteredEntries = useMemo(() => {
+    const normalize = (value: string) =>
+      value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+    const query = normalize(search.trim())
+    const entries = bundle?.entries ?? []
+    if (!query) return entries
+    return entries.filter((entry) => {
+      if (normalize(entry.key).includes(query)) return true
+      const row = drafts[entry.id] ?? {}
+      return languages.some((lang) => normalize(row[lang] ?? '').includes(query))
+    })
+  }, [bundle, search, drafts, languages])
+
+  useEffect(() => {
+    setPage(0)
+  }, [search, pageSize])
+
+  const totalPages = Math.max(1, Math.ceil(filteredEntries.length / pageSize))
+  const safePage = Math.min(page, totalPages - 1)
+  const visibleEntries = filteredEntries.slice(
+    safePage * pageSize,
+    safePage * pageSize + pageSize,
+  )
   const knownOptions = useMemo(
     () => filterKnownLanguages(languageFilter).filter((language) => !languages.includes(language.code)),
     [languageFilter, languages],
@@ -409,6 +440,21 @@ export function Languages() {
           <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.chaines.traduites')}</h3>
           <span className="text-sm font-semibold text-gray-500">{entryCount}</span>
         </div>
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <Field label={tr('languages.searchRows')}>
+            <Input
+              className="w-72"
+              value={search}
+              placeholder={tr('languages.searchPlaceholder')}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
+          {search.trim() && (
+            <span className="pb-2 text-sm text-gray-500">
+              {filteredEntries.length} / {entryCount}
+            </span>
+          )}
+        </div>
         {loading && <LoadingBlock />}
         {!loading && entryCount === 0 && (
           <div className="mt-4">
@@ -440,10 +486,10 @@ export function Languages() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {bundle?.entries.map((entry, index) => (
+                {visibleEntries.map((entry, index) => (
                   <tr key={entry.id} className="even:bg-gray-50">
                     <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-xs text-gray-500">
-                      {index + 1}
+                      {safePage * pageSize + index + 1}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-gray-700">
                       {entry.key}
@@ -470,9 +516,27 @@ export function Languages() {
                     </td>
                   </tr>
                 ))}
+                {visibleEntries.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={languages.length + 3}
+                      className="px-3 py-6 text-center text-sm text-gray-400"
+                    >
+                      {tr('common.noElements')}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+        )}
+        {!loading && entryCount > 0 && (
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            total={filteredEntries.length}
+            onChange={setPage}
+          />
         )}
       </Card>
     </div>
