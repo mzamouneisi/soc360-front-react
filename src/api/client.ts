@@ -47,7 +47,7 @@ export function setLoadingListener(listener: ((loading: boolean) => void) | null
 }
 
 function isNotificationPath(path: string): boolean {
-  return path.startsWith('/notifications')
+  return path.startsWith('/notifications') || path.startsWith('/public/i18n')
 }
 
 function beginLoading(path: string): void {

@@ -9,30 +9,41 @@ import {
   type ReactNode,
 } from 'react'
 import { authApi } from '../api/auth'
+import { i18nApi } from '../api/i18n'
 import { useAuth } from '../auth/AuthContext'
 import { setFormatLocale } from '../lib/format'
 import {
   LOCALES,
   MESSAGES,
   SUPPORTED_LANGUAGES,
+  isRtl,
   type Language,
 } from './messages'
 
 export type { Language }
-export { LANGUAGE_LABELS, LOCALES, SUPPORTED_LANGUAGES } from './messages'
+export {
+  LANGUAGE_LABELS,
+  LOCALES,
+  SUPPORTED_LANGUAGES,
+  isRtl,
+  languageLabel,
+} from './messages'
 
 const STORAGE_KEY = 'soc360.language'
 
 export interface I18nState {
   language: Language
   locale: string
+  rtl: boolean
   preference: Language | null
+  languages: Language[]
   t: (key: string, params?: Record<string, string | number>) => string
   setLanguage: (language: Language | null) => Promise<void>
+  refresh: () => Promise<void>
 }
 
 function isSupported(value: string | null | undefined): value is Language {
-  return value != null && (SUPPORTED_LANGUAGES as string[]).includes(value)
+  return value != null && value.trim() !== ''
 }
 
 export function detectBrowserLanguage(): Language {
@@ -40,7 +51,7 @@ export function detectBrowserLanguage(): Language {
   const candidates = [navigator.language, ...(navigator.languages ?? [])]
   for (const candidate of candidates) {
     const primary = candidate?.toLowerCase().split('-')[0]
-    if (isSupported(primary)) return primary
+    if (primary && (SUPPORTED_LANGUAGES as string[]).includes(primary)) return primary
   }
   return 'fr'
 }
@@ -58,21 +69,24 @@ function interpolate(template: string, params?: Record<string, string | number>)
   )
 }
 
-function translate(
+function staticTranslate(
   language: Language,
   key: string,
   params?: Record<string, string | number>,
 ): string {
-  const template = MESSAGES[language][key] ?? MESSAGES.fr[key] ?? key
+  const template = MESSAGES[language]?.[key] ?? MESSAGES.fr[key] ?? key
   return interpolate(template, params)
 }
 
 const fallback: I18nState = {
   language: 'fr',
   locale: LOCALES.fr,
+  rtl: false,
   preference: null,
-  t: (key, params) => translate('fr', key, params),
+  languages: SUPPORTED_LANGUAGES,
+  t: (key, params) => staticTranslate('fr', key, params),
   setLanguage: async () => {},
+  refresh: async () => {},
 }
 
 const I18nContext = createContext<I18nState>(fallback)
@@ -80,18 +94,36 @@ const I18nContext = createContext<I18nState>(fallback)
 export function I18nProvider({ children }: { children: ReactNode }) {
   const { user, refreshMe } = useAuth()
   const [override, setOverride] = useState<Language | null>(() => getStoredLanguage())
+  const [remoteMessages, setRemoteMessages] = useState<Record<string, string>>({})
+  const [remoteLanguages, setRemoteLanguages] = useState<Language[]>([])
 
   const userLanguage = isSupported(user?.language) ? user.language : null
   const preference = userLanguage ?? override
   const language: Language = preference ?? detectBrowserLanguage()
-  const locale = LOCALES[language]
+  const locale = LOCALES[language] ?? language
+  const rtl = isRtl(language)
+
+  const loadBundle = useCallback(async () => {
+    try {
+      const bundle = await i18nApi.bundle(language)
+      setRemoteMessages(bundle.messages ?? {})
+      if (bundle.languages?.length) setRemoteLanguages(bundle.languages)
+    } catch {
+      setRemoteMessages({})
+    }
+  }, [language])
 
   useEffect(() => {
     setFormatLocale(locale)
     if (typeof document !== 'undefined') {
       document.documentElement.lang = language
+      document.documentElement.dir = rtl ? 'rtl' : 'ltr'
     }
-  }, [locale, language])
+  }, [locale, language, rtl])
+
+  useEffect(() => {
+    void loadBundle()
+  }, [loadBundle])
 
   const setLanguage = useCallback(
     async (next: Language | null) => {
@@ -111,15 +143,24 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [user, refreshMe],
   )
 
+  const t = useCallback(
+    (key: string, params?: Record<string, string | number>) =>
+      interpolate(remoteMessages[key] ?? staticTranslate(language, key), params),
+    [language, remoteMessages],
+  )
+
   const value = useMemo<I18nState>(
     () => ({
       language,
       locale,
+      rtl,
       preference,
-      t: (key, params) => translate(language, key, params),
+      languages: remoteLanguages.length ? remoteLanguages : SUPPORTED_LANGUAGES,
+      t,
       setLanguage,
+      refresh: loadBundle,
     }),
-    [language, locale, preference, setLanguage],
+    [language, locale, rtl, preference, remoteLanguages, t, setLanguage, loadBundle],
   )
 
   return (

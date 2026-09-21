@@ -37,6 +37,7 @@ import { SocAdmin } from './pages/SocAdmin'
 import { DemoSoc } from './pages/DemoSoc'
 import { Tables } from './pages/Tables'
 import { Logs } from './pages/Logs'
+import { Languages } from './pages/Languages'
 import { NotFound } from './pages/NotFound'
 
 const router = createBrowserRouter(
@@ -157,6 +158,14 @@ const router = createBrowserRouter(
               element: (
                 <AdminRoute>
                   <Tables />
+                </AdminRoute>
+              ),
+            },
+            {
+              path: '/langues',
+              element: (
+                <AdminRoute>
+                  <Languages />
                 </AdminRoute>
               ),
             },

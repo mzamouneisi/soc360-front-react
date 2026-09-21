@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
 import { ApiError } from '../api/client'
-import { Button, Card, Field, Select, Spinner } from '../components/ui'
+import { Card, Field, Select, Spinner, Button } from '../components/ui'
 import { PageHeader } from '../components/data'
-import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type Language } from '../i18n/messages'
+import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
@@ -24,7 +24,7 @@ const THEMES: { id: string; label: string; color: string }[] = [
 
 export function Settings() {
   const { user, refreshMe } = useAuth()
-  const { t, preference, setLanguage } = useI18n()
+  const { t, preference, languages, setLanguage } = useI18n()
   const [size, setSize] = useState<number>(user?.fontSize ?? 14)
   const [theme, setTheme] = useState<string>(user?.theme || 'ocean')
   const [headerColor, setHeaderColor] = useState<string>(user?.tableHeaderColor || '#f9fafb')
@@ -52,7 +52,7 @@ export function Settings() {
     setLanguageSaved(false)
     setLanguageError(null)
     try {
-      await setLanguage(value === 'browser' ? null : (value as Language))
+      await setLanguage(value === 'browser' ? null : value)
       setLanguageSaved(true)
     } catch (err) {
       setLanguageError(err instanceof ApiError ? err.message : 'Erreur inattendue')
@@ -103,9 +103,9 @@ export function Settings() {
               disabled={languageSaving}
             >
               <option value="browser">{t('settings.language.browser')}</option>
-              {SUPPORTED_LANGUAGES.map((lang) => (
+              {languages.map((lang) => (
                 <option key={lang} value={lang}>
-                  {LANGUAGE_LABELS[lang]}
+                  {languageLabel(lang)}
                 </option>
               ))}
             </Select>

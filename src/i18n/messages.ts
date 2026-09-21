@@ -1,15 +1,27 @@
-export type Language = 'fr' | 'en'
+export type Language = string
 
-export const SUPPORTED_LANGUAGES: Language[] = ['fr', 'en']
+export const SUPPORTED_LANGUAGES: Language[] = ['fr', 'en', 'ar']
 
-export const LANGUAGE_LABELS: Record<Language, string> = {
+export const LANGUAGE_LABELS: Record<string, string> = {
   fr: 'Français',
   en: 'English',
+  ar: 'العربية',
 }
 
-export const LOCALES: Record<Language, string> = {
+export const LOCALES: Record<string, string> = {
   fr: 'fr-FR',
   en: 'en-US',
+  ar: 'ar',
+}
+
+export const RTL_LANGUAGES: string[] = ['ar']
+
+export function isRtl(language: string): boolean {
+  return RTL_LANGUAGES.includes(language)
+}
+
+export function languageLabel(language: string): string {
+  return LANGUAGE_LABELS[language] ?? language.toUpperCase()
 }
 
 type Messages = Record<string, string>
@@ -68,6 +80,7 @@ const fr: Messages = {
   'nav.allSocs': 'Toutes les sociétés',
   'nav.tables': 'Base de données',
   'nav.logs': 'Logs du serveur',
+  'nav.languages': 'Langues',
 
   'login.subtitle': 'Connectez-vous à votre espace',
   'login.username': 'Email ou identifiant',
@@ -167,6 +180,7 @@ const en: Messages = {
   'nav.allSocs': 'All companies',
   'nav.tables': 'Database',
   'nav.logs': 'Server logs',
+  'nav.languages': 'Languages',
 
   'login.subtitle': 'Sign in to your workspace',
   'login.username': 'Email or username',
@@ -212,4 +226,4 @@ const en: Messages = {
   'settings.content': 'Content',
 }
 
-export const MESSAGES: Record<Language, Messages> = { fr, en }
+export const MESSAGES: Record<string, Messages> = { fr, en }

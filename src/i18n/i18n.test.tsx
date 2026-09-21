@@ -1,8 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { AuthProvider } from '../auth/AuthContext'
 import { I18nProvider, useI18n } from './index'
 import { MESSAGES } from './messages'
+
+function bundleResponse(messages: Record<string, string>) {
+  return {
+    ok: true,
+    status: 200,
+    text: async () =>
+      JSON.stringify({
+        defaultLanguage: 'fr',
+        languages: ['fr', 'en', 'ar'],
+        language: 'fr',
+        messages,
+      }),
+  }
+}
 
 function Probe() {
   const { t, language, preference, setLanguage } = useI18n()
@@ -41,9 +55,11 @@ describe('I18nProvider', () => {
     window.localStorage.clear()
     originalLanguage = navigator.language
     originalLanguages = navigator.languages
+    vi.stubGlobal('fetch', vi.fn(async () => bundleResponse({})))
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
     Object.defineProperty(navigator, 'language', {
       configurable: true,
@@ -94,5 +110,17 @@ describe('I18nProvider', () => {
     setBrowserLanguage('fr-FR')
     renderProbe()
     expect(screen.getByTestId('language').textContent).toBe('en')
+  })
+
+  it('charge les traductions distantes et les priorise', async () => {
+    setBrowserLanguage('fr-FR')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => bundleResponse({ 'login.submit': 'Connexion distante' })),
+    )
+    renderProbe()
+    await waitFor(() =>
+      expect(screen.getByTestId('label').textContent).toBe('Connexion distante'),
+    )
   })
 })
