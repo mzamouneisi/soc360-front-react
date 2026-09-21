@@ -35,6 +35,13 @@ export interface ImportResponse {
   skipped: number
 }
 
+export interface AutofillResponse {
+  language: string
+  source: string
+  translated: number
+  copied: number
+}
+
 export const i18nApi = {
   bundle: (lang?: string) =>
     api.get<I18nBundle>('/public/i18n', { lang }),
@@ -48,6 +55,11 @@ export const i18nApi = {
     api.post<string[]>('/admin/i18n/languages', { code }),
   removeLanguage: (code: string) =>
     api.delete<string[]>(`/admin/i18n/languages/${encodeURIComponent(code)}`),
+  autofillLanguage: (code: string, source = 'fr') =>
+    api.post<AutofillResponse>(
+      `/admin/i18n/languages/${encodeURIComponent(code)}/autofill`,
+      { source },
+    ),
   exportAll: () => api.get<ExportPayload>('/admin/i18n/export'),
   importAll: (payload: ExportPayload) =>
     api.post<ImportResponse>('/admin/i18n/import', payload),
