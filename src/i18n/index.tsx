@@ -12,6 +12,7 @@ import { authApi } from '../api/auth'
 import { i18nApi } from '../api/i18n'
 import { useAuth } from '../auth/AuthContext'
 import { setFormatLocale } from '../lib/format'
+import { setTranslationState } from './translate'
 import {
   LOCALES,
   MESSAGES,
@@ -96,6 +97,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [override, setOverride] = useState<Language | null>(() => getStoredLanguage())
   const [remoteMessages, setRemoteMessages] = useState<Record<string, string>>({})
   const [remoteLanguages, setRemoteLanguages] = useState<Language[]>([])
+  const [bundleVersion, setBundleVersion] = useState(0)
 
   const userLanguage = isSupported(user?.language) ? user.language : null
   const preference = userLanguage ?? override
@@ -108,6 +110,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       const bundle = await i18nApi.bundle(language)
       setRemoteMessages(bundle.messages ?? {})
       if (bundle.languages?.length) setRemoteLanguages(bundle.languages)
+      setBundleVersion((version) => version + 1)
     } catch {
       setRemoteMessages({})
     }
@@ -124,6 +127,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void loadBundle()
   }, [loadBundle])
+
+  useEffect(() => {
+    setTranslationState(language, remoteMessages)
+  }, [language, remoteMessages])
 
   const setLanguage = useCallback(
     async (next: Language | null) => {
@@ -165,7 +172,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   return (
     <I18nContext.Provider value={value}>
-      <Fragment key={language}>{children}</Fragment>
+      <Fragment key={`${language}:${bundleVersion}`}>{children}</Fragment>
     </I18nContext.Provider>
   )
 }
