@@ -2,7 +2,7 @@ import { tr } from '../i18n/translate'
 import { useAsync } from '../lib/useAsync'
 import { crasApi } from '../api/cras'
 import type { CraDto, UnavailabilityDto } from '../api/types'
-import { MONTHS_FR, UNAVAILABILITY_TYPE_LABELS } from '../lib/format'
+import { monthLabel, UNAVAILABILITY_TYPE_LABELS } from '../lib/format'
 import { Card } from '../components/ui'
 
 const WEEKDAY_LABELS = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di']
@@ -107,7 +107,7 @@ function MonthGrid({
   return (
     <div className="min-w-[10rem]">
       <div className="mb-1 text-center text-[11px] font-semibold text-gray-600">
-        {MONTHS_FR[month - 1]} {year}
+        {monthLabel(month)} {year}
       </div>
       <div className="grid grid-cols-7 gap-px">
         {WEEKDAY_LABELS.map((l) => (

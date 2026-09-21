@@ -9,7 +9,7 @@ import { Button, Card, InlineButton, Input, Select } from '../components/ui'
 import {
   CRA_STATUS_LABELS,
   formatDate,
-  MONTHS_FR,
+  monthLabel,
   statusBadge,
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
@@ -107,7 +107,7 @@ export function IndispoList() {
   async function handleDelete(c: CraDto) {
     if (
       !window.confirm(
-        `Supprimer l'Indispo de ${c.consultantName ?? '—'} (${MONTHS_FR[c.month - 1]} ${c.year}) ?`,
+        `Supprimer l'Indispo de ${c.consultantName ?? '—'} (${monthLabel(c.month)} ${c.year}) ?`,
       )
     )
       return
@@ -304,9 +304,9 @@ export function IndispoList() {
             value={month}
             onChange={(e) => void openPeriod(year, Number(e.target.value))}
           >
-            {MONTHS_FR.map((label, i) => (
-              <option key={i + 1} value={i + 1}>
-                {label}
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>
+                {monthLabel(m)}
               </option>
             ))}
           </Select>

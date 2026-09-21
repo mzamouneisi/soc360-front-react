@@ -10,10 +10,10 @@ import { useAsync } from '../lib/useAsync'
 import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import {
-  MONTHS_FR,
   NOTE_FRAIS_CATEGORIES,
   NOTE_FRAIS_STATUS_LABELS,
   formatMoney,
+  monthLabel,
   monthShort,
   statusBadge,
 } from '../lib/format'
@@ -336,7 +336,7 @@ export function NoteFraisList() {
         <Card className="mt-6 p-5">
           <h3 className="text-sm font-semibold text-gray-900">{tr('NoteFraisList.montants.par.mois')}</h3>
           <div className="mt-4 flex flex-wrap items-end gap-6">
-            {MONTHS_FR.map((_, i) => {
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((_, i) => {
               const value = totalsByMonth[String(i + 1)] ?? 0
               return (
                 <div key={i} className="w-10 text-center">
@@ -395,7 +395,7 @@ export function NoteFraisList() {
                 label: 'Période',
                 render: (nf) => (
                   <span className="text-gray-700">
-                    {MONTHS_FR[nf.month - 1]} {nf.year}
+                    {monthLabel(nf.month)} {nf.year}
                   </span>
                 ),
               },
@@ -518,9 +518,9 @@ export function NoteFraisList() {
                 value={form.month}
                 onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
               >
-                {MONTHS_FR.map((label, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {label}
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    {monthLabel(m)}
                   </option>
                 ))}
               </Select>

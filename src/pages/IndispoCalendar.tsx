@@ -1,7 +1,7 @@
 import { tr } from '../i18n/translate'
 import { crasApi } from '../api/cras'
 import type { CraDto } from '../api/types'
-import { MONTHS_FR } from '../lib/format'
+import { monthLabel } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import { Card } from '../components/ui'
 
@@ -89,7 +89,7 @@ function MonthGrid({
   return (
     <div className="min-w-[10rem]">
       <div className="mb-1 text-center text-[11px] font-semibold text-gray-600">
-        {MONTHS_FR[month - 1]} {year}
+        {monthLabel(month)} {year}
       </div>
       <div className="grid grid-cols-7 gap-px">
         {WEEKDAY_LABELS.map((l) => (

@@ -6,11 +6,8 @@ import { useAuth } from '../auth/AuthContext'
 import { Button, Card, InlineButton, RefreshButton } from '../components/ui'
 import { ErrorBlock, PageHeader } from '../components/data'
 import type { SocHolidayDto } from '../api/types'
+import { monthLabel } from '../lib/format'
 
-const MONTHS_FR = [
-  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
-]
 const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
 function toDateString(d: Date): string {
@@ -137,7 +134,7 @@ export function Holidays() {
             <RefreshButton onClick={() => setTick((t) => t + 1)} label="" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900">
-            {MONTHS_FR[month]} {year}
+            {monthLabel(month + 1)} {year}
           </h2>
           {canEdit && (
             <Button variant="yellow" className="w-auto" onClick={duplicateToNextYear}>

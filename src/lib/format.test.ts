@@ -12,7 +12,9 @@ import {
   formatDate,
   formatDateTime,
   formatMoney,
+  formatNumber,
   formatSize,
+  getFormatLocale,
   initials,
   monthLabel,
   monthShort,
@@ -190,5 +192,17 @@ describe('formatage localisé', () => {
     setFormatLocale('fr-FR')
     expect(monthLabel(6)).toBe('Juin')
     expect(formatSize(2048)).toBe('2.0 Ko')
+  })
+
+  it('formate les mois et les nombres en arabe', () => {
+    setFormatLocale('ar')
+    expect(monthLabel(1)).toBe('يناير')
+    expect(monthShort(6)).toBe('يون')
+    expect(formatNumber(1234.5)).toMatch(/1.?234/)
+  })
+
+  it('expose la locale active', () => {
+    setFormatLocale('en-US')
+    expect(getFormatLocale()).toBe('en-US')
   })
 })

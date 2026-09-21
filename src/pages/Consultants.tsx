@@ -15,7 +15,7 @@ import {
   Pagination,
   Table,
 } from '../components/data'
-import { formatDate, formatMoney } from '../lib/format'
+import { formatDate, formatDateTime, formatMoney } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import type { ConsultantDto, ManagerSummary, HistoConsultantDto } from '../api/types'
 import { useCallback, useEffect } from 'react'
@@ -666,7 +666,7 @@ export function Consultants() {
                   <span className="text-sm font-medium text-gray-900">
                     {h.action === 'CREATE' ? 'Création' : h.action === 'UPDATE' ? 'Modification' : 'Suppression'}
                   </span>
-                  <span className="text-xs text-gray-500">{h.dateMaj ? new Date(h.dateMaj).toLocaleString('fr-FR') : ''}</span>
+                  <span className="text-xs text-gray-500">{h.dateMaj ? formatDateTime(h.dateMaj) : ''}</span>
                 </div>
                 <p className="mt-1 text-xs text-gray-600">
                   {tr('Consultants.par')} {h.userName ?? '—'}

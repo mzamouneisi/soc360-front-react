@@ -14,7 +14,9 @@ import { CraHistoryModal } from '../components/CraHistoryModal'
 import {
   CRA_STATUS_LABELS,
   DAY_TYPE_LABELS,
-  MONTHS_FR,
+  formatNumber,
+  getFormatLocale,
+  monthLabel,
   statusBadge,
 } from '../lib/format'
 import type { CraDto, DayType, ActivityDto, SaveCraRequest } from '../api/types'
@@ -78,7 +80,7 @@ function allowedDaysFor(day: EditableDay, actIndex: number): string[] {
 }
 
 function formatDays(value: number): string {
-  return Number.isInteger(value) ? `${value} j` : `${value.toLocaleString('fr-FR')} j`
+  return Number.isInteger(value) ? `${value} j` : `${formatNumber(value)} j`
 }
 
 function dayBackground(dayType: DayType | undefined): string {
@@ -684,7 +686,7 @@ export function CraDetail({
             {cra.type === 'CONGE' ? 'Indispo de ' : 'CRA de '}{cra.consultantName ?? '—'}
           </h2>
           <p className="text-sm text-gray-500">
-            {MONTHS_FR[cra.month - 1]} {cra.year}
+            {monthLabel(cra.month)} {cra.year}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -912,7 +914,7 @@ export function CraDetail({
                   return (
                     <tr key={day.date} className="align-top">
                       <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
-                        {new Date(day.date + 'T00:00:00').toLocaleDateString('fr-FR', {
+                        {new Date(day.date + 'T00:00:00').toLocaleDateString(getFormatLocale(), {
                           weekday: 'short',
                           day: '2-digit',
                           month: '2-digit',
@@ -1337,7 +1339,7 @@ function EventModal({
   return (
     <Modal
       open
-      title={`Événements du ${new Date(day.date + 'T00:00:00').toLocaleDateString('fr-FR', {
+      title={`Événements du ${new Date(day.date + 'T00:00:00').toLocaleDateString(getFormatLocale(), {
         weekday: 'long',
         day: 'numeric',
         month: 'long',

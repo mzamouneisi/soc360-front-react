@@ -7,7 +7,7 @@ import { crasApi } from '../api/cras'
 import { useAsync } from '../lib/useAsync'
 import { Card, RefreshButton } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
-import { MONTHS_FR, formatDate, formatMoney, monthShort } from '../lib/format'
+import { formatDate, formatMoney, monthLabel, monthShort } from '../lib/format'
 import type { ProjectDto } from '../api/types'
 
 type MissionStatus = 'active' | 'upcoming' | 'finished'
@@ -115,9 +115,9 @@ export function Missions() {
             onChange={(e) => setMonth(Number(e.target.value))}
             className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm"
           >
-            {MONTHS_FR.map((label, i) => (
-              <option key={i + 1} value={i + 1}>
-                {label}
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>
+                {monthLabel(m)}
               </option>
             ))}
           </select>

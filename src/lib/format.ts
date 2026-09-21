@@ -30,26 +30,46 @@ export const MONTHS_EN_SHORT = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ]
 
+export const MONTHS_AR = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+]
+
+export const MONTHS_AR_SHORT = [
+  'ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون',
+  'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس',
+]
+
 let currentLocale = 'fr-FR'
-let currentLanguage: 'fr' | 'en' = 'fr'
+let currentLanguage: 'fr' | 'en' | 'ar' = 'fr'
 
 export function setFormatLocale(locale: string): void {
   currentLocale = locale || 'fr-FR'
-  currentLanguage = locale?.toLowerCase().startsWith('en') ? 'en' : 'fr'
+  const lower = locale?.toLowerCase() ?? ''
+  currentLanguage = lower.startsWith('en') ? 'en' : lower.startsWith('ar') ? 'ar' : 'fr'
 }
 
 export function getFormatLocale(): string {
   return currentLocale
 }
 
+function monthsFor(long: boolean): string[] {
+  if (currentLanguage === 'en') return long ? MONTHS_EN : MONTHS_EN_SHORT
+  if (currentLanguage === 'ar') return long ? MONTHS_AR : MONTHS_AR_SHORT
+  return long ? MONTHS_FR : MONTHS_FR_SHORT
+}
+
 export function monthLabel(month: number): string {
-  const months = currentLanguage === 'en' ? MONTHS_EN : MONTHS_FR
-  return months[month - 1] ?? String(month)
+  return monthsFor(true)[month - 1] ?? String(month)
 }
 
 export function monthShort(month: number): string {
-  const months = currentLanguage === 'en' ? MONTHS_EN_SHORT : MONTHS_FR_SHORT
-  return months[month - 1] ?? String(month)
+  return monthsFor(false)[month - 1] ?? String(month)
+}
+
+export function formatNumber(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '—'
+  return new Intl.NumberFormat(currentLocale).format(value)
 }
 
 export function formatDate(value: string | null | undefined): string {

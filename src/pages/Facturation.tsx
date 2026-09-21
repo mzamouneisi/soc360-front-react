@@ -9,10 +9,11 @@ import { useAsync } from '../lib/useAsync'
 import { Card, InlineButton, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import {
-  MONTHS_FR,
   SUBSCRIPTION_STATUS_LABELS,
   formatDate,
   formatMoney,
+  monthLabel,
+  monthShort,
   statusBadge,
 } from '../lib/format'
 import type { SocDto } from '../api/types'
@@ -83,9 +84,9 @@ export function Facturation() {
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
-              {MONTHS_FR.map((label, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {label}
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={m}>
+                  {monthLabel(m)}
                 </option>
               ))}
             </Select>
@@ -155,7 +156,7 @@ export function Facturation() {
             </Card>
             <Card className="p-5">
               <p className="text-sm font-medium text-gray-500">
-                {tr('Facturation.cra.valides')} {MONTHS_FR[month - 1].slice(0, 3)} {year}
+                {tr('Facturation.cra.valides')} {monthShort(month)} {year}
               </p>
               <p className="mt-2 text-2xl font-bold text-gray-900">{validatedCras.length}</p>
               <p className="mt-1 text-xs text-gray-500">{validatedHours} {tr('Facturation.h.validees')}</p>
