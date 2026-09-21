@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { authApi, type CompanyLookup } from '../api/auth'
@@ -115,7 +116,7 @@ const companyWebsite = ensureHttps(company.website)
   }
 
   function clearCompanySearch() {
-    if (!window.confirm('Voulez-vous effacer tous les champs du formulaire ?')) return
+    if (!window.confirm(tr('Register.voulez.vous.effacer.tous.les.champs.du.formulaire'))) return
 
     setSocName('')
     setSiret('')
@@ -204,23 +205,22 @@ const companyWebsite = ensureHttps(company.website)
         <Card className="w-full max-w-lg p-8">
           <div className="mb-6 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
-              E
+              {tr('Register.e')}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Vérifiez votre boîte mail</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{tr('Register.verifiez.votre.boite.mail')}</h1>
             <p className="mt-1 text-sm text-gray-500">{message}</p>
           </div>
           <Alert variant="success">
-            Cliquez sur le lien reçu pour valider votre inscription et activer votre compte.
-            Ce lien expire au bout de 2 heures.
+            {tr('Register.cliquez.sur.le.lien.recu.pour.valider.votre.inscription.et.a')}
           </Alert>
 
           <p className="mt-6 text-center text-sm text-gray-600">
-            Déjà validé ?{' '}
+            {tr('Register.deja.valide')}{' '}
             <Link
               to="/login"
               className="font-medium text-brand-600 hover:text-brand-700"
             >
-              Se connecter
+              {tr('Register.se.connecter')}
             </Link>
           </p>
         </Card>
@@ -232,9 +232,9 @@ const companyWebsite = ensureHttps(company.website)
     <div className="flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
       <Card className="w-full max-w-lg p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Inscrire votre société</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr('Register.inscrire.votre.societe')}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Créez le compte administrateur de votre société
+            {tr('Register.creez.le.compte.administrateur.de.votre.societe')}
           </p>
         </div>
 
@@ -246,17 +246,17 @@ const companyWebsite = ensureHttps(company.website)
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Nom de la société">
+            <Field label={tr('Register.nom.de.la.societe')}>
               <Input
                 type="text"
                 value={socName}
                 onChange={(e) => setSocName(e.target.value)}
                 required
-                placeholder="Ma société de conseil"
+                placeholder={tr('Register.ma.societe.de.conseil')}
               />
             </Field>
 
-            <Field label="SIRET (optionnel)">
+            <Field label={tr('Register.siret.optionnel')}>
               <div className="flex flex-wrap gap-2">
               <Input
                 className="basis-full"
@@ -270,90 +270,90 @@ const companyWebsite = ensureHttps(company.website)
                     {searching ? 'Recherche…' : 'Rechercher'}
                   </Button>
                   <Button type="button" onClick={clearCompanySearch} className="w-auto whitespace-nowrap !bg-gray-100 !text-gray-700 hover:!bg-gray-200">
-                    Effacer
+                    {tr('Register.effacer')}
                   </Button>
                 </div>
               </div>
             </Field>
           </div>
 
-          <Field label="Informations web">
+          <Field label={tr('Register.informations.web')}>
             <Textarea rows={3} value={infosWeb} onChange={(e) => setInfosWeb(e.target.value)} />
           </Field>
 
-          <Field label="Description">
+          <Field label={tr('Register.description')}>
             <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
 
-          <Field label="Gérant">
+          <Field label={tr('Register.gerant')}>
             <Input value={gerant} onChange={(e) => setGerant(e.target.value)} />
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Prénom de l'administrateur">
-              <Input type="text" value={adminFirstName} onChange={(e) => setAdminFirstName(e.target.value)} required placeholder="Marie" />
+            <Field label={tr('Register.prenom.de.l.administrateur')}>
+              <Input type="text" value={adminFirstName} onChange={(e) => setAdminFirstName(e.target.value)} required placeholder={tr('Register.marie')} />
             </Field>
-            <Field label="Nom de l'administrateur">
-              <Input type="text" value={adminLastName} onChange={(e) => setAdminLastName(e.target.value)} required placeholder="Durand" />
+            <Field label={tr('Register.nom.de.l.administrateur')}>
+              <Input type="text" value={adminLastName} onChange={(e) => setAdminLastName(e.target.value)} required placeholder={tr('Register.durand')} />
             </Field>
           </div>
 
-          <Field label="Activité principale / Code NAF">
+          <Field label={tr('Register.activite.principale.code.naf')}>
             <Input value={codeNaf} onChange={(e) => setCodeNaf(e.target.value)} />
           </Field>
-          <Field label="URSSAF">
+          <Field label={tr('Register.urssaf')}>
             <Input value={urssaf} onChange={(e) => setUrssaf(e.target.value)} />
           </Field>
-          <Field label="Site web">
-            <Input aria-label="Site web" type="url" value={website} onChange={(e) => setWebsite(e.target.value)} />
+          <Field label={tr('Register.site.web')}>
+            <Input aria-label={tr('Register.site.web')} type="url" value={website} onChange={(e) => setWebsite(e.target.value)} />
           </Field>
           <fieldset className="space-y-4 rounded-lg border border-gray-200 p-4">
-            <legend className="px-1 text-sm font-medium text-gray-700">Adresse de la société</legend>
-            <Input value={street} onChange={(e) => setStreet(e.target.value)} placeholder="Rue" />
+            <legend className="px-1 text-sm font-medium text-gray-700">{tr('Register.adresse.de.la.societe')}</legend>
+            <Input value={street} onChange={(e) => setStreet(e.target.value)} placeholder={tr('Register.rue')} />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Input value={zipCode} onChange={(e) => setZipCode(e.target.value)} placeholder="Code postal" />
-              <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Ville" />
-              <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="Pays" />
+              <Input value={zipCode} onChange={(e) => setZipCode(e.target.value)} placeholder={tr('Register.code.postal')} />
+              <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder={tr('Register.ville')} />
+              <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder={tr('Register.pays')} />
             </div>
           </fieldset>
 
-          <Field label="Catégorie entreprise">
+          <Field label={tr('Register.categorie.entreprise')}>
             <Input value={categorieEntreprise} onChange={(e) => setCategorieEntreprise(e.target.value)} />
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Date de création">
+            <Field label={tr('Register.date.de.creation')}>
               <Input type="date" value={dateCreation} onChange={(e) => setDateCreation(e.target.value)} />
             </Field>
-            <Field label="Date de fermeture">
+            <Field label={tr('Register.date.de.fermeture')}>
               <Input type="date" value={dateFermeture} onChange={(e) => setDateFermeture(e.target.value)} />
             </Field>
           </div>
 
-          <Field label="Nom d'utilisateur">
+          <Field label={tr('Register.nom.d.utilisateur')}>
             <Input
               type="text"
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="marie.durand"
+              placeholder={tr('Register.marie.durand')}
             />
           </Field>
 
-          <Field label="Adresse e-mail">
+          <Field label={tr('Register.adresse.e.mail')}>
             <Input
               type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="marie.durand@exemple.fr"
+              placeholder={tr('Register.marie.durand.exemple.fr')}
             />
           </Field>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Mot de passe">
+            <Field label={tr('Register.mot.de.passe')}>
               <Input
                 type="password"
                 autoComplete="new-password"
@@ -364,7 +364,7 @@ const companyWebsite = ensureHttps(company.website)
               />
             </Field>
 
-            <Field label="Confirmer le mot de passe">
+            <Field label={tr('Register.confirmer.le.mot.de.passe')}>
               <Input
                 type="password"
                 autoComplete="new-password"
@@ -378,24 +378,24 @@ const companyWebsite = ensureHttps(company.website)
 
           <Button type="submit" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Créer mon compte
+            {tr('Register.creer.mon.compte')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Déjà un compte ?{' '}
+          {tr('Register.deja.un.compte')}{' '}
           <Link
             to="/login"
             className="font-medium text-brand-600 hover:text-brand-700"
           >
-            Se connecter
+            {tr('Register.se.connecter')}
           </Link>
         </p>
       </Card>
       {searchResults.length > 1 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-lg rounded-xl bg-white p-5 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900">Choisir une société</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{tr('Register.choisir.une.societe')}</h3>
             <div className="mt-4 space-y-2">
               {searchResults.map((company, index) => (
                 <button key={`${company.siret ?? company.name}-${index}`} type="button" onClick={() => chooseCompany(company)} className="w-full rounded-lg border border-gray-200 p-3 text-left hover:border-brand-500 hover:bg-brand-50">
@@ -404,7 +404,7 @@ const companyWebsite = ensureHttps(company.website)
                 </button>
               ))}
             </div>
-            <Button type="button" onClick={() => setSearchResults([])} className="mt-4 w-auto !bg-gray-100 !text-gray-700">Annuler</Button>
+            <Button type="button" onClick={() => setSearchResults([])} className="mt-4 w-auto !bg-gray-100 !text-gray-700">{tr('Register.annuler')}</Button>
           </div>
         </div>
       )}

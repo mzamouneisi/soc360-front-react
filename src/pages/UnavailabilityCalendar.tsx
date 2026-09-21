@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useAsync } from '../lib/useAsync'
 import { crasApi } from '../api/cras'
 import type { CraDto, UnavailabilityDto } from '../api/types'
@@ -225,25 +226,25 @@ export function UnavailabilityCalendar({
           <span>Calendrier de l&apos;indisponibilité</span>
           <span className="text-xs font-normal text-gray-500">
             {UNAVAILABILITY_TYPE_LABELS[selected.type] ?? selected.type} — {selected.startDate} →{' '}
-            {selected.endDate} ({selected.durationDays} j)
+            {selected.endDate} ({selected.durationDays} {tr('UnavailabilityCalendar.j')}
           </span>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] text-gray-500">
           <span className="flex items-center gap-1">
             <span className="inline-block h-2.5 w-2.5 rounded-sm ring-2 ring-inset ring-blue-400 bg-sky-100" />
-            Indisponibilité sélectionnée
+            {tr('UnavailabilityCalendar.indisponibilite.selectionnee')}
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-2.5 w-2.5 rounded-sm ring-1 ring-inset ring-indigo-300 bg-indigo-50" />
-            Autre indisponibilité
+            {tr('UnavailabilityCalendar.autre.indisponibilite')}
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-2.5 w-2.5 rounded-sm ring-1 ring-inset ring-amber-200 bg-amber-50" />
-            Congé (Indispo CRA)
+            {tr('UnavailabilityCalendar.conge.indispo.cra')}
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
-            Mission
+            {tr('UnavailabilityCalendar.mission')}
           </span>
         </div>
       </div>

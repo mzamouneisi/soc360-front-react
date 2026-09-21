@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { authApi } from '../api/auth'
@@ -45,20 +46,20 @@ export function ResetPassword() {
     <div className="flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Nouveau mot de passe</h1>
-          <p className="mt-1 text-sm text-gray-500">Choisissez un nouveau mot de passe</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr('ResetPassword.nouveau.mot.de.passe')}</h1>
+          <p className="mt-1 text-sm text-gray-500">{tr('ResetPassword.choisissez.un.nouveau.mot.de.passe')}</p>
         </div>
 
         {!token && (
           <div className="mb-4">
-            <Alert>Le lien de réinitialisation est invalide ou incomplet.</Alert>
+            <Alert>{tr('ResetPassword.le.lien.de.reinitialisation.est.invalide.ou.incomplet')}</Alert>
           </div>
         )}
 
         {success && (
           <div className="mb-4">
             <Alert variant="success">
-              Mot de passe mis à jour. Redirection vers la connexion…
+              {tr('ResetPassword.mot.de.passe.mis.a.jour.redirection.vers.la.connexion')}
             </Alert>
           </div>
         )}
@@ -70,7 +71,7 @@ export function ResetPassword() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Nouveau mot de passe">
+          <Field label={tr('ResetPassword.nouveau.mot.de.passe')}>
             <Input
               type="password"
               autoComplete="new-password"
@@ -82,7 +83,7 @@ export function ResetPassword() {
             />
           </Field>
 
-          <Field label="Confirmer le nouveau mot de passe">
+          <Field label={tr('ResetPassword.confirmer.le.nouveau.mot.de.passe')}>
             <Input
               type="password"
               autoComplete="new-password"
@@ -96,7 +97,7 @@ export function ResetPassword() {
 
           <Button type="submit" disabled={submitting || success || !token}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Réinitialiser
+            {tr('ResetPassword.reinitialiser')}
           </Button>
         </form>
 
@@ -105,7 +106,7 @@ export function ResetPassword() {
             to="/login"
             className="font-medium text-brand-600 hover:text-brand-700"
           >
-            ← Retour à la connexion
+            {tr('ResetPassword.retour.a.la.connexion')}
           </Link>
         </p>
       </Card>

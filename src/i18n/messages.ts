@@ -1,3 +1,5 @@
+import { EXTRACTED_FR } from './messages.generated'
+
 export type Language = string
 
 export const SUPPORTED_LANGUAGES: Language[] = ['fr', 'en', 'ar']
@@ -226,4 +228,7 @@ const en: Messages = {
   'settings.content': 'Content',
 }
 
-export const MESSAGES: Record<string, Messages> = { fr, en }
+export const MESSAGES: Record<string, Messages> = {
+  fr: { ...fr, ...EXTRACTED_FR },
+  en: { ...en, ...EXTRACTED_FR },
+}

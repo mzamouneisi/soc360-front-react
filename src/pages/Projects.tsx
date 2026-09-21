@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { projectsApi } from '../api/projects'
@@ -134,8 +135,8 @@ export function Projects() {
   return (
     <div>
       <PageHeader
-        title="Projets"
-        subtitle="Les projets par client et leurs conditions commerciales"
+        title={tr('Projects.projets')}
+        subtitle={tr('Projects.les.projets.par.client.et.leurs.conditions.commerciales')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -246,10 +247,10 @@ export function Projects() {
               {formError}
             </div>
           )}
-          <Field label="Nom du projet *">
+          <Field label={tr('Projects.nom.du.projet')}>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
-          <Field label="Description">
+          <Field label={tr('Projects.description')}>
             <Textarea
               rows={2}
               value={form.description}
@@ -257,12 +258,12 @@ export function Projects() {
             />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Client *">
+            <Field label={tr('Projects.client')}>
               <Select
                 value={form.clientId}
                 onChange={(e) => setForm({ ...form, clientId: e.target.value })}
               >
-                <option value="">Sélectionner…</option>
+                <option value="">{tr('Projects.selectionner')}</option>
                 {(clients ?? []).map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -271,12 +272,12 @@ export function Projects() {
               </Select>
             </Field>
             {isAdmin && (
-              <Field label="Société">
+              <Field label={tr('Projects.societe')}>
                 <Select
                   value={form.socId}
                   onChange={(e) => setForm({ ...form, socId: e.target.value })}
                 >
-                  <option value="">Sélectionner…</option>
+                  <option value="">{tr('Projects.selectionner')}</option>
                   {(socs ?? []).map((soc) => (
                     <option key={soc.id} value={soc.id}>
                       {soc.name}
@@ -287,14 +288,14 @@ export function Projects() {
             )}
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Début">
+            <Field label={tr('Projects.debut')}>
               <Input
                 type="date"
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
               />
             </Field>
-            <Field label="Fin">
+            <Field label={tr('Projects.fin')}>
               <Input
                 type="date"
                 value={form.endDate}
@@ -303,7 +304,7 @@ export function Projects() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="TJM">
+            <Field label={tr('Projects.tjm')}>
               <Input
                 type="number"
                 step="0.01"
@@ -312,14 +313,14 @@ export function Projects() {
                 onChange={(e) => setForm({ ...form, dailyRate: e.target.value })}
               />
             </Field>
-            <Field label="Devise">
+            <Field label={tr('Projects.devise')}>
               <Select
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
               >
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-                <option value="CHF">CHF</option>
+                <option value="EUR">{tr('Projects.eur')}</option>
+                <option value="USD">{tr('Projects.usd')}</option>
+                <option value="CHF">{tr('Projects.chf')}</option>
               </Select>
             </Field>
           </div>
@@ -330,7 +331,7 @@ export function Projects() {
               onChange={(e) => setForm({ ...form, active: e.target.checked })}
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
-            Projet actif
+            {tr('Projects.projet.actif')}
           </label>
         </form>
       </Modal>

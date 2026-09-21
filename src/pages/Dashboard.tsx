@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
 import { Card, RefreshButton } from '../components/ui'
@@ -34,10 +35,10 @@ export function Dashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
-            Bonjour {user.firstName} 👋
+            {tr('Dashboard.bonjour')} {user.firstName} 👋
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Voici un aperçu de votre activité
+            {tr('Dashboard.voici.un.apercu.de.votre.activite')}
             {activeSocName ? ` chez ${activeSocName}` : ''} · {monthLabel(month)} {year}.
           </p>
         </div>
@@ -51,39 +52,39 @@ export function Dashboard() {
         <>
           {user.role === 'ADMIN' && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label="Utilisateurs" value={data.totalUsers ?? 0} to="/consultants" />
-              <StatCard label="Sociétés" value={data.totalSocs ?? 0} to="/soc" />
-              <StatCard label="Collaborateurs" value={data.totalConsultants ?? 0} to="/consultants" />
-              <StatCard label="Abonnements actifs" value={data.activeSubscriptions ?? 0} to="/soc" />
+              <StatCard label={tr('Dashboard.utilisateurs')} value={data.totalUsers ?? 0} to="/consultants" />
+              <StatCard label={tr('Dashboard.societes')} value={data.totalSocs ?? 0} to="/soc" />
+              <StatCard label={tr('Dashboard.collaborateurs')} value={data.totalConsultants ?? 0} to="/consultants" />
+              <StatCard label={tr('Dashboard.abonnements.actifs')} value={data.activeSubscriptions ?? 0} to="/soc" />
             </div>
           )}
 
           {(user.role === 'RESPONSIBLE_SOC' || user.role === 'MANAGER') && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <StatCard label="Collaborateurs" value={data.consultants ?? 0} to="/consultants" />
+              <StatCard label={tr('Dashboard.collaborateurs')} value={data.consultants ?? 0} to="/consultants" />
               <StatCard
-                label="Notes de frais en attente"
+                label={tr('Dashboard.notes.de.frais.en.attente')}
                 value={data.pendingNoteFrais ?? 0}
                 to="/notes-frais"
               />
               <Card className="p-5">
-                <p className="text-sm font-bold text-gray-900">Cra cette année</p>
+                <p className="text-sm font-bold text-gray-900">{tr('Dashboard.cra.cette.annee')}</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">{data.craYearTotal ?? 0}</p>
                 <dl className="mt-3 space-y-2 border-t border-gray-100 pt-3">
                   <div className="flex items-center justify-between">
-                    <dt className="text-sm font-medium text-gray-600">En attente de validation</dt>
+                    <dt className="text-sm font-medium text-gray-600">{tr('Dashboard.en.attente.de.validation')}</dt>
                     <dd className="text-sm font-bold text-amber-600">
                       {data.craYearSubmitted ?? 0}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt className="text-sm font-medium text-gray-600">Validés</dt>
+                    <dt className="text-sm font-medium text-gray-600">{tr('Dashboard.valides')}</dt>
                     <dd className="text-sm font-bold text-green-600">
                       {data.craYearValidated ?? 0}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt className="text-sm font-medium text-gray-600">Rejetés</dt>
+                    <dt className="text-sm font-medium text-gray-600">{tr('Dashboard.rejetes')}</dt>
                     <dd className="text-sm font-bold text-red-600">
                       {data.craYearRejected ?? 0}
                     </dd>
@@ -93,7 +94,7 @@ export function Dashboard() {
                   to="/cras"
                   className="mt-4 inline-block text-sm font-medium text-brand-600 hover:text-brand-700"
                 >
-                  Voir les CRA →
+                  {tr('Dashboard.voir.les.cra')}
                 </Link>
               </Card>
             </div>
@@ -103,7 +104,7 @@ export function Dashboard() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Card className="p-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-500">Mon CRA du mois</p>
+                  <p className="text-sm font-medium text-gray-500">{tr('Dashboard.mon.cra.du.mois')}</p>
                   {data.craStatus && (
                     <Badge kind={statusBadge(data.craStatus)}>
                       {CRA_STATUS_LABELS[data.craStatus] ?? data.craStatus}
@@ -113,28 +114,28 @@ export function Dashboard() {
                 <div className="mt-3 flex items-end gap-6">
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
-                      {data.craTotalHours ?? 0} h
+                      {data.craTotalHours ?? 0} {tr('Dashboard.h')}
                     </p>
-                    <p className="text-xs text-gray-500">Heures</p>
+                    <p className="text-xs text-gray-500">{tr('Dashboard.heures')}</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900">
-                      {data.craTotalDays ?? 0} j
+                      {data.craTotalDays ?? 0} {tr('Dashboard.j')}
                     </p>
-                    <p className="text-xs text-gray-500">Jours travaillés</p>
+                    <p className="text-xs text-gray-500">{tr('Dashboard.jours.travailles')}</p>
                   </div>
                 </div>
                 <Link
                   to="/cras"
                   className="mt-4 inline-block text-sm font-medium text-brand-600 hover:text-brand-700"
                 >
-                  Ouvrir mon CRA →
+                  {tr('Dashboard.ouvrir.mon.cra')}
                 </Link>
               </Card>
 
               <Card className="p-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-500">Ma note de frais du mois</p>
+                  <p className="text-sm font-medium text-gray-500">{tr('Dashboard.ma.note.de.frais.du.mois')}</p>
                   {data.noteFraisStatus && (
                     <Badge kind={statusBadge(data.noteFraisStatus)}>
                       {NOTE_FRAIS_STATUS_LABELS[data.noteFraisStatus] ?? data.noteFraisStatus}
@@ -148,7 +149,7 @@ export function Dashboard() {
                   to="/notes-frais"
                   className="mt-4 inline-block text-sm font-medium text-brand-600 hover:text-brand-700"
                 >
-                  Gérer mes notes de frais →
+                  {tr('Dashboard.gerer.mes.notes.de.frais')}
                 </Link>
               </Card>
             </div>
@@ -156,30 +157,30 @@ export function Dashboard() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {user.role === 'ADMIN' && (
-              <QuickLink to="/tables" title="Base de données" description="Gérer les tables et relations SQL" />
+              <QuickLink to="/tables" title={tr('Dashboard.base.de.donnees')} description={tr('Dashboard.gerer.les.tables.et.relations.sql')} />
             )}
             {user.role === 'ADMIN' && (
-              <QuickLink to="/logs" title="Logs du serveur" description="Voir les dernières lignes du journal serveur" />
+              <QuickLink to="/logs" title={tr('Dashboard.logs.du.serveur')} description={tr('Dashboard.voir.les.dernieres.lignes.du.journal.serveur')} />
             )}
             {user.role === 'ADMIN' && (
-              <QuickLink to="/langues" title="Langues" description="Gérer les langues et les traductions" />
+              <QuickLink to="/langues" title={tr('Dashboard.langues')} description={tr('Dashboard.gerer.les.langues.et.les.traductions')} />
             )}
-            <QuickLink to="/notes-frais" title="Notes de frais" description="Gérer les remboursements et dépenses" />
-            <QuickLink to="/clients" title="Clients" description="Gérer le portefeuille clients" />
-            <QuickLink to="/missions" title="Missions" description="Suivre les missions en cours" />
+            <QuickLink to="/notes-frais" title={tr('Dashboard.notes.de.frais')} description={tr('Dashboard.gerer.les.remboursements.et.depenses')} />
+            <QuickLink to="/clients" title={tr('Dashboard.clients')} description={tr('Dashboard.gerer.le.portefeuille.clients')} />
+            <QuickLink to="/missions" title={tr('Dashboard.missions')} description={tr('Dashboard.suivre.les.missions.en.cours')} />
           </div>
         </>
       )}
 
       <Card className="p-5">
-        <h3 className="text-lg font-semibold text-gray-900">Mon profil</h3>
+        <h3 className="text-lg font-semibold text-gray-900">{tr('Dashboard.mon.profil')}</h3>
         <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <InfoRow label="Nom" value={`${user.firstName} ${user.lastName}`} />
-          <InfoRow label="E-mail" value={user.email} />
-          <InfoRow label="Rôle" value={ROLE_LABELS[user.role]} />
-          <InfoRow label="Société" value={activeSocName ?? '—'} />
-          <InfoRow label="Téléphone" value={user.phone ?? '—'} />
-          <InfoRow label="Identifiant" value={user.username} />
+          <InfoRow label={tr('Dashboard.nom')} value={`${user.firstName} ${user.lastName}`} />
+          <InfoRow label={tr('Dashboard.e.mail')} value={user.email} />
+          <InfoRow label={tr('Dashboard.role')} value={ROLE_LABELS[user.role]} />
+          <InfoRow label={tr('Dashboard.societe')} value={activeSocName ?? '—'} />
+          <InfoRow label={tr('Dashboard.telephone')} value={user.phone ?? '—'} />
+          <InfoRow label={tr('Dashboard.identifiant')} value={user.username} />
         </dl>
       </Card>
     </div>

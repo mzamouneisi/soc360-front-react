@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { crasApi } from '../api/cras'
 import type { CraStatus } from '../api/types'
 import { CRA_STATUS_LABELS, formatDateTime } from '../lib/format'
@@ -22,7 +23,7 @@ export function CraHistoryModal({
   return (
     <Modal
       open
-      title="Historique"
+      title={tr('CraHistoryModal.historique')}
       size="lg"
       onClose={onClose}
       footer={<InlineButton onClick={onClose}>Fermer</InlineButton>}
@@ -31,7 +32,7 @@ export function CraHistoryModal({
       {history.error && <ErrorBlock message={history.error} />}
       {!history.loading && !history.error && rows.length === 0 && (
         <p className="rounded-lg border border-dashed border-gray-300 px-3 py-6 text-center text-sm text-gray-400">
-          Aucun historique pour {isIndispo ? 'cette Indispo' : 'ce CRA'}.
+          {tr('CraHistoryModal.aucun.historique.pour')} {isIndispo ? 'cette Indispo' : 'ce CRA'}.
         </p>
       )}
       {!history.loading && rows.length > 0 && (
@@ -40,19 +41,19 @@ export function CraHistoryModal({
             <thead style={{ backgroundColor: 'var(--table-header)' }}>
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Date modif
+                  {tr('CraHistoryModal.date.modif')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Modifié par
+                  {tr('CraHistoryModal.modifie.par')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Commentaire
+                  {tr('CraHistoryModal.commentaire')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Statut avant
+                  {tr('CraHistoryModal.statut.avant')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Statut après
+                  {tr('CraHistoryModal.statut.apres')}
                 </th>
               </tr>
             </thead>

@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -211,8 +212,8 @@ export function Activities() {
   return (
     <div>
       <PageHeader
-        title="Activités & tarifs"
-        subtitle="Prestations facturables utilisées dans les CRA"
+        title={tr('Activities.activites.tarifs')}
+        subtitle={tr('Activities.prestations.facturables.utilisees.dans.les.cra')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -232,12 +233,12 @@ export function Activities() {
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="w-56">
-          <Field label="Consultant">
+          <Field label={tr('Activities.consultant')}>
             <Select
               value={consultantFilter}
               onChange={(e) => setConsultantFilter(e.target.value)}
             >
-              <option value="">Tous les consultants</option>
+              <option value="">{tr('Activities.tous.les.consultants')}</option>
               {(filterConsultants ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.fullName}
@@ -247,9 +248,9 @@ export function Activities() {
           </Field>
         </div>
         <div className="w-56">
-          <Field label="Type d’activité">
+          <Field label={tr('Activities.type.d.activite')}>
             <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-              <option value="">Tous les types</option>
+              <option value="">{tr('Activities.tous.les.types')}</option>
               {(filterTypes ?? []).map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.labelFr}
@@ -266,7 +267,7 @@ export function Activities() {
               setTypeFilter('')
             }}
           >
-            Réinitialiser
+            {tr('Activities.reinitialiser')}
           </InlineButton>
         )}
       </div>
@@ -411,15 +412,15 @@ export function Activities() {
 
       {!loading && data && data.length > 0 && filtered.length === 0 && (
         <EmptyState
-          title="Aucun résultat"
-          description="Aucune activité ne correspond aux filtres sélectionnés."
+          title={tr('Activities.aucun.resultat')}
+          description={tr('Activities.aucune.activite.ne.correspond.aux.filtres.selectionnes')}
         />
       )}
 
       {!loading && data && data.length === 0 && (
         <EmptyState
-          title="Aucune activité"
-          description="Créez des prestations facturables pour vos CRA."
+          title={tr('Activities.aucune.activite')}
+          description={tr('Activities.creez.des.prestations.facturables.pour.vos.cra')}
           action={
             canEdit ? (
               <Button className="w-auto" onClick={openCreate}>
@@ -451,7 +452,7 @@ export function Activities() {
             </div>
           )}
           {isAdmin && (
-            <Field label="Société *">
+            <Field label={tr('Activities.societe')}>
               <Select
                 value={form.socId}
                 onChange={(e) =>
@@ -464,7 +465,7 @@ export function Activities() {
                   })
                 }
               >
-                <option value="">Sélectionner…</option>
+                <option value="">{tr('Activities.selectionner')}</option>
                 {(socs ?? []).map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
@@ -473,21 +474,21 @@ export function Activities() {
               </Select>
             </Field>
           )}
-          <Field label="Nom *">
+          <Field label={tr('Activities.nom')}>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
-          <Field label="Description">
+          <Field label={tr('Activities.description')}>
             <Input
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </Field>
-          <Field label="Projet *">
+          <Field label={tr('Activities.projet')}>
             <Select
               value={form.projectId}
               onChange={(e) => setForm({ ...form, projectId: e.target.value })}
             >
-              <option value="">Sélectionner…</option>
+              <option value="">{tr('Activities.selectionner')}</option>
               {(projects ?? []).map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -497,9 +498,9 @@ export function Activities() {
             </Select>
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Field label="Type *">
+            <Field label={tr('Activities.type')}>
               <Select value={form.typeId} onChange={(e) => setForm({ ...form, typeId: e.target.value })}>
-                <option value="">Sélectionner…</option>
+                <option value="">{tr('Activities.selectionner')}</option>
                 {(types ?? []).map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.labelFr}
@@ -507,7 +508,7 @@ export function Activities() {
                 ))}
               </Select>
             </Field>
-            <Field label="Prix">
+            <Field label={tr('Activities.prix')}>
               <Input
                 type="number"
                 step="0.01"
@@ -516,15 +517,15 @@ export function Activities() {
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
               />
             </Field>
-            <Field label="Devise">
+            <Field label={tr('Activities.devise')}>
               <Select
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
               >
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-                <option value="CHF">CHF</option>
-                <option value="GBP">GBP</option>
+                <option value="EUR">{tr('Activities.eur')}</option>
+                <option value="USD">{tr('Activities.usd')}</option>
+                <option value="CHF">{tr('Activities.chf')}</option>
+                <option value="GBP">{tr('Activities.gbp')}</option>
               </Select>
             </Field>
           </div>
@@ -536,10 +537,10 @@ export function Activities() {
               >
                 {needsConsultant ? (
                   <option value="" disabled>
-                    Sélectionner…
+                    {tr('Activities.selectionner')}
                   </option>
                 ) : (
-                  <option value="">Aucun</option>
+                  <option value="">{tr('Activities.aucun')}</option>
                 )}
                 {(consultants ?? []).map((c) => (
                   <option key={c.id} value={c.id}>
@@ -548,14 +549,14 @@ export function Activities() {
                 ))}
               </Select>
             </Field>
-            <Field label="Date de début">
+            <Field label={tr('Activities.date.de.debut')}>
               <Input
                 type="date"
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
               />
             </Field>
-            <Field label="Date de fin (optionnelle)">
+            <Field label={tr('Activities.date.de.fin.optionnelle')}>
               <Input
                 type="date"
                 value={form.endDate}
@@ -570,7 +571,7 @@ export function Activities() {
               onChange={(e) => setForm({ ...form, active: e.target.checked })}
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
-            Activité active
+            {tr('Activities.activite.active')}
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input
@@ -579,7 +580,7 @@ export function Activities() {
               onChange={(e) => setForm({ ...form, weekendAllowed: e.target.checked })}
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
-            Activité possible le week-end
+            {tr('Activities.activite.possible.le.week.end')}
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input
@@ -588,7 +589,7 @@ export function Activities() {
               onChange={(e) => setForm({ ...form, holidayAllowed: e.target.checked })}
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
-            Activité possible les jours fériés
+            {tr('Activities.activite.possible.les.jours.feries')}
           </label>
         </form>
       </Modal>

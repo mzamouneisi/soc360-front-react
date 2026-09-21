@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState } from 'react'
 import { logsApi } from '../api/logs'
 import { useAsync } from '../lib/useAsync'
@@ -45,8 +46,8 @@ export function Logs() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Logs du serveur"
-        subtitle="Dernières lignes du fichier de log du backend (administration)"
+        title={tr('Logs.logs.du.serveur')}
+        subtitle={tr('Logs.dernieres.lignes.du.fichier.de.log.du.backend.administration')}
         actions={
           <InlineButton onClick={reload} disabled={loading}>
             Actualiser
@@ -59,7 +60,7 @@ export function Logs() {
           className="w-auto min-w-40"
           value={lines}
           onChange={(e) => setLines(Number(e.target.value))}
-          aria-label="Nombre de lignes"
+          aria-label={tr('Logs.nombre.de.lignes')}
         >
           {PRESETS.map((p) => (
             <option key={p.value} value={p.value}>
@@ -68,7 +69,7 @@ export function Logs() {
           ))}
         </Select>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Nombre de lignes :</span>
+          <span className="text-sm text-gray-500">{tr('Logs.nombre.de.lignes.2')}</span>
           <Input
             type="number"
             min={1}
@@ -79,16 +80,16 @@ export function Logs() {
           />
         </div>
         <InlineButton onClick={() => setQuery(lines)} disabled={loading || lines < 1}>
-          Afficher
+          {tr('Logs.afficher')}
         </InlineButton>
         <div className="flex flex-1 items-center gap-2">
-          <span className="text-sm text-gray-500">Filtrer :</span>
+          <span className="text-sm text-gray-500">{tr('Logs.filtrer')}</span>
           <Input
             type="search"
-            placeholder="Texte à rechercher…"
+            placeholder={tr('Logs.texte.a.rechercher')}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            aria-label="Filtrer les lignes"
+            aria-label={tr('Logs.filtrer.les.lignes')}
             className="min-w-48 flex-1"
           />
         </div>
@@ -108,7 +109,7 @@ export function Logs() {
               <>
                 <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
                   <span className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600">
-                    {visible.length} ligne{visible.length > 1 ? 's' : ''}
+                    {visible.length} {tr('Logs.ligne')}{visible.length > 1 ? 's' : ''}
                     {needle && ` / ${data.lines.length}`}
                   </span>
                   {data.file && (
@@ -120,7 +121,7 @@ export function Logs() {
                     className="ml-3"
                     onClick={() => void copyText(visible.join('\n'))}
                     disabled={visible.length === 0}
-                    title="Copier les lignes affichées dans le presse-papiers"
+                    title={tr('Logs.copier.les.lignes.affichees.dans.le.presse.papiers')}
                   >
                     {copied ? 'Copié !' : 'Copier'}
                   </InlineButton>

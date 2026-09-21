@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useMemo, useState } from 'react'
 import { socsApi, type DemoSocDto } from '../api/socs'
 import { ApiError } from '../api/client'
@@ -43,8 +44,8 @@ export function DemoSoc() {
   return (
     <div>
       <PageHeader
-        title="Société démo"
-        subtitle="Créer une société de démonstration numérotée prête à l'emploi (responsable, client, projet, mission, consultant)."
+        title={tr('DemoSoc.societe.demo')}
+        subtitle={tr('DemoSoc.creer.une.societe.de.demonstration.numerotee.prete.a.l.emplo')}
         actions={<RefreshButton onClick={reload} />}
       />
 
@@ -53,16 +54,14 @@ export function DemoSoc() {
 
       <Card className="mb-6 flex flex-wrap items-center justify-between gap-4 p-5">
         <div>
-          <p className="font-semibold text-gray-900">Nouvelle société démo numérotée</p>
+          <p className="font-semibold text-gray-900">{tr('DemoSoc.nouvelle.societe.demo.numerotee')}</p>
           <p className="mt-1 text-sm text-gray-500">
-            La prochaine société sera numérotée automatiquement (ex. « Demo 1 », « Demo 2 », …).
-            Son responsable sera <span className="font-mono">resp_demo&lt;n&gt;</span> avec le mot de
-            passe <span className="font-mono">Eisi.2020</span>.
+            {tr('DemoSoc.la.prochaine.societe.sera.numerotee.automatiquement.ex.demo.')} <span className="font-mono">resp_demo&lt;n&gt;</span> {tr('DemoSoc.avec.le.mot.de.passe')} <span className="font-mono">{tr('DemoSoc.eisi.2020')}</span>.
           </p>
         </div>
         <Button className="w-auto" variant="yellow" onClick={() => void createDemo()} disabled={creating}>
           {creating ? <Spinner className="border-white border-t-transparent" /> : null}
-          + Créer une société démo
+          {tr('DemoSoc.creer.une.societe.demo')}
         </Button>
       </Card>
 
@@ -70,7 +69,7 @@ export function DemoSoc() {
 
       {!loading && demoList.length === 0 && (
         <Card className="flex flex-col items-center justify-center py-12 text-sm text-gray-500">
-          Aucune société démo créée pour le moment.
+          {tr('DemoSoc.aucune.societe.demo.creee.pour.le.moment')}
         </Card>
       )}
 
@@ -81,13 +80,13 @@ export function DemoSoc() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Société démo
+                    {tr('DemoSoc.societe.demo')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Gérant
+                    {tr('DemoSoc.gerant')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    SIRET
+                    {tr('DemoSoc.siret')}
                   </th>
                 </tr>
               </thead>
@@ -117,13 +116,13 @@ export function DemoSoc() {
           }
         >
           <div className="space-y-2">
-            <InfoRow label="Société" value={result.socName} />
-            <InfoRow label="Responsable" value={result.username} />
-            <InfoRow label="Mot de passe" value={result.password} />
-            <InfoRow label="Client" value={result.clientName} />
-            <InfoRow label="Projet" value={result.projectName} />
-            <InfoRow label="Activité" value={result.activityName} />
-            <InfoRow label="Consultant" value={result.consultantName} />
+            <InfoRow label={tr('DemoSoc.societe')} value={result.socName} />
+            <InfoRow label={tr('DemoSoc.responsable')} value={result.username} />
+            <InfoRow label={tr('DemoSoc.mot.de.passe')} value={result.password} />
+            <InfoRow label={tr('DemoSoc.client')} value={result.clientName} />
+            <InfoRow label={tr('DemoSoc.projet')} value={result.projectName} />
+            <InfoRow label={tr('DemoSoc.activite')} value={result.activityName} />
+            <InfoRow label={tr('DemoSoc.consultant')} value={result.consultantName} />
           </div>
         </Modal>
       )}

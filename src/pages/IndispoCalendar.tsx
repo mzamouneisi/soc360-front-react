@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { crasApi } from '../api/cras'
 import type { CraDto } from '../api/types'
 import { MONTHS_FR } from '../lib/format'
@@ -207,15 +208,15 @@ export function IndispoCalendar({
       <div className="mb-3 flex flex-wrap items-center gap-4 text-[11px] text-gray-500">
         <span className="flex items-center gap-1">
           <span className="inline-block h-2.5 w-2.5 rounded-sm ring-2 ring-inset ring-blue-400 bg-sky-100" />
-          Indispo sélectionnée
+          {tr('IndispoCalendar.indispo.selectionnee')}
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-2.5 w-2.5 rounded-sm ring-1 ring-inset ring-amber-200 bg-amber-50" />
-          Autre indispo
+          {tr('IndispoCalendar.autre.indispo')}
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
-          Mission
+          {tr('IndispoCalendar.mission')}
         </span>
       </div>
 

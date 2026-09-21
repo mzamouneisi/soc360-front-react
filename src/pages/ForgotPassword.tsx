@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { authApi } from '../api/auth'
@@ -29,9 +30,9 @@ export function ForgotPassword() {
     <div className="flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Mot de passe oublié</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr('ForgotPassword.mot.de.passe.oublie')}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Entrez votre adresse e-mail pour réinitialiser votre mot de passe
+            {tr('ForgotPassword.entrez.votre.adresse.e.mail.pour.reinitialiser.votre.mot.de.')}
           </p>
         </div>
 
@@ -48,20 +49,20 @@ export function ForgotPassword() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Adresse e-mail">
+          <Field label={tr('ForgotPassword.adresse.e.mail')}>
             <Input
               type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="marie.durand@exemple.fr"
+              placeholder={tr('ForgotPassword.marie.durand.exemple.fr')}
             />
           </Field>
 
           <Button type="submit" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Envoyer le lien
+            {tr('ForgotPassword.envoyer.le.lien')}
           </Button>
         </form>
 
@@ -70,7 +71,7 @@ export function ForgotPassword() {
             to="/login"
             className="font-medium text-brand-600 hover:text-brand-700"
           >
-            ← Retour à la connexion
+            {tr('ForgotPassword.retour.a.la.connexion')}
           </Link>
         </p>
       </Card>

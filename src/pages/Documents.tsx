@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useRef, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { documentsApi } from '../api/documents'
@@ -119,8 +120,8 @@ export function Documents() {
   return (
     <div>
       <PageHeader
-        title="Documents"
-        subtitle="Partage et archivage des documents (contrats, pièces RH…)"
+        title={tr('Documents.documents')}
+        subtitle={tr('Documents.partage.et.archivage.des.documents.contrats.pieces.rh')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -133,15 +134,15 @@ export function Documents() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">Documents</p>
+          <p className="text-sm font-medium text-gray-500">{tr('Documents.documents')}</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">{(data ?? []).length}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">Expire sous 30 jours</p>
+          <p className="text-sm font-medium text-gray-500">{tr('Documents.expire.sous.30.jours')}</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">{expiredSoon}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">Taille totale</p>
+          <p className="text-sm font-medium text-gray-500">{tr('Documents.taille.totale')}</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">
             {formatSize((data ?? []).reduce((s, d) => s + d.size, 0))}
           </p>
@@ -219,15 +220,15 @@ export function Documents() {
 
       {!loading && data && data.length === 0 && (
         <EmptyState
-          title="Aucun document"
-          description="Partagez le premier document de votre espace."
+          title={tr('Documents.aucun.document')}
+          description={tr('Documents.partagez.le.premier.document.de.votre.espace')}
         />
       )}
 
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Partager un document"
+        title={tr('Documents.partager.un.document')}
         footer={
           <>
             <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
@@ -255,11 +256,11 @@ export function Documents() {
               <p className="text-sm font-medium text-brand-600">
                 {file ? file.name : 'Choisir un fichier'}
               </p>
-              {!file && <p className="mt-1 text-xs text-gray-500">PDF, images, documents…</p>}
+              {!file && <p className="mt-1 text-xs text-gray-500">{tr('Documents.pdf.images.documents')}</p>}
             </button>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Catégorie">
+            <Field label={tr('Documents.categorie')}>
               <Select value={category} onChange={(e) => setCategory(e.target.value)}>
                 {DOCUMENT_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -269,9 +270,9 @@ export function Documents() {
               </Select>
             </Field>
             {!isConsultant && (
-              <Field label="Consultant concerné">
+              <Field label={tr('Documents.consultant.concerne')}>
                 <Select value={consultantId} onChange={(e) => setConsultantId(e.target.value)}>
-                  <option value="">Tous / général</option>
+                  <option value="">{tr('Documents.tous.general')}</option>
                   {(summaries ?? []).map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.fullName}
@@ -281,27 +282,27 @@ export function Documents() {
               </Field>
             )}
           </div>
-          <Field label="Description">
+          <Field label={tr('Documents.description')}>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Contrat signé, avenant…"
+              placeholder={tr('Documents.contrat.signe.avenant')}
             />
           </Field>
-          <Field label="Expiration (optionnel)">
+          <Field label={tr('Documents.expiration.optionnel')}>
             <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
           </Field>
-          <Field label="Visibilité">
+          <Field label={tr('Documents.visibilite')}>
             <Select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
-              <option value="PRIVATE">Privé (personnes choisies)</option>
-              <option value="PUBLIC">Public (toute la société)</option>
+              <option value="PRIVATE">{tr('Documents.prive.personnes.choisies')}</option>
+              <option value="PUBLIC">{tr('Documents.public.toute.la.societe')}</option>
             </Select>
           </Field>
           {visibility === 'PRIVATE' && (
-            <Field label="Partager avec">
+            <Field label={tr('Documents.partager.avec')}>
               <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-gray-200 p-2">
                 {(shareTargets ?? []).length === 0 && (
-                  <p className="px-2 py-1 text-sm text-gray-400">Aucune personne à partager</p>
+                  <p className="px-2 py-1 text-sm text-gray-400">{tr('Documents.aucune.personne.a.partager')}</p>
                 )}
                 {(shareTargets ?? []).map((m) => (
                   <label key={m.id} className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50">

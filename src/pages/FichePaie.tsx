@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useRef, useState, useMemo, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { fichePaieApi } from '../api/fichePaie'
@@ -119,7 +120,7 @@ export function FichePaie() {
   async function handleUpload(fp: FichePaieDto) {
     const input = fileRef.current
     if (!input || !input.files?.[0]) {
-      window.alert('Sélectionnez un fichier PDF à associer')
+      window.alert(tr('FichePaie.selectionnez.un.fichier.pdf.a.associer'))
       return
     }
     setUploadingId(fp.id)
@@ -151,8 +152,8 @@ export function FichePaie() {
       <input ref={fileRef} type="file" accept="application/pdf,.pdf" className="hidden" />
 
       <PageHeader
-        title="Fiches de paie"
-        subtitle="Bulletins de salaire par consultant et par période"
+        title={tr('FichePaie.fiches.de.paie')}
+        subtitle={tr('FichePaie.bulletins.de.salaire.par.consultant.et.par.periode')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -166,7 +167,7 @@ export function FichePaie() {
       />
 
       <Card className="mb-6 p-5">
-        <p className="text-sm font-medium text-gray-500">Total net {activeYear ?? new Date().getFullYear()}</p>
+        <p className="text-sm font-medium text-gray-500">{tr('FichePaie.total.net')} {activeYear ?? new Date().getFullYear()}</p>
         <p className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(totalNet)}</p>
       </Card>
 
@@ -269,7 +270,7 @@ export function FichePaie() {
 
       {!loading && (!yearData || yearData.length === 0) && (
         <EmptyState
-          title="Aucune fiche de paie"
+          title={tr('FichePaie.aucune.fiche.de.paie')}
           description={canEdit ? 'Ajoutez la première fiche de paie.' : 'Aucune fiche disponible.'}
         />
       )}
@@ -277,7 +278,7 @@ export function FichePaie() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Nouvelle fiche de paie"
+        title={tr('FichePaie.nouvelle.fiche.de.paie')}
         footer={
           <>
             <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
@@ -294,12 +295,12 @@ export function FichePaie() {
               {formError}
             </div>
           )}
-          <Field label="Consultant *">
+          <Field label={tr('FichePaie.consultant')}>
             <Select
               value={form.consultantId}
               onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
             >
-              <option value="">Sélectionner…</option>
+              <option value="">{tr('FichePaie.selectionner')}</option>
               {(summaries ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.fullName}
@@ -308,19 +309,19 @@ export function FichePaie() {
             </Select>
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Période (AAAA-MM)">
+            <Field label={tr('FichePaie.periode.aaaa.mm')}>
               <Input
                 value={form.period}
                 onChange={(e) => setForm({ ...form, period: e.target.value })}
                 placeholder="2025-06"
               />
             </Field>
-            <Field label="Date d'émission">
+            <Field label={tr('FichePaie.date.d.emission')}>
               <Input type="date" value={form.issuedAt} onChange={(e) => setForm({ ...form, issuedAt: e.target.value })} />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Salaire brut">
+            <Field label={tr('FichePaie.salaire.brut')}>
               <Input
                 type="number"
                 step="0.01"
@@ -328,7 +329,7 @@ export function FichePaie() {
                 onChange={(e) => setForm({ ...form, grossSalary: e.target.value })}
               />
             </Field>
-            <Field label="Salaire net">
+            <Field label={tr('FichePaie.salaire.net')}>
               <Input
                 type="number"
                 step="0.01"
@@ -338,7 +339,7 @@ export function FichePaie() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Coût employeur">
+            <Field label={tr('FichePaie.cout.employeur')}>
               <Input
                 type="number"
                 step="0.01"
@@ -346,7 +347,7 @@ export function FichePaie() {
                 onChange={(e) => setForm({ ...form, employerCost: e.target.value })}
               />
             </Field>
-            <Field label="Charges / impôts">
+            <Field label={tr('FichePaie.charges.impots')}>
               <Input
                 type="number"
                 step="0.01"
@@ -355,7 +356,7 @@ export function FichePaie() {
               />
             </Field>
           </div>
-          <Field label="Commentaire">
+          <Field label={tr('FichePaie.commentaire')}>
             <Input
               value={form.comment}
               onChange={(e) => setForm({ ...form, comment: e.target.value })}

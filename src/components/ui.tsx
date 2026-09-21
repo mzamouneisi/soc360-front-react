@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -58,7 +59,7 @@ export function MonthInput(props: InputHTMLAttributes<HTMLInputElement>) {
     <Input
       type="text"
       inputMode="numeric"
-      placeholder="AAAA-MM"
+      placeholder={tr('ui.aaaa.mm')}
       pattern="\d{4}-\d{2}"
       className={className}
       {...rest}

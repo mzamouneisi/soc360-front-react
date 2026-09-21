@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
@@ -252,7 +253,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, SIRET ou gérant…"
+            placeholder={tr('SocAdmin.rechercher.par.nom.siret.ou.gerant')}
             className="max-w-md"
           />
         </div>
@@ -364,52 +365,52 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           }
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Nom de la société *">
+            <Field label={tr('SocAdmin.nom.de.la.societe')}>
               <Input value={editingForm.form.name} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, name: e.target.value } })} />
             </Field>
-            <Field label="SIRET">
+            <Field label={tr('SocAdmin.siret')}>
               <Input value={editingForm.form.siret} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, siret: e.target.value } })} />
             </Field>
-            <Field label="Gérant">
+            <Field label={tr('SocAdmin.gerant')}>
               <Input value={editingForm.form.gerant} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, gerant: e.target.value } })} />
             </Field>
-            <Field label="Code NAF">
+            <Field label={tr('SocAdmin.code.naf')}>
               <Input value={editingForm.form.codeNaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, codeNaf: e.target.value } })} />
             </Field>
-            <Field label="URSSAF">
+            <Field label={tr('SocAdmin.urssaf')}>
               <Input value={editingForm.form.urssaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, urssaf: e.target.value } })} />
             </Field>
-            <Field label="Catégorie entreprise">
+            <Field label={tr('SocAdmin.categorie.entreprise')}>
               <Input value={editingForm.form.categorieEntreprise} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, categorieEntreprise: e.target.value } })} />
             </Field>
-            <Field label="Date de création">
+            <Field label={tr('SocAdmin.date.de.creation')}>
               <Input type="date" value={editingForm.form.dateCreation} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateCreation: e.target.value } })} />
             </Field>
-            <Field label="Date de fermeture">
+            <Field label={tr('SocAdmin.date.de.fermeture')}>
               <Input type="date" value={editingForm.form.dateFermeture} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateFermeture: e.target.value } })} />
             </Field>
-            <Field label="Site web">
+            <Field label={tr('SocAdmin.site.web')}>
               <Input type="url" value={editingForm.form.website} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, website: e.target.value } })} />
             </Field>
-            <Field label="Rue">
+            <Field label={tr('SocAdmin.rue')}>
               <Input value={editingForm.form.street} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, street: e.target.value } })} />
             </Field>
-            <Field label="Code postal">
+            <Field label={tr('SocAdmin.code.postal')}>
               <Input value={editingForm.form.zipCode} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, zipCode: e.target.value } })} />
             </Field>
-            <Field label="Ville">
+            <Field label={tr('SocAdmin.ville')}>
               <Input value={editingForm.form.city} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, city: e.target.value } })} />
             </Field>
-            <Field label="Pays">
+            <Field label={tr('SocAdmin.pays')}>
               <Input value={editingForm.form.country} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, country: e.target.value } })} />
             </Field>
             <div className="sm:col-span-2">
-              <Field label="Description">
+              <Field label={tr('SocAdmin.description')}>
                 <Textarea rows={3} value={editingForm.form.description} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, description: e.target.value } })} />
               </Field>
             </div>
             <div className="sm:col-span-2">
-              <Field label="Informations web">
+              <Field label={tr('SocAdmin.informations.web')}>
                 <Textarea rows={3} value={editingForm.form.infosWeb} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, infosWeb: e.target.value } })} />
               </Field>
             </div>
@@ -435,9 +436,9 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           }
         >
           <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            Attention : cette société sera supprimée avec tous ses objets liés.
+            {tr('SocAdmin.attention.cette.societe.sera.supprimee.avec.tous.ses.objets.')}
           </div>
-          <p className="mt-3 text-sm font-medium text-gray-700">Objets liés ({dependencies.length})</p>
+          <p className="mt-3 text-sm font-medium text-gray-700">{tr('SocAdmin.objets.lies')}{dependencies.length})</p>
           <div className="mt-2 max-h-64 space-y-2 overflow-y-auto">
             {dependencies.map((item) => (
               <div key={`${item.type}-${item.id}`} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
@@ -463,13 +464,13 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           }
         >
           <div className="space-y-2 text-sm">
-            <Row label="Société" value={demoResult.socName} />
-            <Row label="Responsable" value={demoResult.username} />
-            <Row label="Mot de passe" value={demoResult.password} />
-            <Row label="Client" value={demoResult.clientName} />
-            <Row label="Projet" value={demoResult.projectName} />
-            <Row label="Activité (mission)" value={demoResult.activityName} />
-            <Row label="Consultant" value={demoResult.consultantName} />
+            <Row label={tr('SocAdmin.societe')} value={demoResult.socName} />
+            <Row label={tr('SocAdmin.responsable')} value={demoResult.username} />
+            <Row label={tr('SocAdmin.mot.de.passe')} value={demoResult.password} />
+            <Row label={tr('SocAdmin.client')} value={demoResult.clientName} />
+            <Row label={tr('SocAdmin.projet')} value={demoResult.projectName} />
+            <Row label={tr('SocAdmin.activite.mission')} value={demoResult.activityName} />
+            <Row label={tr('SocAdmin.consultant')} value={demoResult.consultantName} />
           </div>
         </Modal>
       )}

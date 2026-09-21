@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -248,8 +249,8 @@ export function Tables() {
   return (
     <div>
       <PageHeader
-        title="Base de données"
-        subtitle="Gestion des tables de la base (administration)"
+        title={tr('Tables.base.de.donnees')}
+        subtitle={tr('Tables.gestion.des.tables.de.la.base.administration')}
         actions={
           <InlineButton onClick={() => loadTables()} disabled={loading}>
             Actualiser
@@ -263,7 +264,7 @@ export function Tables() {
           value={selected}
           onChange={(e) => selectTable(e.target.value)}
         >
-          <option value="">— Sélectionner une table —</option>
+          <option value="">{tr('Tables.selectionner.une.table')}</option>
           {tables.map((t) => (
             <option key={t} value={t}>
               {t}
@@ -273,10 +274,10 @@ export function Tables() {
         {selected && (
           <>
             <InlineButton onClick={() => loadTable(selected)} disabled={loading}>
-              Recharger
+              {tr('Tables.recharger')}
             </InlineButton>
             <InlineButton onClick={openInsert} disabled={loading || columns.length === 0}>
-              Ajouter une ligne
+              {tr('Tables.ajouter.une.ligne')}
             </InlineButton>
           </>
         )}
@@ -311,8 +312,8 @@ export function Tables() {
           {loading && <LoadingBlock />}
           {!loading && rows.length === 0 && (
             <EmptyState
-              title="Table vide"
-              description="Aucune ligne dans cette table."
+              title={tr('Tables.table.vide')}
+              description={tr('Tables.aucune.ligne.dans.cette.table')}
               action={
                 <InlineButton onClick={openInsert}>Ajouter une ligne</InlineButton>
               }
@@ -334,7 +335,7 @@ export function Tables() {
                         </span>
                       </th>
                     ))}
-                    <th className="px-3 py-2 text-right">Actions</th>
+                    <th className="px-3 py-2 text-right">{tr('Tables.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -357,9 +358,9 @@ export function Tables() {
                             setDraft({ ...row })
                           }}
                         >
-                          Modifier
+                          {tr('Tables.modifier')}
                         </InlineButton>
-                        <InlineButton onClick={() => deleteRow(row)}>Supprimer</InlineButton>
+                        <InlineButton onClick={() => deleteRow(row)}>{tr('Tables.supprimer')}</InlineButton>
                       </td>
                     </tr>
                   ))}
@@ -374,9 +375,9 @@ export function Tables() {
         <div className="space-y-4">
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-              <p className="text-sm font-semibold text-gray-900">Console SQL</p>
+              <p className="text-sm font-semibold text-gray-900">{tr('Tables.console.sql')}</p>
               <InlineButton onClick={runSql} disabled={sqlLoading || !sql.trim()}>
-                Exécuter
+                {tr('Tables.executer')}
               </InlineButton>
             </div>
             <Textarea
@@ -422,7 +423,7 @@ export function Tables() {
             </div>
           )}
           {!sqlLoading && sqlResult && sqlResult.length === 0 && (
-            <EmptyState title="Aucun résultat" description="Requête exécutée avec succès." />
+            <EmptyState title={tr('Tables.aucun.resultat')} description={tr('Tables.requete.executee.avec.succes')} />
           )}
         </div>
       )}
@@ -434,7 +435,7 @@ export function Tables() {
           {!relations.loading && !relations.error && (
             <>
               {relations.data && relations.data.length === 0 && (
-                <EmptyState title="Aucune relation" description="Aucune clé étrangère détectée." />
+                <EmptyState title={tr('Tables.aucune.relation')} description={tr('Tables.aucune.cle.etrangere.detectee')} />
               )}
               {relations.data && relations.data.length > 0 && (
                 <RelationsGraph relations={relations.data} focusedTable={selected} />
@@ -445,7 +446,7 @@ export function Tables() {
       )}
 
       {!selected && !loading && tables.length === 0 && (
-        <EmptyState title="Aucune table" description="Sélectionnez une table pour la gérer." />
+        <EmptyState title={tr('Tables.aucune.table')} description={tr('Tables.selectionnez.une.table.pour.la.gerer')} />
       )}
 
       {draft && (

@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
@@ -41,9 +42,9 @@ export function Login() {
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
-            E
+            {tr('Login.e')}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">SOC360</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr('Login.soc360')}</h1>
           <p className="mt-1 text-sm text-gray-500">{t('login.subtitle')}</p>
         </div>
 

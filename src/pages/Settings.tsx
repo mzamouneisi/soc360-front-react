@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
@@ -131,7 +132,7 @@ export function Settings() {
             >
               {FONT_SIZES.map((s) => (
                 <option key={s} value={s}>
-                  {s} px
+                  {s} {tr('Settings.px')}
                 </option>
               ))}
             </Select>

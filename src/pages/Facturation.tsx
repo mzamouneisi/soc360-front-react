@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { socsApi } from '../api/socs'
@@ -72,8 +73,8 @@ export function Facturation() {
   return (
     <div>
       <PageHeader
-        title="Facturation"
-        subtitle="Abonnement, paiements et chiffre d'affaires"
+        title={tr('Facturation.facturation')}
+        subtitle={tr('Facturation.abonnement.paiements.et.chiffre.d.affaires')}
         actions={
           <div className="flex items-center gap-2">
             <RefreshButton onClick={reload} />
@@ -106,13 +107,13 @@ export function Facturation() {
       {isAdmin && (
         <Card className="mb-6 p-4">
           <label className="flex items-center gap-2 text-sm text-gray-600">
-            Société :
+            {tr('Facturation.societe')}
             <Select
               className="w-64"
               value={selectedSoc ?? ''}
               onChange={(e) => setSelectedSoc(e.target.value ? Number(e.target.value) : null)}
             >
-              <option value="">Sélectionner…</option>
+              <option value="">{tr('Facturation.selectionner')}</option>
               {(socs ?? []).map((soc: SocDto) => (
                 <option key={soc.id} value={soc.id}>
                   {soc.name}
@@ -130,7 +131,7 @@ export function Facturation() {
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="p-5">
-              <p className="text-sm font-medium text-gray-500">Abonnement</p>
+              <p className="text-sm font-medium text-gray-500">{tr('Facturation.abonnement')}</p>
               <div className="mt-2 flex items-center gap-2">
                 <p className="text-2xl font-bold text-gray-900">{subscription?.plan ?? '—'}</p>
                 {subscription && (
@@ -141,35 +142,35 @@ export function Facturation() {
               </div>
               {subscription && (
                 <p className="mt-1 text-sm text-gray-500">
-                  {formatMoney(subscription.monthlyPrice)} / mois · début{' '}
+                  {formatMoney(subscription.monthlyPrice)} {tr('Facturation.mois.debut')}{' '}
                   {formatDate(subscription.startDate)}
                   {subscription.trialEndDate && ` · essai jusqu'au ${formatDate(subscription.trialEndDate)}`}
                 </p>
               )}
             </Card>
             <Card className="p-5">
-              <p className="text-sm font-medium text-gray-500">CA mensuel (missions actives)</p>
+              <p className="text-sm font-medium text-gray-500">{tr('Facturation.ca.mensuel.missions.actives')}</p>
               <p className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(monthlyRevenue)}</p>
-              <p className="mt-1 text-xs text-gray-500">{activeProjects.length} mission(s) active(s)</p>
+              <p className="mt-1 text-xs text-gray-500">{activeProjects.length} {tr('Facturation.mission.s.active.s')}</p>
             </Card>
             <Card className="p-5">
               <p className="text-sm font-medium text-gray-500">
-                CRA validés · {MONTHS_FR[month - 1].slice(0, 3)} {year}
+                {tr('Facturation.cra.valides')} {MONTHS_FR[month - 1].slice(0, 3)} {year}
               </p>
               <p className="mt-2 text-2xl font-bold text-gray-900">{validatedCras.length}</p>
-              <p className="mt-1 text-xs text-gray-500">{validatedHours} h validées</p>
+              <p className="mt-1 text-xs text-gray-500">{validatedHours} {tr('Facturation.h.validees')}</p>
             </Card>
             <Card className="p-5">
-              <p className="text-sm font-medium text-gray-500">Total réglé</p>
+              <p className="text-sm font-medium text-gray-500">{tr('Facturation.total.regle')}</p>
               <p className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(totalPaid)}</p>
-              <p className="mt-1 text-xs text-gray-500">{(detail.payments ?? []).length} paiement(s)</p>
+              <p className="mt-1 text-xs text-gray-500">{(detail.payments ?? []).length} {tr('Facturation.paiement.s')}</p>
             </Card>
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card className="p-5">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Missions facturables</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{tr('Facturation.missions.facturables')}</h3>
                 <div className="flex gap-2">
                   <InlineButton onClick={() => handleExport('csv')} disabled={exporting !== null}>
                     {exporting === 'csv' ? <Spinner /> : 'CRA CSV'}
@@ -191,20 +192,20 @@ export function Facturation() {
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
                         {formatMoney((p.dailyRate ?? 0) * 21, p.currency ?? 'EUR')}
-                        <span className="text-xs font-normal text-gray-500"> /mois</span>
+                        <span className="text-xs font-normal text-gray-500"> {tr('Facturation.mois')}</span>
                       </p>
-                      <p className="text-xs text-gray-500">TJM {formatMoney(p.dailyRate, p.currency ?? 'EUR')}</p>
+                      <p className="text-xs text-gray-500">{tr('Facturation.tjm')} {formatMoney(p.dailyRate, p.currency ?? 'EUR')}</p>
                     </div>
                   </div>
                 ))}
                 {activeProjects.length === 0 && (
-                  <p className="py-6 text-center text-sm text-gray-400">Aucune mission active</p>
+                  <p className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucune.mission.active')}</p>
                 )}
               </div>
             </Card>
 
             <Card className="p-5">
-              <h3 className="text-lg font-semibold text-gray-900">Paiements</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{tr('Facturation.paiements')}</h3>
               <div className="mt-4 divide-y divide-gray-100">
                 {(detail.payments ?? []).map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-3">
@@ -218,7 +219,7 @@ export function Facturation() {
                   </div>
                 ))}
                 {(detail.payments ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-gray-400">Aucun paiement enregistré</p>
+                  <p className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucun.paiement.enregistre')}</p>
                 )}
               </div>
             </Card>
@@ -228,8 +229,8 @@ export function Facturation() {
 
       {!detailLoading && !detail && !detailError && (
         <Card className="flex flex-col items-center justify-center py-14">
-          <p className="text-sm font-medium text-gray-900">Sélectionnez une société</p>
-          <p className="mt-1 text-sm text-gray-500">Aucune donnée de facturation.</p>
+          <p className="text-sm font-medium text-gray-900">{tr('Facturation.selectionnez.une.societe')}</p>
+          <p className="mt-1 text-sm text-gray-500">{tr('Facturation.aucune.donnee.de.facturation')}</p>
         </Card>
       )}
     </div>

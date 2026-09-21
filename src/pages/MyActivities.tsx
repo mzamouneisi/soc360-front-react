@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useAuth } from '../auth/AuthContext'
 import { activitiesApi } from '../api/activities'
 import { useAsync } from '../lib/useAsync'
@@ -26,8 +27,8 @@ export function MyActivities() {
   return (
     <div>
       <PageHeader
-        title="Mes activités"
-        subtitle="Activités qui vous sont affectées (lecture seule)"
+        title={tr('MyActivities.mes.activites')}
+        subtitle={tr('MyActivities.activites.qui.vous.sont.affectees.lecture.seule')}
         actions={<RefreshButton onClick={reload} />}
       />
 
@@ -111,8 +112,8 @@ export function MyActivities() {
 
       {!loading && data && mine.length === 0 && (
         <EmptyState
-          title="Aucune activité"
-          description="Aucune activité ne vous est affectée pour le moment."
+          title={tr('MyActivities.aucune.activite')}
+          description={tr('MyActivities.aucune.activite.ne.vous.est.affectee.pour.le.moment')}
         />
       )}
     </div>

@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useEffect, useState } from 'react'
 import { ApiError } from '../api/client'
 import { consultantsApi } from '../api/consultants'
@@ -223,7 +224,7 @@ export function CraList() {
   return (
     <div>
       <PageHeader
-        title="CRA"
+        title={tr('CraList.cra')}
         subtitle={
           isConsultant
             ? 'Mes comptes rendus d’activité'
@@ -253,9 +254,9 @@ export function CraList() {
               <Select
                 value={consultantFilter ?? ''}
                 onChange={(e) => setConsultantFilter(e.target.value ? Number(e.target.value) : null)}
-                title="Consultants"
+                title={tr('CraList.consultants')}
               >
-                <option value="">Tous les consultants</option>
+                <option value="">{tr('CraList.tous.les.consultants')}</option>
                 {consultants.data?.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.fullName}
@@ -273,14 +274,14 @@ export function CraList() {
                 const nextYear = ym ? Number(ym.slice(0, 4)) : NaN
                 if (nextYear) setYear(nextYear)
               }}
-              title="Filtrer par mois"
+              title={tr('CraList.filtrer.par.mois')}
             />
           </div>
           <div className="min-w-[16rem] flex-1">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filtrer par année-mois, consultant ou statut…"
+              placeholder={tr('CraList.filtrer.par.annee.mois.consultant.ou.statut')}
             />
           </div>
         </div>
@@ -309,28 +310,28 @@ export function CraList() {
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Année-mois
+                      {tr('CraList.annee.mois')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Consultant
+                      {tr('CraList.consultant')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Statut
+                      {tr('CraList.statut')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Jours
+                      {tr('CraList.jours')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Soumis le
+                      {tr('CraList.soumis.le')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Validé le
+                      {tr('CraList.valide.le')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Commentaire
+                      {tr('CraList.commentaire')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Actions
+                      {tr('CraList.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -357,7 +358,7 @@ export function CraList() {
                           {CRA_STATUS_LABELS[cra.status] ?? cra.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{cra.totalWorkedDays} j</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{cra.totalWorkedDays} {tr('CraList.j')}</td>
                       <td className="px-4 py-3 text-sm text-gray-500">
                         {formatDate(cra.submittedAt)}
                       </td>
@@ -372,13 +373,13 @@ export function CraList() {
                           <InlineButton onClick={() => setOpenCraId(cra.id)}>
                             {editable(cra) ? 'Éditer' : 'Ouvrir'}
                           </InlineButton>
-                          <InlineButton onClick={() => setHistoryCra(cra)}>Historique</InlineButton>
+                          <InlineButton onClick={() => setHistoryCra(cra)}>{tr('CraList.historique')}</InlineButton>
                           {editable(cra) && (
                             <InlineButton
                               className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               onClick={() => handleDelete(cra)}
                             >
-                              Supprimer
+                              {tr('CraList.supprimer')}
                             </InlineButton>
                           )}
                           {canValidate(cra) && cra.status === 'SUBMITTED' && (
@@ -387,13 +388,13 @@ export function CraList() {
                                 className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                                 onClick={() => changeStatus(cra.id, 'validate')}
                               >
-                                Valider
+                                {tr('CraList.valider')}
                               </InlineButton>
                               <InlineButton
                                 className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                                 onClick={() => changeStatus(cra.id, 'reject')}
                               >
-                                Rejeter
+                                {tr('CraList.rejeter')}
                               </InlineButton>
                             </>
                           )}
@@ -409,16 +410,16 @@ export function CraList() {
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <InlineButton disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
-                ← Précédent
+                {tr('CraList.precedent')}
               </InlineButton>
               <span className="text-sm text-gray-500">
-                Page {safePage + 1} / {totalPages}
+                {tr('CraList.page')} {safePage + 1} / {totalPages}
               </span>
               <InlineButton
                 disabled={safePage >= totalPages - 1}
                 onClick={() => setPage(safePage + 1)}
               >
-                Suivant →
+                {tr('CraList.suivant')}
               </InlineButton>
             </div>
           )}
@@ -427,7 +428,7 @@ export function CraList() {
 
       <Card className="mt-4 flex flex-wrap items-center gap-3 p-4">
         <label className="flex items-center gap-2 whitespace-nowrap text-sm text-gray-600">
-          <span className="min-w-[4.5rem]">Mois :</span>
+          <span className="min-w-[4.5rem]">{tr('CraList.mois')}</span>
           <Select
             className="w-auto"
             value={month}
@@ -452,13 +453,13 @@ export function CraList() {
           </Select>
         </label>
         <div className="flex items-center gap-1">
-          <InlineButton onClick={goPrev} title="Mois précédent">
+          <InlineButton onClick={goPrev} title={tr('CraList.mois.precedent')}>
             ◀
           </InlineButton>
-          <InlineButton onClick={goToday} title="Revenir au mois courant">
-            Mois Courant
+          <InlineButton onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
+            {tr('CraList.mois.courant')}
           </InlineButton>
-          <InlineButton onClick={goNext} title="Mois suivant">
+          <InlineButton onClick={goNext} title={tr('CraList.mois.suivant')}>
             ▶
           </InlineButton>
         </div>
@@ -467,7 +468,7 @@ export function CraList() {
       {canOwnCra && ownerId && (
         <div className="mt-4 flex items-center justify-center gap-3">
           <Button className="w-auto" onClick={() => createCra('CRA')}>
-            Nouveau Cra
+            {tr('CraList.nouveau.cra')}
           </Button>
         </div>
       )}

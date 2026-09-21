@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { clientsApi } from '../api/clients'
@@ -157,8 +158,8 @@ export function Clients() {
   return (
     <div>
       <PageHeader
-        title="Clients"
-        subtitle="Gérez vos clients et vos contacts"
+        title={tr('Clients.clients')}
+        subtitle={tr('Clients.gerez.vos.clients.et.vos.contacts')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -246,8 +247,8 @@ export function Clients() {
       )}
       {!loading && data?.length === 0 && (
         <EmptyState
-          title="Aucun client"
-          description="Ajoutez votre premier client pour commencer."
+          title={tr('Clients.aucun.client')}
+          description={tr('Clients.ajoutez.votre.premier.client.pour.commencer')}
         />
       )}
 
@@ -272,45 +273,45 @@ export function Clients() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Société associée *">
+            <Field label={tr('Clients.societe.associee')}>
               <Select value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
-                <option value="">Sélectionner…</option>
+                <option value="">{tr('Clients.selectionner')}</option>
                 {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
             <Field label={isAdmin ? 'Société parente' : 'Société parente (société de travail)'}>
               <Select value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
-                <option value="">Aucune</option>
+                <option value="">{tr('Clients.aucune')}</option>
                 {parentSocs.map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
           </div>
-          <Field label="Nom du client *">
+          <Field label={tr('Clients.nom.du.client')}>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
-          <Field label="Notes (infos spécifiques pour votre société)">
+          <Field label={tr('Clients.notes.infos.specifiques.pour.votre.societe')}>
             <Textarea
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Conditions particulières, interlocuteurs, remarques…"
+              placeholder={tr('Clients.conditions.particulieres.interlocuteurs.remarques')}
             />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Contact">
+            <Field label={tr('Clients.contact')}>
               <Input
                 value={form.contactName}
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
               />
             </Field>
-            <Field label="Téléphone">
+            <Field label={tr('Clients.telephone')}>
               <Input
                 value={form.contactPhone}
                 onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               />
             </Field>
           </div>
-          <Field label="E-mail du contact">
+          <Field label={tr('Clients.e.mail.du.contact')}>
             <Input
               type="email"
               value={form.contactEmail}
@@ -324,7 +325,7 @@ export function Clients() {
               onChange={(e) => setForm({ ...form, active: e.target.checked })}
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
-            Client actif
+            {tr('Clients.client.actif')}
           </label>
         </form>
       </Modal>

@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { noteFraisApi } from '../api/noteFrais'
@@ -278,7 +279,7 @@ export function NoteFraisList() {
         const updated = await noteFraisApi.reject(nf.id, comment)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else {
-        if (!window.confirm('Supprimer cette note de frais ?')) return
+        if (!window.confirm(tr('NoteFraisList.supprimer.cette.note.de.frais'))) return
         await noteFraisApi.delete(nf.id)
         setData((prev) => (prev ?? []).filter((x) => x.id !== nf.id))
       }
@@ -293,8 +294,8 @@ export function NoteFraisList() {
   return (
     <div>
       <PageHeader
-        title="Notes de frais"
-        subtitle="Suivi des dépenses et remboursements"
+        title={tr('NoteFraisList.notes.de.frais')}
+        subtitle={tr('NoteFraisList.suivi.des.depenses.et.remboursements')}
         actions={
           <div className="flex items-center gap-2">
             <RefreshButton onClick={reload} />
@@ -318,22 +319,22 @@ export function NoteFraisList() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">Total {year}</p>
+          <p className="text-sm font-medium text-gray-500">{tr('NoteFraisList.total')} {year}</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(totalYear)}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">En attente de validation</p>
+          <p className="text-sm font-medium text-gray-500">{tr('NoteFraisList.en.attente.de.validation')}</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">{pendingCount}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">Notes {year}</p>
+          <p className="text-sm font-medium text-gray-500">{tr('NoteFraisList.notes')} {year}</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">{(data ?? []).length}</p>
         </Card>
       </div>
 
       {!isConsultant && totalsByMonth && Object.keys(totalsByMonth).length > 0 && (
         <Card className="mt-6 p-5">
-          <h3 className="text-sm font-semibold text-gray-900">Montants par mois</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{tr('NoteFraisList.montants.par.mois')}</h3>
           <div className="mt-4 flex flex-wrap items-end gap-6">
             {MONTHS_FR.map((_, i) => {
               const value = totalsByMonth[String(i + 1)] ?? 0
@@ -360,7 +361,7 @@ export function NoteFraisList() {
 
       {!isConsultant && totalsByCategory && Object.keys(totalsByCategory).length > 0 && (
         <Card className="mt-6 p-5">
-          <h3 className="text-sm font-semibold text-gray-900">Montants par catégorie</h3>
+          <h3 className="text-sm font-semibold text-gray-900">{tr('NoteFraisList.montants.par.categorie')}</h3>
           <div className="mt-3 flex flex-wrap gap-2">
             {Object.entries(totalsByCategory).map(([cat, value]) => (
               <span
@@ -470,8 +471,8 @@ export function NoteFraisList() {
 
       {!loading && data && data.length === 0 && (
         <Card className="mt-6 flex flex-col items-center justify-center py-14">
-          <p className="text-sm font-medium text-gray-900">Aucune note de frais pour {year}</p>
-          <p className="mt-1 text-sm text-gray-500">Créez votre première note de frais.</p>
+          <p className="text-sm font-medium text-gray-900">{tr('NoteFraisList.aucune.note.de.frais.pour')} {year}</p>
+          <p className="mt-1 text-sm text-gray-500">{tr('NoteFraisList.creez.votre.premiere.note.de.frais')}</p>
         </Card>
       )}
 
@@ -498,12 +499,12 @@ export function NoteFraisList() {
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {!isConsultant && (
-              <Field label="Consultant">
+              <Field label={tr('NoteFraisList.consultant')}>
                 <Select
                   value={form.consultantId}
                   onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
                 >
-                  <option value="">Sélectionner…</option>
+                  <option value="">{tr('NoteFraisList.selectionner')}</option>
                   {(summaries ?? []).map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.fullName}
@@ -512,7 +513,7 @@ export function NoteFraisList() {
                 </Select>
               </Field>
             )}
-            <Field label="Mois">
+            <Field label={tr('NoteFraisList.mois')}>
               <Select
                 value={form.month}
                 onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
@@ -524,7 +525,7 @@ export function NoteFraisList() {
                 ))}
               </Select>
             </Field>
-            <Field label="Année">
+            <Field label={tr('NoteFraisList.annee')}>
               <Select
                 value={form.year}
                 onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
@@ -540,16 +541,16 @@ export function NoteFraisList() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-700">Lignes de dépenses</p>
+              <p className="text-sm font-medium text-gray-700">{tr('NoteFraisList.lignes.de.depenses')}</p>
               <span className="text-sm text-gray-500">
-                Total : {formatMoney(form.lines.reduce((s, l) => s + lineAmount(l), 0))}
+                {tr('NoteFraisList.total.2')} {formatMoney(form.lines.reduce((s, l) => s + lineAmount(l), 0))}
               </span>
             </div>
             <div className="space-y-3">
               {form.lines.map((line, i) => (
                 <div key={i} className="grid grid-cols-1 gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-12 sm:items-center">
                   <Input
-                    placeholder="Nom enseigne"
+                    placeholder={tr('NoteFraisList.nom.enseigne')}
                     className="sm:col-span-2"
                     value={line.enseigne}
                     onChange={(e) =>
@@ -587,7 +588,7 @@ export function NoteFraisList() {
                     ))}
                   </Select>
                   <Input
-                    placeholder="Libellé / action"
+                    placeholder={tr('NoteFraisList.libelle.action')}
                     className="sm:col-span-2"
                     value={line.label}
                     onChange={(e) =>
@@ -598,7 +599,7 @@ export function NoteFraisList() {
                     }
                   />
                   <Input
-                    placeholder="Adresse"
+                    placeholder={tr('NoteFraisList.adresse')}
                     className="sm:col-span-4"
                     value={line.adresse}
                     onChange={(e) =>
@@ -612,7 +613,7 @@ export function NoteFraisList() {
                     type="number"
                     step="0.01"
                     min="0"
-                    placeholder="Montant HT €"
+                    placeholder={tr('NoteFraisList.montant.ht')}
                     className="sm:col-span-2"
                     value={line.montantHT}
                     onChange={(e) =>
@@ -626,7 +627,7 @@ export function NoteFraisList() {
                     type="number"
                     step="0.01"
                     min="0"
-                    placeholder="Montant TTC €"
+                    placeholder={tr('NoteFraisList.montant.ttc')}
                     className="sm:col-span-2"
                     value={line.montantTTC}
                     onChange={(e) =>
@@ -650,7 +651,7 @@ export function NoteFraisList() {
                       }
                       className="h-4 w-4 rounded border-gray-300 text-brand-600"
                     />
-                    Remb.
+                    {tr('NoteFraisList.remb')}
                   </label>
                   <button
                     type="button"
@@ -659,7 +660,7 @@ export function NoteFraisList() {
                     }
                     className="text-sm text-red-600 hover:text-red-800 sm:col-span-1"
                   >
-                    Supprimer
+                    {tr('NoteFraisList.supprimer')}
                   </button>
                 </div>
               ))}
@@ -669,14 +670,14 @@ export function NoteFraisList() {
               onClick={() => setForm({ ...form, lines: [...form.lines, newLine()] })}
               className="mt-3 text-sm font-medium text-brand-600 hover:text-brand-700"
             >
-              + Ajouter une ligne
+              {tr('NoteFraisList.ajouter.une.ligne')}
             </button>
           </div>
 
           <div className="rounded-lg border border-dashed border-gray-300 p-3">
             <div className="flex flex-wrap items-center gap-3">
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                Joindre une facture (image / PDF)
+                {tr('NoteFraisList.joindre.une.facture.image.pdf')}
                 <input
                   type="file"
                   accept="image/*,application/pdf"
@@ -696,29 +697,29 @@ export function NoteFraisList() {
                     }}
                     className="text-red-600 hover:text-red-800"
                   >
-                    Retirer
+                    {tr('NoteFraisList.retirer')}
                   </button>
                 </span>
               )}
             </div>
             {ocrPending && (
-              <p className="mt-2 text-sm text-brand-700">Lecture de la facture en cours (OCR)…</p>
+              <p className="mt-2 text-sm text-brand-700">{tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}</p>
             )}
             {attachmentUrl && (
               <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
                 {attachmentName && isImageFile(attachmentName) ? (
-                  <img src={attachmentUrl} alt="Aperçu de la facture" className="max-h-72 w-full object-contain" />
+                  <img src={attachmentUrl} alt={tr('NoteFraisList.apercu.de.la.facture')} className="max-h-72 w-full object-contain" />
                 ) : (
-                  <iframe src={attachmentUrl} title="Aperçu du document" className="h-72 w-full" />
+                  <iframe src={attachmentUrl} title={tr('NoteFraisList.apercu.du.document')} className="h-72 w-full" />
                 )}
               </div>
             )}
           </div>
 
-          <Field label="Infos facture (texte de la facture)">
+          <Field label={tr('NoteFraisList.infos.facture.texte.de.la.facture')}>
             <Textarea
               rows={4}
-              placeholder="Collez ou saisissez ici le contenu de la facture / du ticket…"
+              placeholder={tr('NoteFraisList.collez.ou.saisissez.ici.le.contenu.de.la.facture.du.ticket')}
               value={form.infosFacture}
               onChange={(e) => setForm({ ...form, infosFacture: e.target.value })}
             />

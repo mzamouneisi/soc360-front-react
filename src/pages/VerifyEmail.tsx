@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { authApi } from '../api/auth'
@@ -70,17 +71,17 @@ export function VerifyEmail() {
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
-            E
+            {tr('VerifyEmail.e')}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Validation de l'inscription</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr('VerifyEmail.validation.de.l.inscription')}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Confirmez votre mot de passe et choisissez-en un nouveau pour activer votre compte
+            {tr('VerifyEmail.confirmez.votre.mot.de.passe.et.choisissez.en.un.nouveau.pou')}
           </p>
         </div>
 
         {success && (
           <Alert variant="success">
-            Votre inscription est validée. Votre compte est activé, redirection…
+            {tr('VerifyEmail.votre.inscription.est.validee.votre.compte.est.active.redire')}
           </Alert>
         )}
 
@@ -92,12 +93,12 @@ export function VerifyEmail() {
 
         {!token && (
           <div className="mb-4">
-            <Alert>Le lien de validation est invalide ou incomplet.</Alert>
+            <Alert>{tr('VerifyEmail.le.lien.de.validation.est.invalide.ou.incomplet')}</Alert>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Mot de passe actuel (utilisé à l'inscription)">
+          <Field label={tr('VerifyEmail.mot.de.passe.actuel.utilise.a.l.inscription')}>
             <Input
               type="password"
               autoComplete="current-password"
@@ -109,7 +110,7 @@ export function VerifyEmail() {
             />
           </Field>
 
-          <Field label="Nouveau mot de passe">
+          <Field label={tr('VerifyEmail.nouveau.mot.de.passe')}>
             <Input
               type="password"
               autoComplete="new-password"
@@ -121,7 +122,7 @@ export function VerifyEmail() {
             />
           </Field>
 
-          <Field label="Confirmer le nouveau mot de passe">
+          <Field label={tr('VerifyEmail.confirmer.le.nouveau.mot.de.passe')}>
             <Input
               type="password"
               autoComplete="new-password"
@@ -135,24 +136,24 @@ export function VerifyEmail() {
 
           <Button type="submit" disabled={submitting || success || !token}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Valider mon inscription
+            {tr('VerifyEmail.valider.mon.inscription')}
           </Button>
         </form>
 
         <div className="mt-6">
-          <p className="text-sm font-medium text-gray-700">Lien expiré ? Renvoyez un email :</p>
+          <p className="text-sm font-medium text-gray-700">{tr('VerifyEmail.lien.expire.renvoyez.un.email')}</p>
           <form onSubmit={handleResend} className="mt-2 space-y-2">
             <Input
               type="email"
               value={resendEmail}
               onChange={(e) => setResendEmail(e.target.value)}
               required
-              placeholder="marie.durand@exemple.fr"
+              placeholder={tr('VerifyEmail.marie.durand.exemple.fr')}
             />
             {resendMessage && <Alert variant="success">{resendMessage}</Alert>}
             <Button type="submit" className="!w-auto !bg-gray-100 !text-gray-700 hover:!bg-gray-200" disabled={resending}>
               {resending ? <Spinner /> : null}
-              Renvoyer l'email de validation
+              {tr('VerifyEmail.renvoyer.l.email.de.validation')}
             </Button>
           </form>
         </div>
@@ -162,7 +163,7 @@ export function VerifyEmail() {
             to="/login"
             className="font-medium text-brand-600 hover:text-brand-700"
           >
-            Aller à la connexion
+            {tr('VerifyEmail.aller.a.la.connexion')}
           </Link>
         </p>
       </Card>

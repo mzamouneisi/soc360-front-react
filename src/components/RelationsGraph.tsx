@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import type { TableRelation } from '../api/tables'
@@ -443,16 +444,16 @@ export function RelationsGraph({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold text-gray-900">
-          Relations — {focusedTable || 'Toutes tables'}
+          {tr('RelationsGraph.relations')} {focusedTable || 'Toutes tables'}
         </span>
         <div className="ml-auto flex items-center gap-1">
-          <InlineButton onClick={zoomIn} aria-label="Zoom avant">
+          <InlineButton onClick={zoomIn} aria-label={tr('RelationsGraph.zoom.avant')}>
             +
           </InlineButton>
-          <InlineButton onClick={zoomOut} aria-label="Zoom arrière">
+          <InlineButton onClick={zoomOut} aria-label={tr('RelationsGraph.zoom.arriere')}>
             −
           </InlineButton>
-          <InlineButton onClick={fit}>Ajuster</InlineButton>
+          <InlineButton onClick={fit}>{tr('RelationsGraph.ajuster')}</InlineButton>
         </div>
       </div>
 
@@ -472,9 +473,9 @@ export function RelationsGraph({
 
       <div className="flex items-center gap-3 text-sm text-gray-600">
         <span className="flex items-center gap-1.5">
-          <b>●</b> Table
+          <b>●</b> {tr('RelationsGraph.table')}
         </span>
-        <span className="flex items-center gap-1.5 text-red-500">Clé étrangère →</span>
+        <span className="flex items-center gap-1.5 text-red-500">{tr('RelationsGraph.cle.etrangere')}</span>
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -151,7 +152,7 @@ function ActivityChip({
         style={{ backgroundColor: color ?? '#9ca3af' }}
       />
       <span className="truncate">{name}</span>
-      <span className="ml-auto shrink-0 text-gray-400">×{days}</span>
+      <span className="ml-auto shrink-0 text-gray-400">{tr('CraDetail.')}{days}</span>
       {valid && <span className="shrink-0 text-green-600">✓</span>}
     </button>
   )
@@ -580,7 +581,7 @@ export function CraDetail({
   }
 
   function handleDeleteAll() {
-    if (!window.confirm('Supprimer tous les événements ajoutés ?')) return
+    if (!window.confirm(tr('CraDetail.supprimer.tous.les.evenements.ajoutes'))) return
     removeAllEvents()
   }
 
@@ -696,13 +697,13 @@ export function CraDetail({
               className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
               onClick={() => setCancelOpen(true)}
             >
-              Annuler
+              {tr('CraDetail.annuler')}
             </InlineButton>
           )}
-          <span className="text-sm text-gray-500">{cra.totalWorkedDays} j</span>
-          <InlineButton onClick={openHistory}>Historique</InlineButton>
-          <InlineButton onClick={handleExportClientPdf}>Export Pdf Client</InlineButton>
-          <InlineButton onClick={handleExportCompanyPdf}>Export Pdf Ma Societe</InlineButton>
+          <span className="text-sm text-gray-500">{cra.totalWorkedDays} {tr('CraDetail.j')}</span>
+          <InlineButton onClick={openHistory}>{tr('CraDetail.historique')}</InlineButton>
+          <InlineButton onClick={handleExportClientPdf}>{tr('CraDetail.export.pdf.client')}</InlineButton>
+          <InlineButton onClick={handleExportCompanyPdf}>{tr('CraDetail.export.pdf.ma.societe')}</InlineButton>
         </div>
       </div>
 
@@ -710,41 +711,37 @@ export function CraDetail({
 
       {cra.status === 'REJECTED' && cra.comment && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <strong>Rejeté :</strong> {cra.comment}
+          <strong>{tr('CraDetail.rejete')}</strong> {cra.comment}
         </div>
       )}
 
       {cra.status === 'CANCELLED' && cra.comment && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <strong>Annulée :</strong> {cra.comment}
+          <strong>{tr('CraDetail.annulee')}</strong> {cra.comment}
         </div>
       )}
 
       {managerCanAct && (cra.status === 'VALIDATED' || cra.status === 'VALREJ') && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)}.
+          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} {tr('CraDetail.est')} {statusAdjective(cra.status, isIndispo)}.
         </div>
       )}
 
       {!formEditable && !consultantAddsToValidated && !consultantEditsSemiValid && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)} et n'est
-          plus modifiable.
+          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} {tr('CraDetail.est')} {statusAdjective(cra.status, isIndispo)} {tr('CraDetail.et.n.est.plus.modifiable')}
         </div>
       )}
 
       {consultantAddsToValidated && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          Cette Indispo est validée. Vous pouvez ajouter de nouveaux événements puis les soumettre pour
-          validation. Les événements validés ne sont pas modifiables.
+          {tr('CraDetail.cette.indispo.est.validee.vous.pouvez.ajouter.de.nouveaux.ev')}
         </div>
       )}
 
       {consultantEditsSemiValid && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} est {statusAdjective(cra.status, isIndispo)}.
-          Vous pouvez modifier les événements non validés et remplir les événements libres puis les
-          soumettre pour validation. Les événements validés ne sont pas modifiables.
+          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} {tr('CraDetail.est')} {statusAdjective(cra.status, isIndispo)}{tr('CraDetail.vous.pouvez.modifier.les.evenements.non.valides.et.remplir.l')}
         </div>
       )}
 
@@ -758,7 +755,7 @@ export function CraDetail({
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Calendrier
+            {tr('CraDetail.calendrier')}
           </button>
           <button
             onClick={() => setTab('ligne')}
@@ -768,22 +765,22 @@ export function CraDetail({
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Ligne
+            {tr('CraDetail.ligne')}
           </button>
         </div>
         {editable && (
           <div className="flex flex-wrap items-center gap-2">
             <Button className="w-auto" onClick={() => setFillMonthOpen(true)}>
-              Remplir tout le mois
+              {tr('CraDetail.remplir.tout.le.mois')}
             </Button>
             <InlineButton onClick={() => setFillRangeOpen(true)}>
-              Remplir une plage
+              {tr('CraDetail.remplir.une.plage')}
             </InlineButton>
             <InlineButton
               className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
               onClick={handleDeleteAll}
             >
-              Supprimer tous les événements
+              {tr('CraDetail.supprimer.tous.les.evenements')}
             </InlineButton>
           </div>
         )}
@@ -791,11 +788,10 @@ export function CraDetail({
 
       {!craValid && editable && hasAnyActivity && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <strong>CRA incomplet :</strong> {incompleteDays.length} jour
-          {incompleteDays.length > 1 ? 's' : ''} travaillé
-          {incompleteDays.length > 1 ? 's' : ''} ne totalise
-          {incompleteDays.length > 1 ? 'nt' : ''} pas 1 jour. Le CRA ne peut être envoyé que lorsque
-          chaque jour travaillé totalise exactement 1 jour.
+          <strong>{tr('CraDetail.cra.incomplet')}</strong> {incompleteDays.length} {tr('CraDetail.jour')}
+          {incompleteDays.length > 1 ? 's' : ''} {tr('CraDetail.travaille')}
+          {incompleteDays.length > 1 ? 's' : ''} {tr('CraDetail.ne.totalise')}
+          {incompleteDays.length > 1 ? 'nt' : ''} {tr('CraDetail.pas.1.jour.le.cra.ne.peut.etre.envoye.que.lorsque.chaque.jou')}
         </div>
       )}
 
@@ -832,7 +828,7 @@ export function CraDetail({
                       <button
                         onClick={() => setEventModal(dayIndex)}
                         className="rounded p-0.5 text-gray-400 transition hover:bg-gray-200 hover:text-gray-600"
-                        aria-label="Ajouter un événement"
+                        aria-label={tr('CraDetail.ajouter.un.evenement')}
                       >
                         <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z" />
@@ -884,7 +880,7 @@ export function CraDetail({
             })}
           </div>
           <div className="border-t border-gray-100 px-4 py-2 text-xs text-gray-400">
-            Cliquez sur un jour travaillé ou le symbole + pour ajouter / modifier des événements.
+            {tr('CraDetail.cliquez.sur.un.jour.travaille.ou.le.symbole.pour.ajouter.mod')}
           </div>
         </Card>
       ) : (
@@ -894,19 +890,19 @@ export function CraDetail({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Jour
+                    {tr('CraDetail.jour.2')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Type
+                    {tr('CraDetail.type')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Total
+                    {tr('CraDetail.total')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Evénements
+                    {tr('CraDetail.evenements')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Commentaire
+                    {tr('CraDetail.commentaire')}
                   </th>
                 </tr>
               </thead>
@@ -967,7 +963,7 @@ export function CraDetail({
                                       updateActivity(i, j, { activityId: e.target.value })
                                     }
                                   >
-                                    <option value="">Activité…</option>
+                                    <option value="">{tr('CraDetail.activite')}</option>
                                     {filteredActivities.map((a) => (
                                       <option key={a.id} value={a.id}>
                                         {a.name}
@@ -988,9 +984,9 @@ export function CraDetail({
                                   <button
                                     onClick={() => removeActivity(i, j)}
                                     className="text-red-500 hover:text-red-700"
-                                    aria-label="Supprimer l'événement"
+                                    aria-label={tr('CraDetail.supprimer.l.evenement')}
                                   >
-                                    ×
+                                    {tr('CraDetail.')}
                                   </button>
                                 </>
                               ) : (
@@ -1008,7 +1004,7 @@ export function CraDetail({
                               disabled={total >= 1}
                               className="text-sm font-medium text-brand-600 hover:text-brand-700 disabled:cursor-not-allowed disabled:text-gray-400"
                             >
-                              + Ajouter un événement
+                              {tr('CraDetail.ajouter.un.evenement.2')}
                             </button>
                           )}
                         </div>
@@ -1019,7 +1015,7 @@ export function CraDetail({
                             value={day.comment}
                             onChange={(e) => updateDay(i, { comment: e.target.value })}
                             className="w-40 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
-                            placeholder="Commentaire"
+                            placeholder={tr('CraDetail.commentaire')}
                           />
                         ) : (
                           <span className="text-sm text-gray-600">{day.comment || '—'}</span>
@@ -1038,7 +1034,7 @@ export function CraDetail({
         {canAddEvents && (
           <Button className="flex-1" onClick={handleSave} disabled={saving}>
             {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-            Enregistrer
+            {tr('CraDetail.enregistrer')}
           </Button>
         )}
         {canAddEvents && !managerCanAct && (
@@ -1053,7 +1049,7 @@ export function CraDetail({
             }
           >
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Soumettre
+            {tr('CraDetail.soumettre')}
           </Button>
         )}
         {managerCanAct && (
@@ -1064,7 +1060,7 @@ export function CraDetail({
                 onClick={handleValidate}
                 disabled={!hasInactiveEvent}
               >
-                Valider tout
+                {tr('CraDetail.valider.tout')}
               </Button>
             </span>
             <span className="flex-1" title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
@@ -1073,11 +1069,11 @@ export function CraDetail({
                 onClick={handleInvalidateAll}
                 disabled={!hasActiveEvent}
               >
-                Invalider tout
+                {tr('CraDetail.invalider.tout')}
               </Button>
             </span>
             <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={() => setSendBackOpen(true)}>
-              Envoyer
+              {tr('CraDetail.envoyer')}
             </Button>
           </>
         )}
@@ -1162,7 +1158,7 @@ export function CraDetail({
       {restrictionDialog && (
         <Modal
           open
-          title="Information"
+          title={tr('CraDetail.information')}
           onClose={() => setRestrictionDialog(null)}
           footer={
             <Button className="w-auto" onClick={() => setRestrictionDialog(null)}>
@@ -1189,16 +1185,16 @@ function FillMonthModal({
   return (
     <Modal
       open
-      title="Remplir tout le mois"
+      title={tr('CraDetail.remplir.tout.le.mois')}
       onClose={onClose}
       footer={<InlineButton onClick={onClose}>Annuler</InlineButton>}
     >
       <p className="mb-3 text-sm text-gray-500">
-        Choisissez l'activité à appliquer à tous les jours travaillés du mois :
+        {tr('CraDetail.choisissez.l.activite.a.appliquer.a.tous.les.jours.travaille')}
       </p>
       {activities.length === 0 ? (
         <p className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
-          Aucune activité correspondant à ce mois.
+          {tr('CraDetail.aucune.activite.correspondant.a.ce.mois')}
         </p>
       ) : (
         <div className="max-h-96 space-y-2 overflow-y-auto">
@@ -1245,7 +1241,7 @@ function FillRangeModal({
   return (
     <Modal
       open
-      title="Remplir une plage"
+      title={tr('CraDetail.remplir.une.plage')}
       onClose={onClose}
       footer={
         <>
@@ -1258,7 +1254,7 @@ function FillRangeModal({
     >
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Date de début">
+          <Field label={tr('CraDetail.date.de.debut')}>
             <Input
               type="date"
               min={monthStart}
@@ -1267,7 +1263,7 @@ function FillRangeModal({
               onChange={(e) => setStart(e.target.value)}
             />
           </Field>
-          <Field label="Date de fin">
+          <Field label={tr('CraDetail.date.de.fin')}>
             <Input
               type="date"
               min={monthStart}
@@ -1278,10 +1274,10 @@ function FillRangeModal({
           </Field>
         </div>
         <div>
-          <p className="mb-2 text-sm text-gray-500">Activité :</p>
+          <p className="mb-2 text-sm text-gray-500">{tr('CraDetail.activite.2')}</p>
           {activities.length === 0 ? (
             <p className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
-              Aucune activité correspondant à ce mois.
+              {tr('CraDetail.aucune.activite.correspondant.a.ce.mois')}
             </p>
           ) : (
             <div className="max-h-64 space-y-2 overflow-y-auto">
@@ -1381,7 +1377,7 @@ function EventModal({
                       value={act.activityId}
                       onChange={(e) => onUpdateActivity(j, { activityId: e.target.value })}
                     >
-                      <option value="">Activité…</option>
+                      <option value="">{tr('CraDetail.activite')}</option>
                       {activities.map((a) => (
                         <option key={a.id} value={a.id}>
                           {a.name}
@@ -1403,14 +1399,14 @@ function EventModal({
                       value={act.comment}
                       onChange={(e) => onUpdateActivity(j, { comment: e.target.value })}
                       className="flex-1 min-w-24 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
-                      placeholder="Commentaire"
+                      placeholder={tr('CraDetail.commentaire')}
                     />
                     <button
                       onClick={() => onRemoveActivity(j)}
                       className="text-red-500 hover:text-red-700"
-                      aria-label="Supprimer l'événement"
+                      aria-label={tr('CraDetail.supprimer.l.evenement')}
                     >
-                      ×
+                      {tr('CraDetail.')}
                     </button>
                   </>
                 ) : (
@@ -1432,7 +1428,7 @@ function EventModal({
                       }
                       className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
                     />
-                    Valid
+                    {tr('CraDetail.valid')}
                   </label>
                 )}
               </div>
@@ -1440,7 +1436,7 @@ function EventModal({
           })}
           {day.activities.length === 0 && (
             <p className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
-              Aucun événement pour ce jour.
+              {tr('CraDetail.aucun.evenement.pour.ce.jour')}
             </p>
           )}
         </div>
@@ -1451,7 +1447,7 @@ function EventModal({
             disabled={total >= 1}
             className="text-sm font-medium text-brand-600 hover:text-brand-700 disabled:cursor-not-allowed disabled:text-gray-400"
           >
-            + Ajouter un événement
+            {tr('CraDetail.ajouter.un.evenement.2')}
           </button>
         )}
       </div>
@@ -1495,7 +1491,7 @@ function RangeValidModal({
           : 'Toutes les activités de la plage seront marquées comme non validées.'}
       </p>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Date de début">
+        <Field label={tr('CraDetail.date.de.debut')}>
           <Input
             type="date"
             min={monthStart}
@@ -1504,7 +1500,7 @@ function RangeValidModal({
             onChange={(e) => setStart(e.target.value)}
           />
         </Field>
-        <Field label="Date de fin">
+        <Field label={tr('CraDetail.date.de.fin')}>
           <Input
             type="date"
             min={monthStart}
@@ -1534,7 +1530,7 @@ function CancelModal({
   return (
     <Modal
       open
-      title="Annuler l'Indispo"
+      title={tr('CraDetail.annuler.l.indispo')}
       onClose={onClose}
       footer={
         <>
@@ -1559,7 +1555,7 @@ function CancelModal({
         <Input
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Motif de l'annulation"
+          placeholder={tr('CraDetail.motif.de.l.annulation')}
         />
       </Field>
     </Modal>
@@ -1580,7 +1576,7 @@ function SendBackModal({
   return (
     <Modal
       open
-      title="Envoyer au consultant"
+      title={tr('CraDetail.envoyer.au.consultant')}
       onClose={onClose}
       footer={
         <>
@@ -1597,14 +1593,14 @@ function SendBackModal({
       }
     >
       <p className="mb-3 text-sm text-gray-500">
-        Indiquez un commentaire (obligatoire) :
+        {tr('CraDetail.indiquez.un.commentaire.obligatoire')}
       </p>
-      <Field label="Commentaire *">
+      <Field label={tr('CraDetail.commentaire.2')}>
         <Textarea
           rows={4}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Commentaire à transmettre au consultant"
+          placeholder={tr('CraDetail.commentaire.a.transmettre.au.consultant')}
         />
       </Field>
     </Modal>

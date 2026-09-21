@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
@@ -237,8 +238,8 @@ export function Unavailability() {
   return (
     <div>
       <PageHeader
-        title="Indisponibilités"
-        subtitle="Intervalles d'indisponibilité des consultants (congés, maladie, maternité…)"
+        title={tr('Unavailability.indisponibilites')}
+        subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         actions={
           <Button className="w-auto" onClick={openCreate} variant="yellow">
             Nouvelle indisponibilité
@@ -253,7 +254,7 @@ export function Unavailability() {
               value={consultantFilter ?? ''}
               onChange={(e) => setConsultantFilter(e.target.value ? Number(e.target.value) : null)}
             >
-              <option value="">Tous les consultants</option>
+              <option value="">{tr('Unavailability.tous.les.consultants')}</option>
               {consultants.data?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.fullName}
@@ -266,14 +267,14 @@ export function Unavailability() {
           <MonthInput
             value={monthFilter}
             onChange={(e) => setMonthFilter(e.target.value.slice(0, 7))}
-            title="Filtrer par mois"
+            title={tr('Unavailability.filtrer.par.mois')}
           />
         </div>
         <div className="min-w-[16rem] flex-1">
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filtrer par type, statut, consultant ou dates…"
+            placeholder={tr('Unavailability.filtrer.par.type.statut.consultant.ou.dates')}
           />
         </div>
       </div>
@@ -285,13 +286,13 @@ export function Unavailability() {
           </h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {!isConsultant && (
-              <Field label="Consultant">
+              <Field label={tr('Unavailability.consultant')}>
                 <Select
                   value={formConsultantId ?? ''}
                   onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
-                  title="Consultant"
+                  title={tr('Unavailability.consultant')}
                 >
-                  <option value="">— Choisir —</option>
+                  <option value="">{tr('Unavailability.choisir')}</option>
                   {consultants.data?.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.fullName}
@@ -300,7 +301,7 @@ export function Unavailability() {
                 </Select>
               </Field>
             )}
-            <Field label="Type">
+            <Field label={tr('Unavailability.type')}>
               <Select value={formType} onChange={(e) => setFormType(e.target.value as UnavailabilityType)}>
                 {TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -309,18 +310,18 @@ export function Unavailability() {
                 ))}
               </Select>
             </Field>
-            <Field label="Du">
+            <Field label={tr('Unavailability.du')}>
               <Input type="date" value={formStart} onChange={(e) => setFormStart(e.target.value)} />
             </Field>
-            <Field label="Au">
+            <Field label={tr('Unavailability.au')}>
               <Input type="date" value={formEnd} onChange={(e) => setFormEnd(e.target.value)} />
             </Field>
-            <Field label="Commentaire">
+            <Field label={tr('Unavailability.commentaire')}>
               <Textarea
                 rows={1}
                 value={formComment}
                 onChange={(e) => setFormComment(e.target.value)}
-                placeholder="Motif, remarques…"
+                placeholder={tr('Unavailability.motif.remarques')}
               />
             </Field>
           </div>
@@ -331,7 +332,7 @@ export function Unavailability() {
           )}
           <div className="mt-4 flex items-center justify-end gap-2">
             <InlineButton onClick={() => setShowForm(false)} disabled={saving}>
-              Annuler
+              {tr('Unavailability.annuler')}
             </InlineButton>
             <Button className="w-auto" onClick={() => void handleSave()} disabled={saving}>
               {saving ? 'Enregistrement…' : editingId != null ? 'Enregistrer' : 'Créer'}
@@ -364,28 +365,28 @@ export function Unavailability() {
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Consultant
+                      {tr('Unavailability.consultant')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Type
+                      {tr('Unavailability.type')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Du
+                      {tr('Unavailability.du')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Au
+                      {tr('Unavailability.au')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Durée
+                      {tr('Unavailability.duree')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Statut
+                      {tr('Unavailability.statut')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Commentaire
+                      {tr('Unavailability.commentaire')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Actions
+                      {tr('Unavailability.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -410,7 +411,7 @@ export function Unavailability() {
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                         {formatDate(u.endDate)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{u.durationDays} j</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{u.durationDays} {tr('Unavailability.j')}</td>
                       <td className="px-4 py-3">
                         <Badge kind={statusBadge(u.status)}>
                           {UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status}
@@ -431,7 +432,7 @@ export function Unavailability() {
                                 openEdit(u)
                               }}
                             >
-                              Éditer
+                              {tr('Unavailability.editer')}
                             </InlineButton>
                           )}
                           {canSubmit(u) && (
@@ -441,7 +442,7 @@ export function Unavailability() {
                                 void handleSubmit(u)
                               }}
                             >
-                              Soumettre
+                              {tr('Unavailability.soumettre')}
                             </InlineButton>
                           )}
                           {canCancel(u) && (
@@ -451,7 +452,7 @@ export function Unavailability() {
                                 void handleCancel(u)
                               }}
                             >
-                              Annuler la soumission
+                              {tr('Unavailability.annuler.la.soumission')}
                             </InlineButton>
                           )}
                           {canReview(u) && (
@@ -463,7 +464,7 @@ export function Unavailability() {
                                   void handleValidate(u)
                                 }}
                               >
-                                Valider
+                                {tr('Unavailability.valider')}
                               </InlineButton>
                               <InlineButton
                                 className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
@@ -472,7 +473,7 @@ export function Unavailability() {
                                   void handleReject(u)
                                 }}
                               >
-                                Rejeter
+                                {tr('Unavailability.rejeter')}
                               </InlineButton>
                             </>
                           )}
@@ -484,7 +485,7 @@ export function Unavailability() {
                                 void handleDelete(u)
                               }}
                             >
-                              Supprimer
+                              {tr('Unavailability.supprimer')}
                             </InlineButton>
                           )}
                           <InlineButton
@@ -493,7 +494,7 @@ export function Unavailability() {
                               setHistoryFor(u)
                             }}
                           >
-                            Historique
+                            {tr('Unavailability.historique')}
                           </InlineButton>
                         </div>
                       </td>
@@ -507,13 +508,13 @@ export function Unavailability() {
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <InlineButton disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
-                ← Précédent
+                {tr('Unavailability.precedent')}
               </InlineButton>
               <span className="text-sm text-gray-500">
-                Page {safePage + 1} / {totalPages}
+                {tr('Unavailability.page')} {safePage + 1} / {totalPages}
               </span>
               <InlineButton disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)}>
-                Suivant →
+                {tr('Unavailability.suivant')}
               </InlineButton>
             </div>
           )}
@@ -556,20 +557,20 @@ function UnavailabilityHistoryModal({
       >
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">Historique de l’indisponibilité</h3>
+            <h3 className="text-sm font-semibold text-gray-900">{tr('Unavailability.historique.de.l.indisponibilite')}</h3>
             <p className="text-xs text-gray-500">
               {unavailability.consultantName} — {UNAVAILABILITY_TYPE_LABELS[unavailability.type]}{' '}
               ({unavailability.startDate} → {unavailability.endDate})
             </p>
           </div>
-          <InlineButton onClick={onClose}>Fermer</InlineButton>
+          <InlineButton onClick={onClose}>{tr('Unavailability.fermer')}</InlineButton>
         </div>
 
         {history.loading && <LoadingBlock />}
         {history.error && <ErrorBlock message={history.error} />}
 
         {!history.loading && !history.error && (history.data?.length ?? 0) === 0 && (
-          <p className="py-6 text-center text-sm text-gray-500">Aucune modification enregistrée.</p>
+          <p className="py-6 text-center text-sm text-gray-500">{tr('Unavailability.aucune.modification.enregistree')}</p>
         )}
 
         {!history.loading && (history.data?.length ?? 0) > 0 && (
@@ -577,11 +578,11 @@ function UnavailabilityHistoryModal({
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">Date</th>
-                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">Modifié par</th>
-                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">Commentaire</th>
-                  <th className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">Avant</th>
-                  <th className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">Après</th>
+                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.date')}</th>
+                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.modifie.par')}</th>
+                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.commentaire')}</th>
+                  <th className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('Unavailability.avant')}</th>
+                  <th className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('Unavailability.apres')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
@@ -592,8 +593,8 @@ function UnavailabilityHistoryModal({
                     </td>
                     <td className="px-3 py-2 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
                     <td className="px-3 py-2 text-sm text-gray-600">{h.comment ?? '—'}</td>
-                    <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsBefore} j</td>
-                    <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsAfter} j</td>
+                    <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsBefore} {tr('Unavailability.j')}</td>
+                    <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsAfter} {tr('Unavailability.j')}</td>
                   </tr>
                 ))}
               </tbody>

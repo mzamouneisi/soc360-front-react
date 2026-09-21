@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState } from 'react'
 import { useSoc } from './SocContext'
 import { AddSocModal } from './AddSocModal'
@@ -16,7 +17,7 @@ export function SocSelector() {
         className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
         aria-haspopup="listbox"
         aria-expanded={open}
-        title="Société active"
+        title={tr('SocSelector.societe.active')}
       >
         <span className="max-w-48 truncate">
           {selectedSoc?.name ?? (socs.length > 0 ? 'Choisir une société' : 'Espace de travail')}
@@ -35,11 +36,11 @@ export function SocSelector() {
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
           <div className="absolute right-0 z-50 mt-2 w-72 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
             {loading && socs.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-gray-500">Chargement…</p>
+              <p className="px-3 py-2 text-sm text-gray-500">{tr('SocSelector.chargement')}</p>
             ) : socs.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-gray-500">Aucune société associée</p>
+              <p className="px-3 py-2 text-sm text-gray-500">{tr('SocSelector.aucune.societe.associee')}</p>
             ) : (
-              <ul role="listbox" aria-label="Société active">
+              <ul role="listbox" aria-label={tr('SocSelector.societe.active')}>
                 {socs.map((soc) => {
                   const isFavorite = soc.id === favoriteSocId
                   const isSelected = soc.id === selectedSoc?.id
@@ -115,7 +116,7 @@ export function SocSelector() {
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-brand-600 transition hover:bg-brand-50"
                 >
                   <span className="text-base leading-none">＋</span>
-                  Inscrire une société
+                  {tr('SocSelector.inscrire.une.societe')}
                 </button>
               </div>
             )}

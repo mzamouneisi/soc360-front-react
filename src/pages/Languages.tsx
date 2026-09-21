@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { i18nApi, type AdminBundle, type ExportPayload, type LanguageEntry } from '../api/i18n'
 import { ApiError } from '../api/client'
@@ -231,8 +232,8 @@ export function Languages() {
   return (
     <div>
       <PageHeader
-        title="Langues et traductions"
-        subtitle="Table des chaînes traduites (administration)"
+        title={tr('Languages.langues.et.traductions')}
+        subtitle={tr('Languages.table.des.chaines.traduites.administration')}
         actions={<InlineButton onClick={() => load()} disabled={loading}>{t('common.refresh')}</InlineButton>}
       />
 
@@ -244,9 +245,9 @@ export function Languages() {
       )}
 
       <Card className="mb-6 p-6">
-        <h3 className="text-sm font-semibold text-gray-900">Langues disponibles</h3>
+        <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.langues.disponibles')}</h3>
         <p className="mt-1 text-sm text-gray-500">
-          Ajouter une langue crée une nouvelle colonne dans la table des traductions.
+          {tr('Languages.ajouter.une.langue.cree.une.nouvelle.colonne.dans.la.table.d')}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {languages.map((lang) => (
@@ -260,7 +261,7 @@ export function Languages() {
                 <button
                   type="button"
                   aria-label={`Supprimer la langue ${lang}`}
-                  title="Supprimer la langue"
+                  title={tr('Languages.supprimer.la.langue')}
                   onClick={() => void removeLanguage(lang)}
                   className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-100 hover:text-red-600"
                 >
@@ -274,15 +275,15 @@ export function Languages() {
         </div>
 
         <div className="mt-6 flex flex-wrap items-start gap-4">
-          <Field label="Filtrer les langues">
+          <Field label={tr('Languages.filtrer.les.langues')}>
             <Input
               className="w-56"
               value={languageFilter}
-              placeholder="ex. esp, german, ar…"
+              placeholder={tr('Languages.ex.esp.german.ar')}
               onChange={(e) => setLanguageFilter(e.target.value)}
             />
           </Field>
-          <Field label="Langues connues">
+          <Field label={tr('Languages.langues.connues')}>
             <select
               size={5}
               value={selectedCode}
@@ -298,7 +299,7 @@ export function Languages() {
           </Field>
           <div className="flex flex-col gap-2 pt-6">
             <InlineButton onClick={() => void addLanguage()} disabled={!selectedCode}>
-              Ajouter la langue
+              {tr('Languages.ajouter.la.langue')}
             </InlineButton>
             <span className="text-xs text-gray-500">
               {selectedCode
@@ -310,15 +311,14 @@ export function Languages() {
 
         <div className="mt-6 rounded-lg border border-brand-100 bg-brand-50/40 p-4">
           <h4 className="text-sm font-semibold text-gray-900">
-            Remplir les traductions d'une langue
+            {tr('Languages.remplir.les.traductions.d.une.langue')}
           </h4>
           <p className="mt-1 text-sm text-gray-500">
-            Remplit les cellules vides de la langue choisie à partir du français (traduction via
-            l'API si configurée, sinon recopie de la valeur française).
+            {tr('Languages.remplit.les.cellules.vides.de.la.langue.choisie.a.partir.du.')}
           </p>
           <div className="mt-3 flex flex-wrap items-start">
             <select
-              aria-label="Langue à remplir"
+              aria-label={tr('Languages.langue.a.remplir')}
               value={fillTarget}
               onChange={(e) => setFillLanguage(e.target.value)}
               className="w-64 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
@@ -339,15 +339,15 @@ export function Languages() {
               {autofilling === fillTarget ? (
                 <Spinner className="border-white border-t-transparent" />
               ) : null}
-              Remplir les traductions
+              {tr('Languages.remplir.les.traductions')}
             </Button>
           </div>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <InlineButton onClick={() => void exportJson()}>Exporter JSON</InlineButton>
+          <InlineButton onClick={() => void exportJson()}>{tr('Languages.exporter.json')}</InlineButton>
           <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-            Importer JSON
+            {tr('Languages.importer.json')}
             <input
               type="file"
               accept="application/json,.json"
@@ -363,13 +363,13 @@ export function Languages() {
       </Card>
 
       <Card className="mb-6 p-6">
-        <h3 className="text-sm font-semibold text-gray-900">Ajouter une clé</h3>
+        <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.ajouter.une.cle')}</h3>
         <div className="mt-4 flex flex-wrap items-end gap-4">
-          <Field label="Clé">
+          <Field label={tr('Languages.cle')}>
             <Input
               className="w-64"
               value={newKey}
-              placeholder="mon.nouvelle.cle"
+              placeholder={tr('Languages.mon.nouvelle.cle')}
               onChange={(e) => setNewKey(e.target.value)}
             />
           </Field>
@@ -379,23 +379,23 @@ export function Languages() {
                 className="w-56"
                 value={newTranslations[lang] ?? ''}
                 onChange={(e) =>
-                  setNewTranslations((tr) => ({ ...tr, [lang]: e.target.value }))
+                  setNewTranslations((prev) => ({ ...prev, [lang]: e.target.value }))
                 }
               />
             </Field>
           ))}
           <Button className="w-auto" onClick={() => void addEntry()} disabled={!newKey.trim()}>
-            Ajouter la clé
+            {tr('Languages.ajouter.la.cle')}
           </Button>
         </div>
       </Card>
 
       <Card className="p-6">
-        <h3 className="text-sm font-semibold text-gray-900">Chaînes traduites</h3>
+        <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.chaines.traduites')}</h3>
         {loading && <LoadingBlock />}
         {!loading && (bundle?.entries.length ?? 0) === 0 && (
           <div className="mt-4">
-            <EmptyState title="Aucune traduction" description="Ajoutez une clé pour commencer." />
+            <EmptyState title={tr('Languages.aucune.traduction')} description={tr('Languages.ajoutez.une.cle.pour.commencer')} />
           </div>
         )}
         {!loading && (bundle?.entries.length ?? 0) > 0 && (
@@ -404,7 +404,7 @@ export function Languages() {
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Clé
+                    {tr('Languages.cle')}
                   </th>
                   {languages.map((lang) => (
                     <th
@@ -415,7 +415,7 @@ export function Languages() {
                     </th>
                   ))}
                   <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
-                    Actions
+                    {tr('Languages.actions')}
                   </th>
                 </tr>
               </thead>
@@ -441,9 +441,9 @@ export function Languages() {
                         disabled={saving === entry.id}
                       >
                         {saving === entry.id ? <Spinner className="h-4 w-4" /> : null}
-                        Enregistrer
+                        {tr('Languages.enregistrer')}
                       </InlineButton>
-                      <InlineButton onClick={() => void deleteRow(entry)}>Supprimer</InlineButton>
+                      <InlineButton onClick={() => void deleteRow(entry)}>{tr('Languages.supprimer')}</InlineButton>
                     </td>
                   </tr>
                 ))}

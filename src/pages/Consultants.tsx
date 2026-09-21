@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useMemo, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { consultantsApi } from '../api/consultants'
@@ -288,8 +289,8 @@ export function Consultants() {
   return (
     <div>
       <PageHeader
-        title="Collaborateurs"
-        subtitle="Gérez votre équipe de consultants"
+        title={tr('Consultants.collaborateurs')}
+        subtitle={tr('Consultants.gerez.votre.equipe.de.consultants')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -311,7 +312,7 @@ export function Consultants() {
 
       <div className="mb-4">
         <Input
-          placeholder="Rechercher par nom, email, poste…"
+          placeholder={tr('Consultants.rechercher.par.nom.email.poste')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-sm"
@@ -433,8 +434,8 @@ export function Consultants() {
 
       {!loading && data && data.items.length === 0 && (
         <EmptyState
-          title="Aucun collaborateur"
-          description="Ajoutez un collaborateur ou importez un fichier CSV."
+          title={tr('Consultants.aucun.collaborateur')}
+          description={tr('Consultants.ajoutez.un.collaborateur.ou.importez.un.fichier.csv')}
         />
       )}
 
@@ -467,7 +468,7 @@ export function Consultants() {
           )}
           {((!editing && canCreateManager) || (editing && canEdit)) && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Type de collaborateur">
+              <Field label={tr('Consultants.type.de.collaborateur')}>
                 <Select
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value, username: '', password: '' })}
@@ -482,51 +483,51 @@ export function Consultants() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Prénom *">
+            <Field label={tr('Consultants.prenom')}>
               <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
             </Field>
-            <Field label="Nom *">
+            <Field label={tr('Consultants.nom')}>
               <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Email">
+            <Field label={tr('Consultants.email')}>
               <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </Field>
-            <Field label="Téléphone">
+            <Field label={tr('Consultants.telephone')}>
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </Field>
           </div>
           {editing && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Nom d'utilisateur">
+              <Field label={tr('Consultants.nom.d.utilisateur')}>
                 <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
               </Field>
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Poste">
+            <Field label={tr('Consultants.poste')}>
               <Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
             </Field>
-            <Field label="Nationalité">
-              <Input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder="FR" />
+            <Field label={tr('Consultants.nationalite')}>
+              <Input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder={tr('Consultants.fr')} />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Date d'embauche">
+            <Field label={tr('Consultants.date.d.embauche')}>
               <Input type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
             </Field>
-            <Field label="Date de naissance">
+            <Field label={tr('Consultants.date.de.naissance')}>
               <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="N° de sécurité sociale">
+            <Field label={tr('Consultants.n.de.securite.sociale')}>
               <Input value={form.socialNumber} onChange={(e) => setForm({ ...form, socialNumber: e.target.value })} />
             </Field>
-            <Field label="Manager">
+            <Field label={tr('Consultants.manager')}>
               <Select value={form.managerId} onChange={(e) => setForm({ ...form, managerId: e.target.value })}>
-                <option value="">Aucun</option>
+                <option value="">{tr('Consultants.aucun')}</option>
                 {managerOptions.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.fullName}
@@ -536,7 +537,7 @@ export function Consultants() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Salaire de base">
+            <Field label={tr('Consultants.salaire.de.base')}>
               <Input
                 type="number"
                 step="0.01"
@@ -545,18 +546,18 @@ export function Consultants() {
                 onChange={(e) => setForm({ ...form, baseSalary: e.target.value })}
               />
             </Field>
-            <Field label="Devise">
+            <Field label={tr('Consultants.devise')}>
               <Select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-                <option value="CHF">CHF</option>
+                <option value="EUR">{tr('Consultants.eur')}</option>
+                <option value="USD">{tr('Consultants.usd')}</option>
+                <option value="CHF">{tr('Consultants.chf')}</option>
               </Select>
             </Field>
           </div>
           {isAdmin && (
-            <Field label="Société">
+            <Field label={tr('Consultants.societe')}>
               <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
-                <option value="">Sélectionner…</option>
+                <option value="">{tr('Consultants.selectionner')}</option>
                 {(socs ?? []).map((soc) => (
                   <option key={soc.id} value={soc.id}>
                     {soc.name}
@@ -573,18 +574,18 @@ export function Consultants() {
                   : 'Compte utilisateur (optionnel)'}
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <Field label="Nom d'utilisateur">
+                <Field label={tr('Consultants.nom.d.utilisateur')}>
                   <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
                 </Field>
-                <Field label="Email de connexion">
+                <Field label={tr('Consultants.email.de.connexion')}>
                   <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </Field>
-                <Field label="Mot de passe initial">
+                <Field label={tr('Consultants.mot.de.passe.initial')}>
                   <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
                 </Field>
               </div>
               <p className="mt-2 text-xs text-brand-700">
-                Le collaborateur devra changer son mot de passe à la première connexion.
+                {tr('Consultants.le.collaborateur.devra.changer.son.mot.de.passe.a.la.premier')}
               </p>
             </div>
           )}
@@ -594,7 +595,7 @@ export function Consultants() {
       <Modal
         open={importOpen}
         onClose={() => setImportOpen(false)}
-        title="Importer des consultants (CSV)"
+        title={tr('Consultants.importer.des.consultants.csv')}
         footer={
           <>
             <InlineButton onClick={() => setImportOpen(false)}>Fermer</InlineButton>
@@ -606,12 +607,12 @@ export function Consultants() {
       >
         <form onSubmit={handleImport} className="space-y-4">
           <p className="text-sm text-gray-600">
-            Format attendu : <code className="rounded bg-gray-100 px-1">prénom,nom,email,téléphone,poste,dateEmbauche(AAAA-MM-JJ),dateNaissance,NSS,salaire,devise,nationalité</code>
+            {tr('Consultants.format.attendu')} <code className="rounded bg-gray-100 px-1">{tr('Consultants.prenom.nom.email.telephone.poste.dateembauche.aaaa.mm.jj.dat')}</code>
           </p>
           {isAdmin && (
-            <Field label="Société">
+            <Field label={tr('Consultants.societe')}>
               <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
-                <option value="">Sélectionner…</option>
+                <option value="">{tr('Consultants.selectionner')}</option>
                 {(socs ?? []).map((soc) => (
                   <option key={soc.id} value={soc.id}>
                     {soc.name}
@@ -633,7 +634,7 @@ export function Consultants() {
           )}
           {importResult && (
             <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
-              {importResult.imported} consultant(s) importé(s), {importResult.errors} erreur(s).
+              {importResult.imported} {tr('Consultants.consultant.s.importe.s')} {importResult.errors} {tr('Consultants.erreur.s')}
               {importResult.errorLines.length > 0 && (
                 <ul className="mt-1 list-inside list-disc text-xs">
                   {importResult.errorLines.slice(0, 5).map((line, i) => (
@@ -655,7 +656,7 @@ export function Consultants() {
       >
         {historyLoading && <LoadingBlock />}
         {!historyLoading && historyItems.length === 0 && (
-          <p className="text-sm text-gray-500">Aucune modification enregistrée.</p>
+          <p className="text-sm text-gray-500">{tr('Consultants.aucune.modification.enregistree')}</p>
         )}
         {historyItems.length > 0 && (
           <ul className="space-y-3">
@@ -668,7 +669,7 @@ export function Consultants() {
                   <span className="text-xs text-gray-500">{h.dateMaj ? new Date(h.dateMaj).toLocaleString('fr-FR') : ''}</span>
                 </div>
                 <p className="mt-1 text-xs text-gray-600">
-                  Par : {h.userName ?? '—'}
+                  {tr('Consultants.par')} {h.userName ?? '—'}
                 </p>
               </li>
             ))}

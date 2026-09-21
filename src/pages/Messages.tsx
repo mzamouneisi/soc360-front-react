@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { messagesApi } from '../api/messages'
@@ -97,8 +98,8 @@ export function Messages() {
   return (
     <div>
       <PageHeader
-        title="Messages"
-        subtitle="Messagerie interne"
+        title={tr('Messages.messages')}
+        subtitle={tr('Messages.messagerie.interne')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -119,8 +120,7 @@ export function Messages() {
 
       {!isAdmin && (
         <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          Seuls les administrateurs peuvent rédiger des messages. Consultez votre boîte de réception
-          ci-dessous.
+          {tr('Messages.seuls.les.administrateurs.peuvent.rediger.des.messages.consu')}
         </div>
       )}
 
@@ -187,7 +187,7 @@ export function Messages() {
 
       {!loading && data && data.items.length === 0 && (
         <EmptyState
-          title="Aucun message"
+          title={tr('Messages.aucun.message')}
           description={tab === 'inbox' ? 'Votre boîte de réception est vide.' : 'Vous n’avez rien envoyé.'}
         />
       )}
@@ -195,7 +195,7 @@ export function Messages() {
       <Modal
         open={composeOpen}
         onClose={() => setComposeOpen(false)}
-        title="Nouveau message"
+        title={tr('Messages.nouveau.message')}
         footer={
           <>
             <InlineButton onClick={() => setComposeOpen(false)}>Annuler</InlineButton>
@@ -212,9 +212,9 @@ export function Messages() {
               {formError}
             </div>
           )}
-          <Field label="Destinataire *">
+          <Field label={tr('Messages.destinataire')}>
             <Select value={recipientId} onChange={(e) => setRecipientId(e.target.value)}>
-              <option value="">Sélectionner…</option>
+              <option value="">{tr('Messages.selectionner')}</option>
               {(users?.items ?? [])
                 .filter((u) => u.id !== user?.id)
                 .map((u) => (
@@ -224,10 +224,10 @@ export function Messages() {
                 ))}
             </Select>
           </Field>
-          <Field label="Objet *">
+          <Field label={tr('Messages.objet')}>
             <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
           </Field>
-          <Field label="Message *">
+          <Field label={tr('Messages.message')}>
             <Textarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
           </Field>
         </form>

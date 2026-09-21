@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { supportApi } from '../api/support'
@@ -120,8 +121,8 @@ export function Support() {
   return (
     <div>
       <PageHeader
-        title="Support"
-        subtitle="Tickets d'assistance et demandes"
+        title={tr('Support.support')}
+        subtitle={tr('Support.tickets.d.assistance.et.demandes')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -148,7 +149,7 @@ export function Support() {
           }}
           className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
         />
-        Mes tickets uniquement
+        {tr('Support.mes.tickets.uniquement')}
       </label>
 
       {error && <ErrorBlock message={error} />}
@@ -211,8 +212,8 @@ export function Support() {
 
       {!loading && data && data.items.length === 0 && (
         <EmptyState
-          title="Aucun ticket"
-          description="Créez un ticket pour contacter le support."
+          title={tr('Support.aucun.ticket')}
+          description={tr('Support.creez.un.ticket.pour.contacter.le.support')}
           action={
             <Button
               className="w-auto"
@@ -230,7 +231,7 @@ export function Support() {
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Nouveau ticket"
+        title={tr('Support.nouveau.ticket')}
         footer={
           <>
             <InlineButton onClick={() => setCreateOpen(false)}>Annuler</InlineButton>
@@ -247,29 +248,29 @@ export function Support() {
               {formError}
             </div>
           )}
-          <Field label="Titre *">
+          <Field label={tr('Support.titre')}>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </Field>
-          <Field label="Description *">
+          <Field label={tr('Support.description')}>
             <Textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Priorité">
+            <Field label={tr('Support.priorite')}>
               <Select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TicketPriority)}
               >
-                <option value="LOW">Basse</option>
-                <option value="MEDIUM">Moyenne</option>
-                <option value="HIGH">Haute</option>
-                <option value="URGENT">Urgente</option>
+                <option value="LOW">{tr('Support.basse')}</option>
+                <option value="MEDIUM">{tr('Support.moyenne')}</option>
+                <option value="HIGH">{tr('Support.haute')}</option>
+                <option value="URGENT">{tr('Support.urgente')}</option>
               </Select>
             </Field>
-            <Field label="Catégorie">
+            <Field label={tr('Support.categorie')}>
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="Facturation, bug, question…"
+                placeholder={tr('Support.facturation.bug.question')}
               />
             </Field>
           </div>
@@ -303,23 +304,23 @@ export function Support() {
               <div className="flex flex-wrap gap-2">
                 {detail.status === 'OPEN' && (
                   <InlineButton onClick={() => handleStatusChange('IN_PROGRESS')}>
-                    Passer en cours
+                    {tr('Support.passer.en.cours')}
                   </InlineButton>
                 )}
                 {(detail.status === 'OPEN' || detail.status === 'IN_PROGRESS') && (
-                  <InlineButton onClick={() => handleStatusChange('RESOLVED')}>Résoudre</InlineButton>
+                  <InlineButton onClick={() => handleStatusChange('RESOLVED')}>{tr('Support.resoudre')}</InlineButton>
                 )}
-                <InlineButton onClick={() => handleStatusChange('CLOSED')}>Clore</InlineButton>
+                <InlineButton onClick={() => handleStatusChange('CLOSED')}>{tr('Support.clore')}</InlineButton>
               </div>
             )}
             {canManage && detail.status === 'CLOSED' && (
-              <InlineButton onClick={() => handleStatusChange('OPEN')}>Rouvrir</InlineButton>
+              <InlineButton onClick={() => handleStatusChange('OPEN')}>{tr('Support.rouvrir')}</InlineButton>
             )}
 
             <div className="space-y-3 border-t border-gray-200 pt-4">
-              <p className="text-sm font-semibold text-gray-900">Échanges</p>
+              <p className="text-sm font-semibold text-gray-900">{tr('Support.echanges')}</p>
               {exchanges.length === 0 && (
-                <p className="text-sm text-gray-400">Aucun échange pour le moment.</p>
+                <p className="text-sm text-gray-400">{tr('Support.aucun.echange.pour.le.moment')}</p>
               )}
               {exchanges.map((exc) => (
                 <div key={exc.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
@@ -334,7 +335,7 @@ export function Support() {
               <div className="space-y-2">
                 <Textarea
                   rows={3}
-                  placeholder="Votre message…"
+                  placeholder={tr('Support.votre.message')}
                   value={exchangeBody}
                   onChange={(e) => setExchangeBody(e.target.value)}
                 />
@@ -344,7 +345,7 @@ export function Support() {
                   disabled={exchangeSubmitting || !exchangeBody.trim()}
                 >
                   {exchangeSubmitting ? <Spinner className="border-white border-t-transparent" /> : null}
-                  Envoyer
+                  {tr('Support.envoyer')}
                 </Button>
               </div>
             </div>

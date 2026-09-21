@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import type { Role } from '../api/types'
@@ -199,9 +200,9 @@ export function MainLayout() {
       <aside className="flex w-64 shrink-0 flex-col overflow-y-auto bg-gray-900 text-gray-300">
         <div className="flex h-16 shrink-0 items-center gap-2 px-5 text-lg font-bold text-white">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-extrabold">
-            E
+            {tr('MainLayout.e')}
           </span>
-          SOC360
+          {tr('MainLayout.soc360')}
         </div>
 
         <div id="_horloge_numerique" className="px-5 pb-3">
@@ -209,7 +210,7 @@ export function MainLayout() {
         </div>
 
         <p className="px-5 pb-2 text-gray-500 font_last_commit">
-          Last Commit : <br></br>{_LAST_COMMIT_}
+          {tr('MainLayout.last.commit')} <br></br>{_LAST_COMMIT_}
         </p>
 
         <nav className="flex-1 space-y-0.5 px-3 pb-4">

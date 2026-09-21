@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { activityTypesApi } from '../api/activities'
@@ -127,8 +128,8 @@ export function ActivityTypes() {
   return (
     <div>
       <PageHeader
-        title="Types d’activités"
-        subtitle="Types de prestations utilisés dans les activités et les CRA"
+        title={tr('ActivityTypes.types.d.activites')}
+        subtitle={tr('ActivityTypes.types.de.prestations.utilises.dans.les.activites.et.les.cra')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -145,8 +146,8 @@ export function ActivityTypes() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher un type…"
-          aria-label="Rechercher un type"
+          placeholder={tr('ActivityTypes.rechercher.un.type')}
+          aria-label={tr('ActivityTypes.rechercher.un.type.2')}
         />
       </div>
 
@@ -229,13 +230,13 @@ export function ActivityTypes() {
       )}
 
       {!loading && data && data.length > 0 && filtered.length === 0 && (
-        <EmptyState title="Aucun résultat" description="Aucun type ne correspond à la recherche." />
+        <EmptyState title={tr('ActivityTypes.aucun.resultat')} description={tr('ActivityTypes.aucun.type.ne.correspond.a.la.recherche')} />
       )}
 
       {!loading && data && data.length === 0 && (
         <EmptyState
-          title="Aucun type d’activité"
-          description="Créez des types de prestations pour vos activités et vos CRA."
+          title={tr('ActivityTypes.aucun.type.d.activite')}
+          description={tr('ActivityTypes.creez.des.types.de.prestations.pour.vos.activites.et.vos.cra')}
           action={
             canEdit && workingSocId ? (
               <Button className="w-auto" onClick={openCreate}>
@@ -267,30 +268,30 @@ export function ActivityTypes() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Code *">
+            <Field label={tr('ActivityTypes.code')}>
               <Input
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
-                placeholder="MISSION"
+                placeholder={tr('ActivityTypes.mission')}
               />
             </Field>
-            <Field label="Libellé (FR) *">
+            <Field label={tr('ActivityTypes.libelle.fr')}>
               <Input
                 value={form.labelFr}
                 onChange={(e) => setForm({ ...form, labelFr: e.target.value })}
-                placeholder="Mission"
+                placeholder={tr('ActivityTypes.mission.2')}
               />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Libellé (EN)">
+            <Field label={tr('ActivityTypes.libelle.en')}>
               <Input
                 value={form.labelEn}
                 onChange={(e) => setForm({ ...form, labelEn: e.target.value })}
-                placeholder="Mission"
+                placeholder={tr('ActivityTypes.mission.2')}
               />
             </Field>
-            <Field label="Couleur">
+            <Field label={tr('ActivityTypes.couleur')}>
               <div className="flex items-center gap-2">
                 <input
                   type="color"

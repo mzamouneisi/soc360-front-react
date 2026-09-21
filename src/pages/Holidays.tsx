@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useEffect, useMemo, useState } from 'react'
 import { socHolidaysApi } from '../api/socHolidays'
 import { ApiError } from '../api/client'
@@ -125,14 +126,14 @@ export function Holidays() {
 
   return (
     <div>
-      <PageHeader title="Jours fériés" subtitle="Définissez les jours fériés spécifiques de la société" />
+      <PageHeader title={tr('Holidays.jours.feries')} subtitle={tr('Holidays.definissez.les.jours.feries.specifiques.de.la.societe')} />
 
       <Card className="max-w-3xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <InlineButton onClick={goPrev}>Préc</InlineButton>
-            <InlineButton onClick={goToday}>Aujourd'hui</InlineButton>
-            <InlineButton onClick={goNext}>Suiv</InlineButton>
+            <InlineButton onClick={goPrev}>{tr('Holidays.prec')}</InlineButton>
+            <InlineButton onClick={goToday}>{tr('Holidays.aujourd.hui')}</InlineButton>
+            <InlineButton onClick={goNext}>{tr('Holidays.suiv')}</InlineButton>
             <RefreshButton onClick={() => setTick((t) => t + 1)} label="" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900">
@@ -140,14 +141,14 @@ export function Holidays() {
           </h2>
           {canEdit && (
             <Button variant="yellow" className="w-auto" onClick={duplicateToNextYear}>
-              Dupliquer vers {year + 1}
+              {tr('Holidays.dupliquer.vers')} {year + 1}
             </Button>
           )}
         </div>
 
         {canEdit && (
           <p className="mt-3 text-sm text-gray-500">
-            Cliquez sur un jour pour l'ajouter comme jour férié, ou le supprimer s'il l'est déjà.
+            {tr('Holidays.cliquez.sur.un.jour.pour.l.ajouter.comme.jour.ferie.ou.le.su')}
           </p>
         )}
 

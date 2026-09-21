@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { suppliersApi } from '../api/suppliers'
@@ -157,8 +158,8 @@ export function Suppliers() {
   return (
     <div>
       <PageHeader
-        title="Fournisseurs"
-        subtitle="Gérez vos fournisseurs et vos contacts"
+        title={tr('Suppliers.fournisseurs')}
+        subtitle={tr('Suppliers.gerez.vos.fournisseurs.et.vos.contacts')}
         actions={
           <>
             <RefreshButton onClick={reload} />
@@ -246,8 +247,8 @@ export function Suppliers() {
       )}
       {!loading && data?.length === 0 && (
         <EmptyState
-          title="Aucun fournisseur"
-          description="Ajoutez votre premier fournisseur pour commencer."
+          title={tr('Suppliers.aucun.fournisseur')}
+          description={tr('Suppliers.ajoutez.votre.premier.fournisseur.pour.commencer')}
         />
       )}
 
@@ -272,45 +273,45 @@ export function Suppliers() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Société associée *">
+            <Field label={tr('Suppliers.societe.associee')}>
               <Select value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
-                <option value="">Sélectionner…</option>
+                <option value="">{tr('Suppliers.selectionner')}</option>
                 {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
             <Field label={isAdmin ? 'Société parente' : 'Société parente (société de travail)'}>
               <Select value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
-                <option value="">Aucune</option>
+                <option value="">{tr('Suppliers.aucune')}</option>
                 {parentSocs.map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
           </div>
-          <Field label="Nom du fournisseur *">
+          <Field label={tr('Suppliers.nom.du.fournisseur')}>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
-          <Field label="Notes (infos spécifiques pour votre société)">
+          <Field label={tr('Suppliers.notes.infos.specifiques.pour.votre.societe')}>
             <Textarea
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Conditions particulières, interlocuteurs, remarques…"
+              placeholder={tr('Suppliers.conditions.particulieres.interlocuteurs.remarques')}
             />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Contact">
+            <Field label={tr('Suppliers.contact')}>
               <Input
                 value={form.contactName}
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
               />
             </Field>
-            <Field label="Téléphone">
+            <Field label={tr('Suppliers.telephone')}>
               <Input
                 value={form.contactPhone}
                 onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               />
             </Field>
           </div>
-          <Field label="E-mail du contact">
+          <Field label={tr('Suppliers.e.mail.du.contact')}>
             <Input
               type="email"
               value={form.contactEmail}
@@ -324,7 +325,7 @@ export function Suppliers() {
               onChange={(e) => setForm({ ...form, active: e.target.checked })}
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
-            Fournisseur actif
+            {tr('Suppliers.fournisseur.actif')}
           </label>
         </form>
       </Modal>

@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useEffect, useState } from 'react'
 import { ApiError } from '../api/client'
 import { crasApi } from '../api/cras'
@@ -133,8 +134,8 @@ export function IndispoList() {
   return (
     <div>
       <PageHeader
-        title="Indispos"
-        subtitle="Congés du consultant par mois"
+        title={tr('IndispoList.indispos')}
+        subtitle={tr('IndispoList.conges.du.consultant.par.mois')}
         actions={
           <InlineButton onClick={reload} title="Recharger la liste des Indispos">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -153,7 +154,7 @@ export function IndispoList() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filtrer par année-mois, consultant ou statut…"
+            placeholder={tr('IndispoList.filtrer.par.annee.mois.consultant.ou.statut')}
           />
         </div>
       )}
@@ -181,28 +182,28 @@ export function IndispoList() {
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Année-mois
+                      {tr('IndispoList.annee.mois')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Consultant
+                      {tr('IndispoList.consultant')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Statut
+                      {tr('IndispoList.statut')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Jours
+                      {tr('IndispoList.jours')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Soumise le
+                      {tr('IndispoList.soumise.le')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Validée le
+                      {tr('IndispoList.validee.le')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Commentaire
+                      {tr('IndispoList.commentaire')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      Actions
+                      {tr('IndispoList.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -228,7 +229,7 @@ export function IndispoList() {
                           {CRA_STATUS_LABELS[ind.status] ?? ind.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{ind.totalWorkedDays} j</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{ind.totalWorkedDays} {tr('IndispoList.j')}</td>
                       <td className="px-4 py-3 text-sm text-gray-500">
                         {formatDate(ind.submittedAt)}
                       </td>
@@ -253,7 +254,7 @@ export function IndispoList() {
                               className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                               onClick={() => handleDelete(ind)}
                             >
-                              Supprimer
+                              {tr('IndispoList.supprimer')}
                             </InlineButton>
                           )}
                         </div>
@@ -268,16 +269,16 @@ export function IndispoList() {
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <InlineButton disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
-                ← Précédent
+                {tr('IndispoList.precedent')}
               </InlineButton>
               <span className="text-sm text-gray-500">
-                Page {safePage + 1} / {totalPages}
+                {tr('IndispoList.page')} {safePage + 1} / {totalPages}
               </span>
               <InlineButton
                 disabled={safePage >= totalPages - 1}
                 onClick={() => setPage(safePage + 1)}
               >
-                Suivant →
+                {tr('IndispoList.suivant')}
               </InlineButton>
             </div>
           )}
@@ -297,7 +298,7 @@ export function IndispoList() {
 
       <Card className="mt-4 flex flex-wrap items-center gap-3 p-4">
         <label className="flex items-center gap-2 text-sm text-gray-600">
-          Période :
+          {tr('IndispoList.periode')}
           <Select
             className="w-auto"
             value={month}
@@ -322,13 +323,13 @@ export function IndispoList() {
           </Select>
         </label>
         <div className="flex items-center gap-1">
-          <InlineButton onClick={goPrev} title="Mois précédent">
+          <InlineButton onClick={goPrev} title={tr('IndispoList.mois.precedent')}>
             ◀
           </InlineButton>
-          <InlineButton onClick={goToday} title="Revenir au mois actuel">
-            auj
+          <InlineButton onClick={goToday} title={tr('IndispoList.revenir.au.mois.actuel')}>
+            {tr('IndispoList.auj')}
           </InlineButton>
-          <InlineButton onClick={goNext} title="Mois suivant">
+          <InlineButton onClick={goNext} title={tr('IndispoList.mois.suivant')}>
             ▶
           </InlineButton>
         </div>
@@ -348,12 +349,12 @@ export function IndispoList() {
                   : 'Créer une nouvelle Indispo pour ce mois'
               }
             >
-              Nouvelle Indispo
+              {tr('IndispoList.nouvelle.indispo')}
             </Button>
           </div>
           {hasIndispoThisMonth && (
             <p className="text-sm text-gray-500">
-              Une Indispo existe déjà pour ce mois. Cliquez sur « Éditer » dans la liste ci-dessus.
+              {tr('IndispoList.une.indispo.existe.deja.pour.ce.mois.cliquez.sur.editer.dans')}
             </p>
           )}
         </div>

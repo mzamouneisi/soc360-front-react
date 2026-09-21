@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api/auth'
 import { ApiError } from '../api/client'
@@ -44,7 +45,7 @@ export function ChangePassword() {
     <div className="flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Changer le mot de passe</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{tr('ChangePassword.changer.le.mot.de.passe')}</h1>
           <p className="mt-1 text-sm text-gray-500">
             {forced
               ? 'Votre premier mot de passe doit être modifié avant de continuer.'
@@ -54,7 +55,7 @@ export function ChangePassword() {
 
         {success && (
           <div className="mb-4">
-            <Alert variant="success">Mot de passe mis à jour. Redirection…</Alert>
+            <Alert variant="success">{tr('ChangePassword.mot.de.passe.mis.a.jour.redirection')}</Alert>
           </div>
         )}
 
@@ -65,7 +66,7 @@ export function ChangePassword() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Mot de passe actuel">
+          <Field label={tr('ChangePassword.mot.de.passe.actuel')}>
             <Input
               type="password"
               autoComplete="current-password"
@@ -76,7 +77,7 @@ export function ChangePassword() {
             />
           </Field>
 
-          <Field label="Nouveau mot de passe">
+          <Field label={tr('ChangePassword.nouveau.mot.de.passe')}>
             <Input
               type="password"
               autoComplete="new-password"
@@ -87,7 +88,7 @@ export function ChangePassword() {
             />
           </Field>
 
-          <Field label="Confirmer le nouveau mot de passe">
+          <Field label={tr('ChangePassword.confirmer.le.nouveau.mot.de.passe')}>
             <Input
               type="password"
               autoComplete="new-password"
@@ -100,7 +101,7 @@ export function ChangePassword() {
 
           <Button type="submit" disabled={submitting || success}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Mettre à jour
+            {tr('ChangePassword.mettre.a.jour')}
           </Button>
         </form>
 
@@ -110,7 +111,7 @@ export function ChangePassword() {
               onClick={logout}
               className="text-sm font-medium text-gray-500 hover:text-gray-700"
             >
-              Annuler et revenir
+              {tr('ChangePassword.annuler.et.revenir')}
             </button>
           </div>
         )}

@@ -1,3 +1,4 @@
+import { tr } from '../i18n/translate'
 import { useEffect, useState, type FormEvent } from 'react'
 import { authApi, type CompanyLookup } from '../api/auth'
 import type { AddSocPayload, SocLiteDto } from '../api/types'
@@ -138,7 +139,7 @@ setWebsite(ensureHttps(company.website))
   }
 
   function clearCompanySearch() {
-    if (!window.confirm('Voulez-vous effacer tous les champs du formulaire ?')) return
+    if (!window.confirm(tr('AddSocModal.voulez.vous.effacer.tous.les.champs.du.formulaire'))) return
     reset()
   }
 
@@ -168,7 +169,7 @@ setWebsite(ensureHttps(company.website))
   return (
     <Modal
       open={open}
-      title="Inscrire une nouvelle société : "
+      title={tr('AddSocModal.inscrire.une.nouvelle.societe')}
       onClose={close}
       size="lg"
       footer={
@@ -204,32 +205,32 @@ setWebsite(ensureHttps(company.website))
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Nom de la société *">
-            <Input value={name} name="name" onChange={(e) => setName(e.target.value)} placeholder="Ex : XYZ Consulting" autoFocus />
+          <Field label={tr('AddSocModal.nom.de.la.societe')}>
+            <Input value={name} name="name" onChange={(e) => setName(e.target.value)} placeholder={tr('AddSocModal.ex.xyz.consulting')} autoFocus />
           </Field>
-          <Field label="Gérant">
+          <Field label={tr('AddSocModal.gerant')}>
             <Input value={gerant} name="gerant" onChange={(e) => setGerant(e.target.value)} />
           </Field>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="SIRET">
+          <Field label={tr('AddSocModal.siret')}>
             <div className="flex flex-wrap gap-2">
-              <Input className="basis-full" name="siret" value={siret} onChange={(e) => setSiret(e.target.value)} placeholder="14 chiffres" />
+              <Input className="basis-full" name="siret" value={siret} onChange={(e) => setSiret(e.target.value)} placeholder={tr('AddSocModal.14.chiffres')} />
               <div className="basis-full flex justify-start gap-2">
                 <Button type="button" onClick={searchCompany} disabled={searching} className="!w-auto whitespace-nowrap">
                   {searching ? 'Recherche…' : 'Rechercher'}
                 </Button>
                 <Button type="button" onClick={clearCompanySearch} className="!w-auto whitespace-nowrap !bg-gray-100 !text-gray-700 hover:!bg-gray-200">
-                  Effacer
+                  {tr('AddSocModal.effacer')}
                 </Button>
               </div>
             </div>
           </Field>
-          <Field label="Code NAF">
-            <Input value={codeNaf} onChange={(e) => setCodeNaf(e.target.value)} placeholder="Ex : 6202A" />
+          <Field label={tr('AddSocModal.code.naf')}>
+            <Input value={codeNaf} onChange={(e) => setCodeNaf(e.target.value)} placeholder={tr('AddSocModal.ex.6202a')} />
           </Field>
-          <Field label="URSSAF">
+          <Field label={tr('AddSocModal.urssaf')}>
             <Input value={urssaf} onChange={(e) => setUrssaf(e.target.value)} />
           </Field>
         </div>
@@ -242,58 +243,58 @@ setWebsite(ensureHttps(company.website))
               onChange={(e) => setMine(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
-            C'est ma société
+            {tr('AddSocModal.c.est.ma.societe')}
           </label>
         )}
 
-        <Field label="Description">
+        <Field label={tr('AddSocModal.description')}>
           <Textarea
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Activité, présentation de la société…"
+            placeholder={tr('AddSocModal.activite.presentation.de.la.societe')}
           />
         </Field>
 
-        <Field label="Informations web">
+        <Field label={tr('AddSocModal.informations.web')}>
           <Textarea rows={3} value={infosWeb} onChange={(e) => setInfosWeb(e.target.value)} />
         </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Catégorie entreprise">
+          <Field label={tr('AddSocModal.categorie.entreprise')}>
             <Input value={categorieEntreprise} onChange={(e) => setCategorieEntreprise(e.target.value)} />
           </Field>
-          <Field label="Date de création">
+          <Field label={tr('AddSocModal.date.de.creation')}>
             <Input type="date" value={dateCreation} onChange={(e) => setDateCreation(e.target.value)} />
           </Field>
-          <Field label="Date de fermeture">
+          <Field label={tr('AddSocModal.date.de.fermeture')}>
             <Input type="date" value={dateFermeture} onChange={(e) => setDateFermeture(e.target.value)} />
           </Field>
         </div>
 
-        <Field label="Site web">
+        <Field label={tr('AddSocModal.site.web')}>
           <Input
             type="url"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
-            placeholder="https://…"
+            placeholder={tr('AddSocModal.https')}
           />
         </Field>
 
         <fieldset className="space-y-4 rounded-lg border border-gray-200 p-4">
-          <legend className="px-1 text-sm font-medium text-gray-700">Adresse</legend>
-          <Field label="Rue">
-            <Input value={street} onChange={(e) => setStreet(e.target.value)} placeholder="N° et rue" />
+          <legend className="px-1 text-sm font-medium text-gray-700">{tr('AddSocModal.adresse')}</legend>
+          <Field label={tr('AddSocModal.rue')}>
+            <Input value={street} onChange={(e) => setStreet(e.target.value)} placeholder={tr('AddSocModal.n.et.rue')} />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Field label="Code postal">
+            <Field label={tr('AddSocModal.code.postal')}>
               <Input value={zipCode} onChange={(e) => setZipCode(e.target.value)} />
             </Field>
-            <Field label="Ville">
+            <Field label={tr('AddSocModal.ville')}>
               <Input value={city} onChange={(e) => setCity(e.target.value)} />
             </Field>
-            <Field label="Pays">
-              <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="FR" />
+            <Field label={tr('AddSocModal.pays')}>
+              <Input value={country} onChange={(e) => setCountry(e.target.value)} placeholder={tr('AddSocModal.fr')} />
             </Field>
           </div>
         </fieldset>
@@ -301,8 +302,8 @@ setWebsite(ensureHttps(company.website))
       {searchResults.length > 1 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="flex h-[600px] w-[600px] max-h-[90vh] max-w-[92vw] flex-col rounded-xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true">
-            <h3 className="text-lg font-semibold text-gray-900">Choisir une société</h3>
-            <p className="mt-1 text-sm text-gray-500">{searchResults.length} sociétés trouvées</p>
+            <h3 className="text-lg font-semibold text-gray-900">{tr('AddSocModal.choisir.une.societe')}</h3>
+            <p className="mt-1 text-sm text-gray-500">{searchResults.length} {tr('AddSocModal.societes.trouvees')}</p>
             <div className="mt-4 flex-1 space-y-2 overflow-y-auto">
               {searchResults.map((company, index) => (
                 <button key={`${company.siret ?? company.name}-${index}`} type="button" onClick={() => chooseCompany(company)} className="w-full rounded-lg border border-gray-200 p-3 text-left hover:border-brand-500 hover:bg-brand-50">
@@ -311,7 +312,7 @@ setWebsite(ensureHttps(company.website))
                 </button>
               ))}
             </div>
-            <Button type="button" onClick={() => setSearchResults([])} className="mt-4 !w-auto !bg-gray-100 !text-gray-700">Annuler</Button>
+            <Button type="button" onClick={() => setSearchResults([])} className="mt-4 !w-auto !bg-gray-100 !text-gray-700">{tr('AddSocModal.annuler')}</Button>
           </div>
         </div>
       )}
