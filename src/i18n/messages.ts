@@ -1,4 +1,4 @@
-import { EXTRACTED_FR } from './messages.generated'
+import { EXTRACTED_AR, EXTRACTED_EN, EXTRACTED_FR } from './messages.generated'
 
 export type Language = string
 
@@ -230,5 +230,6 @@ const en: Messages = {
 
 export const MESSAGES: Record<string, Messages> = {
   fr: { ...fr, ...EXTRACTED_FR },
-  en: { ...en, ...EXTRACTED_FR },
+  en: { ...en, ...EXTRACTED_EN },
+  ar: { ...EXTRACTED_AR },
 }

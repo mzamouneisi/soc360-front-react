@@ -49,7 +49,7 @@ export function Languages() {
       })
       setDrafts(next)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Impossible de charger les traductions')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorLoad'))
     } finally {
       setLoading(false)
     }
@@ -77,17 +77,17 @@ export function Languages() {
     setMessage(null)
     try {
       await i18nApi.saveEntry(entry.key, drafts[entry.id] ?? {})
-      setMessage(`« ${entry.key} » enregistrée.`)
+      setMessage(tr('languages.keySaved', { key: entry.key }))
       await refreshI18n()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Échec de l’enregistrement')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorSave'))
     } finally {
       setSaving(null)
     }
   }
 
   async function deleteRow(entry: LanguageEntry) {
-    if (!window.confirm(`Supprimer la clé « ${entry.key} » ?`)) return
+    if (!window.confirm(tr('languages.confirmDeleteKey', { key: entry.key }))) return
     setError(null)
     setMessage(null)
     try {
@@ -95,7 +95,7 @@ export function Languages() {
       await load()
       await refreshI18n()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Échec de la suppression')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorDelete'))
     }
   }
 
@@ -108,11 +108,11 @@ export function Languages() {
       setFillLanguage(selectedCode.trim().toLowerCase())
       setSelectedCode('')
       setLanguageFilter('')
-      setMessage('Langue ajoutée.')
+      setMessage(tr('languages.added'))
       await load()
       await refreshI18n()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Échec de l’ajout de la langue')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorAddLanguage'))
     }
   }
 
@@ -136,7 +136,7 @@ export function Languages() {
         .map(([key, text]) => ({ key, text }))
 
       if (pending.length === 0) {
-        setMessage(`La langue « ${code} » est déjà entièrement remplie.`)
+        setMessage(tr('languages.alreadyFilled', { code }))
         return
       }
 
@@ -146,34 +146,38 @@ export function Languages() {
         translations: { [code]: value },
       }))
       if (entries.length === 0) {
-        setMessage('Aucune traduction n’a pu être récupérée pour cette langue.')
+        setMessage(tr('languages.noTranslation'))
         return
       }
 
       const result = await i18nApi.importAll({ entries })
       setMessage(
-        `Langue « ${code} » : ${result.inserted + result.updated} clé(s) traduite(s) via le service de traduction, ${pending.length - entries.length} échec(s).`,
+        tr('languages.autofillResult', {
+          code,
+          translated: result.inserted + result.updated,
+          failed: pending.length - entries.length,
+        }),
       )
       await load()
       await refreshI18n()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Échec du remplissage automatique')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorAutofill'))
     } finally {
       setAutofilling(null)
     }
   }
 
   async function removeLanguage(code: string) {
-    if (!window.confirm(`Supprimer la langue « ${code} » et toutes ses traductions ?`)) return
+    if (!window.confirm(tr('languages.confirmDeleteLanguage', { code }))) return
     setError(null)
     setMessage(null)
     try {
       await i18nApi.removeLanguage(code)
-      setMessage(`Langue « ${code} » supprimée.`)
+      setMessage(tr('languages.deleted', { code }))
       await load()
       await refreshI18n()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Échec de la suppression de la langue')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorDeleteLanguage'))
     }
   }
 
@@ -185,11 +189,11 @@ export function Languages() {
       await i18nApi.createEntry(newKey.trim(), newTranslations)
       setNewKey('')
       setNewTranslations({})
-      setMessage('Clé ajoutée.')
+      setMessage(tr('languages.keyAdded'))
       await load()
       await refreshI18n()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Échec de l’ajout de la clé')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorAddKey'))
     }
   }
 
@@ -199,7 +203,7 @@ export function Languages() {
       const payload = await i18nApi.exportAll()
       downloadJson(payload, `soc360-langues-${new Date().toISOString().slice(0, 10)}.json`)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Échec de l’export')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorExport'))
     }
   }
 
@@ -211,12 +215,16 @@ export function Languages() {
       const payload = JSON.parse(text) as ExportPayload
       const result = await i18nApi.importAll(payload)
       setMessage(
-        `Import terminé : ${result.inserted} ajout(s), ${result.updated} mise(s) à jour, ${result.skipped} ignoré(s).`,
+        tr('languages.importResult', {
+          inserted: result.inserted,
+          updated: result.updated,
+          skipped: result.skipped,
+        }),
       )
       await load()
       await refreshI18n()
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Fichier JSON invalide')
+      setError(err instanceof ApiError ? err.message : tr('languages.errorInvalidJson'))
     }
   }
 
@@ -260,7 +268,7 @@ export function Languages() {
               {lang !== 'fr' && (
                 <button
                   type="button"
-                  aria-label={`Supprimer la langue ${lang}`}
+                  aria-label={tr('languages.deleteAria', { lang })}
                   title={tr('Languages.supprimer.la.langue')}
                   onClick={() => void removeLanguage(lang)}
                   className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-100 hover:text-red-600"
@@ -303,8 +311,13 @@ export function Languages() {
             </InlineButton>
             <span className="text-xs text-gray-500">
               {selectedCode
-                ? `Sélection : ${selectedCode} — ${findKnownLanguage(selectedCode)?.label ?? languageLabel(selectedCode)}`
-                : `${knownOptions.length} langue(s) disponible(s)`}
+                ? tr('languages.selection', {
+                    code: selectedCode,
+                    label:
+                      findKnownLanguage(selectedCode)?.label ??
+                      languageLabel(selectedCode),
+                  })
+                : tr('languages.availableCount', { count: knownOptions.length })}
             </span>
           </div>
         </div>
