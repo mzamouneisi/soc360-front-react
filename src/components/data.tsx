@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Spinner } from './ui'
 import { badgeClasses } from '../lib/format'
 import { useAuth } from '../auth/AuthContext'
+import { useI18n } from '../i18n'
 
 export function Badge({
   kind = 'muted',
@@ -97,11 +98,12 @@ export function Table<T>({
   paginate?: boolean
 }) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [page, setPage] = useState(0)
 
   if (loading) return <LoadingBlock />
   if (rows.length === 0) {
-    return empty ?? <EmptyState title="Aucun élément" description="Aucune donnée à afficher." />
+    return empty ?? <EmptyState title={t('common.noElements')} description={t('common.noData')} />
   }
 
   const pageSize = paginate ? (user?.pageSize ?? 5) : 0
@@ -163,12 +165,13 @@ export function Pagination({
   total?: number
   onChange: (page: number) => void
 }) {
+  const { t } = useI18n()
   if (totalPages <= 1) return null
   return (
     <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
       {total !== undefined && (
         <span>
-          {total} élément{total > 1 ? 's' : ''}
+          {total} {total > 1 ? t('common.items') : t('common.item')}
         </span>
       )}
       <div className="flex items-center gap-1">
@@ -177,17 +180,17 @@ export function Pagination({
           disabled={page <= 0}
           onClick={() => onChange(page - 1)}
         >
-          Précédent
+          {t('common.previous')}
         </button>
         <span className="px-3">
-          Page {page + 1} / {totalPages}
+          {t('common.page')} {page + 1} / {totalPages}
         </span>
         <button
           className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           disabled={page >= totalPages - 1}
           onClick={() => onChange(page + 1)}
         >
-          Suivant
+          {t('common.next')}
         </button>
       </div>
     </div>
@@ -209,6 +212,7 @@ export function Modal({
   footer?: ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl'
 }) {
+  const { t } = useI18n()
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
@@ -240,7 +244,7 @@ export function Modal({
           <button
             onClick={onClose}
             className="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-            aria-label="Fermer"
+            aria-label={t('common.close')}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12Z" />

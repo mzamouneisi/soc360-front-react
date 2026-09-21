@@ -6,6 +6,8 @@ import { ROLE_LABELS, initials } from '../lib/format'
 import { SocSelector } from '../soc/SocSelector'
 import { NotificationBell } from './NotificationBell'
 import { GlobalLoading } from '../components/GlobalLoading'
+import { useI18n } from '../i18n'
+import { LanguageSelector } from '../i18n/LanguageSelector'
 
 interface NavItem {
   to: string
@@ -95,6 +97,7 @@ function NavSection({ section, role }: { section: NavSection; role: Role }) {
 }
 
 function HorlogeNumerique() {
+  const { locale } = useI18n()
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -102,8 +105,8 @@ function HorlogeNumerique() {
     return () => clearInterval(timer)
   }, [])
 
-  const date = now.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })
-  const time = now.toLocaleTimeString('fr-FR', { hour12: false })
+  const date = now.toLocaleDateString(locale, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })
+  const time = now.toLocaleTimeString(locale, { hour12: false })
 
   return (
     <div className="text-left">
@@ -117,6 +120,7 @@ function HorlogeNumerique() {
 
 export function MainLayout() {
   const { user, logout } = useAuth()
+  const { t } = useI18n()
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
@@ -125,45 +129,45 @@ export function MainLayout() {
   const sections: NavSection[] = [
     {
       items: [
-        { to: '/', label: 'Tableau de bord', icon: ICONS.dashboard },
+        { to: '/', label: t('nav.dashboard'), icon: ICONS.dashboard },
       ],
     },
     {
-      title: 'Gestion',
+      title: t('nav.group.management'),
       items: [
-        { to: '/clients', label: 'Clients', icon: ICONS.clients },
-        { to: '/fournisseurs', label: 'Fournisseurs', icon: ICONS.suppliers },
-        { to: '/projets', label: 'Projets', icon: ICONS.projects },
-        { to: '/types-activites', label: 'Types d’activités', icon: ICONS.activities },
-        { to: '/activites', label: 'Activités & tarifs', icon: ICONS.activities },
-        { to: '/consultants', label: 'Collaborateurs', icon: ICONS.consultants },
-        { to: '/missions', label: 'Missions', icon: ICONS.missions },
+        { to: '/clients', label: t('nav.clients'), icon: ICONS.clients },
+        { to: '/fournisseurs', label: t('nav.suppliers'), icon: ICONS.suppliers },
+        { to: '/projets', label: t('nav.projects'), icon: ICONS.projects },
+        { to: '/types-activites', label: t('nav.activityTypes'), icon: ICONS.activities },
+        { to: '/activites', label: t('nav.activities'), icon: ICONS.activities },
+        { to: '/consultants', label: t('nav.consultants'), icon: ICONS.consultants },
+        { to: '/missions', label: t('nav.missions'), icon: ICONS.missions },
       ],
     },
     {
-      title: 'Activité',
+      title: t('nav.group.activity'),
       items: [
-        { to: '/mes-activites', label: 'Mes Activités', icon: ICONS.activities, roles: ['CONSULTANT'] },
-        { to: '/cras', label: 'CRA', icon: ICONS.cra },
-        { to: '/indisponibilites', label: 'Indisponibilités', icon: ICONS.holiday },
-        { to: '/notes-frais', label: 'Notes de frais', icon: ICONS.expenses },
-        { to: '/jours-feries', label: 'Jours fériés', icon: ICONS.holiday },
+        { to: '/mes-activites', label: t('nav.myActivities'), icon: ICONS.activities, roles: ['CONSULTANT'] },
+        { to: '/cras', label: t('nav.cra'), icon: ICONS.cra },
+        { to: '/indisponibilites', label: t('nav.unavailability'), icon: ICONS.holiday },
+        { to: '/notes-frais', label: t('nav.expenses'), icon: ICONS.expenses },
+        { to: '/jours-feries', label: t('nav.holidays'), icon: ICONS.holiday },
       ],
     },
     {
-      title: 'Finance',
+      title: t('nav.group.finance'),
       items: [
-        { to: '/facturation', label: 'Facturation', icon: ICONS.billing },
-        { to: '/fiches-paie', label: 'Fiches de paie', icon: ICONS.payslips },
+        { to: '/facturation', label: t('nav.billing'), icon: ICONS.billing },
+        { to: '/fiches-paie', label: t('nav.payslips'), icon: ICONS.payslips },
       ],
     },
     {
-      title: 'Espace',
+      title: t('nav.group.space'),
       items: [
-        { to: '/documents', label: 'Documents', icon: ICONS.documents },
-        { to: '/messages', label: 'Messages', icon: ICONS.messages },
-        { to: '/support', label: 'Support', icon: ICONS.support },
-        { to: '/parametres', label: 'Paramètres', icon: ICONS.support },
+        { to: '/documents', label: t('nav.documents'), icon: ICONS.documents },
+        { to: '/messages', label: t('nav.messages'), icon: ICONS.messages },
+        { to: '/support', label: t('nav.support'), icon: ICONS.support },
+        { to: '/parametres', label: t('nav.settings'), icon: ICONS.support },
       ],
     },
   ]
@@ -171,19 +175,19 @@ export function MainLayout() {
   if (user.role === 'ADMIN' || user.role === 'RESPONSIBLE_SOC') {
     const socItems: NavItem[] = []
     if (isAdmin) {
-      socItems.push({ to: '/soc/demo', label: 'Société démo', icon: ICONS.soc })
+      socItems.push({ to: '/soc/demo', label: t('nav.demoSoc'), icon: ICONS.soc })
     }
-    socItems.push({ to: '/soc', label: 'Mes sociétés', icon: ICONS.soc, end: true })
-    socItems.push({ to: '/soc/toutes', label: 'Toutes les sociétés', icon: ICONS.soc })
-    sections.splice(1, 0, { title: 'Sociétés', items: socItems })
+    socItems.push({ to: '/soc', label: t('nav.mySocs'), icon: ICONS.soc, end: true })
+    socItems.push({ to: '/soc/toutes', label: t('nav.allSocs'), icon: ICONS.soc })
+    sections.splice(1, 0, { title: t('nav.group.socs'), items: socItems })
   }
 
   if (isAdmin) {
     sections.push({
-      title: 'Administration',
+      title: t('nav.group.admin'),
       items: [
-        { to: '/tables', label: 'Base de données', icon: ICONS.tables },
-        { to: '/logs', label: 'Logs du serveur', icon: ICONS.logs },
+        { to: '/tables', label: t('nav.tables'), icon: ICONS.tables },
+        { to: '/logs', label: t('nav.logs'), icon: ICONS.logs },
       ],
     })
   }
@@ -220,7 +224,7 @@ export function MainLayout() {
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
               <path d={ICONS.profile} />
             </svg>
-            Profil
+            {t('app.profile')}
           </NavLink>
         </div>
       </aside>
@@ -236,17 +240,18 @@ export function MainLayout() {
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d={ICONS.dashboard} />
                 </svg>
-                Dashboard
+                {t('nav.dashboard')}
               </NavLink>
             ) : (
               <SocSelector />
             )}
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSelector />
             <NotificationBell />
             <NavLink
               to="/profil"
-              title="Voir mon profil"
+              title={t('app.viewProfile')}
               className="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-3 shadow-sm transition hover:border-brand-600 hover:shadow"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
@@ -262,12 +267,12 @@ export function MainLayout() {
             <button
               onClick={logout}
               className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-red-50 hover:text-red-600"
-              title="Se déconnecter"
+              title={t('app.logout')}
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5ZM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5Z" />
               </svg>
-              Quitter
+              {t('app.logout')}
             </button>
           </div>
         </header>

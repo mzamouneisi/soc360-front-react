@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
   DAY_TYPE_LABELS,
   MONTHS_FR,
@@ -16,6 +16,7 @@ import {
   initials,
   monthLabel,
   monthShort,
+  setFormatLocale,
   statusBadge,
 } from './format'
 
@@ -165,5 +166,29 @@ describe('statusBadge', () => {
     expect(statusBadge('DRAFT')).toBe('muted')
     expect(statusBadge('OPEN')).toBe('muted')
     expect(statusBadge('INCONNU')).toBe('muted')
+  })
+})
+
+describe('formatage localisé', () => {
+  afterEach(() => setFormatLocale('fr-FR'))
+
+  it('formate les dates et les mois en anglais', () => {
+    setFormatLocale('en-US')
+    expect(monthLabel(1)).toBe('January')
+    expect(monthShort(12)).toBe('Dec')
+    expect(formatDate('2025-06-15')).toBe('6/15/2025')
+  })
+
+  it('formate la devise et les tailles en anglais', () => {
+    setFormatLocale('en-US')
+    expect(formatMoney(1234.5)).toContain('€')
+    expect(formatMoney(1234.5)).toContain('1,234.50')
+    expect(formatSize(2048)).toBe('2.0 KB')
+  })
+
+  it('revient au français après réinitialisation', () => {
+    setFormatLocale('fr-FR')
+    expect(monthLabel(6)).toBe('Juin')
+    expect(formatSize(2048)).toBe('2.0 Ko')
   })
 })

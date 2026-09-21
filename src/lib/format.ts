@@ -20,34 +20,51 @@ export const MONTHS_FR_SHORT = [
   'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc',
 ]
 
+export const MONTHS_EN = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+export const MONTHS_EN_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+]
+
+let currentLocale = 'fr-FR'
+let currentLanguage: 'fr' | 'en' = 'fr'
+
+export function setFormatLocale(locale: string): void {
+  currentLocale = locale || 'fr-FR'
+  currentLanguage = locale?.toLowerCase().startsWith('en') ? 'en' : 'fr'
+}
+
+export function getFormatLocale(): string {
+  return currentLocale
+}
+
 export function monthLabel(month: number): string {
-  return MONTHS_FR[month - 1] ?? String(month)
+  const months = currentLanguage === 'en' ? MONTHS_EN : MONTHS_FR
+  return months[month - 1] ?? String(month)
 }
 
 export function monthShort(month: number): string {
-  return MONTHS_FR_SHORT[month - 1] ?? String(month)
+  const months = currentLanguage === 'en' ? MONTHS_EN_SHORT : MONTHS_FR_SHORT
+  return months[month - 1] ?? String(month)
 }
 
 export function formatDate(value: string | null | undefined): string {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString('fr-FR')
+  return date.toLocaleDateString(currentLocale)
 }
 
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+  return date.toLocaleString(currentLocale, { dateStyle: 'short', timeStyle: 'short' })
 }
-
-const currencyFormat = new Intl.NumberFormat('fr-FR', {
-  style: 'currency',
-  currency: 'EUR',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
 
 export function formatMoney(
   value: number | null | undefined,
@@ -55,15 +72,31 @@ export function formatMoney(
 ): string {
   if (value === null || value === undefined) return '—'
   if (currency && currency !== 'EUR') {
-    return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value)} ${currency}`
+    if (currentLanguage === 'en') {
+      return new Intl.NumberFormat(currentLocale, {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(value)
+    }
+    return `${new Intl.NumberFormat(currentLocale, { maximumFractionDigits: 2 }).format(value)} ${currency}`
   }
-  return currencyFormat.format(value)
+  return new Intl.NumberFormat(currentLocale, {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
 export function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
+  const units = currentLanguage === 'en'
+    ? { b: 'B', kb: 'KB', mb: 'MB' }
+    : { b: 'o', kb: 'Ko', mb: 'Mo' }
+  if (bytes < 1024) return `${bytes} ${units.b}`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} ${units.kb}`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} ${units.mb}`
 }
 
 export function initials(firstName?: string, lastName?: string): string {

@@ -3,9 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { Alert, Button, Card, Field, Input, Spinner } from '../components/ui'
+import { useI18n } from '../i18n'
+import { LanguageSelector } from '../i18n/LanguageSelector'
 
 export function Login() {
   const { login } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from ?? '/'
@@ -31,14 +34,17 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
+    <div className="relative flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
+      <div className="absolute right-4 top-4">
+        <LanguageSelector />
+      </div>
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
             E
           </div>
           <h1 className="text-2xl font-bold text-gray-900">SOC360</h1>
-          <p className="mt-1 text-sm text-gray-500">Connectez-vous à votre espace</p>
+          <p className="mt-1 text-sm text-gray-500">{t('login.subtitle')}</p>
         </div>
 
         {error && (
@@ -48,18 +54,18 @@ export function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Email ou identifiant">
+          <Field label={t('login.username')}>
             <Input
               type="text"
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="email ou identifiant"
+              placeholder={t('login.usernamePlaceholder')}
             />
           </Field>
 
-          <Field label="Mot de passe">
+          <Field label={t('login.password')}>
             <Input
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
@@ -75,7 +81,7 @@ export function Login() {
                 onChange={(e) => setShowPassword(e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-brand-600"
               />
-              Afficher le mot de passe
+              {t('login.showPassword')}
             </label>
           </Field>
 
@@ -84,23 +90,23 @@ export function Login() {
               to="/forgot-password"
               className="text-sm font-medium text-brand-600 hover:text-brand-700"
             >
-              Mot de passe oublié ?
+              {t('login.forgot')}
             </Link>
           </div>
 
           <Button type="submit" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            Se connecter
+            {t('login.submit')}
           </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Votre société n'a pas encore de compte ?{' '}
+          {t('login.noAccount')}{' '}
           <Link
             to="/inscription"
             className="font-medium text-brand-600 hover:text-brand-700"
           >
-            Inscrire ma société
+            {t('login.register')}
           </Link>
         </p>
       </Card>

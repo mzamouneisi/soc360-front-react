@@ -4,6 +4,8 @@ import { authApi } from '../api/auth'
 import { ApiError } from '../api/client'
 import { Button, Card, Field, Select, Spinner } from '../components/ui'
 import { PageHeader } from '../components/data'
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, type Language } from '../i18n/messages'
+import { useI18n } from '../i18n'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
 
@@ -22,6 +24,7 @@ const THEMES: { id: string; label: string; color: string }[] = [
 
 export function Settings() {
   const { user, refreshMe } = useAuth()
+  const { t, preference, setLanguage } = useI18n()
   const [size, setSize] = useState<number>(user?.fontSize ?? 14)
   const [theme, setTheme] = useState<string>(user?.theme || 'ocean')
   const [headerColor, setHeaderColor] = useState<string>(user?.tableHeaderColor || '#f9fafb')
@@ -30,6 +33,9 @@ export function Settings() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [languageSaving, setLanguageSaving] = useState(false)
+  const [languageSaved, setLanguageSaved] = useState(false)
+  const [languageError, setLanguageError] = useState<string | null>(null)
 
   if (!user) return null
   const u = user
@@ -40,6 +46,20 @@ export function Settings() {
     (u.tableHeaderColor || '#f9fafb') !== headerColor ||
     (u.tableBorderColor || '#e5e7eb') !== borderColor ||
     (u.pageSize ?? 5) !== pageSize
+
+  async function handleLanguageChange(value: string) {
+    setLanguageSaving(true)
+    setLanguageSaved(false)
+    setLanguageError(null)
+    try {
+      await setLanguage(value === 'browser' ? null : (value as Language))
+      setLanguageSaved(true)
+    } catch (err) {
+      setLanguageError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+    } finally {
+      setLanguageSaving(false)
+    }
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -70,14 +90,37 @@ export function Settings() {
 
   return (
     <div>
-      <PageHeader title="Paramètres" subtitle="Personnalisez l'application" />
+      <PageHeader title={t('settings.title')} subtitle={t('settings.subtitle')} />
       <Card className="max-w-xl p-6">
-        <h3 className="text-sm font-semibold text-gray-900">Taille de police de l'application</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Choisissez la taille du texte affichée dans toute l'application (11 à 24 px).
-        </p>
+        <h3 className="text-sm font-semibold text-gray-900">{t('settings.language.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500">{t('settings.language.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
-          <Field label="Taille (px)">
+          <Field label={t('settings.language.field')}>
+            <Select
+              className="w-56"
+              value={preference ?? 'browser'}
+              onChange={(e) => void handleLanguageChange(e.target.value)}
+              disabled={languageSaving}
+            >
+              <option value="browser">{t('settings.language.browser')}</option>
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <option key={lang} value={lang}>
+                  {LANGUAGE_LABELS[lang]}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {languageSaving && <Spinner />}
+        </div>
+        {languageError && <p className="mt-3 text-sm text-red-600">{languageError}</p>}
+        {languageSaved && (
+          <p className="mt-3 text-sm text-green-600">{t('settings.language.saved')}</p>
+        )}
+
+        <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.fontSize.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500">{t('settings.fontSize.description')}</p>
+        <div className="mt-4 flex flex-wrap items-end gap-4">
+          <Field label={t('settings.fontSize.field')}>
             <Select
               className="w-28"
               value={String(size)}
@@ -97,16 +140,14 @@ export function Settings() {
             className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800"
             style={{ fontSize: `${size}px` }}
           >
-            Aperçu : ceci est un exemple de texte à cette taille.
+            {t('settings.fontSize.preview')}
           </div>
         </div>
 
-        <h3 className="mt-8 text-sm font-semibold text-gray-900">Thème de l'application</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Choisissez la couleur principale de l'application parmi les 10 thèmes disponibles.
-        </p>
+        <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.theme.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500">{t('settings.theme.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
-          <Field label="Thème">
+          <Field label={t('settings.theme.field')}>
             <Select
               className="w-56"
               value={theme}
@@ -115,9 +156,9 @@ export function Settings() {
                 setSaved(false)
               }}
             >
-              {THEMES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
+              {THEMES.map((th) => (
+                <option key={th.id} value={th.id}>
+                  {th.label}
                 </option>
               ))}
             </Select>
@@ -125,10 +166,10 @@ export function Settings() {
           <div className="flex items-center gap-2 pb-1">
             <span
               className="inline-block h-5 w-5 rounded-full"
-              style={{ backgroundColor: THEMES.find((t) => t.id === theme)?.color }}
+              style={{ backgroundColor: THEMES.find((th) => th.id === theme)?.color }}
             />
             <span className="text-sm text-gray-500">
-              {THEMES.find((t) => t.id === theme)?.label}
+              {THEMES.find((th) => th.id === theme)?.label}
             </span>
           </div>
         </div>
@@ -136,15 +177,13 @@ export function Settings() {
           className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800"
           style={{ backgroundColor: 'var(--brand-50)', color: 'var(--brand-800)' }}
         >
-          Aperçu : ceci est un exemple de texte aux couleurs du thème.
+          {t('settings.theme.preview')}
         </div>
 
-        <h3 className="mt-8 text-sm font-semibold text-gray-900">Nombre de lignes par page</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Nombre de lignes affichées par table, le reste étant accessible via les boutons Précédent / Suivant.
-        </p>
+        <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.pageSize.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500">{t('settings.pageSize.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
-          <Field label="Lignes par page">
+          <Field label={t('settings.pageSize.field')}>
             <Select
               className="w-28"
               value={String(pageSize)}
@@ -162,12 +201,10 @@ export function Settings() {
           </Field>
         </div>
 
-        <h3 className="mt-8 text-sm font-semibold text-gray-900">Couleurs des tables</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Personnalisez la couleur d'en-tête et la bordure des tableaux de l'application.
-        </p>
+        <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.colors.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500">{t('settings.colors.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-6">
-          <Field label="Couleur d'en-tête">
+          <Field label={t('settings.colors.header')}>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -181,7 +218,7 @@ export function Settings() {
               <span className="text-sm text-gray-500">{headerColor}</span>
             </div>
           </Field>
-          <Field label="Couleur de bordure">
+          <Field label={t('settings.colors.border')}>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -201,21 +238,21 @@ export function Settings() {
             <thead style={{ backgroundColor: headerColor }}>
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Exemple
+                  {t('settings.example')}
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                  Aperçu
+                  {t('settings.preview')}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y bg-white">
               <tr>
-                <td className="px-4 py-2 text-sm text-gray-700">Ligne 1</td>
-                <td className="px-4 py-2 text-sm text-gray-700">Contenu</td>
+                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.row')} 1</td>
+                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.content')}</td>
               </tr>
               <tr className="even:bg-gray-50">
-                <td className="px-4 py-2 text-sm text-gray-700">Ligne 2</td>
-                <td className="px-4 py-2 text-sm text-gray-700">Contenu</td>
+                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.row')} 2</td>
+                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.content')}</td>
               </tr>
             </tbody>
           </table>
@@ -227,10 +264,10 @@ export function Settings() {
           disabled={saving || !changed}
         >
           {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-          Enregistrer
+          {t('common.save')}
         </Button>
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-        {saved && <p className="mt-3 text-sm text-green-600">Préférences enregistrées.</p>}
+        {saved && <p className="mt-3 text-sm text-green-600">{t('settings.saved')}</p>}
       </Card>
     </div>
   )

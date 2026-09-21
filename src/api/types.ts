@@ -91,6 +91,7 @@ export interface UserDto {
   tableHeaderColor: string
   tableBorderColor: string
   pageSize: number
+  language: string | null
   manager: ManagerInfo | null
 }
 

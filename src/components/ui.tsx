@@ -5,6 +5,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react'
+import { useI18n } from '../i18n'
 
 export function Spinner({ className = '' }: { className?: string }) {
   return (
@@ -16,11 +17,12 @@ export function Spinner({ className = '' }: { className?: string }) {
 }
 
 export function FullPageSpinner() {
+  const { t } = useI18n()
   return (
     <div className="flex h-full items-center justify-center bg-gray-50">
       <div className="flex flex-col items-center gap-3">
         <Spinner className="h-8 w-8" />
-        <p className="text-sm text-gray-500">Chargement…</p>
+        <p className="text-sm text-gray-500">{t('common.loading')}</p>
       </div>
     </div>
   )
@@ -188,18 +190,19 @@ export function InlineButton({
 export function RefreshButton({
   onClick,
   className = '',
-  label = 'Actualiser',
+  label,
 }: {
   onClick: () => void
   className?: string
   label?: string
 }) {
+  const { t } = useI18n()
   return (
-    <InlineButton onClick={onClick} title="Recharger" className={className}>
+    <InlineButton onClick={onClick} title={t('common.reload')} className={className}>
       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 8 8 1 1 0 0 0-2 0 6 6 0 1 1-6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35Z" />
       </svg>
-      {label}
+      {label ?? t('common.refresh')}
     </InlineButton>
   )
 }
