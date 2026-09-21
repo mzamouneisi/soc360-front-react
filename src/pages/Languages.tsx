@@ -229,6 +229,7 @@ export function Languages() {
   }
 
   const languages = useMemo(() => bundle?.languages ?? [], [bundle])
+  const entryCount = bundle?.entries.length ?? 0
   const knownOptions = useMemo(
     () => filterKnownLanguages(languageFilter).filter((language) => !languages.includes(language.code)),
     [languageFilter, languages],
@@ -404,18 +405,24 @@ export function Languages() {
       </Card>
 
       <Card className="p-6">
-        <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.chaines.traduites')}</h3>
+        <div className="flex items-baseline gap-2">
+          <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.chaines.traduites')}</h3>
+          <span className="text-sm font-semibold text-gray-500">{entryCount}</span>
+        </div>
         {loading && <LoadingBlock />}
-        {!loading && (bundle?.entries.length ?? 0) === 0 && (
+        {!loading && entryCount === 0 && (
           <div className="mt-4">
             <EmptyState title={tr('Languages.aucune.traduction')} description={tr('Languages.ajoutez.une.cle.pour.commencer')} />
           </div>
         )}
-        {!loading && (bundle?.entries.length ?? 0) > 0 && (
+        {!loading && entryCount > 0 && (
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
+                  <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                    #
+                  </th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Languages.cle')}
                   </th>
@@ -433,8 +440,11 @@ export function Languages() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {bundle?.entries.map((entry) => (
+                {bundle?.entries.map((entry, index) => (
                   <tr key={entry.id} className="even:bg-gray-50">
+                    <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-xs text-gray-500">
+                      {index + 1}
+                    </td>
                     <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-gray-700">
                       {entry.key}
                     </td>
