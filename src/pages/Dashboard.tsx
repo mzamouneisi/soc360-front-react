@@ -161,6 +161,9 @@ export function Dashboard() {
             {user.role === 'ADMIN' && (
               <QuickLink to="/logs" title="Logs du serveur" description="Voir les dernières lignes du journal serveur" />
             )}
+            {user.role === 'ADMIN' && (
+              <QuickLink to="/langues" title="Langues" description="Gérer les langues et les traductions" />
+            )}
             <QuickLink to="/notes-frais" title="Notes de frais" description="Gérer les remboursements et dépenses" />
             <QuickLink to="/clients" title="Clients" description="Gérer le portefeuille clients" />
             <QuickLink to="/missions" title="Missions" description="Suivre les missions en cours" />
