@@ -4,6 +4,7 @@ import { ApiError } from '../api/client'
 import { useI18n } from '../i18n'
 import { languageLabel } from '../i18n/messages'
 import { filterKnownLanguages, findKnownLanguage } from '../i18n/languages'
+import { translateTexts } from '../lib/translate'
 import { Button, Card, Field, InlineButton, Input, Spinner } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 
@@ -115,13 +116,42 @@ export function Languages() {
   }
 
   async function autofillLanguage(code: string) {
+    if (!code) return
     setAutofilling(code)
     setError(null)
     setMessage(null)
     try {
-      const result = await i18nApi.autofillLanguage(code, 'fr')
+      const [source, admin] = await Promise.all([
+        i18nApi.bundle('fr'),
+        i18nApi.adminBundle(),
+      ])
+      const existing = new Map(admin.entries.map((entry) => [entry.key, entry]))
+      const pending = Object.entries(source.messages)
+        .filter(
+          ([key, text]) =>
+            text &&
+            !(existing.get(key)?.translations?.[code] ?? '').toString().trim(),
+        )
+        .map(([key, text]) => ({ key, text }))
+
+      if (pending.length === 0) {
+        setMessage(`La langue « ${code} » est déjà entièrement remplie.`)
+        return
+      }
+
+      const translated = await translateTexts(pending, 'fr', code)
+      const entries = Object.entries(translated).map(([key, value]) => ({
+        key,
+        translations: { [code]: value },
+      }))
+      if (entries.length === 0) {
+        setMessage('Aucune traduction n’a pu être récupérée pour cette langue.')
+        return
+      }
+
+      const result = await i18nApi.importAll({ entries })
       setMessage(
-        `Langue « ${code} » remplie : ${result.translated} traduction(s), ${result.copied} valeur(s) recopiée(s) du français pour les cellules vides.`,
+        `Langue « ${code} » : ${result.inserted + result.updated} clé(s) traduite(s) via le service de traduction, ${pending.length - entries.length} échec(s).`,
       )
       await load()
       await refreshI18n()
@@ -286,7 +316,7 @@ export function Languages() {
             Remplit les cellules vides de la langue choisie à partir du français (traduction via
             l'API si configurée, sinon recopie de la valeur française).
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-start">
             <select
               aria-label="Langue à remplir"
               value={fillTarget}
@@ -302,7 +332,7 @@ export function Languages() {
                 ))}
             </select>
             <Button
-              className="w-auto"
+              className="!ml-5 !w-64"
               onClick={() => void autofillLanguage(fillTarget)}
               disabled={!fillTarget || autofilling === fillTarget}
             >
