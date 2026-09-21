@@ -31,6 +31,7 @@ export function Languages() {
   const [languageFilter, setLanguageFilter] = useState('')
   const [selectedCode, setSelectedCode] = useState('')
   const [autofilling, setAutofilling] = useState<string | null>(null)
+  const [fillLanguage, setFillLanguage] = useState('')
   const [newKey, setNewKey] = useState('')
   const [newTranslations, setNewTranslations] = useState<Record<string, string>>({})
 
@@ -102,6 +103,7 @@ export function Languages() {
     setMessage(null)
     try {
       await i18nApi.addLanguage(selectedCode.trim().toLowerCase())
+      setFillLanguage(selectedCode.trim().toLowerCase())
       setSelectedCode('')
       setLanguageFilter('')
       setMessage('Langue ajoutée.')
@@ -192,6 +194,9 @@ export function Languages() {
     () => filterKnownLanguages(languageFilter).filter((language) => !languages.includes(language.code)),
     [languageFilter, languages],
   )
+  const fillTarget = languages.includes(fillLanguage)
+    ? fillLanguage
+    : (languages.find((language) => language !== 'fr') ?? '')
 
   return (
     <div>
@@ -224,24 +229,6 @@ export function Languages() {
               {lang !== 'fr' && (
                 <button
                   type="button"
-                  aria-label={`Remplir les traductions de ${lang}`}
-                  title="Remplir les traductions manquantes"
-                  disabled={autofilling === lang}
-                  onClick={() => void autofillLanguage(lang)}
-                  className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition hover:bg-brand-100 hover:text-brand-600 disabled:opacity-50"
-                >
-                  {autofilling === lang ? (
-                    <Spinner className="h-3.5 w-3.5" />
-                  ) : (
-                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                      <path d="M7.5 5.6 5 7l1.4-2.5L5 2l2.5 1.4L10 2 8.6 4.5 10 7 7.5 5.6Zm12 9.8L17 14l1.4 2.5L17 19l2.5-1.4L22 19l-1.4-2.5L22 14l-2.5 1.4ZM22 2l-1.4 2.5L22 7l-2.5-1.4L17 7l1.4-2.5L17 2l2.5 1.4L22 2ZM13.34 12.78 3.51 2.95 2.1 4.36l9.83 9.83-3.54 3.54a1 1 0 0 0 .71 1.71h10.59a1 1 0 0 0 .71-1.71l-7.07-4.95Z" />
-                    </svg>
-                  )}
-                </button>
-              )}
-              {lang !== 'fr' && (
-                <button
-                  type="button"
                   aria-label={`Supprimer la langue ${lang}`}
                   title="Supprimer la langue"
                   onClick={() => void removeLanguage(lang)}
@@ -267,7 +254,7 @@ export function Languages() {
           </Field>
           <Field label="Langues connues">
             <select
-              size={6}
+              size={5}
               value={selectedCode}
               onChange={(e) => setSelectedCode(e.target.value)}
               className="w-64 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
@@ -288,6 +275,42 @@ export function Languages() {
                 ? `Sélection : ${selectedCode} — ${findKnownLanguage(selectedCode)?.label ?? languageLabel(selectedCode)}`
                 : `${knownOptions.length} langue(s) disponible(s)`}
             </span>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-lg border border-brand-100 bg-brand-50/40 p-4">
+          <h4 className="text-sm font-semibold text-gray-900">
+            Remplir les traductions d'une langue
+          </h4>
+          <p className="mt-1 text-sm text-gray-500">
+            Remplit les cellules vides de la langue choisie à partir du français (traduction via
+            l'API si configurée, sinon recopie de la valeur française).
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <select
+              aria-label="Langue à remplir"
+              value={fillTarget}
+              onChange={(e) => setFillLanguage(e.target.value)}
+              className="w-64 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+            >
+              {languages
+                .filter((language) => language !== 'fr')
+                .map((language) => (
+                  <option key={language} value={language}>
+                    {language} — {languageLabel(language)}
+                  </option>
+                ))}
+            </select>
+            <Button
+              className="w-auto"
+              onClick={() => void autofillLanguage(fillTarget)}
+              disabled={!fillTarget || autofilling === fillTarget}
+            >
+              {autofilling === fillTarget ? (
+                <Spinner className="border-white border-t-transparent" />
+              ) : null}
+              Remplir les traductions
+            </Button>
           </div>
         </div>
 
