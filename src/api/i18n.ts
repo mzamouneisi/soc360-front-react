@@ -46,6 +46,8 @@ export const i18nApi = {
   removeEntry: (id: number) => api.delete<void>(`/admin/i18n/${id}`),
   addLanguage: (code: string) =>
     api.post<string[]>('/admin/i18n/languages', { code }),
+  removeLanguage: (code: string) =>
+    api.delete<string[]>(`/admin/i18n/languages/${encodeURIComponent(code)}`),
   exportAll: () => api.get<ExportPayload>('/admin/i18n/export'),
   importAll: (payload: ExportPayload) =>
     api.post<ImportResponse>('/admin/i18n/import', payload),

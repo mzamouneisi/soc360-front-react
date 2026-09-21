@@ -108,6 +108,20 @@ export function Languages() {
     }
   }
 
+  async function removeLanguage(code: string) {
+    if (!window.confirm(`Supprimer la langue « ${code} » et toutes ses traductions ?`)) return
+    setError(null)
+    setMessage(null)
+    try {
+      await i18nApi.removeLanguage(code)
+      setMessage(`Langue « ${code} » supprimée.`)
+      await load()
+      await refreshI18n()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Échec de la suppression de la langue')
+    }
+  }
+
   async function addEntry() {
     if (!newKey.trim()) return
     setError(null)
@@ -177,10 +191,23 @@ export function Languages() {
           {languages.map((lang) => (
             <span
               key={lang}
-              className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
+              className="inline-flex items-center gap-1 rounded-full bg-gray-100 py-1 pl-3 pr-1 text-sm text-gray-700"
             >
               <span className="font-semibold uppercase">{lang}</span>
               <span className="text-gray-500">{languageLabel(lang)}</span>
+              {lang !== 'fr' && (
+                <button
+                  type="button"
+                  aria-label={`Supprimer la langue ${lang}`}
+                  title="Supprimer la langue"
+                  onClick={() => void removeLanguage(lang)}
+                  className="ml-1 flex h-5 w-5 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-100 hover:text-red-600"
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12Z" />
+                  </svg>
+                </button>
+              )}
             </span>
           ))}
           <Field label="Nouvelle langue (code ISO)">
