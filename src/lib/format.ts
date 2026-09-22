@@ -69,21 +69,25 @@ export function monthShort(month: number): string {
 
 export function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined) return '—'
-  return new Intl.NumberFormat(currentLocale).format(value)
+  return new Intl.NumberFormat(currentLocale, { numberingSystem: 'latn' }).format(value)
 }
 
 export function formatDate(value: string | null | undefined): string {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString(currentLocale)
+  return date.toLocaleDateString(currentLocale, { numberingSystem: 'latn' })
 }
 
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleString(currentLocale, { dateStyle: 'short', timeStyle: 'short' })
+  return date.toLocaleString(currentLocale, {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    numberingSystem: 'latn',
+  })
 }
 
 export function formatMoney(
@@ -98,15 +102,17 @@ export function formatMoney(
         currency,
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
+        numberingSystem: 'latn',
       }).format(value)
     }
-    return `${new Intl.NumberFormat(currentLocale, { maximumFractionDigits: 2 }).format(value)} ${currency}`
+    return `${new Intl.NumberFormat(currentLocale, { maximumFractionDigits: 2, numberingSystem: 'latn' }).format(value)} ${currency}`
   }
   return new Intl.NumberFormat(currentLocale, {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
+    numberingSystem: 'latn',
   }).format(value)
 }
 
