@@ -372,10 +372,10 @@ export function CraList() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <InlineButton onClick={() => setOpenCraId(cra.id)}>
+                          <InlineButton variant="primary" onClick={() => setOpenCraId(cra.id)}>
                             {editable(cra) ? 'Éditer' : 'Ouvrir'}
                           </InlineButton>
-                          <InlineButton onClick={() => setHistoryCra(cra)}>{tr('CraList.historique')}</InlineButton>
+                          <InlineButton variant="primary" onClick={() => setHistoryCra(cra)}>{tr('CraList.historique')}</InlineButton>
                           {editable(cra) && (
                             <InlineButton
                               variant="danger"
