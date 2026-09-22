@@ -311,6 +311,9 @@ export function CraList() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
+                    <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                      # ({list.length})
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.annee.mois')}
                     </th>
@@ -338,7 +341,7 @@ export function CraList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
-                  {pageItems.map((cra) => (
+                  {pageItems.map((cra, i) => (
                     <tr
                       key={cra.id}
                       className={`align-top ${
@@ -349,6 +352,9 @@ export function CraList() {
                             : 'even:bg-gray-50'
                       }`}
                     >
+                      <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                        {safePage * (user?.pageSize ?? 5) + i + 1}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                         {cra.year}-{String(cra.month).padStart(2, '0')}
                       </td>

@@ -3,7 +3,9 @@ import { crasApi } from '../api/cras'
 import type { CraStatus } from '../api/types'
 import { CRA_STATUS_LABELS, formatDateTime } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
-import { ErrorBlock, LoadingBlock, Modal } from './data'
+import { usePagination } from '../lib/usePagination'
+import { useAuth } from '../auth/AuthContext'
+import { ErrorBlock, LoadingBlock, Modal, Pagination } from './data'
 import { InlineButton } from './ui'
 
 export function CraHistoryModal({
@@ -16,7 +18,9 @@ export function CraHistoryModal({
   onClose: () => void
 }) {
   const history = useAsync(() => crasApi.history(craId), [craId])
+  const { user } = useAuth()
   const rows = history.data ?? []
+  const page = usePagination(rows, user?.pageSize ?? 5)
   const statusLabel = (status: CraStatus | null) =>
     status == null ? '—' : CRA_STATUS_LABELS[status] ?? status
 
@@ -40,6 +44,9 @@ export function CraHistoryModal({
           <table className="min-w-full divide-y divide-gray-200">
             <thead style={{ backgroundColor: 'var(--table-header)' }}>
               <tr>
+                <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                  # ({page.total})
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                   {tr('CraHistoryModal.date.modif')}
                 </th>
@@ -58,8 +65,11 @@ export function CraHistoryModal({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
-              {rows.map((h) => (
+              {page.pageItems.map((h, i) => (
                 <tr key={h.id} className="align-top">
+                  <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                    {page.offset + i + 1}
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
                     {formatDateTime(h.dateModif)}
                   </td>
@@ -72,6 +82,14 @@ export function CraHistoryModal({
             </tbody>
           </table>
         </div>
+      )}
+      {!history.loading && !history.error && rows.length > 0 && (
+        <Pagination
+          page={page.page}
+          totalPages={page.totalPages}
+          total={page.total}
+          onChange={page.setPage}
+        />
       )}
     </Modal>
   )

@@ -7,8 +7,9 @@ import { socsApi, type SocDependency } from '../api/socs'
 import type { SocDto } from '../api/types'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { usePagination } from '../lib/usePagination'
 import { Button, Card, Field, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
-import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { ROLE_LABELS, formatDateTime } from '../lib/format'
 
@@ -45,6 +46,8 @@ export function Profile() {
     () => authApi.connections(),
     [],
   )
+  const connList = connections ?? []
+  const connPage = usePagination(connList, user?.pageSize ?? 5)
 
   if (!user) return null
 
@@ -364,6 +367,9 @@ export function Profile() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
+                  <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                    # ({connPage.total})
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Profile.date')}
                   </th>
@@ -379,8 +385,11 @@ export function Profile() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {(connections ?? []).map((c) => (
+                {connPage.pageItems.map((c, i) => (
                   <tr key={c.id} className="even:bg-gray-50">
+                    <td className="w-12 px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                      {connPage.offset + i + 1}
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-700">{formatDateTime(c.loginTime)}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{c.ipAddress}</td>
                     <td className="max-w-xs truncate px-4 py-3 text-sm text-gray-500">{c.userAgent}</td>
@@ -391,9 +400,9 @@ export function Profile() {
                     </td>
                   </tr>
                 ))}
-                {(connections ?? []).length === 0 && (
+                {connList.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-400">
+                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-400">
                       {tr('Profile.aucune.connexion.enregistree')}
                     </td>
                   </tr>
@@ -401,6 +410,14 @@ export function Profile() {
               </tbody>
             </table>
           </div>
+        )}
+        {!connectionsLoading && (
+          <Pagination
+            page={connPage.page}
+            totalPages={connPage.totalPages}
+            total={connPage.total}
+            onChange={connPage.setPage}
+          />
         )}
       </Card>
     </div>

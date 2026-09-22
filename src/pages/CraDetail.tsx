@@ -8,8 +8,9 @@ import { holidaysApi } from '../api/holidays'
 import { socHolidaysApi } from '../api/socHolidays'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { usePagination } from '../lib/usePagination'
 import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
-import { Badge, ErrorBlock, LoadingBlock, Modal } from '../components/data'
+import { Badge, ErrorBlock, LoadingBlock, Modal, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
 import {
@@ -286,6 +287,7 @@ export function CraDetail({
   }, [days, cra])
   const craValid = incompleteDays.length === 0
   const hasAnyActivity = days.some((d) => d.activities.length > 0)
+  const dayPage = usePagination(days, user?.pageSize ?? 5)
 
   if (!cra) {
     if (loading) return <LoadingBlock />
@@ -892,6 +894,9 @@ export function CraDetail({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                    # ({days.length})
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('CraDetail.jour.2')}
                   </th>
@@ -910,10 +915,14 @@ export function CraDetail({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {days.map((day, i) => {
+                {dayPage.pageItems.map((day, idx) => {
+                  const i = dayPage.offset + idx
                   const total = dayTotal(day)
                   return (
                     <tr key={day.date} className="align-top">
+                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                        {i + 1}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                         {new Date(day.date + 'T00:00:00').toLocaleDateString(getFormatLocale(), {
                           weekday: 'short',
@@ -1029,6 +1038,14 @@ export function CraDetail({
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="px-4 pb-3">
+            <Pagination
+              page={dayPage.page}
+              totalPages={dayPage.totalPages}
+              total={dayPage.total}
+              onChange={dayPage.setPage}
+            />
           </div>
         </Card>
       )}

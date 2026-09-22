@@ -183,6 +183,9 @@ export function IndispoList() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
+                    <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                      # ({list.length})
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('IndispoList.annee.mois')}
                     </th>
@@ -210,7 +213,7 @@ export function IndispoList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
-                  {pageItems.map((ind) => (
+                  {pageItems.map((ind, i) => (
                     <tr
                       key={ind.id}
                       onClick={() => setSelectedId(ind.id)}
@@ -220,6 +223,9 @@ export function IndispoList() {
                           : 'bg-yellow-50 even:bg-yellow-100'
                       }`}
                     >
+                      <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                        {safePage * pageSize + i + 1}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                         {ind.year}-{String(ind.month).padStart(2, '0')}
                       </td>

@@ -151,6 +151,8 @@ export function Messages() {
             rowKey={(m) => m.id}
             onRowClick={openMessage}
             rows={data.items}
+            startIndex={data.page * size}
+            total={data.total}
             columns={[
               {
                 key: 'subject',

@@ -229,7 +229,7 @@ export function Clients() {
               render: (c) =>
                 canEdit ? (
                   <div className="flex justify-end gap-1">
-                    <InlineButton onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
+                    <InlineButton variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
                       Modifier
                     </InlineButton>
                     <InlineButton

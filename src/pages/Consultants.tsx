@@ -329,6 +329,8 @@ export function Consultants() {
             rowKey={(c) => `${c.role}-${c.id}`}
             onRowClick={canEdit ? (c) => openEdit(c) : undefined}
             rows={data.items}
+            startIndex={data.page * size}
+            total={data.total}
             columns={[
               {
                 key: 'name',

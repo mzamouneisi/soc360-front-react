@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { tablesApi, type ColumnDetails, type TableRelation } from '../api/tables'
 import { useAsync } from '../lib/useAsync'
+import { usePagination } from '../lib/usePagination'
 import { Button, InlineButton, Input, Select, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
@@ -153,6 +154,7 @@ export function Tables() {
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize))
   const safePage = Math.min(page, totalPages - 1)
   const pagedRows = rows.slice(safePage * pageSize, safePage * pageSize + pageSize)
+  const sqlPage = usePagination(sqlResult ?? [], pageSize)
 
   const selectTable = (name: string) => {
     setSelected(name)
@@ -334,6 +336,9 @@ export function Tables() {
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead style={{ backgroundColor: 'var(--table-header)' }}>
                     <tr>
+                      <th className="w-16 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        # ({rows.length})
+                      </th>
                       {columns.map((c) => (
                         <th
                           key={c.columnName}
@@ -351,6 +356,9 @@ export function Tables() {
                   <tbody className="divide-y divide-gray-100">
                     {pagedRows.map((row, i) => (
                       <tr key={i} className="even:bg-gray-50 hover:bg-gray-100">
+                        <td className="w-12 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
+                          {safePage * pageSize + i + 1}
+                        </td>
                         {columns.map((c) => (
                           <td
                             key={c.columnName}
@@ -405,36 +413,47 @@ export function Tables() {
           {sqlError && <ErrorBlock message={sqlError} />}
           {sqlLoading && <LoadingBlock />}
           {!sqlLoading && sqlResult && sqlResult.length > 0 && (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead style={{ backgroundColor: 'var(--table-header)' }}>
-                  <tr>
-                    {sqlColumns.map((col) => (
-                      <th
-                        key={col}
-                        className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
-                      >
-                        {col}
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead style={{ backgroundColor: 'var(--table-header)' }}>
+                    <tr>
+                      <th className="w-16 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        # ({sqlResult?.length ?? 0})
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {sqlResult.map((row, i) => (
-                    <tr key={i} className="even:bg-gray-50">
                       {sqlColumns.map((col) => (
-                        <td
+                        <th
                           key={col}
-                          className="max-w-72 truncate px-3 py-2 text-gray-700"
-                          title={displayValue(row[col])}
+                          className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
                         >
-                          {displayValue(row[col])}
-                        </td>
+                          {col}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {sqlPage.pageItems.map((row, i) => (
+                      <tr key={i} className="even:bg-gray-50">
+                        <td className="w-12 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
+                          {sqlPage.offset + i + 1}
+                        </td>
+                        {sqlColumns.map((col) => (
+                          <td
+                            key={col}
+                            className="max-w-72 truncate px-3 py-2 text-gray-700"
+                            title={displayValue(row[col])}
+                          >
+                            {displayValue(row[col])}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-4 pb-3">
+                <Pagination page={sqlPage.page} totalPages={sqlPage.totalPages} total={sqlPage.total} onChange={sqlPage.setPage} />
+              </div>
             </div>
           )}
           {!sqlLoading && sqlResult && sqlResult.length === 0 && (

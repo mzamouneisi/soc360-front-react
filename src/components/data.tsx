@@ -88,6 +88,8 @@ export function Table<T>({
   empty,
   onRowClick,
   paginate = false,
+  startIndex = 0,
+  total,
 }: {
   columns: { key: string; label: string; className?: string; render: (row: T) => ReactNode }[]
   rows: T[]
@@ -96,6 +98,8 @@ export function Table<T>({
   empty?: ReactNode
   onRowClick?: (row: T) => void
   paginate?: boolean
+  startIndex?: number
+  total?: number
 }) {
   const { user } = useAuth()
   const { t } = useI18n()
@@ -110,6 +114,7 @@ export function Table<T>({
   const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1
   const safePage = Math.min(page, totalPages - 1)
   const visibleRows = pageSize > 0 ? rows.slice(safePage * pageSize, safePage * pageSize + pageSize) : rows
+  const firstIndex = startIndex + (pageSize > 0 ? safePage * pageSize : 0)
 
   return (
     <div
@@ -120,6 +125,9 @@ export function Table<T>({
         <table className="min-w-full divide-y divide-gray-200">
           <thead style={{ backgroundColor: 'var(--table-header)' }}>
             <tr>
+              <th className="w-16 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                # ({total ?? rows.length})
+              </th>
               {columns.map((col) => (
                 <th
                   key={col.key}
@@ -131,12 +139,15 @@ export function Table<T>({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
-            {visibleRows.map((row) => (
+            {visibleRows.map((row, rowIndex) => (
               <tr
                 key={rowKey(row)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={`even:bg-gray-50 ${onRowClick ? 'cursor-pointer transition hover:bg-gray-100' : ''}`}
               >
+                <td className="w-12 px-3 py-3 text-right text-sm tabular-nums text-gray-400">
+                  {firstIndex + rowIndex + 1}
+                </td>
                 {columns.map((col) => (
                   <td key={col.key} className="px-4 py-3 text-sm text-gray-700">
                     {col.render(row)}

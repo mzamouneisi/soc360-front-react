@@ -11,7 +11,8 @@ import type {
   UnavailabilityType,
 } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { usePagination } from '../lib/usePagination'
+import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { Alert, Button, Card, Field, InlineButton, Input, MonthInput, Select, Textarea } from '../components/ui'
 import {
@@ -367,6 +368,9 @@ export function Unavailability() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
+                    <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                      # ({filtered.length})
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.consultant')}
                     </th>
@@ -394,7 +398,7 @@ export function Unavailability() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
-                  {pageItems.map((u) => (
+                  {pageItems.map((u, i) => (
                     <tr
                       key={u.id}
                       onClick={() => setSelectedId(u.id)}
@@ -404,6 +408,9 @@ export function Unavailability() {
                           : 'even:bg-gray-50'
                       }`}
                     >
+                      <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                        {safePage * pageSize + i + 1}
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{u.consultantName}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type}
@@ -554,6 +561,8 @@ function UnavailabilityHistoryModal({
     () => unavailabilityApi.history(unavailability.id),
     [unavailability.id],
   )
+  const { user } = useAuth()
+  const historyPage = usePagination(history.data ?? [], user?.pageSize ?? 5)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
@@ -584,6 +593,7 @@ function UnavailabilityHistoryModal({
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
+                  <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase text-gray-400"># ({historyPage.total})</th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.date')}</th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.modifie.par')}</th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.commentaire')}</th>
@@ -592,8 +602,11 @@ function UnavailabilityHistoryModal({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {history.data?.map((h: UnavailabilityHistoryDto) => (
+                {historyPage.pageItems.map((h: UnavailabilityHistoryDto, i) => (
                   <tr key={h.id}>
+                    <td className="w-10 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
+                      {historyPage.offset + i + 1}
+                    </td>
                     <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">
                       {formatDateTime(h.dateModifIndispo)}
                     </td>
@@ -606,6 +619,14 @@ function UnavailabilityHistoryModal({
               </tbody>
             </table>
           </div>
+        )}
+        {!history.loading && (history.data?.length ?? 0) > 0 && (
+          <Pagination
+            page={historyPage.page}
+            totalPages={historyPage.totalPages}
+            total={historyPage.total}
+            onChange={historyPage.setPage}
+          />
         )}
       </div>
     </div>

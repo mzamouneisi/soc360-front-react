@@ -4,8 +4,10 @@ import { socsApi, type DemoSocDto } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { SocDto } from '../api/types'
 import { useAsync } from '../lib/useAsync'
+import { usePagination } from '../lib/usePagination'
+import { useAuth } from '../auth/AuthContext'
 import { Button, Card, RefreshButton, Spinner } from '../components/ui'
-import { ErrorBlock, LoadingBlock, Modal, PageHeader } from '../components/data'
+import { ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -17,6 +19,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 export function DemoSoc() {
+  const { user } = useAuth()
   const { data: socs, loading, error, reload } = useAsync(() => socsApi.findAll(), [])
   const [creating, setCreating] = useState(false)
   const [result, setResult] = useState<DemoSocDto | null>(null)
@@ -26,6 +29,7 @@ export function DemoSoc() {
     () => (socs ?? []).filter((s) => s.name.toLowerCase().startsWith('demo ')),
     [socs],
   )
+  const demoPage = usePagination(demoList, user?.pageSize ?? 5)
 
   async function createDemo() {
     setActionError(null)
@@ -79,6 +83,9 @@ export function DemoSoc() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                    # ({demoPage.total})
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('DemoSoc.societe.demo')}
                   </th>
@@ -91,8 +98,11 @@ export function DemoSoc() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {demoList.map((s: SocDto) => (
+                {demoPage.pageItems.map((s: SocDto, i) => (
                   <tr key={s.id}>
+                    <td className="w-12 px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                      {demoPage.offset + i + 1}
+                    </td>
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{s.name}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{s.gerant ?? '—'}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{s.siret ?? '—'}</td>
@@ -100,6 +110,14 @@ export function DemoSoc() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="px-4 pb-3">
+            <Pagination
+              page={demoPage.page}
+              totalPages={demoPage.totalPages}
+              total={demoPage.total}
+              onChange={demoPage.setPage}
+            />
           </div>
         </Card>
       )}

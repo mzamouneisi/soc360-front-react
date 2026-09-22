@@ -162,6 +162,8 @@ export function Support() {
             rowKey={(t) => t.id}
             onRowClick={openDetail}
             rows={data.items}
+            startIndex={data.page * size}
+            total={data.total}
             columns={[
               {
                 key: 'title',

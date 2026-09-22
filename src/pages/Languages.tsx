@@ -469,7 +469,7 @@ export function Languages() {
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
                   <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
-                    #
+                    # ({filteredEntries.length})
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Languages.cle')}
