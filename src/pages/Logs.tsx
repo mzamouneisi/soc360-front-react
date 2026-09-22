@@ -56,20 +56,20 @@ export function Logs() {
       />
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-        <Select
-          className="w-auto min-w-40"
-          value={lines}
-          onChange={(e) => setLines(Number(e.target.value))}
-          aria-label={tr('Logs.nombre.de.lignes')}
-        >
-          {PRESETS.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </Select>
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-500">{tr('Logs.nombre.de.lignes.2')}</span>
+          <Select
+            className="w-auto min-w-24"
+            value={lines}
+            onChange={(e) => setLines(Number(e.target.value))}
+            aria-label={tr('Logs.nombre.de.lignes')}
+          >
+            {PRESETS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </Select>
           <Input
             type="number"
             min={1}
