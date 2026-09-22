@@ -231,7 +231,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         }
         actions={
           <>
-            <RefreshButton onClick={reload} />
+            <RefreshButton onClick={reload} variant="primary" />
             <Button className="w-auto" onClick={() => setAddOpen(true)}>
               + Nouvelle société
             </Button>
