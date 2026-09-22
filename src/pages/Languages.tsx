@@ -444,7 +444,8 @@ export function Languages() {
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <Field label={tr('languages.searchRows')}>
             <Input
-              className="w-72"
+              className="max-w-full"
+              style={{ width: '54rem' }}
               value={search}
               placeholder={tr('languages.searchPlaceholder')}
               onChange={(e) => setSearch(e.target.value)}
