@@ -59,7 +59,7 @@ export function DemoSoc() {
             {tr('DemoSoc.la.prochaine.societe.sera.numerotee.automatiquement.ex.demo.')} <span className="font-mono">resp_demo&lt;n&gt;</span> {tr('DemoSoc.avec.le.mot.de.passe')} <span className="font-mono">{tr('DemoSoc.eisi.2020')}</span>.
           </p>
         </div>
-        <Button className="w-auto" variant="yellow" onClick={() => void createDemo()} disabled={creating}>
+        <Button className="w-auto" variant="primary" onClick={() => void createDemo()} disabled={creating}>
           {creating ? <Spinner className="border-white border-t-transparent" /> : null}
           {tr('DemoSoc.creer.une.societe.demo')}
         </Button>

@@ -236,7 +236,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
               + Nouvelle société
             </Button>
             {isAdmin && (
-              <Button className="w-auto" variant="yellow" onClick={() => void createDemoSoc()} disabled={demoCreating}>
+              <Button className="w-auto" variant="primary" onClick={() => void createDemoSoc()} disabled={demoCreating}>
                 {demoCreating ? <Spinner className="border-white border-t-transparent" /> : null}
                 + Société démo
               </Button>

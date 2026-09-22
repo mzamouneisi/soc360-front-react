@@ -138,7 +138,7 @@ export function Holidays() {
             {monthLabel(month + 1)} {year}
           </h2>
           {canEdit && (
-            <Button variant="yellow" className="w-auto" onClick={duplicateToNextYear}>
+            <Button variant="primary" className="w-auto" onClick={duplicateToNextYear}>
               {tr('Holidays.dupliquer.vers')} {year + 1}
             </Button>
           )}

@@ -244,7 +244,7 @@ export function Unavailability() {
         title={tr('Unavailability.indisponibilites')}
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         actions={
-          <Button className="w-auto" onClick={openCreate} variant="yellow">
+          <Button className="w-auto" onClick={openCreate} variant="primary">
             Nouvelle indisponibilité
           </Button>
         }
