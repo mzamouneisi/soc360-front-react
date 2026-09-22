@@ -451,6 +451,7 @@ export function Unavailability() {
                           )}
                           {canCancel(u) && (
                             <InlineButton
+                              variant="danger"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleCancel(u)
