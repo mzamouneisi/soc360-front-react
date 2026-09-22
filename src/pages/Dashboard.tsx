@@ -17,7 +17,7 @@ import {
 import { Link } from 'react-router-dom'
 
 const DASH_CARD: CSSProperties = {
-  background: 'linear-gradient(160deg, #ffffff 0%, #f0f7ff 45%, #dbeafe 100%)',
+  backgroundColor: '#eef6ff',
   borderColor: '#c9e2ff',
 }
 
