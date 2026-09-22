@@ -430,6 +430,7 @@ export function Unavailability() {
                         <div className="flex flex-wrap items-center gap-2">
                           {canEdit(u) && (
                             <InlineButton
+                              variant="primary"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 openEdit(u)
@@ -492,6 +493,7 @@ export function Unavailability() {
                             </InlineButton>
                           )}
                           <InlineButton
+                            variant="primary"
                             onClick={(e) => {
                               e.stopPropagation()
                               setHistoryFor(u)
