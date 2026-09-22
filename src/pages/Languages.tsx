@@ -274,6 +274,7 @@ export function Languages() {
     <div>
       <PageHeader
         title={tr('Languages.langues.et.traductions')}
+        count={filteredEntries.length}
         subtitle={tr('Languages.table.des.chaines.traduites.administration')}
         actions={<InlineButton variant="primary" onClick={() => load()} disabled={loading}>{t('common.refresh')}</InlineButton>}
       />
@@ -469,7 +470,7 @@ export function Languages() {
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
                   <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
-                    # ({filteredEntries.length})
+                    #
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Languages.cle')}

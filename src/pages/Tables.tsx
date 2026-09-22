@@ -260,6 +260,7 @@ export function Tables() {
     <div>
       <PageHeader
         title={tr('Tables.base.de.donnees')}
+        count={selected ? rows.length : undefined}
         subtitle={tr('Tables.gestion.des.tables.de.la.base.administration')}
         actions={
           <InlineButton variant="primary" onClick={() => loadTables()} disabled={loading}>
@@ -336,8 +337,8 @@ export function Tables() {
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead style={{ backgroundColor: 'var(--table-header)' }}>
                     <tr>
-                      <th className="w-16 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                        # ({rows.length})
+                      <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        #
                       </th>
                       {columns.map((c) => (
                         <th
@@ -413,13 +414,17 @@ export function Tables() {
           {sqlError && <ErrorBlock message={sqlError} />}
           {sqlLoading && <LoadingBlock />}
           {!sqlLoading && sqlResult && sqlResult.length > 0 && (
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div>
+              <p className="mb-2 text-sm font-semibold text-gray-900">
+                Résultat ({sqlResult.length})
+              </p>
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead style={{ backgroundColor: 'var(--table-header)' }}>
                     <tr>
-                      <th className="w-16 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                        # ({sqlResult?.length ?? 0})
+                      <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                        #
                       </th>
                       {sqlColumns.map((col) => (
                         <th
@@ -453,6 +458,7 @@ export function Tables() {
               </div>
               <div className="px-4 pb-3">
                 <Pagination page={sqlPage.page} totalPages={sqlPage.totalPages} total={sqlPage.total} onChange={sqlPage.setPage} />
+              </div>
               </div>
             </div>
           )}

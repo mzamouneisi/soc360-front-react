@@ -130,6 +130,7 @@ export function ActivityTypes() {
     <div>
       <PageHeader
         title={tr('ActivityTypes.types.d.activites')}
+        count={(data ?? []).length}
         subtitle={tr('ActivityTypes.types.de.prestations.utilises.dans.les.activites.et.les.cra')}
         actions={
           <>

@@ -100,6 +100,7 @@ export function Messages() {
     <div>
       <PageHeader
         title={tr('Messages.messages')}
+        count={data?.total ?? 0}
         subtitle={tr('Messages.messagerie.interne')}
         actions={
           <>
@@ -152,7 +153,6 @@ export function Messages() {
             onRowClick={openMessage}
             rows={data.items}
             startIndex={data.page * size}
-            total={data.total}
             columns={[
               {
                 key: 'subject',

@@ -227,6 +227,7 @@ export function CraList() {
     <div>
       <PageHeader
         title={tr('CraList.cra')}
+        count={list.length}
         subtitle={
           isConsultant
             ? 'Mes comptes rendus d’activité'
@@ -311,8 +312,8 @@ export function CraList() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
-                    <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                      # ({list.length})
+                    <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                      #
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.annee.mois')}

@@ -243,6 +243,7 @@ export function Unavailability() {
     <div>
       <PageHeader
         title={tr('Unavailability.indisponibilites')}
+        count={filtered.length}
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         actions={
           <Button className="w-auto" onClick={openCreate} variant="primary">
@@ -368,8 +369,8 @@ export function Unavailability() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
-                    <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                      # ({filtered.length})
+                    <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                      #
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.consultant')}
@@ -572,7 +573,7 @@ function UnavailabilityHistoryModal({
       >
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">{tr('Unavailability.historique.de.l.indisponibilite')}</h3>
+            <h3 className="text-sm font-semibold text-gray-900">{tr('Unavailability.historique.de.l.indisponibilite')} ({historyPage.total})</h3>
             <p className="text-xs text-gray-500">
               {unavailability.consultantName} — {UNAVAILABILITY_TYPE_LABELS[unavailability.type]}{' '}
               ({unavailability.startDate} → {unavailability.endDate})
@@ -593,7 +594,7 @@ function UnavailabilityHistoryModal({
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
-                  <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase text-gray-400"># ({historyPage.total})</th>
+                  <th className="w-10 px-3 py-2 text-right text-xs font-bold uppercase text-gray-400">#</th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.date')}</th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.modifie.par')}</th>
                   <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.commentaire')}</th>

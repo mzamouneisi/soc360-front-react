@@ -895,7 +895,7 @@ export function CraDetail({
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                    # ({days.length})
+                    #
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('CraDetail.jour.2')}

@@ -25,15 +25,24 @@ export function PageHeader({
   title,
   subtitle,
   actions,
+  count,
 }: {
   title: string
   subtitle?: string
   actions?: ReactNode
+  count?: number
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {title}
+          {count !== undefined && (
+            <span className="ml-2 align-middle text-lg font-semibold text-gray-400">
+              ({count})
+            </span>
+          )}
+        </h2>
         {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -89,7 +98,6 @@ export function Table<T>({
   onRowClick,
   paginate = false,
   startIndex = 0,
-  total,
 }: {
   columns: { key: string; label: string; className?: string; render: (row: T) => ReactNode }[]
   rows: T[]
@@ -99,7 +107,6 @@ export function Table<T>({
   onRowClick?: (row: T) => void
   paginate?: boolean
   startIndex?: number
-  total?: number
 }) {
   const { user } = useAuth()
   const { t } = useI18n()
@@ -125,8 +132,8 @@ export function Table<T>({
         <table className="min-w-full divide-y divide-gray-200">
           <thead style={{ backgroundColor: 'var(--table-header)' }}>
             <tr>
-              <th className="w-16 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                # ({total ?? rows.length})
+              <th className="w-12 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                #
               </th>
               {columns.map((col) => (
                 <th

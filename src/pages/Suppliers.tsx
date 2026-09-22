@@ -160,6 +160,7 @@ export function Suppliers() {
     <div>
       <PageHeader
         title={tr('Suppliers.fournisseurs')}
+        count={(data ?? []).length}
         subtitle={tr('Suppliers.gerez.vos.fournisseurs.et.vos.contacts')}
         actions={
           <>

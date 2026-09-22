@@ -359,7 +359,7 @@ export function Profile() {
       </div>
 
       <Card className="mt-6 p-6">
-        <h3 className="text-sm font-semibold text-gray-900">{tr('Profile.historique.des.connexions')}</h3>
+        <h3 className="text-sm font-semibold text-gray-900">{tr('Profile.historique.des.connexions')} ({connPage.total})</h3>
         {connectionsLoading ? (
           <LoadingBlock />
         ) : (
@@ -367,8 +367,8 @@ export function Profile() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
-                  <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                    # ({connPage.total})
+                  <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                    #
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Profile.date')}

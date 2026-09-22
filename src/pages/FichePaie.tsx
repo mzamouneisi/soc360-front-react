@@ -154,6 +154,7 @@ export function FichePaie() {
 
       <PageHeader
         title={tr('FichePaie.fiches.de.paie')}
+        count={(data ?? []).length}
         subtitle={tr('FichePaie.bulletins.de.salaire.par.consultant.et.par.periode')}
         actions={
           <>

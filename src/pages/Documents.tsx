@@ -122,6 +122,7 @@ export function Documents() {
     <div>
       <PageHeader
         title={tr('Documents.documents')}
+        count={(data ?? []).length}
         subtitle={tr('Documents.partage.et.archivage.des.documents.contrats.pieces.rh')}
         actions={
           <>

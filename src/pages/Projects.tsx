@@ -137,6 +137,7 @@ export function Projects() {
     <div>
       <PageHeader
         title={tr('Projects.projets')}
+        count={(data ?? []).length}
         subtitle={tr('Projects.les.projets.par.client.et.leurs.conditions.commerciales')}
         actions={
           <>

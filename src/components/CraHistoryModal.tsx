@@ -27,7 +27,7 @@ export function CraHistoryModal({
   return (
     <Modal
       open
-      title={tr('CraHistoryModal.historique')}
+      title={`${tr('CraHistoryModal.historique')} (${page.total})`}
       size="lg"
       onClose={onClose}
       footer={<InlineButton onClick={onClose}>Fermer</InlineButton>}
@@ -44,8 +44,8 @@ export function CraHistoryModal({
           <table className="min-w-full divide-y divide-gray-200">
             <thead style={{ backgroundColor: 'var(--table-header)' }}>
               <tr>
-                <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                  # ({page.total})
+                <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                  #
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                   {tr('CraHistoryModal.date.modif')}

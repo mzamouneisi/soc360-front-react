@@ -214,6 +214,7 @@ export function Activities() {
     <div>
       <PageHeader
         title={tr('Activities.activites.tarifs')}
+        count={(data ?? []).length}
         subtitle={tr('Activities.prestations.facturables.utilisees.dans.les.cra')}
         actions={
           <>

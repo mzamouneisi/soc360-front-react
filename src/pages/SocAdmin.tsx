@@ -222,6 +222,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
     <div>
       <PageHeader
         title={scope === 'mine' ? 'Mes sociétés' : 'Toutes les sociétés'}
+        count={socs?.length ?? 0}
         subtitle={
           scope === 'mine'
             ? isAdmin

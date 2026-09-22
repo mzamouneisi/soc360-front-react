@@ -160,6 +160,7 @@ export function Clients() {
     <div>
       <PageHeader
         title={tr('Clients.clients')}
+        count={(data ?? []).length}
         subtitle={tr('Clients.gerez.vos.clients.et.vos.contacts')}
         actions={
           <>

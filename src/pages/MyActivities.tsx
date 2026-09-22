@@ -28,6 +28,7 @@ export function MyActivities() {
     <div>
       <PageHeader
         title={tr('MyActivities.mes.activites')}
+        count={(data ?? []).length}
         subtitle={tr('MyActivities.activites.qui.vous.sont.affectees.lecture.seule')}
         actions={<RefreshButton onClick={reload} />}
       />

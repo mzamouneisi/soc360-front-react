@@ -123,6 +123,7 @@ export function Support() {
     <div>
       <PageHeader
         title={tr('Support.support')}
+        count={data?.total ?? 0}
         subtitle={tr('Support.tickets.d.assistance.et.demandes')}
         actions={
           <>
@@ -163,7 +164,6 @@ export function Support() {
             onRowClick={openDetail}
             rows={data.items}
             startIndex={data.page * size}
-            total={data.total}
             columns={[
               {
                 key: 'title',

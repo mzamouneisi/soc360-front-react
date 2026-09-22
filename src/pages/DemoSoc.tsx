@@ -49,6 +49,7 @@ export function DemoSoc() {
     <div>
       <PageHeader
         title={tr('DemoSoc.societe.demo')}
+        count={demoList.length}
         subtitle={tr('DemoSoc.creer.une.societe.de.demonstration.numerotee.prete.a.l.emplo')}
         actions={<RefreshButton onClick={reload} />}
       />
@@ -83,8 +84,8 @@ export function DemoSoc() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="w-16 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                    # ({demoPage.total})
+                  <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                    #
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('DemoSoc.societe.demo')}
