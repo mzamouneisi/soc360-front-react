@@ -259,7 +259,7 @@ export function Tables() {
   return (
     <div>
       <PageHeader
-        title={tr('Tables.base.de.donnees')}
+        title={selected || tr('Tables.base.de.donnees')}
         count={selected ? rows.length : undefined}
         subtitle={tr('Tables.gestion.des.tables.de.la.base.administration')}
         actions={
