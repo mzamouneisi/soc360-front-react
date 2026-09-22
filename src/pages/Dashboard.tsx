@@ -31,7 +31,7 @@ export function Dashboard() {
   const year = now.getFullYear()
 
   return (
-    <div className="space-y-6">
+    <div className="-m-6 min-h-[calc(100vh-4rem)] space-y-6 bg-gradient-to-br from-sky-100 via-sky-50 to-white p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
