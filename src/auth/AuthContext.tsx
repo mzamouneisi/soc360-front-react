@@ -37,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.style.setProperty('--btn-large-width', `${user?.buttonLargeWidth ?? 100}px`)
     doc.style.setProperty('--btn-save-color', user?.buttonSaveColor || '#1d48eb')
     doc.style.setProperty('--btn-delete-color', user?.buttonDeleteColor || '#dc2626')
+    doc.style.setProperty('--app-bg-color', user?.backgroundColor || '#bae6fd')
   }, [
     user?.fontSize,
     user?.theme,
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.buttonLargeWidth,
     user?.buttonSaveColor,
     user?.buttonDeleteColor,
+    user?.backgroundColor,
   ])
 
   useEffect(() => {

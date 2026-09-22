@@ -35,6 +35,7 @@ export function Settings() {
   const [btnLargeWidth, setBtnLargeWidth] = useState<number>(user?.buttonLargeWidth ?? 100)
   const [btnSaveColor, setBtnSaveColor] = useState<string>(user?.buttonSaveColor || '#1d48eb')
   const [btnDeleteColor, setBtnDeleteColor] = useState<string>(user?.buttonDeleteColor || '#dc2626')
+  const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -54,7 +55,8 @@ export function Settings() {
     (u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
     (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
     (u.buttonSaveColor || '#1d48eb') !== btnSaveColor ||
-    (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor
+    (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor ||
+    (u.backgroundColor || '#bae6fd') !== bgColor
 
   async function handleLanguageChange(value: string) {
     setLanguageSaving(true)
@@ -98,6 +100,9 @@ export function Settings() {
           buttonSaveColor: btnSaveColor,
           buttonDeleteColor: btnDeleteColor,
         })
+      }
+      if ((u.backgroundColor || '#bae6fd') !== bgColor) {
+        await authApi.updateBackgroundColor(bgColor)
       }
       await refreshMe()
       setSaved(true)
@@ -359,6 +364,33 @@ export function Settings() {
           >
             Supprimer
           </button>
+        </div>
+
+        <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.background.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500">{t('settings.background.description')}</p>
+        <div className="mt-4 flex flex-wrap items-end gap-4">
+          <Field label={t('settings.background.color')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => {
+                  setBgColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{bgColor}</span>
+            </div>
+          </Field>
+          <div
+            className="min-w-48 rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700"
+            style={{
+              background: `linear-gradient(135deg, ${bgColor} 0%, color-mix(in srgb, ${bgColor} 45%, white) 55%, #ffffff 100%)`,
+            }}
+          >
+            {t('settings.background.preview')}
+          </div>
         </div>
 
         <Button

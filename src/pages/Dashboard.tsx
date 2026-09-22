@@ -17,8 +17,8 @@ import {
 import { Link } from 'react-router-dom'
 
 const DASH_CARD: CSSProperties = {
-  backgroundColor: '#eef6ff',
-  borderColor: '#c9e2ff',
+  backgroundColor: 'var(--app-card-bg)',
+  borderColor: 'var(--app-card-border)',
 }
 
 export function Dashboard() {
@@ -37,7 +37,7 @@ export function Dashboard() {
   const year = now.getFullYear()
 
   return (
-    <div className="-m-6 min-h-[calc(100vh-4rem)] space-y-6 bg-gradient-to-br from-sky-100 via-sky-50 to-white p-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">

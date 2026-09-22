@@ -85,6 +85,8 @@ export const authApi = {
     buttonSaveColor: string
     buttonDeleteColor: string
   }) => api.put<UserDto>('/auth/me/button-settings', payload),
+  updateBackgroundColor: (backgroundColor: string) =>
+    api.put<UserDto>('/auth/me/background-color', { backgroundColor }),
   updateLanguage: (language: string) =>
     api.put<UserDto>('/auth/me/language', { language }),
   mySocs: () => api.get<SocLiteDto[]>('/auth/me/socs'),

@@ -138,6 +138,11 @@ const fr: Messages = {
   'settings.buttons.saveColor': 'Couleur bouton Enregistrer',
   'settings.buttons.deleteColor': 'Couleur bouton Supprimer',
   'settings.buttons.preview': 'Aperçu',
+  'settings.background.title': 'Fond de l’application',
+  'settings.background.description':
+    'Couleur de dégradé du fond de toutes les pages.',
+  'settings.background.color': 'Couleur du fond',
+  'settings.background.preview': 'Aperçu du fond',
   'settings.saved': 'Préférences enregistrées.',
   'settings.preview': 'Aperçu',
   'settings.example': 'Exemple',
@@ -257,6 +262,11 @@ const en: Messages = {
   'settings.buttons.saveColor': 'Save button colour',
   'settings.buttons.deleteColor': 'Delete button colour',
   'settings.buttons.preview': 'Preview',
+  'settings.background.title': 'Application background',
+  'settings.background.description':
+    'Gradient colour of all page backgrounds.',
+  'settings.background.color': 'Background colour',
+  'settings.background.preview': 'Background preview',
   'settings.saved': 'Preferences saved.',
   'settings.preview': 'Preview',
   'settings.example': 'Sample',

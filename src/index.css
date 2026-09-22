@@ -173,6 +173,15 @@ body {
   --btn-large-width: 100px;
   --btn-save-color: #1d48eb;
   --btn-delete-color: #dc2626;
+  --app-bg-color: #bae6fd;
+  --app-bg: linear-gradient(
+    135deg,
+    var(--app-bg-color) 0%,
+    color-mix(in srgb, var(--app-bg-color) 45%, white) 55%,
+    #ffffff 100%
+  );
+  --app-card-bg: color-mix(in srgb, var(--app-bg-color) 30%, white);
+  --app-card-border: color-mix(in srgb, var(--app-bg-color) 60%, white);
 }
 
 .font_last_commit {
