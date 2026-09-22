@@ -49,7 +49,7 @@ export function Logs() {
         title={tr('Logs.logs.du.serveur')}
         subtitle={tr('Logs.dernieres.lignes.du.fichier.de.log.du.backend.administration')}
         actions={
-          <InlineButton onClick={reload} disabled={loading}>
+          <InlineButton variant="primary" onClick={reload} disabled={loading}>
             Actualiser
           </InlineButton>
         }
@@ -79,7 +79,7 @@ export function Logs() {
             onChange={(e) => setLines(Number(e.target.value))}
           />
         </div>
-        <InlineButton onClick={() => setQuery(lines)} disabled={loading || lines < 1}>
+        <InlineButton variant="primary" onClick={() => setQuery(lines)} disabled={loading || lines < 1}>
           {tr('Logs.afficher')}
         </InlineButton>
         <div className="flex flex-1 items-center gap-2">
@@ -118,6 +118,7 @@ export function Logs() {
                     </span>
                   )}
                   <InlineButton
+                    variant="primary"
                     className="ml-3"
                     onClick={() => void copyText(visible.join('\n'))}
                     disabled={visible.length === 0}
