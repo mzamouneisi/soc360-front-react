@@ -220,7 +220,7 @@ export function Activities() {
             <RefreshButton onClick={reload} />
             {canEdit ? (
               <>
-                <InlineButton onClick={() => navigate('/types-activites')}>
+                <InlineButton variant="primary" onClick={() => navigate('/types-activites')}>
                   Gérer les types
                 </InlineButton>
                 <Button className="w-auto" onClick={openCreate}>

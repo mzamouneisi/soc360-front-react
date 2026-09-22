@@ -298,7 +298,7 @@ export function Consultants() {
             {canCreate ? (
               <>
                 {canEdit ? (
-                  <InlineButton onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
+                  <InlineButton variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
                     Importer CSV
                   </InlineButton>
                 ) : null}

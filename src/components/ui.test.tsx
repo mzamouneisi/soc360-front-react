@@ -52,7 +52,7 @@ describe('Button', () => {
     render(<Button onClick={onClick}>Créer</Button>)
 
     const button = screen.getByRole('button', { name: 'Créer' })
-    expect(button).toHaveClass('w-full')
+    expect(button).toHaveClass('w-auto')
     fireEvent.click(button)
     expect(onClick).toHaveBeenCalledTimes(1)
   })

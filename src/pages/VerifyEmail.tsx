@@ -134,7 +134,7 @@ export function VerifyEmail() {
             />
           </Field>
 
-          <Button type="submit" disabled={submitting || success || !token}>
+          <Button type="submit" className="w-full" disabled={submitting || success || !token}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('VerifyEmail.valider.mon.inscription')}
           </Button>

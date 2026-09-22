@@ -1059,7 +1059,7 @@ export function CraDetail({
           <>
             <span className="flex-1" title={!hasInactiveEvent ? 'aucun événement à valider' : undefined}>
               <Button
-                className="bg-green-600 hover:bg-green-700"
+                className="w-full bg-green-600 hover:bg-green-700"
                 onClick={handleValidate}
                 disabled={!hasInactiveEvent}
               >
@@ -1069,6 +1069,7 @@ export function CraDetail({
             <span className="flex-1" title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
               <Button
                 variant="danger"
+                className="w-full"
                 onClick={handleInvalidateAll}
                 disabled={!hasActiveEvent}
               >

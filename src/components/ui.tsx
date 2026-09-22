@@ -106,7 +106,7 @@ export function Button({
         : {}
   return (
     <button
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex w-auto items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
       style={{ minWidth: `var(--btn-${resolved === 'lg' ? 'large' : 'small'}-width)`, ...background, ...style }}
       disabled={disabled}
       {...rest}
@@ -232,7 +232,7 @@ export function RefreshButton({
   onClick,
   className = '',
   label,
-  variant = 'neutral',
+  variant = 'primary',
 }: {
   onClick: () => void
   className?: string

@@ -377,7 +377,7 @@ const companyWebsite = ensureHttps(company.website)
             </Field>
           </div>
 
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('Register.creer.mon.compte')}
           </Button>

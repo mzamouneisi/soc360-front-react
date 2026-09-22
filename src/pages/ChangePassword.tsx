@@ -99,7 +99,7 @@ export function ChangePassword() {
             />
           </Field>
 
-          <Button type="submit" disabled={submitting || success}>
+          <Button type="submit" className="w-full" disabled={submitting || success}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('ChangePassword.mettre.a.jour')}
           </Button>

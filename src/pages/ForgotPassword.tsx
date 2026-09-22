@@ -60,7 +60,7 @@ export function ForgotPassword() {
             />
           </Field>
 
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('ForgotPassword.envoyer.le.lien')}
           </Button>

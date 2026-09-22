@@ -95,7 +95,7 @@ export function Login() {
             </Link>
           </div>
 
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {t('login.submit')}
           </Button>
