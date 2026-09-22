@@ -1,6 +1,7 @@
 import { tr } from '../i18n/translate'
 import type {
   ButtonHTMLAttributes,
+  CSSProperties,
   InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
@@ -140,14 +141,17 @@ export function Alert({
 
 export function Card({
   className = '',
+  style,
   children,
 }: {
   className?: string
+  style?: CSSProperties
   children: ReactNode
 }) {
   return (
     <div
       className={`rounded-xl border border-gray-200 bg-white shadow-sm ${className}`}
+      style={style}
     >
       {children}
     </div>

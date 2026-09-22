@@ -1,4 +1,5 @@
 import { tr } from '../i18n/translate'
+import type { CSSProperties } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
 import { Card, RefreshButton } from '../components/ui'
@@ -14,6 +15,11 @@ import {
   statusBadge,
 } from '../lib/format'
 import { Link } from 'react-router-dom'
+
+const DASH_CARD: CSSProperties = {
+  background: 'linear-gradient(160deg, #ffffff 0%, #f0f7ff 45%, #dbeafe 100%)',
+  borderColor: '#c9e2ff',
+}
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -67,7 +73,7 @@ export function Dashboard() {
                 value={data.pendingNoteFrais ?? 0}
                 to="/notes-frais"
               />
-              <Card className="p-5">
+              <Card className="p-5" style={DASH_CARD}>
                 <p className="text-sm font-bold text-gray-900">{tr('Dashboard.cra.cette.annee')}</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">{data.craYearTotal ?? 0}</p>
                 <dl className="mt-3 space-y-2 border-t border-gray-100 pt-3">
@@ -102,7 +108,7 @@ export function Dashboard() {
 
           {user.role === 'CONSULTANT' && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Card className="p-5">
+              <Card className="p-5" style={DASH_CARD}>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-500">{tr('Dashboard.mon.cra.du.mois')}</p>
                   {data.craStatus && (
@@ -133,7 +139,7 @@ export function Dashboard() {
                 </Link>
               </Card>
 
-              <Card className="p-5">
+              <Card className="p-5" style={DASH_CARD}>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-500">{tr('Dashboard.ma.note.de.frais.du.mois')}</p>
                   {data.noteFraisStatus && (
@@ -172,7 +178,7 @@ export function Dashboard() {
         </>
       )}
 
-      <Card className="p-5">
+      <Card className="p-5" style={DASH_CARD}>
         <h3 className="text-lg font-semibold text-gray-900">{tr('Dashboard.mon.profil')}</h3>
         <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <InfoRow label={tr('Dashboard.nom')} value={`${user.firstName} ${user.lastName}`} />
@@ -190,7 +196,7 @@ export function Dashboard() {
 function StatCard({ label, value, to }: { label: string; value: number; to: string }) {
   return (
     <Link to={to}>
-      <Card className="p-5 transition hover:shadow-md">
+      <Card className="p-5 transition hover:shadow-md" style={DASH_CARD}>
         <p className="text-sm font-medium text-gray-500">{label}</p>
         <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
       </Card>
@@ -201,7 +207,7 @@ function StatCard({ label, value, to }: { label: string; value: number; to: stri
 function QuickLink({ to, title, description }: { to: string; title: string; description: string }) {
   return (
     <Link to={to}>
-      <Card className="p-5 transition hover:border-brand-300 hover:shadow-md">
+      <Card className="p-5 transition hover:border-brand-300 hover:shadow-md" style={DASH_CARD}>
         <p className="font-semibold text-gray-900">{title}</p>
         <p className="mt-1 text-sm text-gray-500">{description}</p>
       </Card>
