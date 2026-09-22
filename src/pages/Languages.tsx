@@ -275,7 +275,7 @@ export function Languages() {
       <PageHeader
         title={tr('Languages.langues.et.traductions')}
         subtitle={tr('Languages.table.des.chaines.traduites.administration')}
-        actions={<InlineButton onClick={() => load()} disabled={loading}>{t('common.refresh')}</InlineButton>}
+        actions={<InlineButton variant="primary" onClick={() => load()} disabled={loading}>{t('common.refresh')}</InlineButton>}
       />
 
       {error && <ErrorBlock message={error} />}
@@ -506,6 +506,7 @@ export function Languages() {
                     ))}
                     <td className="whitespace-nowrap px-3 py-2 text-right">
                       <InlineButton
+                        variant="primary"
                         className="mr-1.5"
                         onClick={() => void saveRow(entry)}
                         disabled={saving === entry.id}
