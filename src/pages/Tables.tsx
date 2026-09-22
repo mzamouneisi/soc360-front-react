@@ -5,7 +5,7 @@ import { useAuth } from '../auth/AuthContext'
 import { tablesApi, type ColumnDetails, type TableRelation } from '../api/tables'
 import { useAsync } from '../lib/useAsync'
 import { Button, InlineButton, Input, Select, Textarea } from '../components/ui'
-import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader } from '../components/data'
+import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { RelationsGraph } from '../components/RelationsGraph'
 
@@ -95,6 +95,7 @@ export function Tables() {
   const [tab, setTab] = useState<Tab>('data')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [page, setPage] = useState(0)
 
   const [sql, setSql] = useState('')
   const [sqlResult, setSqlResult] = useState<Record<string, unknown>[] | null>(null)
@@ -123,6 +124,7 @@ export function Tables() {
     setColumns([])
     setSqlResult(null)
     setTab('data')
+    setPage(0)
     try {
       const [lineRows, lineColumns] = await Promise.all([
         tablesApi.getLines(name),
@@ -146,6 +148,11 @@ export function Tables() {
     () => columns.find((c) => c.columnName === idKey) ?? null,
     [columns, idKey],
   )
+
+  const pageSize = user?.pageSize ?? 5
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize))
+  const safePage = Math.min(page, totalPages - 1)
+  const pagedRows = rows.slice(safePage * pageSize, safePage * pageSize + pageSize)
 
   const selectTable = (name: string) => {
     setSelected(name)
@@ -253,7 +260,7 @@ export function Tables() {
         title={tr('Tables.base.de.donnees')}
         subtitle={tr('Tables.gestion.des.tables.de.la.base.administration')}
         actions={
-          <InlineButton onClick={() => loadTables()} disabled={loading}>
+          <InlineButton variant="primary" onClick={() => loadTables()} disabled={loading}>
             Actualiser
           </InlineButton>
         }
@@ -274,10 +281,10 @@ export function Tables() {
         </Select>
         {selected && (
           <>
-            <InlineButton onClick={() => loadTable(selected)} disabled={loading}>
+            <InlineButton variant="soft" onClick={() => loadTable(selected)} disabled={loading}>
               {tr('Tables.recharger')}
             </InlineButton>
-            <InlineButton onClick={openInsert} disabled={loading || columns.length === 0}>
+            <InlineButton variant="primary" onClick={openInsert} disabled={loading || columns.length === 0}>
               {tr('Tables.ajouter.une.ligne')}
             </InlineButton>
           </>
@@ -299,8 +306,9 @@ export function Tables() {
               key={value}
               onClick={() => setTab(value)}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                tab === value ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+                tab === value ? 'text-white hover:brightness-95' : 'bg-white text-gray-700 hover:bg-gray-100'
               }`}
+              style={tab === value ? { backgroundColor: 'var(--btn-save-color)' } : undefined}
             >
               {label}
             </button>
@@ -316,57 +324,63 @@ export function Tables() {
               title={tr('Tables.table.vide')}
               description={tr('Tables.aucune.ligne.dans.cette.table')}
               action={
-                <InlineButton onClick={openInsert}>Ajouter une ligne</InlineButton>
+                <InlineButton variant="primary" onClick={openInsert}>Ajouter une ligne</InlineButton>
               }
             />
           )}
           {!loading && rows.length > 0 && (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead style={{ backgroundColor: 'var(--table-header)' }}>
-                  <tr>
-                    {columns.map((c) => (
-                      <th
-                        key={c.columnName}
-                        className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
-                      >
-                        {c.columnName}
-                        <span className="ml-1 font-normal normal-case text-gray-400">
-                          {c.dataType}
-                        </span>
-                      </th>
-                    ))}
-                    <th className="px-3 py-2 text-right">{tr('Tables.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {rows.map((row, i) => (
-                    <tr key={i} className="even:bg-gray-50 hover:bg-gray-100">
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead style={{ backgroundColor: 'var(--table-header)' }}>
+                    <tr>
                       {columns.map((c) => (
-                        <td
+                        <th
                           key={c.columnName}
-                          className="max-w-72 truncate px-3 py-2 text-gray-700"
-                          title={displayValue(cellValue(row, c.columnName))}
+                          className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
                         >
-                          {displayValue(cellValue(row, c.columnName))}
-                        </td>
+                          {c.columnName}
+                          <span className="ml-1 font-normal normal-case text-gray-400">
+                            {c.dataType}
+                          </span>
+                        </th>
                       ))}
-                      <td className="whitespace-nowrap px-3 py-2 text-right">
-                        <InlineButton
-                          className="mr-1.5"
-                          onClick={() => {
-                            setInserting(false)
-                            setDraft({ ...row })
-                          }}
-                        >
-                          {tr('Tables.modifier')}
-                        </InlineButton>
-                        <InlineButton variant="danger" onClick={() => deleteRow(row)}>{tr('Tables.supprimer')}</InlineButton>
-                      </td>
+                      <th className="px-3 py-2 text-right">{tr('Tables.actions')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {pagedRows.map((row, i) => (
+                      <tr key={i} className="even:bg-gray-50 hover:bg-gray-100">
+                        {columns.map((c) => (
+                          <td
+                            key={c.columnName}
+                            className="max-w-72 truncate px-3 py-2 text-gray-700"
+                            title={displayValue(cellValue(row, c.columnName))}
+                          >
+                            {displayValue(cellValue(row, c.columnName))}
+                          </td>
+                        ))}
+                        <td className="whitespace-nowrap px-3 py-2 text-right">
+                          <InlineButton
+                            variant="primary"
+                            className="mr-1.5"
+                            onClick={() => {
+                              setInserting(false)
+                              setDraft({ ...row })
+                            }}
+                          >
+                            {tr('Tables.modifier')}
+                          </InlineButton>
+                          <InlineButton variant="danger" onClick={() => deleteRow(row)}>{tr('Tables.supprimer')}</InlineButton>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-4 pb-3">
+                <Pagination page={safePage} totalPages={totalPages} total={rows.length} onChange={setPage} />
+              </div>
             </div>
           )}
         </>
@@ -377,7 +391,7 @@ export function Tables() {
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
               <p className="text-sm font-semibold text-gray-900">{tr('Tables.console.sql')}</p>
-              <InlineButton onClick={runSql} disabled={sqlLoading || !sql.trim()}>
+              <InlineButton variant="primary" onClick={runSql} disabled={sqlLoading || !sql.trim()}>
                 {tr('Tables.executer')}
               </InlineButton>
             </div>
