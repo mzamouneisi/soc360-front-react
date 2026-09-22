@@ -9,6 +9,7 @@ import type { AddSocPayload, SocDto, SocLiteDto } from '../api/types'
 import { useAsync } from '../lib/useAsync'
 import { Button, Field, Input, InlineButton, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 
 interface EditForm {
   name: string
@@ -179,7 +180,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
 
   async function handleDelete(soc: SocDto) {
     setActionError(null)
-    if (!window.confirm(`Supprimer la société « ${soc.name} » ?`)) return
+    if (!(await dialog.confirm(`Supprimer la société « ${soc.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     setDependencyLoading(true)
     try {
       const linked = await socsApi.dependencies(soc.id)

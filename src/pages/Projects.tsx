@@ -8,6 +8,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Button, Field, Input, InlineButton, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import { formatDate, formatMoney } from '../lib/format'
 import type { ProjectDto } from '../api/types'
 
@@ -123,12 +124,12 @@ export function Projects() {
   }
 
   async function handleDelete(project: ProjectDto) {
-    if (!window.confirm(`Supprimer le projet « ${project.name} » ?`)) return
+    if (!(await dialog.confirm(`Supprimer le projet « ${project.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     try {
       await projectsApi.delete(project.id)
       setData((data ?? []).filter((p) => p.id !== project.id))
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

@@ -8,6 +8,7 @@ import type { CompanyLookup } from '../api/auth'
 import { useAsync } from '../lib/useAsync'
 import { Button, Field, Input, InlineButton, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import { useSoc } from '../soc/SocContext'
 import { socToCompanyLookup } from '../soc/socLookup'
 import type { ClientDto } from '../api/types'
@@ -146,12 +147,12 @@ export function Clients() {
   }
 
   async function handleDelete(client: ClientDto) {
-    if (!window.confirm(`Supprimer le client « ${client.name} » ?`)) return
+    if (!(await dialog.confirm(`Supprimer le client « ${client.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     try {
       await clientsApi.delete(client.id)
       setData((data ?? []).filter((c) => c.id !== client.id))
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

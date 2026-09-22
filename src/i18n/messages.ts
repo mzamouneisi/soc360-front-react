@@ -44,6 +44,15 @@ const fr: Messages = {
   'common.noElements': 'Aucun élément',
   'common.noData': 'Aucune donnée à afficher.',
 
+  'dialog.ok': 'OK',
+  'dialog.confirm': 'Confirmer',
+  'dialog.confirmTitle': 'Confirmation',
+  'dialog.infoTitle': 'Information',
+  'dialog.successTitle': 'Succès',
+  'dialog.warningTitle': 'Attention',
+  'dialog.errorTitle': 'Erreur',
+  'dialog.input': 'Votre réponse',
+
   'app.logout': 'Quitter',
   'app.profile': 'Profil',
   'app.viewProfile': 'Voir mon profil',
@@ -145,6 +154,15 @@ const en: Messages = {
   'common.required': 'Required',
   'common.noElements': 'No items',
   'common.noData': 'No data to display.',
+
+  'dialog.ok': 'OK',
+  'dialog.confirm': 'Confirm',
+  'dialog.confirmTitle': 'Confirmation',
+  'dialog.infoTitle': 'Information',
+  'dialog.successTitle': 'Success',
+  'dialog.warningTitle': 'Warning',
+  'dialog.errorTitle': 'Error',
+  'dialog.input': 'Your answer',
 
   'app.logout': 'Sign out',
   'app.profile': 'Profile',

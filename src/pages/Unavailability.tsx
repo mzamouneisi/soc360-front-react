@@ -12,6 +12,7 @@ import type {
 } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { dialog } from '../components/dialog'
 import { Alert, Button, Card, Field, InlineButton, Input, MonthInput, Select, Textarea } from '../components/ui'
 import {
   formatDate,
@@ -192,14 +193,15 @@ export function Unavailability() {
     u: UnavailabilityDto,
     fn: () => Promise<unknown>,
     confirmMsg?: string,
+    confirmOptions?: { danger?: boolean; okLabel?: string },
   ) {
-    if (confirmMsg && !window.confirm(confirmMsg)) return
+    if (confirmMsg && !(await dialog.confirm(confirmMsg, { variant: 'warning', ...confirmOptions }))) return
     try {
       await fn()
       list.reload()
       if (selectedId === u.id) setSelectedId(u.id)
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 
@@ -215,14 +217,14 @@ export function Unavailability() {
     )
   }
 
-  function handleValidate(u: UnavailabilityDto) {
-    const comment = window.prompt('Commentaire de validation à envoyer au consultant :')
+  async function handleValidate(u: UnavailabilityDto) {
+    const comment = await dialog.prompt('Commentaire de validation à envoyer au consultant :')
     if (comment === null) return
     return runAction(u, () => unavailabilityApi.validate(u.id, comment))
   }
 
-  function handleReject(u: UnavailabilityDto) {
-    const comment = window.prompt('Motif du rejet à envoyer au consultant :')
+  async function handleReject(u: UnavailabilityDto) {
+    const comment = await dialog.prompt('Motif du rejet à envoyer au consultant :')
     if (comment === null) return
     return runAction(u, () => unavailabilityApi.reject(u.id, comment))
   }
@@ -232,6 +234,7 @@ export function Unavailability() {
       u,
       () => unavailabilityApi.delete(u.id),
       `Supprimer cette indisponibilité (${UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type}) ?`,
+      { danger: true, okLabel: 'Supprimer' },
     )
   }
 

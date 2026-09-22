@@ -4,6 +4,7 @@ import { authApi, type CompanyLookup } from '../api/auth'
 import type { AddSocPayload, SocLiteDto } from '../api/types'
 import { Modal } from '../components/data'
 import { Button, Field, Input, Textarea } from '../components/ui'
+import { dialog } from '../components/dialog'
 import { useSoc } from './SocContext'
 
 interface AddSocModalProps {
@@ -138,8 +139,8 @@ setWebsite(ensureHttps(company.website))
     }
   }
 
-  function clearCompanySearch() {
-    if (!window.confirm(tr('AddSocModal.voulez.vous.effacer.tous.les.champs.du.formulaire'))) return
+  async function clearCompanySearch() {
+    if (!(await dialog.confirm(tr('AddSocModal.voulez.vous.effacer.tous.les.champs.du.formulaire'), { variant: 'warning', okLabel: 'Effacer' }))) return
     reset()
   }
 

@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { NoteFraisList } from './NoteFraisList'
+import { DialogHost } from '../components/dialog'
 import type { NoteFraisDto, UserDto } from '../api/types'
 
 const {
@@ -151,6 +152,7 @@ function renderList() {
   return render(
     <MemoryRouter initialEntries={['/note-frais']}>
       <NoteFraisList />
+      <DialogHost />
     </MemoryRouter>,
   )
 }
@@ -224,11 +226,16 @@ describe('NoteFraisList', () => {
     totalsByCategoryMock.mockResolvedValue({})
     summariesMock.mockResolvedValue([])
     rejectMock.mockResolvedValue(nf({ status: 'REJECTED', comment: 'Justificatif manquant' }))
-    vi.stubGlobal('prompt', vi.fn().mockReturnValue('Justificatif manquant'))
 
     renderList()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Rejeter' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByRole('textbox'), {
+      target: { value: 'Justificatif manquant' },
+    })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmer' }))
 
     await waitFor(() => expect(rejectMock).toHaveBeenCalledWith(1, 'Justificatif manquant'))
   })
@@ -240,11 +247,13 @@ describe('NoteFraisList', () => {
     totalsByCategoryMock.mockResolvedValue({})
     summariesMock.mockResolvedValue([])
     deleteMock.mockResolvedValue(undefined)
-    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
 
     renderList()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Suppr.' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Supprimer' }))
 
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
   })

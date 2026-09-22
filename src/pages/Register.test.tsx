@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Register } from './Register'
+import { DialogHost } from '../components/dialog'
 
 const { searchSoc, registerSoc } = vi.hoisted(() => ({ searchSoc: vi.fn(), registerSoc: vi.fn() }))
 
@@ -17,6 +18,7 @@ function renderRegister() {
   return render(
     <MemoryRouter>
       <Register />
+      <DialogHost />
     </MemoryRouter>,
   )
 }
@@ -25,7 +27,6 @@ describe('Register company search controls', () => {
   beforeEach(() => {
     searchSoc.mockReset()
     registerSoc.mockReset()
-    vi.stubGlobal('confirm', vi.fn(() => true))
   })
 
   it('searches by company name and displays matching companies', async () => {
@@ -89,8 +90,10 @@ describe('Register company search controls', () => {
     await user.type(screen.getByPlaceholderText('123 456 789 00012'), '123')
     await user.click(screen.getByRole('button', { name: 'Effacer' }))
 
-    expect(window.confirm).toHaveBeenCalled()
-    expect(screen.getByPlaceholderText('Ma société de conseil')).toHaveValue('')
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Effacer' }))
+
+    await waitFor(() => expect(screen.getByPlaceholderText('Ma société de conseil')).toHaveValue(''))
     expect(screen.getByPlaceholderText('123 456 789 00012')).toHaveValue('')
   })
 

@@ -7,6 +7,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import { formatDate, formatMoney } from '../lib/format'
 import type { FichePaieDto } from '../api/types'
 
@@ -120,7 +121,7 @@ export function FichePaie() {
   async function handleUpload(fp: FichePaieDto) {
     const input = fileRef.current
     if (!input || !input.files?.[0]) {
-      window.alert(tr('FichePaie.selectionnez.un.fichier.pdf.a.associer'))
+      void dialog.warning(tr('FichePaie.selectionnez.un.fichier.pdf.a.associer'))
       return
     }
     setUploadingId(fp.id)
@@ -128,7 +129,7 @@ export function FichePaie() {
       await fichePaieApi.uploadFile(fp.id, input.files[0])
       reload()
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     } finally {
       setUploadingId(null)
       input.value = ''
@@ -136,12 +137,12 @@ export function FichePaie() {
   }
 
   async function handleDelete(fp: FichePaieDto) {
-    if (!window.confirm(`Supprimer la fiche de paie de ${fp.period} ?`)) return
+    if (!(await dialog.confirm(`Supprimer la fiche de paie de ${fp.period} ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     try {
       await fichePaieApi.delete(fp.id)
       setData((prev) => (prev ?? []).filter((x) => x.id !== fp.id))
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 
@@ -239,10 +240,10 @@ export function FichePaie() {
               label: '',
               render: (fp) => (
                 <div className="flex justify-end gap-1">
-                  <InlineButton onClick={() => fichePaieApi.download(fp.id, fp.period).catch((err) => window.alert(err.message))}>
+                  <InlineButton onClick={() => fichePaieApi.download(fp.id, fp.period).catch((err) => void dialog.error(err.message))}>
                     PDF
                   </InlineButton>
-                  <InlineButton onClick={() => fichePaieApi.pdf(fp.id, fp.period).catch((err) => window.alert(err.message))}>
+                  <InlineButton onClick={() => fichePaieApi.pdf(fp.id, fp.period).catch((err) => void dialog.error(err.message))}>
                     Générer
                   </InlineButton>
                   {canEdit && (

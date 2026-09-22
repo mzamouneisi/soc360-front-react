@@ -7,6 +7,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import { DOCUMENT_CATEGORIES, formatDate, formatSize } from '../lib/format'
 import type { HrDocumentDto } from '../api/types'
 
@@ -95,17 +96,17 @@ export function Documents() {
     try {
       await documentsApi.download(doc.id, doc.name)
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 
   async function handleDelete(doc: HrDocumentDto) {
-    if (!window.confirm(`Supprimer le document « ${doc.name} » ?`)) return
+    if (!(await dialog.confirm(`Supprimer le document « ${doc.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     try {
       await documentsApi.delete(doc.id)
       setData((prev) => (prev ?? []).filter((d) => d.id !== doc.id))
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

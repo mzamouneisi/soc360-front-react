@@ -5,6 +5,7 @@ import { crasApi } from '../api/cras'
 import type { CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { dialog } from '../components/dialog'
 import { Button, Card, InlineButton, Input, Select } from '../components/ui'
 import {
   CRA_STATUS_LABELS,
@@ -106,9 +107,10 @@ export function IndispoList() {
 
   async function handleDelete(c: CraDto) {
     if (
-      !window.confirm(
+      !(await dialog.confirm(
         `Supprimer l'Indispo de ${c.consultantName ?? '—'} (${monthLabel(c.month)} ${c.year}) ?`,
-      )
+        { variant: 'warning', danger: true, okLabel: 'Supprimer' },
+      ))
     )
       return
     try {
@@ -117,7 +119,7 @@ export function IndispoList() {
       if (selectedId === c.id) setSelectedId(null)
       reload()
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 
@@ -127,7 +129,7 @@ export function IndispoList() {
       const ind = await crasApi.getOrCreate(user.consultantId, year, month, 'CONGE')
       setOpenId(ind.id)
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

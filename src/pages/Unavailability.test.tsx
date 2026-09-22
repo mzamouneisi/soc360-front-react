@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { Unavailability } from './Unavailability'
+import { DialogHost } from '../components/dialog'
 import type { UnavailabilityDto, UserDto } from '../api/types'
 
 const {
@@ -106,6 +107,7 @@ function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/indisponibilites']}>
       <Unavailability />
+      <DialogHost />
     </MemoryRouter>,
   )
 }
@@ -157,11 +159,13 @@ describe('Unavailability', () => {
     userMock.value = baseUser
     listMock.mockResolvedValue([item({ status: 'SUBMITTED' })])
     cancelMock.mockResolvedValue(item({ status: 'DRAFT' }))
-    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
 
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Annuler la soumission' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmer' }))
 
     await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(1))
   })
@@ -171,11 +175,14 @@ describe('Unavailability', () => {
     listMock.mockResolvedValue([item({ status: 'SUBMITTED' })])
     summariesMock.mockResolvedValue([])
     validateMock.mockResolvedValue(item({ status: 'VALIDATED' }))
-    vi.stubGlobal('prompt', vi.fn().mockReturnValue('Bon congé'))
 
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Valider' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: 'Bon congé' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmer' }))
 
     await waitFor(() => expect(validateMock).toHaveBeenCalledWith(1, 'Bon congé'))
   })
@@ -185,11 +192,14 @@ describe('Unavailability', () => {
     listMock.mockResolvedValue([item({ status: 'SUBMITTED' })])
     summariesMock.mockResolvedValue([])
     rejectMock.mockResolvedValue(item({ status: 'REJECTED' }))
-    vi.stubGlobal('prompt', vi.fn().mockReturnValue('Période non couverte'))
 
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Rejeter' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: 'Période non couverte' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmer' }))
 
     await waitFor(() => expect(rejectMock).toHaveBeenCalledWith(1, 'Période non couverte'))
   })

@@ -9,6 +9,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Button, Card, Field, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { dialog } from '../components/dialog'
 import { ROLE_LABELS, formatDateTime } from '../lib/format'
 
 const DEPENDENCY_LABELS: Record<string, string> = {
@@ -109,7 +110,7 @@ export function Profile() {
   }
 
   async function deleteSoc(id: number, name: string) {
-    if (!window.confirm(`Supprimer la société « ${name} » ?`)) return
+    if (!(await dialog.confirm(`Supprimer la société « ${name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     setSocError(null)
     setSocMessage(null)
     try {

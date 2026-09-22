@@ -8,6 +8,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Card, InlineButton, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { dialog } from '../components/dialog'
 import {
   SUBSCRIPTION_STATUS_LABELS,
   formatDate,
@@ -65,7 +66,7 @@ export function Facturation() {
         await crasApi.exportPdf({ socId, month, year })
       }
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     } finally {
       setExporting(null)
     }

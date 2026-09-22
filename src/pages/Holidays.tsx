@@ -5,6 +5,7 @@ import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { Button, Card, InlineButton, RefreshButton } from '../components/ui'
 import { ErrorBlock, PageHeader } from '../components/data'
+import { dialog } from '../components/dialog'
 import type { SocHolidayDto } from '../api/types'
 import { monthLabel } from '../lib/format'
 
@@ -84,7 +85,7 @@ export function Holidays() {
     const key = toDateString(date)
     const existing = byDate.get(key)
     if (existing) {
-      if (!window.confirm(`Supprimer le jour férié « ${existing.label} » du ${key} ?`)) return
+      if (!(await dialog.confirm(`Supprimer le jour férié « ${existing.label} » du ${key} ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
       try {
         await socHolidaysApi.delete(existing.id)
         setHolidays((prev) => prev.filter((h) => h.id !== existing.id))
@@ -94,7 +95,7 @@ export function Holidays() {
       }
       return
     }
-    const label = window.prompt('Libellé du jour férié :', 'Jour férié')
+    const label = await dialog.prompt('Libellé du jour férié :', 'Jour férié')
     if (label === null) return
     try {
       const created = await socHolidaysApi.create(key, label.trim() || 'Jour férié')
@@ -107,7 +108,7 @@ export function Holidays() {
 
   async function duplicateToNextYear() {
     if (!canEdit) return
-    if (!window.confirm(`Dupliquer les jours fériés de ${year} vers ${year + 1} ?`)) return
+    if (!(await dialog.confirm(`Dupliquer les jours fériés de ${year} vers ${year + 1} ?`, { variant: 'question' }))) return
     try {
       const copied = await socHolidaysApi.duplicate(year)
       setFeedback(`${copied} jour(s) férié(s) dupliqué(s) vers ${year + 1}.`)

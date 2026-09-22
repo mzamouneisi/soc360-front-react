@@ -7,6 +7,7 @@ import { useAsync } from '../lib/useAsync'
 import { useSoc } from '../soc/SocContext'
 import { Button, Field, InlineButton, Input, RefreshButton, Spinner } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import type { ActivityTypeDto, ActivityTypeRequest } from '../api/types'
 
 interface TypeFormState {
@@ -99,7 +100,7 @@ export function ActivityTypes() {
 
   async function handleToggleActive(t: ActivityTypeDto) {
     const action = t.active ? 'Désactiver' : 'Réactiver'
-    if (!window.confirm(`${action} le type « ${t.labelFr} » ?`)) return
+    if (!(await dialog.confirm(`${action} le type « ${t.labelFr} » ?`, { variant: 'question' }))) return
     try {
       await activityTypesApi.update(t.id, {
         socId: t.socId,
@@ -111,17 +112,17 @@ export function ActivityTypes() {
       })
       await reload()
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 
   async function handleDelete(t: ActivityTypeDto) {
-    if (!window.confirm(`Supprimer définitivement le type « ${t.labelFr} » ?`)) return
+    if (!(await dialog.confirm(`Supprimer définitivement le type « ${t.labelFr} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     try {
       await activityTypesApi.delete(t.id)
       await reload()
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

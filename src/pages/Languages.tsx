@@ -9,6 +9,7 @@ import { translateTexts } from '../lib/translate'
 import { useAuth } from '../auth/AuthContext'
 import { Button, Card, Field, InlineButton, Input, Spinner } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
+import { dialog } from '../components/dialog'
 
 function downloadJson(data: unknown, filename: string) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -91,7 +92,7 @@ export function Languages() {
   }
 
   async function deleteRow(entry: LanguageEntry) {
-    if (!window.confirm(tr('languages.confirmDeleteKey', { key: entry.key }))) return
+    if (!(await dialog.confirm(tr('languages.confirmDeleteKey', { key: entry.key }), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     setError(null)
     setMessage(null)
     try {
@@ -172,7 +173,7 @@ export function Languages() {
   }
 
   async function removeLanguage(code: string) {
-    if (!window.confirm(tr('languages.confirmDeleteLanguage', { code }))) return
+    if (!(await dialog.confirm(tr('languages.confirmDeleteLanguage', { code }), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     setError(null)
     setMessage(null)
     try {

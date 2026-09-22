@@ -11,6 +11,7 @@ import { useAsync } from '../lib/useAsync'
 import { useSoc } from '../soc/SocContext'
 import { Button, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import { formatMoney } from '../lib/format'
 import type { ActivityDto, ActivityTypeDto, ProjectDto, ConsultantSummary, SocDto } from '../api/types'
 
@@ -200,12 +201,12 @@ export function Activities() {
   }
 
   async function handleDelete(activity: ActivityDto) {
-    if (!window.confirm(`Supprimer l'activité « ${activity.name} » ?`)) return
+    if (!(await dialog.confirm(`Supprimer l'activité « ${activity.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     try {
       await activitiesApi.delete(activity.id)
       setData((prev) => (prev ?? []).filter((a) => a.id !== activity.id))
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

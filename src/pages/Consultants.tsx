@@ -15,6 +15,7 @@ import {
   Pagination,
   Table,
 } from '../components/data'
+import { dialog } from '../components/dialog'
 import { formatDate, formatDateTime, formatMoney } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import type { ConsultantDto, ManagerSummary, HistoConsultantDto } from '../api/types'
@@ -243,12 +244,12 @@ export function Consultants() {
   }
 
   async function handleDelete(c: ConsultantDto) {
-    if (!window.confirm(`Supprimer le collaborateur ${c.firstName} ${c.lastName} ?\nLes CRA, notes de frais et documents associés seront supprimés.`)) return
+    if (!(await dialog.confirm(`Supprimer le collaborateur ${c.firstName} ${c.lastName} ?\nLes CRA, notes de frais et documents associés seront supprimés.`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     try {
       await consultantsApi.delete(c.id)
       setData({ ...data!, items: data?.items.filter((x) => x.id !== c.id) ?? [] })
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 
@@ -261,7 +262,7 @@ export function Consultants() {
       const items = await consultantsApi.history(c.id)
       setHistoryItems(items)
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     } finally {
       setHistoryLoading(false)
     }

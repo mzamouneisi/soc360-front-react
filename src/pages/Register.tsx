@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { authApi, type CompanyLookup } from '../api/auth'
 import { ApiError } from '../api/client'
 import { Alert, Button, Card, Field, Input, Spinner, Textarea } from '../components/ui'
+import { dialog } from '../components/dialog'
 
 export function Register() {
   const [socName, setSocName] = useState('')
@@ -115,8 +116,8 @@ const companyWebsite = ensureHttps(company.website)
     }
   }
 
-  function clearCompanySearch() {
-    if (!window.confirm(tr('Register.voulez.vous.effacer.tous.les.champs.du.formulaire'))) return
+  async function clearCompanySearch() {
+    if (!(await dialog.confirm(tr('Register.voulez.vous.effacer.tous.les.champs.du.formulaire'), { variant: 'warning', okLabel: 'Effacer' }))) return
 
     setSocName('')
     setSiret('')

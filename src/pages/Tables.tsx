@@ -6,6 +6,7 @@ import { tablesApi, type ColumnDetails, type TableRelation } from '../api/tables
 import { useAsync } from '../lib/useAsync'
 import { Button, InlineButton, Input, Select, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader } from '../components/data'
+import { dialog } from '../components/dialog'
 import { RelationsGraph } from '../components/RelationsGraph'
 
 type Tab = 'data' | 'sql' | 'relations'
@@ -227,7 +228,7 @@ export function Tables() {
   const deleteRow = async (row: Record<string, unknown>) => {
     if (!selected || !idKey || !idColumn) return
     const idValue = cellValue(row, idKey)
-    if (!window.confirm(`Supprimer la ligne ${idKey} = ${displayValue(idValue)} ?`)) return
+    if (!(await dialog.confirm(`Supprimer la ligne ${idKey} = ${displayValue(idValue)} ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     setSaving(true)
     setError(null)
     try {

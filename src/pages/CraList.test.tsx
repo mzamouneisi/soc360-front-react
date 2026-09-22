@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { CraList } from './CraList'
+import { DialogHost } from '../components/dialog'
 import type { CraDto, UserDto } from '../api/types'
 
 const {
@@ -178,6 +179,7 @@ function renderList() {
   return render(
     <MemoryRouter initialEntries={['/cras']}>
       <CraList />
+      <DialogHost />
     </MemoryRouter>,
   )
 }
@@ -215,11 +217,16 @@ describe('CraList', () => {
     userMock.value = managerUser
     findByManagerMock.mockResolvedValue([cra()])
     rejectMock.mockResolvedValue(cra({ status: 'REJECTED' }))
-    vi.stubGlobal('prompt', vi.fn().mockReturnValue('Facture en double'))
 
     renderList()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Rejeter' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByRole('textbox'), {
+      target: { value: 'Facture en double' },
+    })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmer' }))
 
     await waitFor(() => expect(rejectMock).toHaveBeenCalledWith(1, 'Facture en double'))
   })
@@ -231,7 +238,6 @@ describe('CraList', () => {
       cra({ id: 2, consultantName: 'Bob Soumis', status: 'SUBMITTED' }),
     ])
     deleteMock.mockResolvedValue(undefined)
-    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
 
     renderList()
 
@@ -242,6 +248,9 @@ describe('CraList', () => {
     expect(screen.getByRole('button', { name: 'Supprimer' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Supprimer' }))
 
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
   })

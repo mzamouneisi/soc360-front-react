@@ -10,6 +10,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal } from '../components/data'
+import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
 import {
   CRA_STATUS_LABELS,
@@ -582,8 +583,8 @@ export function CraDetail({
     }
   }
 
-  function handleDeleteAll() {
-    if (!window.confirm(tr('CraDetail.supprimer.tous.les.evenements.ajoutes'))) return
+  async function handleDeleteAll() {
+    if (!(await dialog.confirm(tr('CraDetail.supprimer.tous.les.evenements.ajoutes'), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
     removeAllEvents()
   }
 

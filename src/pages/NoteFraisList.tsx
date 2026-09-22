@@ -9,6 +9,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import {
   NOTE_FRAIS_CATEGORIES,
   NOTE_FRAIS_STATUS_LABELS,
@@ -274,17 +275,17 @@ export function NoteFraisList() {
         const updated = await noteFraisApi.validate(nf.id)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else if (action === 'reject') {
-        const comment = window.prompt('Motif du rejet :')
+        const comment = await dialog.prompt('Motif du rejet :')
         if (comment === null) return
         const updated = await noteFraisApi.reject(nf.id, comment)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else {
-        if (!window.confirm(tr('NoteFraisList.supprimer.cette.note.de.frais'))) return
+        if (!(await dialog.confirm(tr('NoteFraisList.supprimer.cette.note.de.frais'), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
         await noteFraisApi.delete(nf.id)
         setData((prev) => (prev ?? []).filter((x) => x.id !== nf.id))
       }
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

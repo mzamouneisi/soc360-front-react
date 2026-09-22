@@ -7,6 +7,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { Button, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination, Table } from '../components/data'
+import { dialog } from '../components/dialog'
 import { formatDateTime } from '../lib/format'
 import type { MessageDto } from '../api/types'
 
@@ -86,7 +87,7 @@ export function Messages() {
       setViewing(null)
       reload()
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 

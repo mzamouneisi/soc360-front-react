@@ -15,6 +15,7 @@ import {
   Pagination,
   Table,
 } from '../components/data'
+import { dialog } from '../components/dialog'
 import {
   TICKET_PRIORITY_LABELS,
   TICKET_STATUS_LABELS,
@@ -101,7 +102,7 @@ export function Support() {
       setDetail(await supportApi.getById(detail.id))
       reload()
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     } finally {
       setExchangeSubmitting(false)
     }
@@ -114,7 +115,7 @@ export function Support() {
       setDetail(updated)
       reload()
     } catch (err) {
-      window.alert(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
     }
   }
 
