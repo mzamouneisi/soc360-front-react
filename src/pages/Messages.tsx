@@ -241,7 +241,7 @@ export function Messages() {
         footer={
           <>
             <InlineButton onClick={() => setViewing(null)}>Fermer</InlineButton>
-            <InlineButton className="text-red-600 hover:bg-red-50" onClick={handleDelete}>
+            <InlineButton variant="danger" onClick={handleDelete}>
               Supprimer
             </InlineButton>
           </>

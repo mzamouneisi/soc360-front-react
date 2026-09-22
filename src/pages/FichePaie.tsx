@@ -255,7 +255,7 @@ export function FichePaie() {
                         {uploadingId === fp.id ? <Spinner /> : 'Associer'}
                       </InlineButton>
                       <InlineButton
-                        className="text-red-600 hover:bg-red-50"
+                        variant="danger"
                         onClick={() => handleDelete(fp)}
                       >
                         Supprimer

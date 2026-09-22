@@ -33,7 +33,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.dataset.theme = user?.theme || 'ocean'
     doc.style.setProperty('--table-header', user?.tableHeaderColor || '#f9fafb')
     doc.style.setProperty('--table-border', user?.tableBorderColor || '#e5e7eb')
-  }, [user?.fontSize, user?.theme, user?.tableHeaderColor, user?.tableBorderColor])
+    doc.style.setProperty('--btn-small-width', `${user?.buttonSmallWidth ?? 50}px`)
+    doc.style.setProperty('--btn-large-width', `${user?.buttonLargeWidth ?? 100}px`)
+    doc.style.setProperty('--btn-save-color', user?.buttonSaveColor || '#1d48eb')
+    doc.style.setProperty('--btn-delete-color', user?.buttonDeleteColor || '#dc2626')
+  }, [
+    user?.fontSize,
+    user?.theme,
+    user?.tableHeaderColor,
+    user?.tableBorderColor,
+    user?.buttonSmallWidth,
+    user?.buttonLargeWidth,
+    user?.buttonSaveColor,
+    user?.buttonDeleteColor,
+  ])
 
   useEffect(() => {
     setUnauthorizedHandler(() => {

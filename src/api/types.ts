@@ -92,6 +92,10 @@ export interface UserDto {
   tableBorderColor: string
   pageSize: number
   language: string | null
+  buttonSmallWidth: number
+  buttonLargeWidth: number
+  buttonSaveColor: string
+  buttonDeleteColor: string
   manager: ManagerInfo | null
 }
 

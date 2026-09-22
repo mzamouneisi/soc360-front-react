@@ -163,8 +163,11 @@ export function DialogHost() {
   const abort = () => settle(mode === 'alert' ? true : mode === 'confirm' ? false : null)
 
   const primaryClass = options.danger
-    ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500/40'
-    : 'bg-brand-600 hover:bg-brand-700 focus:ring-brand-500/40'
+    ? 'hover:brightness-95 focus:ring-red-500/40'
+    : 'hover:brightness-95 focus:ring-brand-500/40'
+  const primaryStyle = {
+    backgroundColor: options.danger ? 'var(--btn-delete-color)' : 'var(--btn-save-color)',
+  }
 
   return createPortal(
     <div
@@ -209,7 +212,8 @@ export function DialogHost() {
             <button
               type="button"
               onClick={abort}
-              className="inline-flex h-10 w-32 items-center justify-center rounded-xl border border-gray-300 bg-white text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+              style={{ minWidth: 'var(--btn-large-width)' }}
             >
               {cancelLabel}
             </button>
@@ -218,7 +222,8 @@ export function DialogHost() {
             type="button"
             autoFocus={mode !== 'prompt'}
             onClick={confirm}
-            className={`inline-flex h-10 w-32 items-center justify-center rounded-xl text-sm font-semibold text-white transition focus:outline-none focus:ring-2 ${primaryClass}`}
+            className={`inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold text-white transition focus:outline-none focus:ring-2 ${primaryClass}`}
+            style={{ minWidth: 'var(--btn-large-width)', ...primaryStyle }}
           >
             {mode === 'alert' ? tr('dialog.ok') : confirmLabel}
           </button>

@@ -482,7 +482,7 @@ export function Unavailability() {
                           )}
                           {canDelete(u) && (
                             <InlineButton
-                              className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              variant="danger"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleDelete(u)

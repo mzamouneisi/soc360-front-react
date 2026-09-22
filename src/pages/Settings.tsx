@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
 import { ApiError } from '../api/client'
-import { Card, Field, Select, Spinner, Button } from '../components/ui'
+import { Card, Field, Input, Select, Spinner, Button } from '../components/ui'
 import { PageHeader } from '../components/data'
 import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
@@ -31,6 +31,10 @@ export function Settings() {
   const [headerColor, setHeaderColor] = useState<string>(user?.tableHeaderColor || '#f9fafb')
   const [borderColor, setBorderColor] = useState<string>(user?.tableBorderColor || '#e5e7eb')
   const [pageSize, setPageSize] = useState<number>(user?.pageSize ?? 5)
+  const [btnSmallWidth, setBtnSmallWidth] = useState<number>(user?.buttonSmallWidth ?? 50)
+  const [btnLargeWidth, setBtnLargeWidth] = useState<number>(user?.buttonLargeWidth ?? 100)
+  const [btnSaveColor, setBtnSaveColor] = useState<string>(user?.buttonSaveColor || '#1d48eb')
+  const [btnDeleteColor, setBtnDeleteColor] = useState<string>(user?.buttonDeleteColor || '#dc2626')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -46,7 +50,11 @@ export function Settings() {
     (u.theme || 'ocean') !== theme ||
     (u.tableHeaderColor || '#f9fafb') !== headerColor ||
     (u.tableBorderColor || '#e5e7eb') !== borderColor ||
-    (u.pageSize ?? 5) !== pageSize
+    (u.pageSize ?? 5) !== pageSize ||
+    (u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
+    (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
+    (u.buttonSaveColor || '#1d48eb') !== btnSaveColor ||
+    (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor
 
   async function handleLanguageChange(value: string) {
     setLanguageSaving(true)
@@ -79,6 +87,17 @@ export function Settings() {
       }
       if ((u.pageSize ?? 5) !== pageSize) {
         await authApi.updatePageSize(pageSize)
+      }
+      if ((u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
+          (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
+          (u.buttonSaveColor || '#1d48eb') !== btnSaveColor ||
+          (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor) {
+        await authApi.updateButtonSettings({
+          buttonSmallWidth: btnSmallWidth,
+          buttonLargeWidth: btnLargeWidth,
+          buttonSaveColor: btnSaveColor,
+          buttonDeleteColor: btnDeleteColor,
+        })
       }
       await refreshMe()
       setSaved(true)
@@ -257,6 +276,89 @@ export function Settings() {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.buttons.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500">{t('settings.buttons.description')}</p>
+        <div className="mt-4 flex flex-wrap items-end gap-6">
+          <Field label={t('settings.buttons.smallWidth')}>
+            <Input
+              type="number"
+              min={20}
+              max={400}
+              className="w-28"
+              value={btnSmallWidth}
+              onChange={(e) => {
+                setBtnSmallWidth(Number(e.target.value) || 0)
+                setSaved(false)
+              }}
+            />
+          </Field>
+          <Field label={t('settings.buttons.largeWidth')}>
+            <Input
+              type="number"
+              min={20}
+              max={400}
+              className="w-28"
+              value={btnLargeWidth}
+              onChange={(e) => {
+                setBtnLargeWidth(Number(e.target.value) || 0)
+                setSaved(false)
+              }}
+            />
+          </Field>
+          <Field label={t('settings.buttons.saveColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnSaveColor}
+                onChange={(e) => {
+                  setBtnSaveColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnSaveColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.deleteColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnDeleteColor}
+                onChange={(e) => {
+                  setBtnDeleteColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnDeleteColor}</span>
+            </div>
+          </Field>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+          <span className="text-sm text-gray-500">{t('settings.buttons.preview')} :</span>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
+            style={{ minWidth: `${btnSmallWidth}px`, backgroundColor: btnSaveColor }}
+          >
+            OK
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
+            style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnSaveColor }}
+          >
+            Nouvelle note de frais
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
+            style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnDeleteColor }}
+          >
+            Supprimer
+          </button>
         </div>
 
         <Button

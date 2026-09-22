@@ -457,7 +457,7 @@ export function NoteFraisList() {
                       </>
                     )}
                     <InlineButton
-                      className="text-red-600 hover:bg-red-50"
+                      variant="danger"
                       onClick={() => changeStatus(nf, 'delete')}
                     >
                       Suppr.

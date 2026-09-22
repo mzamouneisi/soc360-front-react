@@ -361,7 +361,7 @@ export function Tables() {
                         >
                           {tr('Tables.modifier')}
                         </InlineButton>
-                        <InlineButton onClick={() => deleteRow(row)}>{tr('Tables.supprimer')}</InlineButton>
+                        <InlineButton variant="danger" onClick={() => deleteRow(row)}>{tr('Tables.supprimer')}</InlineButton>
                       </td>
                     </tr>
                   ))}

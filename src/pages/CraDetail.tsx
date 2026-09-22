@@ -780,7 +780,7 @@ export function CraDetail({
               {tr('CraDetail.remplir.une.plage')}
             </InlineButton>
             <InlineButton
-              className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+              variant="danger"
               onClick={handleDeleteAll}
             >
               {tr('CraDetail.supprimer.tous.les.evenements')}
@@ -1068,7 +1068,7 @@ export function CraDetail({
             </span>
             <span className="flex-1" title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
               <Button
-                className="bg-red-600 hover:bg-red-700"
+                variant="danger"
                 onClick={handleInvalidateAll}
                 disabled={!hasActiveEvent}
               >
@@ -1539,7 +1539,8 @@ function CancelModal({
         <>
           <InlineButton onClick={onClose}>Annuler</InlineButton>
           <Button
-            className="w-auto bg-red-600 hover:bg-red-700"
+            variant="danger"
+            className="w-auto"
             onClick={() => onConfirm(comment.trim())}
             disabled={!canSubmit || submitting}
           >

@@ -412,7 +412,7 @@ export function Consultants() {
                       </InlineButton>
                       {!isSelf && c.role !== 'ADMIN' && (
                         <InlineButton
-                          className="text-red-600 hover:bg-red-50"
+                          variant="danger"
                           onClick={(e) => { e.stopPropagation(); handleDelete(c) }}
                         >
                           Supprimer

@@ -169,6 +169,10 @@ body {
 :root {
   --table-header: #f9fafb;
   --table-border: #e5e7eb;
+  --btn-small-width: 50px;
+  --btn-large-width: 100px;
+  --btn-save-color: #1d48eb;
+  --btn-delete-color: #dc2626;
 }
 
 .font_last_commit {

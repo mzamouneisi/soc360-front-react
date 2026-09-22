@@ -79,6 +79,12 @@ export const authApi = {
     api.put<UserDto>('/auth/me/table-colors', { tableHeaderColor, tableBorderColor }),
   updatePageSize: (pageSize: number) =>
     api.put<UserDto>('/auth/me/page-size', { pageSize }),
+  updateButtonSettings: (payload: {
+    buttonSmallWidth: number
+    buttonLargeWidth: number
+    buttonSaveColor: string
+    buttonDeleteColor: string
+  }) => api.put<UserDto>('/auth/me/button-settings', payload),
   updateLanguage: (language: string) =>
     api.put<UserDto>('/auth/me/language', { language }),
   mySocs: () => api.get<SocLiteDto[]>('/auth/me/socs'),

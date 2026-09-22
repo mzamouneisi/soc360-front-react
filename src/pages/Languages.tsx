@@ -513,7 +513,7 @@ export function Languages() {
                         {saving === entry.id ? <Spinner className="h-4 w-4" /> : null}
                         {tr('Languages.enregistrer')}
                       </InlineButton>
-                      <InlineButton onClick={() => void deleteRow(entry)}>{tr('Languages.supprimer')}</InlineButton>
+                      <InlineButton variant="danger" onClick={() => void deleteRow(entry)}>{tr('Languages.supprimer')}</InlineButton>
                     </td>
                   </tr>
                 ))}

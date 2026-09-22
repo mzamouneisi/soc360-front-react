@@ -233,7 +233,7 @@ export function Suppliers() {
                       Modifier
                     </InlineButton>
                     <InlineButton
-                      className="text-red-600 hover:bg-red-50"
+                      variant="danger"
                       onClick={(e) => { e.stopPropagation(); handleDelete(s) }}
                     >
                       Supprimer

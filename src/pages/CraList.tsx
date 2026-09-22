@@ -378,7 +378,7 @@ export function CraList() {
                           <InlineButton onClick={() => setHistoryCra(cra)}>{tr('CraList.historique')}</InlineButton>
                           {editable(cra) && (
                             <InlineButton
-                              className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              variant="danger"
                               onClick={() => handleDelete(cra)}
                             >
                               {tr('CraList.supprimer')}

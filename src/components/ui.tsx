@@ -67,21 +67,47 @@ export function MonthInput(props: InputHTMLAttributes<HTMLInputElement>) {
   )
 }
 
+function labelLength(children: ReactNode): number {
+  if (typeof children === 'string' || typeof children === 'number') {
+    return String(children).trim().length
+  }
+  if (Array.isArray(children)) {
+    return children.reduce<number>((total, child) => total + labelLength(child), 0)
+  }
+  return 0
+}
+
 export function Button({
   className = '',
   variant = 'primary',
+  size = 'auto',
   children,
   disabled,
+  style,
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'yellow' | 'green' }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'primary' | 'yellow' | 'green' | 'danger' | 'neutral'
+  size?: 'auto' | 'sm' | 'lg'
+}) {
   const variants = {
-    primary: 'bg-brand-600 hover:bg-brand-700',
-    yellow: 'bg-yellow-500 hover:bg-yellow-600',
-    green: 'bg-green-600 hover:bg-green-700',
+    primary: 'text-white hover:brightness-95',
+    yellow: 'bg-yellow-500 text-white hover:bg-yellow-600',
+    green: 'bg-green-600 text-white hover:bg-green-700',
+    danger: 'text-white hover:brightness-95',
+    neutral: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
   }
+  const resolved: 'sm' | 'lg' =
+    size === 'auto' ? (labelLength(children) > 12 ? 'lg' : 'sm') : size
+  const background =
+    variant === 'primary'
+      ? { backgroundColor: 'var(--btn-save-color)' }
+      : variant === 'danger'
+        ? { backgroundColor: 'var(--btn-delete-color)' }
+        : {}
   return (
     <button
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      style={{ minWidth: `var(--btn-${resolved === 'lg' ? 'large' : 'small'}-width)`, ...background, ...style }}
       disabled={disabled}
       {...rest}
     >
@@ -175,12 +201,26 @@ export function Textarea({
 
 export function InlineButton({
   className = '',
+  variant = 'neutral',
   children,
+  style,
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' }) {
+  const variants = {
+    neutral: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+    danger: 'border border-transparent text-white hover:brightness-95',
+    primary: 'border border-transparent text-white hover:brightness-95',
+  }
+  const background =
+    variant === 'primary'
+      ? { backgroundColor: 'var(--btn-save-color)' }
+      : variant === 'danger'
+        ? { backgroundColor: 'var(--btn-delete-color)' }
+        : {}
   return (
     <button
-      className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
+      style={{ minWidth: 'var(--btn-small-width)', ...background, ...style }}
       {...rest}
     >
       {children}

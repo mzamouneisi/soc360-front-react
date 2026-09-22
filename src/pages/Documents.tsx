@@ -205,7 +205,7 @@ export function Documents() {
                     <InlineButton onClick={() => handleDownload(d)}>Télécharger</InlineButton>
                     {canDelete && (
                       <InlineButton
-                        className="text-red-600 hover:bg-red-50"
+                        variant="danger"
                         onClick={() => handleDelete(d)}
                       >
                         Supprimer

@@ -222,7 +222,7 @@ export function Profile() {
                             <Button type="button" aria-label={`Modifier ${e.name}`} title={tr('Profile.modifier')} className="!w-auto !bg-gray-100 !px-2 !py-1 !text-xs !text-gray-700" onClick={() => void editSoc(e.id)}>
                               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" /></svg>
                             </Button>
-                            <Button type="button" aria-label={`Supprimer ${e.name}`} title={tr('Profile.supprimer')} className="!w-auto !bg-red-600 !px-2 !py-1 !text-xs hover:!bg-red-700" onClick={() => void deleteSoc(e.id, e.name)}>
+                            <Button type="button" variant="danger" aria-label={`Supprimer ${e.name}`} title={tr('Profile.supprimer')} className="!w-auto !px-2 !py-1 !text-xs" onClick={() => void deleteSoc(e.id, e.name)}>
                               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="m19 6-1 14H6L5 6" /><path d="M10 11v5M14 11v5" /></svg>
                             </Button>
                           </span>
@@ -304,7 +304,7 @@ export function Profile() {
                 </div>
                 <div className="mt-4 flex items-center justify-end gap-2 border-t border-gray-200 pt-3">
                   <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading}>{tr('Profile.annuler')}</Button>
-                  <Button type="button" className="!w-auto !bg-red-600 hover:!bg-red-700" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
+                  <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                     {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                     {tr('Profile.tout.supprimer')}
                   </Button>

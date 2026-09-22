@@ -322,7 +322,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                       Modifier
                     </InlineButton>
                     <InlineButton
-                      className="text-red-600 hover:bg-red-50"
+                      variant="danger"
                       onClick={(e) => {
                         e.stopPropagation()
                         void handleDelete(s)
@@ -429,7 +429,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
               <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700 hover:!bg-gray-200" onClick={() => setDeleting(null)} disabled={dependencyLoading}>
                 Annuler
               </Button>
-              <Button type="button" className="!w-auto !bg-red-600 hover:!bg-red-700" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
+              <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                 {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                 Tout supprimer
               </Button>
