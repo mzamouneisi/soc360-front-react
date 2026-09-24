@@ -482,11 +482,11 @@ export function Consultants() {
                   if (!canEdit) return <></>
                   return (
                     <div className="flex justify-end gap-1">
-                      <InlineButton onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
+                      <InlineButton variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
                         {tr('common.edit')}
                       </InlineButton>
                       <InlineButton
-                        className="text-brand-600 hover:bg-brand-50"
+                        variant="soft"
                         onClick={(e) => { e.stopPropagation(); openHistory(c) }}
                       >
                         {tr('common.history')}
