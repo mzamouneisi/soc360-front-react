@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
 import { emailTemplatesApi, type EmailTemplateView } from '../api/emailTemplates'
@@ -25,6 +25,10 @@ const THEMES: { id: string; color: string }[] = [
   { id: 'slate', color: '#64748b' },
   { id: 'rose', color: '#f43f5e' },
 ]
+
+// Mémorise l'état de la section « Traductions de la société » à travers le rechargement
+// du bundle i18n (qui remonte le composant) déclenché après un enregistrement/suppression.
+const trUiMemory = { search: '', selectedKey: '', override: '', focus: false }
 
 export function Settings() {
   const { user, refreshMe } = useAuth()
@@ -58,13 +62,14 @@ export function Settings() {
   const selectedTemplate = emailTemplates.find((item) => item.key === templateKey) ?? null
 
   const [trEntries, setTrEntries] = useState<TranslatedEntry[]>([])
-  const [trSearch, setTrSearch] = useState('')
-  const [trSelectedKey, setTrSelectedKey] = useState('')
-  const [trOverride, setTrOverride] = useState('')
+  const [trSearch, setTrSearch] = useState(() => trUiMemory.search)
+  const [trSelectedKey, setTrSelectedKey] = useState(() => trUiMemory.selectedKey)
+  const [trOverride, setTrOverride] = useState(() => trUiMemory.override)
   const [trLoading, setTrLoading] = useState(false)
   const [trSaving, setTrSaving] = useState(false)
   const [trError, setTrError] = useState<string | null>(null)
   const [trMessage, setTrMessage] = useState<string | null>(null)
+  const trOverrideBoxRef = useRef<HTMLDivElement | null>(null)
   const trSelected = trEntries.find((entry) => entry.key === trSelectedKey) ?? null
   const trFiltered = trEntries.filter((entry) => {
     const q = trSearch.trim().toLowerCase()
@@ -132,6 +137,25 @@ export function Settings() {
     setTrMessage(null)
     setTrError(null)
   }, [trSelected])
+
+  useEffect(() => {
+    trUiMemory.search = trSearch
+  }, [trSearch])
+
+  useEffect(() => {
+    trUiMemory.selectedKey = trSelectedKey
+  }, [trSelectedKey])
+
+  useEffect(() => {
+    trUiMemory.override = trOverride
+  }, [trOverride])
+
+  useEffect(() => {
+    if (!trUiMemory.focus || trLoading || !trSelected) return
+    const input = trOverrideBoxRef.current?.querySelector('input')
+    input?.focus()
+    trUiMemory.focus = false
+  }, [trLoading, trSelected])
 
   if (!user) return null
   const u = user
@@ -260,6 +284,10 @@ export function Settings() {
         prev.map((entry) => (entry.key === trSelectedKey ? { ...entry, override: trOverride } : entry)),
       )
       setTrMessage(t('settings.companyTranslations.saved'))
+      trUiMemory.search = trSearch
+      trUiMemory.selectedKey = trSelectedKey
+      trUiMemory.override = trOverride
+      trUiMemory.focus = true
       await refresh()
     } catch (err) {
       setTrError(err instanceof ApiError ? err.message : t('settings.companyTranslations.error'))
@@ -280,6 +308,10 @@ export function Settings() {
       )
       setTrOverride('')
       setTrMessage(t('settings.companyTranslations.deleted'))
+      trUiMemory.search = trSearch
+      trUiMemory.selectedKey = trSelectedKey
+      trUiMemory.override = ''
+      trUiMemory.focus = true
       await refresh()
     } catch (err) {
       setTrError(err instanceof ApiError ? err.message : t('settings.companyTranslations.error'))
@@ -682,11 +714,13 @@ export function Settings() {
                 </div>
                 <div className="space-y-3">
                   <Field label={t('settings.companyTranslations.override')}>
-                    <Input
-                      value={trOverride}
-                      onChange={(e) => setTrOverride(e.target.value)}
-                      disabled={!trSelected}
-                    />
+                    <div ref={trOverrideBoxRef}>
+                      <Input
+                        value={trOverride}
+                        onChange={(e) => setTrOverride(e.target.value)}
+                        disabled={!trSelected}
+                      />
+                    </div>
                   </Field>
                   <div className="flex flex-wrap items-center gap-2">
                     <IconButton
