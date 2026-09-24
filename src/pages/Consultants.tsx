@@ -33,7 +33,7 @@ interface FormState {
   hireDate: string
   birthDate: string
   socialNumber: string
-  baseSalary: string
+  salary: string
   currency: string
   nationality: string
   emergencyContact: string
@@ -48,8 +48,7 @@ interface FormState {
   coefficient: string
   matricule: string
   modePaiement: string
-  tjmInterne: string
-  salarie: boolean
+  employee: boolean
 }
 
 const emptyForm: FormState = {
@@ -62,7 +61,7 @@ const emptyForm: FormState = {
   hireDate: '',
   birthDate: '',
   socialNumber: '',
-  baseSalary: '',
+  salary: '',
   currency: 'EUR',
   nationality: '',
   emergencyContact: '',
@@ -77,8 +76,7 @@ const emptyForm: FormState = {
   coefficient: '',
   matricule: '',
   modePaiement: 'Virement',
-  tjmInterne: '',
-  salarie: true,
+  employee: true,
 }
 
 interface AddressSuggestion {
@@ -234,7 +232,7 @@ export function Consultants() {
       hireDate: c.hireDate ?? '',
       birthDate: c.birthDate ?? '',
       socialNumber: c.socialNumber ?? '',
-      baseSalary: c.baseSalary != null ? String(c.baseSalary) : '',
+      salary: c.salary != null ? String(c.salary) : '',
       currency: c.currency ?? 'EUR',
       nationality: c.nationality ?? '',
       emergencyContact: c.emergencyContact ?? '',
@@ -248,8 +246,7 @@ export function Consultants() {
       coefficient: c.coefficient ?? '',
       matricule: c.matricule ?? '',
       modePaiement: c.modePaiement ?? 'Virement',
-      tjmInterne: c.tjmInterne != null ? String(c.tjmInterne) : '',
-      salarie: c.salarie,
+      employee: c.employee,
     })
     setEditing(c)
     setFormError(null)
@@ -289,7 +286,7 @@ export function Consultants() {
         hireDate: form.hireDate || null,
         birthDate: form.birthDate || null,
         socialNumber: form.socialNumber || null,
-        baseSalary: form.salarie && form.baseSalary ? Number(form.baseSalary) : null,
+        salary: form.salary ? Number(form.salary) : null,
         currency: form.currency || 'EUR',
         nationality: form.nationality || null,
         emergencyContact: form.emergencyContact || null,
@@ -300,13 +297,12 @@ export function Consultants() {
         role: form.role,
         active: form.active,
         address: form.address.trim() || null,
-        statutProfessionnel: form.salarie ? form.statutProfessionnel.trim() || null : null,
-        positionProfessionnelle: form.salarie ? form.positionProfessionnelle.trim() || null : null,
-        coefficient: form.salarie ? form.coefficient.trim() || null : null,
-        matricule: form.salarie ? form.matricule.trim() || null : null,
+        statutProfessionnel: form.employee ? form.statutProfessionnel.trim() || null : null,
+        positionProfessionnelle: form.employee ? form.positionProfessionnelle.trim() || null : null,
+        coefficient: form.employee ? form.coefficient.trim() || null : null,
+        matricule: form.employee ? form.matricule.trim() || null : null,
         modePaiement: form.modePaiement.trim() || null,
-        tjmInterne: !form.salarie && form.tjmInterne ? Number(form.tjmInterne) : null,
-        salarie: form.salarie,
+        employee: form.employee,
       }
       if (editing) {
         await consultantsApi.update(editing.id, payload)
@@ -457,7 +453,16 @@ export function Consultants() {
                 key: 'salary',
                 label: tr('Consultants.salaire.de.base'),
                 render: (c) => (
-                  <span>{formatMoney(c.baseSalary, c.currency ?? 'EUR')}</span>
+                  <span>{formatMoney(c.salary, c.currency ?? 'EUR')}</span>
+                ),
+              },
+              {
+                key: 'employee',
+                label: tr('Consultants.salarie.label'),
+                render: (c) => (
+                  <Badge kind={c.employee ? 'success' : 'muted'}>
+                    {c.employee ? tr('common.yes') : tr('common.no')}
+                  </Badge>
                 ),
               },
               {
@@ -567,8 +572,8 @@ export function Consultants() {
               <label className="flex items-center gap-2 pb-2 text-sm text-gray-700">
                 <input
                   type="checkbox"
-                  checked={form.salarie}
-                  onChange={(e) => setForm({ ...form, salarie: e.target.checked })}
+                  checked={form.employee}
+                  onChange={(e) => setForm({ ...form, employee: e.target.checked })}
                   className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
                 />
                 {tr('Consultants.salarie.label')}
@@ -673,27 +678,15 @@ export function Consultants() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {form.salarie ? (
-              <Field label={tr('Consultants.salaire.de.base')}>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={form.baseSalary}
-                  onChange={(e) => setForm({ ...form, baseSalary: e.target.value })}
-                />
-              </Field>
-            ) : (
-              <Field label={tr('Consultants.tjm.interne')}>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={form.tjmInterne}
-                  onChange={(e) => setForm({ ...form, tjmInterne: e.target.value })}
-                />
-              </Field>
-            )}
+            <Field label={form.employee ? tr('Consultants.salaire.de.base') : tr('Consultants.tjm.interne')}>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.salary}
+                onChange={(e) => setForm({ ...form, salary: e.target.value })}
+              />
+            </Field>
             <Field label={tr('Consultants.devise')}>
               <Select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
                 <option value="EUR">{tr('Consultants.eur')}</option>
@@ -708,7 +701,7 @@ export function Consultants() {
               onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
             />
           </Field>
-          {form.salarie && (
+          {form.employee && (
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label={tr('Consultants.statut.professionnel')}>

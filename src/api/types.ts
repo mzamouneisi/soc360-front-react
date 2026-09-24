@@ -186,7 +186,7 @@ export interface ConsultantDto {
   hireDate: string | null
   birthDate: string | null
   socialNumber: string | null
-  baseSalary: number | null
+  salary: number | null
   currency: string | null
   nationality: string | null
   emergencyContact: string | null
@@ -198,8 +198,7 @@ export interface ConsultantDto {
   coefficient: string | null
   matricule: string | null
   modePaiement: string | null
-  tjmInterne: number | null
-  salarie: boolean
+  employee: boolean
 }
 
 export interface ConsultantRequest {
@@ -211,7 +210,7 @@ export interface ConsultantRequest {
   hireDate?: string | null
   birthDate?: string | null
   socialNumber?: string | null
-  baseSalary?: number | null
+  salary?: number | null
   currency?: string | null
   nationality?: string | null
   emergencyContact?: string | null
@@ -227,8 +226,7 @@ export interface ConsultantRequest {
   coefficient?: string | null
   matricule?: string | null
   modePaiement?: string | null
-  tjmInterne?: number | null
-  salarie?: boolean | null
+  employee?: boolean | null
 }
 
 export interface ConsultantSummary {
