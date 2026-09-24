@@ -7,7 +7,7 @@ import { languageLabel } from '../i18n/messages'
 import { filterKnownLanguages, findKnownLanguage } from '../i18n/languages'
 import { translateTexts } from '../lib/translate'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, Field, InlineButton, Input, Spinner } from '../components/ui'
+import { Button, Card, Field, InlineButton, Input, RefreshButton, Spinner } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 
@@ -24,7 +24,7 @@ function downloadJson(data: unknown, filename: string) {
 }
 
 export function Languages() {
-  const { t, refresh: refreshI18n } = useI18n()
+  const { refresh: refreshI18n } = useI18n()
   const { user } = useAuth()
   const [bundle, setBundle] = useState<AdminBundle | null>(null)
   const [drafts, setDrafts] = useState<Record<number, Record<string, string>>>({})
@@ -276,7 +276,7 @@ export function Languages() {
         title={tr('Languages.langues.et.traductions')}
         count={filteredEntries.length}
         subtitle={tr('Languages.table.des.chaines.traduites.administration')}
-        actions={<InlineButton variant="primary" onClick={() => load()} disabled={loading}>{t('common.refresh')}</InlineButton>}
+        actions={<RefreshButton onClick={() => load()} disabled={loading} />}
       />
 
       {error && <ErrorBlock message={error} />}

@@ -2,7 +2,7 @@ import { tr } from '../i18n/translate'
 import { useState } from 'react'
 import { logsApi } from '../api/logs'
 import { useAsync } from '../lib/useAsync'
-import { InlineButton, Input, Select } from '../components/ui'
+import { InlineButton, Input, RefreshButton, Select } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 
 const PRESETS = [
@@ -49,9 +49,7 @@ export function Logs() {
         title={tr('Logs.logs.du.serveur')}
         subtitle={tr('Logs.dernieres.lignes.du.fichier.de.log.du.backend.administration')}
         actions={
-          <InlineButton variant="primary" onClick={reload} disabled={loading}>
-            Actualiser
-          </InlineButton>
+          <RefreshButton onClick={reload} disabled={loading} />
         }
       />
 

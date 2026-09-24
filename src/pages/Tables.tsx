@@ -5,7 +5,7 @@ import { useAuth } from '../auth/AuthContext'
 import { tablesApi, type ColumnDetails, type TableRelation } from '../api/tables'
 import { useAsync } from '../lib/useAsync'
 import { usePagination } from '../lib/usePagination'
-import { Button, InlineButton, Input, Select, Textarea } from '../components/ui'
+import { Button, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { RelationsGraph } from '../components/RelationsGraph'
@@ -263,9 +263,7 @@ export function Tables() {
         count={selected ? rows.length : undefined}
         subtitle={tr('Tables.gestion.des.tables.de.la.base.administration')}
         actions={
-          <InlineButton variant="primary" onClick={() => loadTables()} disabled={loading}>
-            Actualiser
-          </InlineButton>
+          <RefreshButton onClick={() => loadTables()} disabled={loading} />
         }
       />
 

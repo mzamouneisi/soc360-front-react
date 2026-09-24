@@ -6,7 +6,7 @@ import type { CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
-import { Button, Card, InlineButton, Input, Select } from '../components/ui'
+import { Button, Card, InlineButton, Input, RefreshButton, Select } from '../components/ui'
 import {
   CRA_STATUS_LABELS,
   formatDate,
@@ -140,12 +140,7 @@ export function IndispoList() {
         count={list.length}
         subtitle={tr('IndispoList.conges.du.consultant.par.mois')}
         actions={
-          <InlineButton onClick={reload} title="Recharger la liste des Indispos">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 8 8 1 1 0 0 0-2 0 6 6 0 1 1-6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35Z" />
-            </svg>
-            Actualiser
-          </InlineButton>
+          <RefreshButton onClick={reload} />
         }
       />
 
