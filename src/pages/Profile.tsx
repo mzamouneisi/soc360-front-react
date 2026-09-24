@@ -7,6 +7,7 @@ import { socsApi, type SocDependency } from '../api/socs'
 import type { SocDto } from '../api/types'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
 import { Button, Card, Field, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
@@ -25,6 +26,7 @@ const DEPENDENCY_LABELS: Record<string, string> = {
 
 export function Profile() {
   const { user, refreshMe } = useAuth()
+  const dt = useDynamicTranslate()
   const { socs, selectedSocId, selectSoc, favoriteSocId, setFavoriteSoc } = useSoc()
   const [favoriting, setFavoriting] = useState<number | null>(null)
   const [editingSoc, setEditingSoc] = useState<SocDto | null>(null)
@@ -188,7 +190,7 @@ export function Profile() {
             <div>
               <dt className="text-sm text-gray-500">{tr('Profile.role')}</dt>
               <dd className="text-sm font-medium text-gray-900">
-                <Badge kind="info">{ROLE_LABELS[user.role] ?? user.role}</Badge>
+                <Badge kind="info">{dt(ROLE_LABELS[user.role] ?? user.role)}</Badge>
               </dd>
             </div>
             <div>
@@ -262,7 +264,7 @@ export function Profile() {
                 <div>
                   <dt className="text-sm text-gray-500">{tr('Profile.role')}</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    {user.manager.role ? <Badge kind="warning">{ROLE_LABELS[user.manager.role as keyof typeof ROLE_LABELS] ?? user.manager.role}</Badge> : '—'}
+                    {user.manager.role ? <Badge kind="warning">{dt(ROLE_LABELS[user.manager.role as keyof typeof ROLE_LABELS] ?? user.manager.role)}</Badge> : '—'}
                   </dd>
                 </div>
               </dl>
@@ -395,7 +397,7 @@ export function Profile() {
                     <td className="max-w-xs truncate px-4 py-3 text-sm text-gray-500">{c.userAgent}</td>
                     <td className="px-4 py-3">
                       <Badge kind={c.success ? 'success' : 'error'}>
-                        {c.success ? 'Succès' : 'Échec'}
+                        {dt(c.success ? 'Succès' : 'Échec')}
                       </Badge>
                     </td>
                   </tr>
