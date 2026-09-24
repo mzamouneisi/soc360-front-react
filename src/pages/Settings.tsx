@@ -70,6 +70,7 @@ export function Settings() {
   const [trError, setTrError] = useState<string | null>(null)
   const [trMessage, setTrMessage] = useState<string | null>(null)
   const trOverrideBoxRef = useRef<HTMLDivElement | null>(null)
+  const trSectionRef = useRef<HTMLDivElement | null>(null)
   const trSelected = trEntries.find((entry) => entry.key === trSelectedKey) ?? null
   const trFiltered = trEntries.filter((entry) => {
     const q = trSearch.trim().toLowerCase()
@@ -152,6 +153,7 @@ export function Settings() {
 
   useEffect(() => {
     if (!trUiMemory.focus || trLoading || !trSelected) return
+    trSectionRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
     const input = trOverrideBoxRef.current?.querySelector('input')
     input?.focus()
     trUiMemory.focus = false
@@ -665,7 +667,7 @@ export function Settings() {
         )}
 
         {canEditTemplates && (
-          <>
+          <div ref={trSectionRef}>
             <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.companyTranslations.title')}</h3>
             <p className="mt-1 text-sm text-gray-500">
               {t('settings.companyTranslations.description', { lang: languageLabel(language) })}
@@ -750,7 +752,7 @@ export function Settings() {
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
 
         <Button
