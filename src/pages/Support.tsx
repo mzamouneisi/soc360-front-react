@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { supportApi } from '../api/support'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
+import { Field, IconButton, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import {
   Badge,
   EmptyState,
@@ -218,15 +218,15 @@ export function Support() {
           title={tr('Support.aucun.ticket')}
           description={tr('Support.creez.un.ticket.pour.contacter.le.support')}
           action={
-            <Button
-              className="w-auto"
+            <IconButton
+              icon="add"
+              label={tr('Support.nouveau.ticket')}
+              variant="primary"
               onClick={() => {
                 setCreateOpen(true)
                 setFormError(null)
               }}
-            >
-              + Nouveau ticket
-            </Button>
+            />
           }
         />
       )}
@@ -238,10 +238,7 @@ export function Support() {
         footer={
           <>
             <IconButton icon="cancel" label="Annuler" onClick={() => setCreateOpen(false)} />
-            <Button className="w-auto" onClick={handleCreate as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              Créer le ticket
-            </Button>
+            <IconButton icon="add" label="Créer le ticket" variant="primary" onClick={handleCreate as never} disabled={submitting} loading={submitting} />
           </>
         }
       >
