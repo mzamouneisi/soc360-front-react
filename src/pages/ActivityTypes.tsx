@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { activityTypesApi } from '../api/activities'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useSoc } from '../soc/SocContext'
 import { Button, Field, InlineButton, Input, RefreshButton, Spinner } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
@@ -22,6 +23,7 @@ const emptyTypeForm: TypeFormState = { id: null, code: '', labelFr: '', labelEn:
 
 export function ActivityTypes() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const { selectedSocId } = useSoc()
   const canEdit = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const workingSocId = selectedSocId ?? user?.socId ?? null
@@ -174,7 +176,7 @@ export function ActivityTypes() {
                     style={{ backgroundColor: t.color ?? '#94a3b8' }}
                   />
                   <div>
-                    <p className="font-medium text-gray-900">{t.labelFr}</p>
+                    <p className="font-medium text-gray-900">{dt(t.labelFr)}</p>
                     {t.labelEn && <p className="text-xs text-gray-500">{t.labelEn}</p>}
                   </div>
                 </div>
@@ -183,7 +185,7 @@ export function ActivityTypes() {
             {
               key: 'code',
               label: tr('ActivityTypes.code'),
-              render: (t) => <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{t.code}</code>,
+              render: (t) => <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{dt(t.code)}</code>,
             },
             {
               key: 'soc',
