@@ -30,6 +30,8 @@ const THEMES: { id: string; color: string }[] = [
 // du bundle i18n (qui remonte le composant) déclenché après un enregistrement/suppression.
 const trUiMemory = { search: '', selectedKey: '', override: '', focus: false }
 
+const RETRAD_INPUT_ID = 'retrad_for_soc_and_lang'
+
 export function Settings() {
   const { user, refreshMe } = useAuth()
   const { t, preference, languages, setLanguage, language, refresh } = useI18n()
@@ -69,7 +71,6 @@ export function Settings() {
   const [trSaving, setTrSaving] = useState(false)
   const [trError, setTrError] = useState<string | null>(null)
   const [trMessage, setTrMessage] = useState<string | null>(null)
-  const trOverrideBoxRef = useRef<HTMLDivElement | null>(null)
   const trSectionRef = useRef<HTMLDivElement | null>(null)
   const trSelected = trEntries.find((entry) => entry.key === trSelectedKey) ?? null
   const trFiltered = trEntries.filter((entry) => {
@@ -154,8 +155,8 @@ export function Settings() {
   useEffect(() => {
     if (!trUiMemory.focus || trLoading || !trSelected) return
     trSectionRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-    const input = trOverrideBoxRef.current?.querySelector('input')
-    input?.focus()
+    const input = document.getElementById(RETRAD_INPUT_ID)
+    if (input instanceof HTMLInputElement) input.focus()
     trUiMemory.focus = false
   }, [trLoading, trSelected])
 
@@ -716,13 +717,12 @@ export function Settings() {
                 </div>
                 <div className="space-y-3">
                   <Field label={t('settings.companyTranslations.override')}>
-                    <div ref={trOverrideBoxRef}>
-                      <Input
-                        value={trOverride}
-                        onChange={(e) => setTrOverride(e.target.value)}
-                        disabled={!trSelected}
-                      />
-                    </div>
+                    <Input
+                      id={RETRAD_INPUT_ID}
+                      value={trOverride}
+                      onChange={(e) => setTrOverride(e.target.value)}
+                      disabled={!trSelected}
+                    />
                   </Field>
                   <div className="flex flex-wrap items-center gap-2">
                     <IconButton
