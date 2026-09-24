@@ -874,6 +874,17 @@ export const EXTRACTED_FR: Record<string, string> = {
   "settings.theme.sky": "Ciel (bleu clair)",
   "settings.theme.slate": "Ardoise (gris)",
   "settings.theme.rose": "Rose (fuchsia)",
+  "Consultants.adresse": "Adresse",
+  "Consultants.adresse.placeholder": "Saisie libre ou recherche d’adresse",
+  "Consultants.adresse.rechercher": "Rechercher une adresse",
+  "Consultants.adresse.aucun": "Aucune adresse trouvée",
+  "Consultants.statut.professionnel": "Statut professionnel",
+  "Consultants.position": "Position",
+  "Consultants.coefficient": "Coefficient",
+  "Consultants.matricule": "Matricule",
+  "Consultants.mode.paiement": "Mode de paiement",
+  "Consultants.tjm.interne": "TJM interne",
+  "Consultants.salarie": "Consultant salarié",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1752,6 +1763,17 @@ export const EXTRACTED_EN: Record<string, string> = {
   "settings.theme.sky": "Sky (light blue)",
   "settings.theme.slate": "Slate (grey)",
   "settings.theme.rose": "Rose (fuchsia)",
+  "Consultants.adresse": "Address",
+  "Consultants.adresse.placeholder": "Free entry or address search",
+  "Consultants.adresse.rechercher": "Search for an address",
+  "Consultants.adresse.aucun": "No address found",
+  "Consultants.statut.professionnel": "Professional status",
+  "Consultants.position": "Position",
+  "Consultants.coefficient": "Coefficient",
+  "Consultants.matricule": "Employee ID",
+  "Consultants.mode.paiement": "Payment method",
+  "Consultants.tjm.interne": "Internal daily rate",
+  "Consultants.salarie": "Salaried consultant",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2630,4 +2652,15 @@ export const EXTRACTED_AR: Record<string, string> = {
   "settings.theme.sky": "سماوي (أزرق فاتح)",
   "settings.theme.slate": "رمادي داكن",
   "settings.theme.rose": "وردي (فوشيا)",
+  "Consultants.adresse": "العنوان",
+  "Consultants.adresse.placeholder": "إدخال حر أو بحث عن عنوان",
+  "Consultants.adresse.rechercher": "ابحث عن عنوان",
+  "Consultants.adresse.aucun": "لم يتم العثور على عنوان",
+  "Consultants.statut.professionnel": "الوضع المهني",
+  "Consultants.position": "الرتبة",
+  "Consultants.coefficient": "المعامل",
+  "Consultants.matricule": "رقم التسجيل",
+  "Consultants.mode.paiement": "طريقة الدفع",
+  "Consultants.tjm.interne": "المعدل اليومي الداخلي",
+  "Consultants.salarie": "مستشار بأجر",
 }

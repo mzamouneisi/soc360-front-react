@@ -42,6 +42,14 @@ interface FormState {
   username: string
   password: string
   active: boolean
+  address: string
+  statutProfessionnel: string
+  positionProfessionnelle: string
+  coefficient: string
+  matricule: string
+  modePaiement: string
+  tjmInterne: string
+  salarie: boolean
 }
 
 const emptyForm: FormState = {
@@ -63,6 +71,19 @@ const emptyForm: FormState = {
   username: '',
   password: '',
   active: true,
+  address: '',
+  statutProfessionnel: '',
+  positionProfessionnelle: '',
+  coefficient: '',
+  matricule: '',
+  modePaiement: 'Virement',
+  tjmInterne: '',
+  salarie: false,
+}
+
+interface AddressSuggestion {
+  id: string
+  label: string
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -117,6 +138,9 @@ export function Consultants() {
   const [importOpen, setImportOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([])
+  const [addressSearching, setAddressSearching] = useState(false)
+  const [addressSearched, setAddressSearched] = useState(false)
 
   const [historyFor, setHistoryFor] = useState<ConsultantDto | null>(null)
   const [historyItems, setHistoryItems] = useState<HistoConsultantDto[]>([])
@@ -160,7 +184,42 @@ export function Consultants() {
     })
     setEditing(null)
     setFormError(null)
+    setAddressSuggestions([])
+    setAddressSearched(false)
     setModalOpen(true)
+  }
+
+  async function searchAddress() {
+    const query = form.address.trim()
+    if (query.length < 3) {
+      setAddressSuggestions([])
+      setAddressSearched(false)
+      return
+    }
+    setAddressSearching(true)
+    setAddressSearched(true)
+    try {
+      const response = await fetch(
+        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`,
+      )
+      if (!response.ok) {
+        setAddressSuggestions([])
+        return
+      }
+      const payload = (await response.json()) as {
+        features?: { properties?: { id?: string; label?: string } }[]
+      }
+      setAddressSuggestions(
+        (payload.features ?? [])
+          .map((feature) => feature.properties ?? {})
+          .filter((props) => props.label)
+          .map((props) => ({ id: props.id ?? props.label ?? '', label: props.label ?? '' })),
+      )
+    } catch {
+      setAddressSuggestions([])
+    } finally {
+      setAddressSearching(false)
+    }
   }
 
   function openEdit(c: ConsultantDto) {
@@ -183,9 +242,19 @@ export function Consultants() {
       managerId: c.managerId != null ? String(c.managerId) : '',
       username: c.username ?? '',
       active: c.active,
+      address: c.address ?? '',
+      statutProfessionnel: c.statutProfessionnel ?? '',
+      positionProfessionnelle: c.positionProfessionnelle ?? '',
+      coefficient: c.coefficient ?? '',
+      matricule: c.matricule ?? '',
+      modePaiement: c.modePaiement ?? 'Virement',
+      tjmInterne: c.tjmInterne != null ? String(c.tjmInterne) : '',
+      salarie: c.salarie,
     })
     setEditing(c)
     setFormError(null)
+    setAddressSuggestions([])
+    setAddressSearched(false)
     setModalOpen(true)
   }
 
@@ -230,6 +299,14 @@ export function Consultants() {
         password: form.password || null,
         role: form.role,
         active: form.active,
+        address: form.address.trim() || null,
+        statutProfessionnel: form.salarie ? form.statutProfessionnel.trim() || null : null,
+        positionProfessionnelle: form.salarie ? form.positionProfessionnelle.trim() || null : null,
+        coefficient: form.salarie ? form.coefficient.trim() || null : null,
+        matricule: form.salarie ? form.matricule.trim() || null : null,
+        modePaiement: form.modePaiement.trim() || null,
+        tjmInterne: form.tjmInterne ? Number(form.tjmInterne) : null,
+        salarie: form.salarie,
       }
       if (editing) {
         await consultantsApi.update(editing.id, payload)
@@ -518,6 +595,49 @@ export function Consultants() {
               <Input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder={tr('Consultants.fr')} />
             </Field>
           </div>
+          <Field label={tr('Consultants.adresse')}>
+            <div className="flex items-center gap-2">
+              <Input
+                value={form.address}
+                onChange={(e) => {
+                  setForm({ ...form, address: e.target.value })
+                  setAddressSuggestions([])
+                  setAddressSearched(false)
+                }}
+                placeholder={tr('Consultants.adresse.placeholder')}
+              />
+              <InlineButton
+                type="button"
+                className="shrink-0"
+                onClick={() => void searchAddress()}
+                disabled={addressSearching}
+              >
+                {addressSearching ? <Spinner /> : tr('Consultants.adresse.rechercher')}
+              </InlineButton>
+            </div>
+            {addressSuggestions.length > 0 && (
+              <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
+                {addressSuggestions.map((suggestion) => (
+                  <li key={suggestion.id}>
+                    <button
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => {
+                        setForm({ ...form, address: suggestion.label })
+                        setAddressSuggestions([])
+                        setAddressSearched(false)
+                      }}
+                    >
+                      {suggestion.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {addressSearched && !addressSearching && addressSuggestions.length === 0 && (
+              <p className="mt-1 text-xs text-gray-500">{tr('Consultants.adresse.aucun')}</p>
+            )}
+          </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.date.d.embauche')}>
               <Input type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
@@ -559,6 +679,64 @@ export function Consultants() {
               </Select>
             </Field>
           </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label={tr('Consultants.mode.paiement')}>
+              <Input
+                value={form.modePaiement}
+                onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
+              />
+            </Field>
+            <Field label={tr('Consultants.tjm.interne')}>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.tjmInterne}
+                onChange={(e) => setForm({ ...form, tjmInterne: e.target.value })}
+              />
+            </Field>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={form.salarie}
+              onChange={(e) => setForm({ ...form, salarie: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            />
+            {tr('Consultants.salarie')}
+          </label>
+          {form.salarie && (
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label={tr('Consultants.statut.professionnel')}>
+                  <Input
+                    value={form.statutProfessionnel}
+                    onChange={(e) => setForm({ ...form, statutProfessionnel: e.target.value })}
+                  />
+                </Field>
+                <Field label={tr('Consultants.position')}>
+                  <Input
+                    value={form.positionProfessionnelle}
+                    onChange={(e) => setForm({ ...form, positionProfessionnelle: e.target.value })}
+                  />
+                </Field>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label={tr('Consultants.coefficient')}>
+                  <Input
+                    value={form.coefficient}
+                    onChange={(e) => setForm({ ...form, coefficient: e.target.value })}
+                  />
+                </Field>
+                <Field label={tr('Consultants.matricule')}>
+                  <Input
+                    value={form.matricule}
+                    onChange={(e) => setForm({ ...form, matricule: e.target.value })}
+                  />
+                </Field>
+              </div>
+            </>
+          )}
           {isAdmin && (
             <Field label={tr('Consultants.societe')}>
               <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>

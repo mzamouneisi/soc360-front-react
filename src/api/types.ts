@@ -192,6 +192,14 @@ export interface ConsultantDto {
   emergencyContact: string | null
   mustChangePassword: boolean
   lastLoginAt: string | null
+  address: string | null
+  statutProfessionnel: string | null
+  positionProfessionnelle: string | null
+  coefficient: string | null
+  matricule: string | null
+  modePaiement: string | null
+  tjmInterne: number | null
+  salarie: boolean
 }
 
 export interface ConsultantRequest {
@@ -213,6 +221,14 @@ export interface ConsultantRequest {
   password?: string | null
   role?: string
   active?: boolean | null
+  address?: string | null
+  statutProfessionnel?: string | null
+  positionProfessionnelle?: string | null
+  coefficient?: string | null
+  matricule?: string | null
+  modePaiement?: string | null
+  tjmInterne?: number | null
+  salarie?: boolean | null
 }
 
 export interface ConsultantSummary {
