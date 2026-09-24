@@ -128,15 +128,15 @@ export function Support() {
         actions={
           <>
             <RefreshButton onClick={reload} />
-            <Button
-              className="w-auto"
+            <IconButton
+              icon="add"
+              label={tr('Support.nouveau.ticket')}
+              variant="primary"
               onClick={() => {
                 setCreateOpen(true)
                 setFormError(null)
               }}
-            >
-              + Nouveau ticket
-            </Button>
+            />
           </>
         }
       />

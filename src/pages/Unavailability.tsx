@@ -14,7 +14,7 @@ import { useAuth } from '../auth/AuthContext'
 import { usePagination } from '../lib/usePagination'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
-import { Alert, Button, Card, Field, IconButton, InlineButton, Input, MonthInput, Select, Textarea } from '../components/ui'
+import { Alert, Card, Field, IconButton, InlineButton, Input, MonthInput, Select, Textarea } from '../components/ui'
 import {
   formatDate,
   formatDateTime,
@@ -248,9 +248,7 @@ export function Unavailability() {
         count={filtered.length}
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         actions={
-          <Button className="w-auto" onClick={openCreate} variant="primary">
-            Nouvelle indisponibilité
-          </Button>
+          <IconButton icon="add" label="Nouvelle indisponibilité" variant="primary" onClick={openCreate} />
         }
       />
 

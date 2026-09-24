@@ -223,10 +223,10 @@ export function Activities() {
             <RefreshButton onClick={reload} />
             {canEdit ? (
               <>
-                <InlineButton variant="primary" onClick={() => navigate('/types-activites')}>
+                <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="primary" onClick={openCreate} />
+                <InlineButton className="ml-2" variant="primary" onClick={() => navigate('/types-activites')}>
                   {tr('Activities.gerer.les.types')}
                 </InlineButton>
-                <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="primary" onClick={openCreate} />
               </>
             ) : null}
           </>

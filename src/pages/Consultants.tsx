@@ -373,12 +373,12 @@ export function Consultants() {
             <RefreshButton onClick={reload} />
             {canCreate ? (
               <>
+                <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="primary" onClick={openCreate} />
                 {canEdit ? (
-                  <InlineButton variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
+                  <InlineButton className="ml-2" variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
                     {tr('common.importCsv')}
                   </InlineButton>
                 ) : null}
-                <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="primary" onClick={openCreate} />
               </>
             ) : null}
           </>

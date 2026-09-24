@@ -127,9 +127,7 @@ export function Documents() {
         actions={
           <>
             <RefreshButton onClick={reload} />
-            <Button className="w-auto" onClick={openUpload}>
-              + Partager un document
-            </Button>
+            <IconButton icon="add" label={tr('Documents.partager.un.document')} variant="primary" onClick={openUpload} />
           </>
         }
       />

@@ -5,7 +5,7 @@ import { messagesApi } from '../api/messages'
 import { usersApi } from '../api/users'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatDateTime } from '../lib/format'
@@ -106,15 +106,15 @@ export function Messages() {
           <>
             <RefreshButton onClick={reload} />
             {isAdmin ? (
-              <Button
-                className="w-auto"
+              <IconButton
+                icon="add"
+                label={tr('Messages.nouveau.message')}
+                variant="primary"
                 onClick={() => {
                   setComposeOpen(true)
                   setFormError(null)
                 }}
-              >
-                + Nouveau message
-              </Button>
+              />
             ) : null}
           </>
         }

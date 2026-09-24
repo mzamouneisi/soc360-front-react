@@ -5,7 +5,7 @@ import { fichePaieApi } from '../api/fichePaie'
 import { consultantsApi } from '../api/consultants'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatDate, formatMoney } from '../lib/format'
@@ -160,9 +160,7 @@ export function FichePaie() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <Button className="w-auto" onClick={openCreate}>
-                + Nouvelle fiche
-              </Button>
+              <IconButton icon="add" label={tr('FichePaie.nouvelle.fiche.de.paie')} variant="primary" onClick={openCreate} />
             ) : null}
           </>
         }
