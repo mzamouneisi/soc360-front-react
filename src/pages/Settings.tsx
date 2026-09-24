@@ -193,7 +193,7 @@ export function Settings() {
   return (
     <div>
       <PageHeader title={t('settings.title')} subtitle={t('settings.subtitle')} />
-      <Card className="max-w-xl p-6">
+      <Card className="w-[90%] p-6">
         <h3 className="text-sm font-semibold text-gray-900">{t('settings.language.title')}</h3>
         <p className="mt-1 text-sm text-gray-500">{t('settings.language.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
