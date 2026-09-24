@@ -78,7 +78,7 @@ const emptyForm: FormState = {
   matricule: '',
   modePaiement: 'Virement',
   tjmInterne: '',
-  salarie: false,
+  salarie: true,
 }
 
 interface AddressSuggestion {
@@ -289,7 +289,7 @@ export function Consultants() {
         hireDate: form.hireDate || null,
         birthDate: form.birthDate || null,
         socialNumber: form.socialNumber || null,
-        baseSalary: form.baseSalary ? Number(form.baseSalary) : null,
+        baseSalary: form.salarie && form.baseSalary ? Number(form.baseSalary) : null,
         currency: form.currency || 'EUR',
         nationality: form.nationality || null,
         emergencyContact: form.emergencyContact || null,
@@ -305,7 +305,7 @@ export function Consultants() {
         coefficient: form.salarie ? form.coefficient.trim() || null : null,
         matricule: form.salarie ? form.matricule.trim() || null : null,
         modePaiement: form.modePaiement.trim() || null,
-        tjmInterne: form.tjmInterne ? Number(form.tjmInterne) : null,
+        tjmInterne: !form.salarie && form.tjmInterne ? Number(form.tjmInterne) : null,
         salarie: form.salarie,
       }
       if (editing) {
@@ -662,15 +662,27 @@ export function Consultants() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.salaire.de.base')}>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.baseSalary}
-                onChange={(e) => setForm({ ...form, baseSalary: e.target.value })}
-              />
-            </Field>
+            {form.salarie ? (
+              <Field label={tr('Consultants.salaire.de.base')}>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.baseSalary}
+                  onChange={(e) => setForm({ ...form, baseSalary: e.target.value })}
+                />
+              </Field>
+            ) : (
+              <Field label={tr('Consultants.tjm.interne')}>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.tjmInterne}
+                  onChange={(e) => setForm({ ...form, tjmInterne: e.target.value })}
+                />
+              </Field>
+            )}
             <Field label={tr('Consultants.devise')}>
               <Select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
                 <option value="EUR">{tr('Consultants.eur')}</option>
@@ -679,23 +691,12 @@ export function Consultants() {
               </Select>
             </Field>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.mode.paiement')}>
-              <Input
-                value={form.modePaiement}
-                onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
-              />
-            </Field>
-            <Field label={tr('Consultants.tjm.interne')}>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.tjmInterne}
-                onChange={(e) => setForm({ ...form, tjmInterne: e.target.value })}
-              />
-            </Field>
-          </div>
+          <Field label={tr('Consultants.mode.paiement')}>
+            <Input
+              value={form.modePaiement}
+              onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
+            />
+          </Field>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input
               type="checkbox"
