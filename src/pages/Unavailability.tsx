@@ -23,12 +23,14 @@ import {
   UNAVAILABILITY_TYPE_LABELS,
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { UnavailabilityCalendar } from './UnavailabilityCalendar'
 
 const TYPES = Object.keys(UNAVAILABILITY_TYPE_LABELS) as UnavailabilityType[]
 
 export function Unavailability() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const [searchParams] = useSearchParams()
   const isConsultant = user?.role === 'CONSULTANT'
   const isAdmin = user?.role === 'ADMIN'
@@ -414,7 +416,7 @@ export function Unavailability() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{u.consultantName}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">
-                        {UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type}
+                        {dt(UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                         {formatDate(u.startDate)}
@@ -425,7 +427,7 @@ export function Unavailability() {
                       <td className="px-4 py-3 text-sm text-gray-600">{u.durationDays} {tr('Unavailability.j')}</td>
                       <td className="px-4 py-3">
                         <Badge kind={statusBadge(u.status)}>
-                          {UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status}
+                          {dt(UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status)}
                         </Badge>
                         {u.rejectedReason && (
                           <p className="mt-1 max-w-40 text-xs text-red-600" title={u.rejectedReason}>
