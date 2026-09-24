@@ -852,6 +852,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "NoteFraisList.suppr": "Suppr.",
   "NoteFraisList.nouvelle.note.de.frais": "Nouvelle note de frais",
   "NoteFraisList.modifier.la.note.de": "Modifier la note de {name}",
+  "Facturation.essai.jusqu.au": "essai jusqu’au {date}",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1708,6 +1709,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "NoteFraisList.suppr": "Del.",
   "NoteFraisList.nouvelle.note.de.frais": "New expense report",
   "NoteFraisList.modifier.la.note.de": "Edit the expense report of {name}",
+  "Facturation.essai.jusqu.au": "trial until {date}",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2564,4 +2566,5 @@ export const EXTRACTED_AR: Record<string, string> = {
   "NoteFraisList.suppr": "حذف",
   "NoteFraisList.nouvelle.note.de.frais": "تقرير نفقات جديد",
   "NoteFraisList.modifier.la.note.de": "تعديل تقرير {name}",
+  "Facturation.essai.jusqu.au": "تجربة حتى {date}",
 }

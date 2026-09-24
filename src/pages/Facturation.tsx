@@ -6,6 +6,7 @@ import { projectsApi } from '../api/projects'
 import { crasApi } from '../api/cras'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { Card, InlineButton, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
@@ -21,6 +22,7 @@ import type { SocDto } from '../api/types'
 
 export function Facturation() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const isAdmin = user?.role === 'ADMIN'
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -135,10 +137,10 @@ export function Facturation() {
             <Card className="p-5">
               <p className="text-sm font-medium text-gray-500">{tr('Facturation.abonnement')}</p>
               <div className="mt-2 flex items-center gap-2">
-                <p className="text-2xl font-bold text-gray-900">{subscription?.plan ?? '—'}</p>
+                <p className="text-2xl font-bold text-gray-900">{dt(subscription?.plan ?? '—')}</p>
                 {subscription && (
                   <Badge kind={statusBadge(subscription.status)}>
-                    {SUBSCRIPTION_STATUS_LABELS[subscription.status] ?? subscription.status}
+                    {dt(SUBSCRIPTION_STATUS_LABELS[subscription.status] ?? subscription.status)}
                   </Badge>
                 )}
               </div>
@@ -146,7 +148,7 @@ export function Facturation() {
                 <p className="mt-1 text-sm text-gray-500">
                   {formatMoney(subscription.monthlyPrice)} {tr('Facturation.mois.debut')}{' '}
                   {formatDate(subscription.startDate)}
-                  {subscription.trialEndDate && ` · essai jusqu'au ${formatDate(subscription.trialEndDate)}`}
+                  {subscription.trialEndDate && ` · ${tr('Facturation.essai.jusqu.au', { date: formatDate(subscription.trialEndDate) })}`}
                 </p>
               )}
             </Card>
