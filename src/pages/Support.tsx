@@ -237,8 +237,8 @@ export function Support() {
         title={tr('Support.nouveau.ticket')}
         footer={
           <>
-            <IconButton icon="cancel" label="Annuler" onClick={() => setCreateOpen(false)} />
-            <IconButton icon="add" label="Créer le ticket" variant="primary" onClick={handleCreate as never} disabled={submitting} loading={submitting} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setCreateOpen(false)} />
+            <IconButton icon="add" label={tr('Support.creer.le.ticket')} variant="primary" onClick={handleCreate as never} disabled={submitting} loading={submitting} />
           </>
         }
       >
