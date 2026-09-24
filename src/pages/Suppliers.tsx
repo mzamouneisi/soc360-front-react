@@ -6,6 +6,7 @@ import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { CompanyLookup } from '../api/auth'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { Button, Field, Input, InlineButton, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
@@ -51,6 +52,7 @@ function domainOf(website: string): string {
 
 export function Suppliers() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const { selectedSocId, socs } = useSoc()
   const isAdmin = user?.role === 'ADMIN'
   const canEdit = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
@@ -112,11 +114,11 @@ export function Suppliers() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) {
-      setFormError('Le nom du fournisseur est obligatoire')
+      setFormError(tr('Suppliers.nom.obligatoire'))
       return
     }
     if (!form.socId) {
-      setFormError('Sélectionnez la société associée')
+      setFormError(tr('Clients.selectionner.societe.associee'))
       return
     }
     setSubmitting(true)
@@ -140,19 +142,19 @@ export function Suppliers() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   async function handleDelete(supplier: SupplierDto) {
-    if (!(await dialog.confirm(`Supprimer le fournisseur « ${supplier.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Suppliers.supprimer.le.fournisseur', { name: supplier.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await suppliersApi.delete(supplier.id)
       setData((data ?? []).filter((s) => s.id !== supplier.id))
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -167,7 +169,7 @@ export function Suppliers() {
             <RefreshButton onClick={reload} />
             {canEdit ? (
               <Button className="w-auto" onClick={openCreate}>
-                + Nouveau fournisseur
+                + {tr('Suppliers.nouveau.fournisseur')}
               </Button>
             ) : null}
           </>
@@ -185,12 +187,12 @@ export function Suppliers() {
           columns={[
             {
               key: 'name',
-              label: 'Fournisseur',
+              label: tr('Suppliers.fournisseur'),
               render: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
             },
             {
               key: 'contact',
-              label: 'Contact',
+              label: tr('Suppliers.contact'),
               render: (s) => (
                 <div>
                   {s.contactName ? <p className="text-gray-900">{s.contactName}</p> : null}
@@ -202,26 +204,26 @@ export function Suppliers() {
             },
             {
               key: 'soc',
-              label: 'Société associée',
+              label: tr('Suppliers.societe.associee.colonne'),
               render: (s) => <span>{s.soc?.name ?? '—'}</span>,
             },
             {
               key: 'socParent',
-              label: 'Société parente',
+              label: tr('Clients.societe.parente'),
               render: (s) => <span>{s.socParent?.name ?? '—'}</span>,
             },
             {
               key: 'notes',
-              label: 'Notes',
+              label: tr('Clients.notes'),
               render: (s) => (
                 <span className="line-clamp-2 max-w-56 text-xs text-gray-500">{s.notes ?? '—'}</span>
               ),
             },
             {
               key: 'active',
-              label: 'Statut',
+              label: tr('common.status'),
               render: (s) => (
-                <Badge kind={s.active ? 'success' : 'muted'}>{s.active ? 'Actif' : 'Inactif'}</Badge>
+                <Badge kind={s.active ? 'success' : 'muted'}>{dt(s.active ? 'Actif' : 'Inactif')}</Badge>
               ),
             },
             {
@@ -231,13 +233,13 @@ export function Suppliers() {
                 canEdit ? (
                   <div className="flex justify-end gap-1">
                     <InlineButton onClick={(e) => { e.stopPropagation(); openEdit(s) }}>
-                      Modifier
+                      {tr('common.edit')}
                     </InlineButton>
                     <InlineButton
                       variant="danger"
                       onClick={(e) => { e.stopPropagation(); handleDelete(s) }}
                     >
-                      Supprimer
+                      {tr('common.delete')}
                     </InlineButton>
                   </div>
                 ) : (
@@ -257,13 +259,13 @@ export function Suppliers() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? `Modifier ${editing.name}` : 'Nouveau fournisseur'}
+        title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Suppliers.nouveau.fournisseur')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
             <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? 'Enregistrer' : 'Créer'}
+              {editing ? tr('common.save') : tr('common.create')}
             </Button>
           </>
         }
@@ -281,7 +283,7 @@ export function Suppliers() {
                 {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
-            <Field label={isAdmin ? 'Société parente' : 'Société parente (société de travail)'}>
+            <Field label={isAdmin ? tr('Clients.societe.parente') : tr('Clients.societe.parente.travail')}>
               <Select value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
                 <option value="">{tr('Suppliers.aucune')}</option>
                 {parentSocs.map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}

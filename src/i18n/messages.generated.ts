@@ -842,6 +842,11 @@ export const EXTRACTED_FR: Record<string, string> = {
   "Consultants.manager.obligatoire": "Un consultant ou un manager doit avoir un manager (MANAGER ou RESPONSIBLE_SOC)",
   "Consultants.importer": "Importer",
   "Dashboard.chez": "chez",
+  "Suppliers.fournisseur": "Fournisseur",
+  "Suppliers.nouveau.fournisseur": "Nouveau fournisseur",
+  "Suppliers.societe.associee.colonne": "Société associée",
+  "Suppliers.nom.obligatoire": "Le nom du fournisseur est obligatoire",
+  "Suppliers.supprimer.le.fournisseur": "Supprimer le fournisseur « {name} » ?",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1688,6 +1693,11 @@ export const EXTRACTED_EN: Record<string, string> = {
   "Consultants.manager.obligatoire": "A consultant or manager must have a manager (MANAGER or RESPONSIBLE_SOC)",
   "Consultants.importer": "Import",
   "Dashboard.chez": "at",
+  "Suppliers.fournisseur": "Supplier",
+  "Suppliers.nouveau.fournisseur": "New supplier",
+  "Suppliers.societe.associee.colonne": "Associated company",
+  "Suppliers.nom.obligatoire": "Supplier name is required",
+  "Suppliers.supprimer.le.fournisseur": "Delete supplier \"{name}\"?",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2534,4 +2544,9 @@ export const EXTRACTED_AR: Record<string, string> = {
   "Consultants.manager.obligatoire": "يجب أن يكون للمستشار أو المدير مدير (MANAGER أو RESPONSIBLE_SOC)",
   "Consultants.importer": "استيراد",
   "Dashboard.chez": "لدى",
+  "Suppliers.fournisseur": "المورد",
+  "Suppliers.nouveau.fournisseur": "مورد جديد",
+  "Suppliers.societe.associee.colonne": "الشركة المرتبطة",
+  "Suppliers.nom.obligatoire": "اسم المورد مطلوب",
+  "Suppliers.supprimer.le.fournisseur": "حذف المورد «{name}»؟",
 }
