@@ -922,6 +922,9 @@ export const EXTRACTED_FR: Record<string, string> = {
   "settings.companyTranslations.confirmOverwrite": "Écraser la re-traduction existante ?",
   "settings.companyTranslations.empty": "Aucune chaîne trouvée",
   "settings.companyTranslations.overridden": "Retraduit",
+  "CraList.mes.comptes.rendus.d.activite": "Mes comptes rendus d’activité",
+  "CraList.cra.des.consultants.de.mon.equipe": "CRA des consultants de mon équipe",
+  "CraList.comptes.rendus.d.activite.par.consultant.et.par.mois": "Comptes rendus d'activité par consultant et par mois",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1848,6 +1851,9 @@ export const EXTRACTED_EN: Record<string, string> = {
   "settings.companyTranslations.confirmOverwrite": "Overwrite the existing override?",
   "settings.companyTranslations.empty": "No string found",
   "settings.companyTranslations.overridden": "Overridden",
+  "CraList.mes.comptes.rendus.d.activite": "My timesheets",
+  "CraList.cra.des.consultants.de.mon.equipe": "My team's timesheets",
+  "CraList.comptes.rendus.d.activite.par.consultant.et.par.mois": "Timesheets by consultant and by month",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2774,4 +2780,7 @@ export const EXTRACTED_AR: Record<string, string> = {
   "settings.companyTranslations.confirmOverwrite": "هل تريد استبدال إعادة الترجمة الموجودة؟",
   "settings.companyTranslations.empty": "لم يتم العثور على أي سلسلة",
   "settings.companyTranslations.overridden": "معاد ترجمته",
+  "CraList.mes.comptes.rendus.d.activite": "كشوف نشاطي",
+  "CraList.cra.des.consultants.de.mon.equipe": "كشوف فريق الاستشاريين",
+  "CraList.comptes.rendus.d.activite.par.consultant.et.par.mois": "كشوف النشاط حسب الاستشاري والشهر",
 }

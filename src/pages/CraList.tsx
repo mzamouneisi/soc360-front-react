@@ -230,10 +230,10 @@ export function CraList() {
         count={list.length}
         subtitle={
           isConsultant
-            ? 'Mes comptes rendus d’activité'
+            ? tr('CraList.mes.comptes.rendus.d.activite')
             : isManager
-              ? 'CRA des consultants de mon équipe'
-              : "Comptes rendus d'activité par consultant et par mois"
+              ? tr('CraList.cra.des.consultants.de.mon.equipe')
+              : tr('CraList.comptes.rendus.d.activite.par.consultant.et.par.mois')
         }
         actions={
           <RefreshButton onClick={reload} />
