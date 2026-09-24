@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { supportApi } from '../api/support'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
+import { Button, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import {
   Badge,
   EmptyState,
@@ -237,7 +237,7 @@ export function Support() {
         title={tr('Support.nouveau.ticket')}
         footer={
           <>
-            <InlineButton onClick={() => setCreateOpen(false)}>Annuler</InlineButton>
+            <IconButton icon="cancel" label="Annuler" onClick={() => setCreateOpen(false)} />
             <Button className="w-auto" onClick={handleCreate as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
               Créer le ticket
@@ -342,14 +342,14 @@ export function Support() {
                   value={exchangeBody}
                   onChange={(e) => setExchangeBody(e.target.value)}
                 />
-                <Button
+                <IconButton
+                  icon="send"
+                  label={tr('Support.envoyer')}
+                  variant="primary"
                   className="w-auto"
                   onClick={handleAddExchange}
                   disabled={exchangeSubmitting || !exchangeBody.trim()}
-                >
-                  {exchangeSubmitting ? <Spinner className="border-white border-t-transparent" /> : null}
-                  {tr('Support.envoyer')}
-                </Button>
+                />
               </div>
             </div>
           </div>

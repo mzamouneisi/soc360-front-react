@@ -6,7 +6,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useSoc } from '../soc/SocContext'
-import { Button, Field, InlineButton, Input, RefreshButton, Spinner } from '../components/ui'
+import { Button, Field, IconButton, Input, RefreshButton } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import type { ActivityTypeDto, ActivityTypeRequest } from '../api/types'
@@ -205,26 +205,28 @@ export function ActivityTypes() {
               render: (t) =>
                 canEdit ? (
                   <div className="flex justify-end gap-1">
-                    <InlineButton
+                    <IconButton
+                      icon="edit"
+                      label={tr('common.edit')}
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(t)
                       }}
-                    >
-                      {tr('common.edit')}
-                    </InlineButton>
-                    <InlineButton onClick={() => handleToggleActive(t)}>
-                      {t.active ? tr('common.disable') : tr('common.enable')}
-                    </InlineButton>
-                    <InlineButton
+                    />
+                    <IconButton
+                      icon={t.active ? 'toggleOff' : 'toggleOn'}
+                      label={t.active ? tr('common.disable') : tr('common.enable')}
+                      onClick={() => handleToggleActive(t)}
+                    />
+                    <IconButton
+                      icon="delete"
+                      label={tr('common.delete')}
                       variant="danger"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete(t)
                       }}
-                    >
-                      {tr('common.delete')}
-                    </InlineButton>
+                    />
                   </div>
                 ) : (
                   <></>
@@ -258,11 +260,14 @@ export function ActivityTypes() {
         title={form.id != null ? tr('ActivityTypes.modifier.le.type') : tr('ActivityTypes.nouveau.type.d.activite')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
-            <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {form.id != null ? tr('common.save') : tr('common.create')}
-            </Button>
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton
+              icon={form.id != null ? 'save' : 'add'}
+              label={form.id != null ? tr('common.save') : tr('common.create')}
+              variant="primary"
+              onClick={handleSubmit as never}
+              disabled={submitting} loading={submitting}
+            />
           </>
         }
       >

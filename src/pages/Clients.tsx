@@ -6,7 +6,7 @@ import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { CompanyLookup } from '../api/auth'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, Input, InlineButton, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
+import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { useSoc } from '../soc/SocContext'
@@ -230,15 +230,18 @@ export function Clients() {
               render: (c) =>
                 canEdit ? (
                   <div className="flex justify-end gap-1">
-                    <InlineButton variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
-                      {tr('common.edit')}
-                    </InlineButton>
-                    <InlineButton
+                    <IconButton
+                      icon="edit"
+                      label={tr('common.edit')}
+                      variant="primary"
+                      onClick={(e) => { e.stopPropagation(); openEdit(c) }}
+                    />
+                    <IconButton
+                      icon="delete"
+                      label={tr('common.delete')}
                       variant="danger"
                       onClick={(e) => { e.stopPropagation(); handleDelete(c) }}
-                    >
-                      {tr('common.delete')}
-                    </InlineButton>
+                    />
                   </div>
                 ) : (
                   <></>
@@ -260,11 +263,14 @@ export function Clients() {
         title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Clients.nouveau.client')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
-            <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? tr('common.save') : tr('common.create')}
-            </Button>
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton
+              icon={editing ? 'save' : 'add'}
+              label={editing ? tr('common.save') : tr('common.create')}
+              variant="primary"
+              onClick={handleSubmit as never}
+              disabled={submitting} loading={submitting}
+            />
           </>
         }
       >

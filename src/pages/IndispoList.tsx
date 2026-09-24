@@ -6,7 +6,7 @@ import type { CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
-import { Button, Card, InlineButton, Input, RefreshButton, Select } from '../components/ui'
+import { Button, Card, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
 import {
   CRA_STATUS_LABELS,
   formatDate,
@@ -245,21 +245,21 @@ export function IndispoList() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <InlineButton
+                          <IconButton
+                            icon={editable(ind) ? 'edit' : 'view'}
+                            label={editable(ind) ? 'Éditer' : 'Ouvrir'}
                             onClick={() => {
                               setSelectedId(ind.id)
                               setOpenId(ind.id)
                             }}
-                          >
-                            {editable(ind) ? 'Éditer' : 'Ouvrir'}
-                          </InlineButton>
+                          />
                           {editable(ind) && (
-                            <InlineButton
+                            <IconButton
+                              icon="delete"
+                              label={tr('IndispoList.supprimer')}
                               variant="danger"
                               onClick={() => handleDelete(ind)}
-                            >
-                              {tr('IndispoList.supprimer')}
-                            </InlineButton>
+                            />
                           )}
                         </div>
                       </td>

@@ -6,7 +6,7 @@ import { useAsync } from '../lib/useAsync'
 import { usePagination } from '../lib/usePagination'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorBlock, LoadingBlock, Modal, Pagination } from './data'
-import { InlineButton } from './ui'
+import { IconButton } from './ui'
 
 export function CraHistoryModal({
   craId,
@@ -30,7 +30,7 @@ export function CraHistoryModal({
       title={`${tr('CraHistoryModal.historique')} (${page.total})`}
       size="lg"
       onClose={onClose}
-      footer={<InlineButton onClick={onClose}>Fermer</InlineButton>}
+      footer={<IconButton icon="close" label="Fermer" onClick={onClose} />}
     >
       {history.loading && <LoadingBlock />}
       {history.error && <ErrorBlock message={history.error} />}

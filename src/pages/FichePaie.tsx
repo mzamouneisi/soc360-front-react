@@ -5,7 +5,7 @@ import { fichePaieApi } from '../api/fichePaie'
 import { consultantsApi } from '../api/consultants'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatDate, formatMoney } from '../lib/format'
@@ -255,12 +255,7 @@ export function FichePaie() {
                       >
                         {uploadingId === fp.id ? <Spinner /> : 'Associer'}
                       </InlineButton>
-                      <InlineButton
-                        variant="danger"
-                        onClick={() => handleDelete(fp)}
-                      >
-                        Supprimer
-                      </InlineButton>
+                      <IconButton icon="delete" label="Supprimer" variant="danger" onClick={() => handleDelete(fp)} />
                     </>
                   )}
                 </div>
@@ -283,11 +278,8 @@ export function FichePaie() {
         title={tr('FichePaie.nouvelle.fiche.de.paie')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
-            <Button className="w-auto" onClick={handleCreate as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              Créer
-            </Button>
+            <IconButton icon="cancel" label="Annuler" onClick={() => setModalOpen(false)} />
+            <IconButton icon="add" label="Créer" variant="primary" className="w-auto" onClick={handleCreate as never} disabled={submitting} loading={submitting} />
           </>
         }
       >

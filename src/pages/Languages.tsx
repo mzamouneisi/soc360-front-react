@@ -7,7 +7,7 @@ import { languageLabel } from '../i18n/messages'
 import { filterKnownLanguages, findKnownLanguage } from '../i18n/languages'
 import { translateTexts } from '../lib/translate'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, Field, InlineButton, Input, RefreshButton, Spinner } from '../components/ui'
+import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Spinner } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 
@@ -507,16 +507,20 @@ export function Languages() {
                       </td>
                     ))}
                     <td className="whitespace-nowrap px-3 py-2 text-right">
-                      <InlineButton
+                      <IconButton
+                        icon="save"
+                        label={tr('Languages.enregistrer')}
                         variant="primary"
                         className="mr-1.5"
                         onClick={() => void saveRow(entry)}
-                        disabled={saving === entry.id}
-                      >
-                        {saving === entry.id ? <Spinner className="h-4 w-4" /> : null}
-                        {tr('Languages.enregistrer')}
-                      </InlineButton>
-                      <InlineButton variant="danger" onClick={() => void deleteRow(entry)}>{tr('Languages.supprimer')}</InlineButton>
+                        disabled={saving === entry.id} loading={saving === entry.id}
+                      />
+                      <IconButton
+                        icon="delete"
+                        label={tr('Languages.supprimer')}
+                        variant="danger"
+                        onClick={() => void deleteRow(entry)}
+                      />
                     </td>
                   </tr>
                 ))}

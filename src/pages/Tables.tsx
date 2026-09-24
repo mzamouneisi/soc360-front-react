@@ -5,7 +5,7 @@ import { useAuth } from '../auth/AuthContext'
 import { tablesApi, type ColumnDetails, type TableRelation } from '../api/tables'
 import { useAsync } from '../lib/useAsync'
 import { usePagination } from '../lib/usePagination'
-import { Button, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { IconButton, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { RelationsGraph } from '../components/RelationsGraph'
@@ -368,17 +368,22 @@ export function Tables() {
                           </td>
                         ))}
                         <td className="whitespace-nowrap px-3 py-2 text-right">
-                          <InlineButton
+                          <IconButton
+                            icon="edit"
+                            label={tr('Tables.modifier')}
                             variant="primary"
                             className="mr-1.5"
                             onClick={() => {
                               setInserting(false)
                               setDraft({ ...row })
                             }}
-                          >
-                            {tr('Tables.modifier')}
-                          </InlineButton>
-                          <InlineButton variant="danger" onClick={() => deleteRow(row)}>{tr('Tables.supprimer')}</InlineButton>
+                          />
+                          <IconButton
+                            icon="delete"
+                            label={tr('Tables.supprimer')}
+                            variant="danger"
+                            onClick={() => deleteRow(row)}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -497,19 +502,20 @@ export function Tables() {
           size="lg"
           footer={
             <>
-              <InlineButton
+              <IconButton
+                icon="cancel"
+                label="Annuler"
                 onClick={() => setDraft(null)}
                 disabled={saving}
-              >
-                Annuler
-              </InlineButton>
-              <Button
-                className="w-auto"
+              />
+              <IconButton
+                icon="save"
+                label="Enregistrer"
+                variant="primary"
                 onClick={inserting ? insertRow : saveRow}
                 disabled={saving}
-              >
-                {saving ? 'Enregistrement…' : 'Enregistrer'}
-              </Button>
+                loading={saving}
+              />
             </>
           }
         >

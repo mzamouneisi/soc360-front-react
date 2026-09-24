@@ -8,7 +8,7 @@ import { parseReceipt } from '../lib/receipt'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
-import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
+import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import {
@@ -434,7 +434,7 @@ export function NoteFraisList() {
                   <div className="flex justify-end gap-1">
                     {(nf.status === 'DRAFT' || nf.status === 'REJECTED') && (
                       <>
-                        <InlineButton onClick={() => openEdit(nf)}>{tr('common.edit')}</InlineButton>
+                        <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} />
                         <InlineButton
                           className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                           onClick={() => changeStatus(nf, 'submit')}
@@ -445,18 +445,8 @@ export function NoteFraisList() {
                     )}
                     {canValidate && nf.status === 'SUBMITTED' && (
                       <>
-                        <InlineButton
-                          className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-                          onClick={() => changeStatus(nf, 'validate')}
-                        >
-                          {tr('Unavailability.valider')}
-                        </InlineButton>
-                        <InlineButton
-                          className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-                          onClick={() => changeStatus(nf, 'reject')}
-                        >
-                          {tr('Unavailability.rejeter')}
-                        </InlineButton>
+                        <IconButton icon="check" label={tr('Unavailability.valider')} variant="soft" onClick={() => changeStatus(nf, 'validate')} />
+                        <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => changeStatus(nf, 'reject')} />
                       </>
                     )}
                     <InlineButton
@@ -487,11 +477,8 @@ export function NoteFraisList() {
         size="xl"
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
-            <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? tr('common.save') : tr('common.create')}
-            </Button>
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
           </>
         }
       >

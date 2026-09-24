@@ -8,7 +8,7 @@ import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
-import { Button, Card, InlineButton, Input, MonthInput, RefreshButton, Select } from '../components/ui'
+import { Button, Card, IconButton, InlineButton, Input, MonthInput, RefreshButton, Select } from '../components/ui'
 import {
   CRA_STATUS_LABELS,
   formatDate,
@@ -372,32 +372,40 @@ export function CraList() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <InlineButton variant="primary" onClick={() => setOpenCraId(cra.id)}>
-                            {editable(cra) ? 'Éditer' : 'Ouvrir'}
-                          </InlineButton>
-                          <InlineButton variant="primary" onClick={() => setHistoryCra(cra)}>{tr('CraList.historique')}</InlineButton>
+                          <IconButton
+                            icon={editable(cra) ? 'edit' : 'view'}
+                            label={editable(cra) ? 'Éditer' : 'Ouvrir'}
+                            variant="primary"
+                            onClick={() => setOpenCraId(cra.id)}
+                          />
+                          <IconButton
+                            icon="history"
+                            label={tr('CraList.historique')}
+                            variant="primary"
+                            onClick={() => setHistoryCra(cra)}
+                          />
                           {editable(cra) && (
-                            <InlineButton
+                            <IconButton
+                              icon="delete"
+                              label={tr('CraList.supprimer')}
                               variant="danger"
                               onClick={() => handleDelete(cra)}
-                            >
-                              {tr('CraList.supprimer')}
-                            </InlineButton>
+                            />
                           )}
                           {canValidate(cra) && cra.status === 'SUBMITTED' && (
                             <>
-                              <InlineButton
-                                className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                              <IconButton
+                                icon="check"
+                                label={tr('CraList.valider')}
+                                variant="soft"
                                 onClick={() => changeStatus(cra.id, 'validate')}
-                              >
-                                {tr('CraList.valider')}
-                              </InlineButton>
-                              <InlineButton
-                                className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              />
+                              <IconButton
+                                icon="reject"
+                                label={tr('CraList.rejeter')}
+                                variant="danger"
                                 onClick={() => changeStatus(cra.id, 'reject')}
-                              >
-                                {tr('CraList.rejeter')}
-                              </InlineButton>
+                              />
                             </>
                           )}
                         </div>

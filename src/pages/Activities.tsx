@@ -10,7 +10,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useSoc } from '../soc/SocContext'
-import { Button, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Button, Field, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatMoney } from '../lib/format'
@@ -388,23 +388,23 @@ export function Activities() {
               render: (a) =>
                 canEdit ? (
                   <div className="flex justify-end gap-1">
-                    <InlineButton
+                    <IconButton
+                      icon="edit"
+                      label={tr('common.edit')}
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(a)
                       }}
-                    >
-                      {tr('common.edit')}
-                    </InlineButton>
-                    <InlineButton
+                    />
+                    <IconButton
+                      icon="delete"
+                      label={tr('common.delete')}
                       variant="danger"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete(a)
                       }}
-                    >
-                      {tr('common.delete')}
-                    </InlineButton>
+                    />
                   </div>
                 ) : (
                   <></>
@@ -441,11 +441,14 @@ export function Activities() {
         title={editing ? tr('Activities.modifier.activite', { name: editing.name }) : tr('Activities.nouvelle.activite')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
-            <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? tr('common.save') : tr('common.create')}
-            </Button>
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton
+              icon={editing ? 'save' : 'add'}
+              label={editing ? tr('common.save') : tr('common.create')}
+              variant="primary"
+              onClick={handleSubmit as never}
+              disabled={submitting} loading={submitting}
+            />
           </>
         }
       >

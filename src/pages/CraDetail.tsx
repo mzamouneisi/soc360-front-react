@@ -9,7 +9,7 @@ import { socHolidaysApi } from '../api/socHolidays'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { usePagination } from '../lib/usePagination'
-import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
+import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
@@ -698,15 +698,15 @@ export function CraDetail({
             {CRA_STATUS_LABELS[cra.status] ?? cra.status}
           </Badge>
           {canCancel && (
-            <InlineButton
-              className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+            <IconButton
+              icon="cancel"
+              label={tr('CraDetail.annuler')}
+              variant="danger"
               onClick={() => setCancelOpen(true)}
-            >
-              {tr('CraDetail.annuler')}
-            </InlineButton>
+            />
           )}
           <span className="text-sm text-gray-500">{cra.totalWorkedDays} {tr('CraDetail.j')}</span>
-          <InlineButton onClick={openHistory}>{tr('CraDetail.historique')}</InlineButton>
+          <IconButton icon="history" label={tr('CraDetail.historique')} onClick={openHistory} />
           <InlineButton onClick={handleExportClientPdf}>{tr('CraDetail.export.pdf.client')}</InlineButton>
           <InlineButton onClick={handleExportCompanyPdf}>{tr('CraDetail.export.pdf.ma.societe')}</InlineButton>
         </div>
@@ -1052,14 +1052,21 @@ export function CraDetail({
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         {canAddEvents && (
-          <Button className="flex-1" onClick={handleSave} disabled={saving}>
-            {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-            {tr('CraDetail.enregistrer')}
-          </Button>
+          <IconButton
+            icon="save"
+            label={tr('CraDetail.enregistrer')}
+            variant="primary"
+            className="flex-1"
+            onClick={handleSave}
+            disabled={saving} loading={saving}
+          />
         )}
         {canAddEvents && !managerCanAct && (
-          <Button
-            className="flex-1 bg-green-600 hover:bg-green-700"
+          <IconButton
+            icon="check"
+            label={tr('CraDetail.soumettre')}
+            variant="soft"
+            className="flex-1"
             onClick={handleSubmit}
             disabled={submitting || saving || (isIndispo ? false : !craValid)}
             title={
@@ -1067,21 +1074,19 @@ export function CraDetail({
                 ? 'CRA incomplet : chaque jour travaillé doit totaliser 1 jour.'
                 : 'Soumettre pour validation'
             }
-          >
-            {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-            {tr('CraDetail.soumettre')}
-          </Button>
+          />
         )}
         {managerCanAct && (
           <>
             <span className="flex-1" title={!hasInactiveEvent ? 'aucun événement à valider' : undefined}>
-              <Button
-                className="w-full bg-green-600 hover:bg-green-700"
+              <IconButton
+                icon="check"
+                label={tr('CraDetail.valider.tout')}
+                variant="soft"
+                className="w-full"
                 onClick={handleValidate}
                 disabled={!hasInactiveEvent}
-              >
-                {tr('CraDetail.valider.tout')}
-              </Button>
+              />
             </span>
             <span className="flex-1" title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
               <Button
@@ -1208,7 +1213,7 @@ function FillMonthModal({
       open
       title={tr('CraDetail.remplir.tout.le.mois')}
       onClose={onClose}
-      footer={<InlineButton onClick={onClose}>Annuler</InlineButton>}
+      footer={<IconButton icon="cancel" label="Annuler" onClick={onClose} />}
     >
       <p className="mb-3 text-sm text-gray-500">
         {tr('CraDetail.choisissez.l.activite.a.appliquer.a.tous.les.jours.travaille')}
@@ -1266,7 +1271,7 @@ function FillRangeModal({
       onClose={onClose}
       footer={
         <>
-          <InlineButton onClick={onClose}>Annuler</InlineButton>
+          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
           <Button className="w-auto" onClick={() => onFill(start, end, activityId)}>
             Remplir
           </Button>
@@ -1367,7 +1372,7 @@ function EventModal({
       size="lg"
       footer={
         <>
-          <InlineButton onClick={onClose}>Fermer</InlineButton>
+          <IconButton icon="close" label="Fermer" onClick={onClose} />
         </>
       }
     >
@@ -1499,7 +1504,7 @@ function RangeValidModal({
       onClose={onClose}
       footer={
         <>
-          <InlineButton onClick={onClose}>Annuler</InlineButton>
+          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
           <Button className="w-auto" onClick={() => onApply(start, end)}>
             {label}
           </Button>
@@ -1555,7 +1560,7 @@ function CancelModal({
       onClose={onClose}
       footer={
         <>
-          <InlineButton onClick={onClose}>Annuler</InlineButton>
+          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
           <Button
             variant="danger"
             className="w-auto"
@@ -1602,7 +1607,7 @@ function SendBackModal({
       onClose={onClose}
       footer={
         <>
-          <InlineButton onClick={onClose}>Annuler</InlineButton>
+          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
           <Button
             className="w-auto"
             onClick={() => onConfirm(comment.trim())}

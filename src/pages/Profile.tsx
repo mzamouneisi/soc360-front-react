@@ -9,7 +9,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
-import { Button, Card, Field, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
+import { Button, Card, Field, IconButton, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { ROLE_LABELS, formatDateTime } from '../lib/format'
@@ -279,8 +279,8 @@ export function Profile() {
               <Field label={tr('Profile.site.web')}><Input type="url" value={editingSoc.website ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, website: e.target.value })} /></Field>
               <Field label={tr('Profile.gerant')}><Input value={editingSoc.gerant ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, gerant: e.target.value })} /></Field>
               <div className="flex gap-2 sm:col-span-2">
-                <Button type="button" className="!w-auto" onClick={() => void saveSoc()} disabled={socSaving}>{socSaving ? <Spinner className="border-white border-t-transparent" /> : null}{tr('Profile.enregistrer')}</Button>
-                <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700" onClick={() => setEditingSoc(null)}>{tr('Profile.annuler')}</Button>
+                <IconButton type="button" icon="save" label={tr('Profile.enregistrer')} variant="primary" className="!w-auto" onClick={() => void saveSoc()} disabled={socSaving} loading={socSaving} />
+                <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setEditingSoc(null)} />
               </div>
             </div>
           )}
@@ -308,7 +308,7 @@ export function Profile() {
                   ))}
                 </div>
                 <div className="mt-4 flex items-center justify-end gap-2 border-t border-gray-200 pt-3">
-                  <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading}>{tr('Profile.annuler')}</Button>
+                  <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading} />
                   <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                     {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                     {tr('Profile.tout.supprimer')}

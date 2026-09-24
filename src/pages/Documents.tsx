@@ -5,7 +5,7 @@ import { documentsApi } from '../api/documents'
 import { consultantsApi } from '../api/consultants'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { DOCUMENT_CATEGORIES, formatDate, formatSize } from '../lib/format'
@@ -205,12 +205,7 @@ export function Documents() {
                   <div className="flex justify-end gap-1">
                     <InlineButton onClick={() => handleDownload(d)}>Télécharger</InlineButton>
                     {canDelete && (
-                      <InlineButton
-                        variant="danger"
-                        onClick={() => handleDelete(d)}
-                      >
-                        Supprimer
-                      </InlineButton>
+                      <IconButton icon="delete" label="Supprimer" variant="danger" onClick={() => handleDelete(d)} />
                     )}
                   </div>
                 ),
@@ -233,7 +228,7 @@ export function Documents() {
         title={tr('Documents.partager.un.document')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <IconButton icon="cancel" label="Annuler" onClick={() => setModalOpen(false)} />
             <Button className="w-auto" onClick={handleUpload as never} disabled={submitting || !file}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
               Partager

@@ -14,7 +14,7 @@ import { useAuth } from '../auth/AuthContext'
 import { usePagination } from '../lib/usePagination'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
-import { Alert, Button, Card, Field, InlineButton, Input, MonthInput, Select, Textarea } from '../components/ui'
+import { Alert, Button, Card, Field, IconButton, InlineButton, Input, MonthInput, Select, Textarea } from '../components/ui'
 import {
   formatDate,
   formatDateTime,
@@ -338,12 +338,20 @@ export function Unavailability() {
             </div>
           )}
           <div className="mt-4 flex items-center justify-end gap-2">
-            <InlineButton onClick={() => setShowForm(false)} disabled={saving}>
-              {tr('Unavailability.annuler')}
-            </InlineButton>
-            <Button className="w-auto" onClick={() => void handleSave()} disabled={saving}>
-              {saving ? 'Enregistrement…' : editingId != null ? 'Enregistrer' : 'Créer'}
-            </Button>
+            <IconButton
+              icon="cancel"
+              label={tr('Unavailability.annuler')}
+              onClick={() => setShowForm(false)}
+              disabled={saving}
+            />
+            <IconButton
+              icon={editingId != null ? 'save' : 'add'}
+              label={editingId != null ? 'Enregistrer' : 'Créer'}
+              variant="primary"
+              onClick={() => void handleSave()}
+              disabled={saving}
+              loading={saving}
+            />
           </div>
         </Card>
       )}
@@ -439,79 +447,79 @@ export function Unavailability() {
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
                           {canEdit(u) && (
-                            <InlineButton
+                            <IconButton
+                              icon="edit"
+                              label={tr('Unavailability.editer')}
                               variant="primary"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 openEdit(u)
                               }}
-                            >
-                              {tr('Unavailability.editer')}
-                            </InlineButton>
+                            />
                           )}
                           {canSubmit(u) && (
-                            <InlineButton
+                            <IconButton
+                              icon="check"
+                              label={tr('Unavailability.soumettre')}
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleSubmit(u)
                               }}
-                            >
-                              {tr('Unavailability.soumettre')}
-                            </InlineButton>
+                            />
                           )}
                           {canCancel(u) && (
-                            <InlineButton
+                            <IconButton
+                              icon="cancel"
+                              label={tr('Unavailability.annuler.la.soumission')}
                               variant="danger"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleCancel(u)
                               }}
-                            >
-                              {tr('Unavailability.annuler.la.soumission')}
-                            </InlineButton>
+                            />
                           )}
                           {canReview(u) && (
                             <>
-                              <InlineButton
-                                className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                              <IconButton
+                                icon="check"
+                                label={tr('Unavailability.valider')}
+                                variant="soft"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   void handleValidate(u)
                                 }}
-                              >
-                                {tr('Unavailability.valider')}
-                              </InlineButton>
-                              <InlineButton
-                                className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                              />
+                              <IconButton
+                                icon="reject"
+                                label={tr('Unavailability.rejeter')}
+                                variant="danger"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   void handleReject(u)
                                 }}
-                              >
-                                {tr('Unavailability.rejeter')}
-                              </InlineButton>
+                              />
                             </>
                           )}
                           {canDelete(u) && (
-                            <InlineButton
+                            <IconButton
+                              icon="delete"
+                              label={tr('Unavailability.supprimer')}
                               variant="danger"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleDelete(u)
                               }}
-                            >
-                              {tr('Unavailability.supprimer')}
-                            </InlineButton>
+                            />
                           )}
-                          <InlineButton
+                          <IconButton
+                            icon="history"
+                            label={tr('Unavailability.historique')}
                             variant="primary"
                             onClick={(e) => {
                               e.stopPropagation()
                               setHistoryFor(u)
                             }}
-                          >
-                            {tr('Unavailability.historique')}
-                          </InlineButton>
+                          />
                         </div>
                       </td>
                     </tr>
@@ -581,7 +589,7 @@ function UnavailabilityHistoryModal({
               ({unavailability.startDate} → {unavailability.endDate})
             </p>
           </div>
-          <InlineButton onClick={onClose}>{tr('Unavailability.fermer')}</InlineButton>
+          <IconButton icon="close" label={tr('Unavailability.fermer')} onClick={onClose} />
         </div>
 
         {history.loading && <LoadingBlock />}

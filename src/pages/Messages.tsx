@@ -5,7 +5,7 @@ import { messagesApi } from '../api/messages'
 import { usersApi } from '../api/users'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
+import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatDateTime } from '../lib/format'
@@ -201,11 +201,8 @@ export function Messages() {
         title={tr('Messages.nouveau.message')}
         footer={
           <>
-            <InlineButton onClick={() => setComposeOpen(false)}>Annuler</InlineButton>
-            <Button className="w-auto" onClick={handleSend as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              Envoyer
-            </Button>
+            <IconButton icon="cancel" label="Annuler" onClick={() => setComposeOpen(false)} />
+            <IconButton icon="send" label="Envoyer" variant="primary" className="w-auto" onClick={handleSend as never} disabled={submitting} loading={submitting} />
           </>
         }
       >
@@ -242,10 +239,8 @@ export function Messages() {
         title={viewing?.subject ?? 'Message'}
         footer={
           <>
-            <InlineButton onClick={() => setViewing(null)}>Fermer</InlineButton>
-            <InlineButton variant="danger" onClick={handleDelete}>
-              Supprimer
-            </InlineButton>
+            <IconButton icon="close" label="Fermer" onClick={() => setViewing(null)} />
+            <IconButton icon="delete" label="Supprimer" variant="danger" onClick={handleDelete} />
           </>
         }
       >

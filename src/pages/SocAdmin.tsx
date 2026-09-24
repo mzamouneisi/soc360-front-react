@@ -7,7 +7,7 @@ import { socsApi, type DemoSocDto, type SocDependency } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { AddSocPayload, SocDto, SocLiteDto } from '../api/types'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, Input, InlineButton, RefreshButton, Spinner, Textarea } from '../components/ui'
+import { Button, Field, IconButton, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 
@@ -314,23 +314,23 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
               render: (s) =>
                 canManage(s) ? (
                   <div className="flex justify-end gap-1">
-                    <InlineButton
+                    <IconButton
+                      icon="edit"
+                      label={tr('common.edit')}
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(s)
                       }}
-                    >
-                      {tr('common.edit')}
-                    </InlineButton>
-                    <InlineButton
+                    />
+                    <IconButton
+                      icon="delete"
+                      label={tr('common.delete')}
                       variant="danger"
                       onClick={(e) => {
                         e.stopPropagation()
                         void handleDelete(s)
                       }}
-                    >
-                      {tr('common.delete')}
-                    </InlineButton>
+                    />
                   </div>
                 ) : (
                   <></>
@@ -356,13 +356,15 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           size="lg"
           footer={
             <>
-              <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700 hover:!bg-gray-200" onClick={() => setEditingForm(null)}>
-                {tr('common.cancel')}
-              </Button>
-              <Button type="button" disabled={saving} onClick={() => void saveEdit()} className="!w-auto">
-                {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-                {tr('common.save')}
-              </Button>
+              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setEditingForm(null)} />
+              <IconButton
+                icon="save"
+                label={tr('common.save')}
+                variant="primary"
+                type="button"
+                disabled={saving} loading={saving}
+                onClick={() => void saveEdit()}
+              />
             </>
           }
         >
@@ -427,9 +429,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           title={tr('SocAdmin.supprimer.la.societe', { name: deleting.name })}
           footer={
             <>
-              <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700 hover:!bg-gray-200" onClick={() => setDeleting(null)} disabled={dependencyLoading}>
-                {tr('common.cancel')}
-              </Button>
+              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setDeleting(null)} disabled={dependencyLoading} />
               <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                 {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                 {tr('SocAdmin.tout.supprimer')}
@@ -460,9 +460,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           onClose={() => setDemoResult(null)}
           title={tr('SocAdmin.societe.demo.creee', { number: demoResult.number })}
           footer={
-            <Button type="button" className="!w-auto" onClick={() => setDemoResult(null)}>
-              {tr('common.close')}
-            </Button>
+            <IconButton icon="close" label={tr('common.close')} type="button" onClick={() => setDemoResult(null)} />
           }
         >
           <div className="space-y-2 text-sm">

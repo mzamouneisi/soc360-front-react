@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { consultantsApi } from '../api/consultants'
 import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
-import { Button, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Button, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import {
   Badge,
   EmptyState,
@@ -487,22 +487,10 @@ export function Consultants() {
                   if (!canEdit) return <></>
                   return (
                     <div className="flex justify-end gap-1">
-                      <InlineButton variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
-                        {tr('common.edit')}
-                      </InlineButton>
-                      <InlineButton
-                        variant="soft"
-                        onClick={(e) => { e.stopPropagation(); openHistory(c) }}
-                      >
-                        {tr('common.history')}
-                      </InlineButton>
+                      <IconButton icon="edit" label={tr('common.edit')} variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }} />
+                      <IconButton icon="history" label={tr('common.history')} variant="soft" onClick={(e) => { e.stopPropagation(); openHistory(c) }} />
                       {!isSelf && c.role !== 'ADMIN' && (
-                        <InlineButton
-                          variant="danger"
-                          onClick={(e) => { e.stopPropagation(); handleDelete(c) }}
-                        >
-                          {tr('common.delete')}
-                        </InlineButton>
+                        <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={(e) => { e.stopPropagation(); handleDelete(c) }} />
                       )}
                     </div>
                   )
@@ -539,11 +527,8 @@ export function Consultants() {
         size="lg"
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
-            <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
-              {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? tr('common.save') : tr('common.create')}
-            </Button>
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
           </>
         }
       >
@@ -777,10 +762,8 @@ export function Consultants() {
         title={tr('Consultants.importer.des.consultants.csv')}
         footer={
           <>
-            <InlineButton onClick={() => setImportOpen(false)}>{tr('common.close')}</InlineButton>
-            <Button className="w-auto" onClick={handleImport as never} disabled={importing || !importFile}>
-              {importing ? <Spinner className="border-white border-t-transparent" /> : tr('Consultants.importer')}
-            </Button>
+            <IconButton icon="close" label={tr('common.close')} onClick={() => setImportOpen(false)} />
+            <IconButton icon="upload" label={tr('Consultants.importer')} variant="primary" className="w-auto" onClick={handleImport as never} disabled={importing || !importFile} loading={importing} />
           </>
         }
       >
@@ -831,7 +814,7 @@ export function Consultants() {
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
         title={historyFor ? tr('Consultants.historique.de', { name: `${historyFor.firstName} ${historyFor.lastName}` }) : tr('common.history')}
-        footer={<InlineButton onClick={() => setHistoryOpen(false)}>{tr('common.close')}</InlineButton>}
+        footer={<IconButton icon="close" label={tr('common.close')} onClick={() => setHistoryOpen(false)} />}
       >
         {historyLoading && <LoadingBlock />}
         {!historyLoading && historyItems.length === 0 && (
