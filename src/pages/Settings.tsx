@@ -1,9 +1,10 @@
 import { tr } from '../i18n/translate'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
+import { emailTemplatesApi, type EmailTemplateView } from '../api/emailTemplates'
 import { ApiError } from '../api/client'
-import { Card, Field, Input, Select, Spinner, Button } from '../components/ui'
+import { Card, Field, IconButton, Input, Select, Spinner, Button, Textarea } from '../components/ui'
 import { PageHeader } from '../components/data'
 import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
@@ -42,6 +43,47 @@ export function Settings() {
   const [languageSaving, setLanguageSaving] = useState(false)
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
+
+  const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplateView[]>([])
+  const [templateKey, setTemplateKey] = useState('')
+  const [templateSubject, setTemplateSubject] = useState('')
+  const [templateBody, setTemplateBody] = useState('')
+  const [templateLoading, setTemplateLoading] = useState(false)
+  const [templateSaving, setTemplateSaving] = useState(false)
+  const [templateError, setTemplateError] = useState<string | null>(null)
+  const [templateSaved, setTemplateSaved] = useState(false)
+  const selectedTemplate = emailTemplates.find((item) => item.key === templateKey) ?? null
+
+  useEffect(() => {
+    if (!canEditTemplates) return
+    let cancelled = false
+    setTemplateLoading(true)
+    emailTemplatesApi
+      .list()
+      .then((list) => {
+        if (cancelled) return
+        setEmailTemplates(list)
+        setTemplateKey((current) => current || list[0]?.key || '')
+      })
+      .catch(() => {
+        if (!cancelled) setTemplateError(t('settings.emailTemplates.loadError'))
+      })
+      .finally(() => {
+        if (!cancelled) setTemplateLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [canEditTemplates, t])
+
+  useEffect(() => {
+    if (!selectedTemplate) return
+    setTemplateSubject(selectedTemplate.subject)
+    setTemplateBody(selectedTemplate.body)
+    setTemplateSaved(false)
+    setTemplateError(null)
+  }, [selectedTemplate])
 
   if (!user) return null
   const u = user
@@ -110,6 +152,41 @@ export function Settings() {
       setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleTemplateSave() {
+    if (!templateKey) return
+    setTemplateSaving(true)
+    setTemplateError(null)
+    setTemplateSaved(false)
+    try {
+      const updated = await emailTemplatesApi.save(templateKey, {
+        subject: templateSubject,
+        body: templateBody,
+      })
+      setEmailTemplates((prev) => prev.map((item) => (item.key === updated.key ? updated : item)))
+      setTemplateSaved(true)
+    } catch (err) {
+      setTemplateError(err instanceof ApiError ? err.message : t('settings.emailTemplates.error'))
+    } finally {
+      setTemplateSaving(false)
+    }
+  }
+
+  async function handleTemplateReset() {
+    if (!templateKey) return
+    setTemplateSaving(true)
+    setTemplateError(null)
+    setTemplateSaved(false)
+    try {
+      await emailTemplatesApi.reset(templateKey)
+      const list = await emailTemplatesApi.list()
+      setEmailTemplates(list)
+    } catch (err) {
+      setTemplateError(err instanceof ApiError ? err.message : t('settings.emailTemplates.error'))
+    } finally {
+      setTemplateSaving(false)
     }
   }
 
@@ -392,6 +469,70 @@ export function Settings() {
             {t('settings.background.preview')}
           </div>
         </div>
+
+        {canEditTemplates && (
+          <>
+            <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.emailTemplates.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500">{t('settings.emailTemplates.description')}</p>
+            {templateLoading ? (
+              <div className="mt-4">
+                <Spinner />
+              </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                <Field label={t('settings.emailTemplates.template')}>
+                  <Select value={templateKey} onChange={(e) => setTemplateKey(e.target.value)}>
+                    {emailTemplates.map((item) => (
+                      <option key={item.key} value={item.key}>
+                        {tr(`settings.emailTemplate.${item.key}`)}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                {selectedTemplate && (
+                  <>
+                    <p className="text-xs text-gray-500">
+                      {t('settings.emailTemplates.variables')} :{' '}
+                      <span className="font-mono">{selectedTemplate.variables.map((v) => `{{${v}}}`).join(', ')}</span>
+                      {selectedTemplate.custom ? ` · ${t('settings.emailTemplates.custom')}` : ''}
+                    </p>
+                    <Field label={t('settings.emailTemplates.subject')}>
+                      <Input value={templateSubject} onChange={(e) => setTemplateSubject(e.target.value)} />
+                    </Field>
+                    <Field label={t('settings.emailTemplates.body')}>
+                      <Textarea
+                        rows={10}
+                        className="font-mono text-xs"
+                        value={templateBody}
+                        onChange={(e) => setTemplateBody(e.target.value)}
+                      />
+                    </Field>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <IconButton
+                        icon="save"
+                        label={t('common.save')}
+                        variant="primary"
+                        onClick={() => void handleTemplateSave()}
+                        disabled={templateSaving}
+                        loading={templateSaving}
+                      />
+                      <IconButton
+                        icon="refresh"
+                        label={t('settings.emailTemplates.reset')}
+                        onClick={() => void handleTemplateReset()}
+                        disabled={templateSaving}
+                      />
+                      {templateSaved && (
+                        <span className="text-sm text-green-600">{t('settings.emailTemplates.saved')}</span>
+                      )}
+                      {templateError && <span className="text-sm text-red-600">{templateError}</span>}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        )}
 
         <Button
           className="mt-6 w-auto"
