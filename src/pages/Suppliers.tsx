@@ -7,7 +7,7 @@ import { ApiError } from '../api/client'
 import type { CompanyLookup } from '../api/auth'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
-import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { useSoc } from '../soc/SocContext'
@@ -168,9 +168,7 @@ export function Suppliers() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <Button className="w-auto" onClick={openCreate}>
-                + {tr('Suppliers.nouveau.fournisseur')}
-              </Button>
+              <IconButton icon="add" label={tr('Suppliers.nouveau.fournisseur')} variant="primary" onClick={openCreate} />
             ) : null}
           </>
         }

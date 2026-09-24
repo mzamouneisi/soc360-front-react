@@ -285,9 +285,7 @@ export function Tables() {
             <InlineButton variant="soft" onClick={() => loadTable(selected)} disabled={loading}>
               {tr('Tables.recharger')}
             </InlineButton>
-            <InlineButton variant="primary" onClick={openInsert} disabled={loading || columns.length === 0}>
-              {tr('Tables.ajouter.une.ligne')}
-            </InlineButton>
+            <IconButton icon="add" label={tr('Tables.ajouter.une.ligne')} variant="primary" onClick={openInsert} disabled={loading || columns.length === 0} />
           </>
         )}
       </div>
@@ -325,7 +323,7 @@ export function Tables() {
               title={tr('Tables.table.vide')}
               description={tr('Tables.aucune.ligne.dans.cette.table')}
               action={
-                <InlineButton variant="primary" onClick={openInsert}>Ajouter une ligne</InlineButton>
+                <IconButton icon="add" label="Ajouter une ligne" variant="primary" onClick={openInsert} />
               }
             />
           )}

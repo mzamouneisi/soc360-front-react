@@ -113,7 +113,7 @@ function activity(
 }
 
 async function openCreateModal() {
-  const buttons = await screen.findAllByRole('button', { name: '+ Nouvelle activité' })
+  const buttons = await screen.findAllByRole('button', { name: 'Nouvelle activité' })
   fireEvent.click(buttons[0])
 }
 

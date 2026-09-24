@@ -233,14 +233,9 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         actions={
           <>
             <RefreshButton onClick={reload} variant="primary" />
-            <Button className="w-auto" onClick={() => setAddOpen(true)}>
-              + {tr('SocAdmin.nouvelle.societe')}
-            </Button>
+            <IconButton icon="add" label={tr('SocAdmin.nouvelle.societe')} variant="primary" onClick={() => setAddOpen(true)} />
             {isAdmin && (
-              <Button className="w-auto" variant="primary" onClick={() => void createDemoSoc()} disabled={demoCreating}>
-                {demoCreating ? <Spinner className="border-white border-t-transparent" /> : null}
-                + {tr('SocAdmin.societe.demo')}
-              </Button>
+              <IconButton icon="add" label={tr('SocAdmin.societe.demo')} variant="primary" onClick={() => void createDemoSoc()} disabled={demoCreating} loading={demoCreating} />
             )}
           </>
         }

@@ -8,7 +8,7 @@ import { parseReceipt } from '../lib/receipt'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
-import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { Card, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import {
@@ -314,9 +314,7 @@ export function NoteFraisList() {
                 </option>
               ))}
             </Select>
-            <Button className="w-auto" onClick={openCreate}>
-              + Nouvelle note de frais
-            </Button>
+            <IconButton icon="add" label={tr('NoteFraisList.nouvelle.note.de.frais')} variant="primary" onClick={openCreate} />
           </div>
         }
       />
@@ -435,12 +433,7 @@ export function NoteFraisList() {
                     {(nf.status === 'DRAFT' || nf.status === 'REJECTED') && (
                       <>
                         <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} />
-                        <InlineButton
-                          className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-                          onClick={() => changeStatus(nf, 'submit')}
-                        >
-                          {tr('Unavailability.soumettre')}
-                        </InlineButton>
+                        <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => changeStatus(nf, 'submit')} />
                       </>
                     )}
                     {canValidate && nf.status === 'SUBMITTED' && (
@@ -449,12 +442,7 @@ export function NoteFraisList() {
                         <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => changeStatus(nf, 'reject')} />
                       </>
                     )}
-                    <InlineButton
-                      variant="danger"
-                      onClick={() => changeStatus(nf, 'delete')}
-                    >
-                      {tr('NoteFraisList.suppr')}
-                    </InlineButton>
+                    <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={() => changeStatus(nf, 'delete')} />
                   </div>
                 ),
               },

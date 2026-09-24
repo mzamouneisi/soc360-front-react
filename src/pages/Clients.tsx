@@ -6,7 +6,7 @@ import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { CompanyLookup } from '../api/auth'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { useSoc } from '../soc/SocContext'
@@ -166,9 +166,7 @@ export function Clients() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <Button className="w-auto" onClick={openCreate}>
-                + {tr('Clients.nouveau.client')}
-              </Button>
+              <IconButton icon="add" label={tr('Clients.nouveau.client')} variant="primary" onClick={openCreate} />
             ) : null}
           </>
         }

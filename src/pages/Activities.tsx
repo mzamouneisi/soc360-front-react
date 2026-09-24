@@ -10,7 +10,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useSoc } from '../soc/SocContext'
-import { Button, Field, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
+import { Field, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatMoney } from '../lib/format'
@@ -226,9 +226,7 @@ export function Activities() {
                 <InlineButton variant="primary" onClick={() => navigate('/types-activites')}>
                   {tr('Activities.gerer.les.types')}
                 </InlineButton>
-                <Button className="w-auto" onClick={openCreate}>
-                  + {tr('Activities.nouvelle.activite')}
-                </Button>
+                <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="primary" onClick={openCreate} />
               </>
             ) : null}
           </>
@@ -427,9 +425,7 @@ export function Activities() {
           description={tr('Activities.creez.des.prestations.facturables.pour.vos.cra')}
           action={
             canEdit ? (
-              <Button className="w-auto" onClick={openCreate}>
-                + {tr('Activities.nouvelle.activite')}
-              </Button>
+              <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="primary" onClick={openCreate} />
             ) : undefined
           }
         />

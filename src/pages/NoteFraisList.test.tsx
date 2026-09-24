@@ -273,7 +273,7 @@ describe('NoteFraisList', () => {
 
     const today = new Date().toISOString().slice(0, 10)
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Nouvelle note de frais' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
 
     const dialog = await screen.findByRole('dialog')
     const selects = within(dialog).getAllByRole('combobox')
@@ -330,7 +330,7 @@ describe('NoteFraisList', () => {
     ocrImageTextMock.mockResolvedValue('Restaurant McDo 25,50 € le 12/03/2026')
 
     renderList()
-    fireEvent.click(screen.getByRole('button', { name: '+ Nouvelle note de frais' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
 
     const dialog = await screen.findByRole('dialog')
     fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
@@ -358,7 +358,7 @@ describe('NoteFraisList', () => {
       .mockResolvedValueOnce('RESTAURATION DE PASSION\n2 Bis AVENUE DE QUINCY\n77380 COMBS LA VILLE\nMardi 14 Janvier 2025\n2 repas 34,00 €\nPAYÉ 34,00 «')
 
     renderList()
-    fireEvent.click(screen.getByRole('button', { name: '+ Nouvelle note de frais' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
 
     const dialog = await screen.findByRole('dialog')
     const fileInput = within(dialog).getByLabelText(/Joindre une facture/)
@@ -392,7 +392,7 @@ describe('NoteFraisList', () => {
     ocrImageTextMock.mockResolvedValue('')
 
     renderList()
-    fireEvent.click(screen.getByRole('button', { name: '+ Nouvelle note de frais' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
 
     const dialog = await screen.findByRole('dialog')
     fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {

@@ -6,7 +6,7 @@ import { clientsApi } from '../api/clients'
 import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatDate, formatMoney } from '../lib/format'
@@ -143,9 +143,7 @@ export function Projects() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <Button className="w-auto" onClick={openCreate}>
-                + {tr('Projects.nouveau.projet')}
-              </Button>
+              <IconButton icon="add" label={tr('Projects.nouveau.projet')} variant="primary" onClick={openCreate} />
             ) : null}
           </>
         }

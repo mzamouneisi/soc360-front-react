@@ -6,7 +6,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useSoc } from '../soc/SocContext'
-import { Button, Field, IconButton, Input, RefreshButton } from '../components/ui'
+import { Field, IconButton, Input, RefreshButton } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import type { ActivityTypeDto, ActivityTypeRequest } from '../api/types'
@@ -139,9 +139,7 @@ export function ActivityTypes() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit && workingSocId ? (
-              <Button className="w-auto" onClick={openCreate}>
-                + {tr('ActivityTypes.nouveau.type')}
-              </Button>
+              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="primary" onClick={openCreate} />
             ) : null}
           </>
         }
@@ -246,9 +244,7 @@ export function ActivityTypes() {
           description={tr('ActivityTypes.creez.des.types.de.prestations.pour.vos.activites.et.vos.cra')}
           action={
             canEdit && workingSocId ? (
-              <Button className="w-auto" onClick={openCreate}>
-                + {tr('ActivityTypes.nouveau.type')}
-              </Button>
+              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="primary" onClick={openCreate} />
             ) : undefined
           }
         />

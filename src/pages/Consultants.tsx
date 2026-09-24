@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { consultantsApi } from '../api/consultants'
 import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
-import { Button, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import {
   Badge,
   EmptyState,
@@ -378,9 +378,7 @@ export function Consultants() {
                     {tr('common.importCsv')}
                   </InlineButton>
                 ) : null}
-                <Button className="w-auto" onClick={openCreate}>
-                  + {tr('Consultants.nouveau.collaborateur')}
-                </Button>
+                <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="primary" onClick={openCreate} />
               </>
             ) : null}
           </>

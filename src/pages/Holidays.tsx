@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { socHolidaysApi } from '../api/socHolidays'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, InlineButton, RefreshButton } from '../components/ui'
+import { Button, Card, IconButton, InlineButton, RefreshButton } from '../components/ui'
 import { ErrorBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import type { SocHolidayDto } from '../api/types'
@@ -129,9 +129,9 @@ export function Holidays() {
       <Card className="max-w-3xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <InlineButton variant="soft" onClick={goPrev}>{tr('Holidays.prec')}</InlineButton>
+            <IconButton icon="chevronLeft" label={tr('Holidays.prec')} variant="soft" onClick={goPrev} />
             <InlineButton variant="soft" onClick={goToday}>{tr('Holidays.aujourd.hui')}</InlineButton>
-            <InlineButton variant="soft" onClick={goNext}>{tr('Holidays.suiv')}</InlineButton>
+            <IconButton icon="chevronRight" label={tr('Holidays.suiv')} variant="soft" onClick={goNext} />
             <RefreshButton onClick={() => setTick((t) => t + 1)} label="" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900">
