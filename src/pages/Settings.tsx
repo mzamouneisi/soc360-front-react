@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
 import { emailTemplatesApi, type EmailTemplateView } from '../api/emailTemplates'
@@ -71,7 +71,6 @@ export function Settings() {
   const [trSaving, setTrSaving] = useState(false)
   const [trError, setTrError] = useState<string | null>(null)
   const [trMessage, setTrMessage] = useState<string | null>(null)
-  const trSectionRef = useRef<HTMLDivElement | null>(null)
   const trSelected = trEntries.find((entry) => entry.key === trSelectedKey) ?? null
   const trFiltered = trEntries.filter((entry) => {
     const q = trSearch.trim().toLowerCase()
@@ -154,10 +153,13 @@ export function Settings() {
 
   useEffect(() => {
     if (!trUiMemory.focus || trLoading || !trSelected) return
-    trSectionRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-    const input = document.getElementById(RETRAD_INPUT_ID)
-    if (input instanceof HTMLInputElement) input.focus()
     trUiMemory.focus = false
+    const input = document.getElementById(RETRAD_INPUT_ID)
+    if (!input) return
+    requestAnimationFrame(() => {
+      input.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      if (input instanceof HTMLInputElement) input.focus({ preventScroll: true })
+    })
   }, [trLoading, trSelected])
 
   if (!user) return null
@@ -668,7 +670,7 @@ export function Settings() {
         )}
 
         {canEditTemplates && (
-          <div ref={trSectionRef}>
+          <div>
             <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.companyTranslations.title')}</h3>
             <p className="mt-1 text-sm text-gray-500">
               {t('settings.companyTranslations.description', { lang: languageLabel(language) })}
