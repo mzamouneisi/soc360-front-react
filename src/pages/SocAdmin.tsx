@@ -29,14 +29,14 @@ interface EditForm {
   country: string
 }
 
-const DEPENDENCY_LABELS: Record<string, string> = {
-  client: 'Client',
-  supplier: 'Fournisseur',
-  project: 'Projet',
-  consultant: 'Consultant',
-  activity: 'Activité',
-  activity_type: "Type d'activité",
-  subscription: 'Abonnement',
+const DEPENDENCY_LABEL_KEYS: Record<string, string> = {
+  client: 'SocAdmin.dep.client',
+  supplier: 'SocAdmin.dep.fournisseur',
+  project: 'SocAdmin.dep.projet',
+  consultant: 'SocAdmin.dep.consultant',
+  activity: 'SocAdmin.dep.activite',
+  activity_type: 'SocAdmin.dep.type.d.activite',
+  subscription: 'SocAdmin.dep.abonnement',
 }
 
 export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
@@ -110,7 +110,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
       setDemoResult(demo)
       reload()
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : 'Impossible de créer la société démo')
+      setActionError(err instanceof ApiError ? err.message : tr('SocAdmin.creation.demo.impossible'))
     } finally {
       setDemoCreating(false)
     }
@@ -144,7 +144,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
     if (!editingForm) return
     const f = editingForm.form
     if (!f.name.trim()) {
-      setActionError('Le nom de la société est obligatoire')
+      setActionError(tr('SocAdmin.nom.obligatoire'))
       return
     }
     setSaving(true)
@@ -172,7 +172,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
       setData((prev) => (prev ?? []).map((s) => (s.id === saved.id ? saved : s)))
       setEditingForm(null)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : 'Impossible de modifier la société')
+      setActionError(err instanceof ApiError ? err.message : tr('SocAdmin.modification.impossible'))
     } finally {
       setSaving(false)
     }
@@ -180,13 +180,13 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
 
   async function handleDelete(soc: SocDto) {
     setActionError(null)
-    if (!(await dialog.confirm(`Supprimer la société « ${soc.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('SocAdmin.supprimer.la.societe', { name: soc.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     setDependencyLoading(true)
     try {
       const linked = await socsApi.dependencies(soc.id)
       const consultant = linked.find((d) => d.type === 'consultant')
       if (consultant) {
-        setActionError(`Impossible de supprimer : la société est utilisée par des consultants (« ${consultant.label} »).`)
+        setActionError(tr('SocAdmin.suppression.consultants', { name: consultant.label }))
         return
       }
       if (linked.length > 0) {
@@ -197,7 +197,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
       await socsApi.remove(soc.id)
       setData((prev) => (prev ?? []).filter((s) => s.id !== soc.id))
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : 'Impossible de supprimer la société')
+      setActionError(err instanceof ApiError ? err.message : tr('SocAdmin.suppression.impossible'))
     } finally {
       setDependencyLoading(false)
     }
@@ -212,7 +212,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
       setData((prev) => (prev ?? []).filter((s) => s.id !== deleting.id))
       setDeleting(null)
     } catch (err) {
-      setActionError(err instanceof ApiError ? err.message : 'Impossible de supprimer la société')
+      setActionError(err instanceof ApiError ? err.message : tr('SocAdmin.suppression.impossible'))
     } finally {
       setDependencyLoading(false)
     }
@@ -221,25 +221,25 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
   return (
     <div>
       <PageHeader
-        title={scope === 'mine' ? 'Mes sociétés' : 'Toutes les sociétés'}
+        title={scope === 'mine' ? tr('SocAdmin.mes.societes') : tr('SocAdmin.toutes.les.societes')}
         count={socs?.length ?? 0}
         subtitle={
           scope === 'mine'
             ? isAdmin
-              ? "Toutes les sociétés de l'application (vue administrateur)"
-              : 'Les sociétés liées à votre compte'
-            : "Toutes les sociétés de l'application"
+              ? tr('SocAdmin.toutes.les.societes.admin')
+              : tr('SocAdmin.societes.liees')
+            : tr('SocAdmin.toutes.les.societes.app')
         }
         actions={
           <>
             <RefreshButton onClick={reload} variant="primary" />
             <Button className="w-auto" onClick={() => setAddOpen(true)}>
-              + Nouvelle société
+              + {tr('SocAdmin.nouvelle.societe')}
             </Button>
             {isAdmin && (
               <Button className="w-auto" variant="primary" onClick={() => void createDemoSoc()} disabled={demoCreating}>
                 {demoCreating ? <Spinner className="border-white border-t-transparent" /> : null}
-                + Société démo
+                + {tr('SocAdmin.societe.demo')}
               </Button>
             )}
           </>
@@ -263,11 +263,11 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
 
       {!loading && socs !== null && filtered.length === 0 && (
         <EmptyState
-          title={search ? 'Aucun résultat' : 'Aucune société'}
+          title={search ? tr('SocAdmin.aucun.resultat') : tr('SocAdmin.aucune.societe')}
           description={
             search
-              ? 'Aucune société ne correspond à votre recherche.'
-              : 'Aucune société enregistrée sur la plateforme.'
+              ? tr('SocAdmin.aucune.societe.recherche')
+              : tr('SocAdmin.aucune.societe.enregistree')
           }
         />
       )}
@@ -280,32 +280,32 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           columns={[
             {
               key: 'name',
-              label: 'Société',
+              label: tr('common.company'),
               render: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
             },
             {
               key: 'siret',
-              label: 'SIRET',
+              label: tr('SocAdmin.siret'),
               render: (s) => <span className="text-gray-600">{s.siret ?? '—'}</span>,
             },
             {
               key: 'gerant',
-              label: 'Gérant',
+              label: tr('SocAdmin.gerant'),
               render: (s) => <span className="text-gray-600">{s.gerant ?? '—'}</span>,
             },
             {
               key: 'ville',
-              label: 'Ville',
+              label: tr('SocAdmin.ville'),
               render: (s) => <span className="text-gray-600">{s.address?.city ?? '—'}</span>,
             },
             {
               key: 'status',
-              label: 'Géré par moi',
+              label: tr('SocAdmin.gere.par.moi'),
               render: (s) =>
                 canManage(s) ? (
-                  <Badge kind="success">Oui</Badge>
+                  <Badge kind="success">{tr('common.yes')}</Badge>
                 ) : (
-                  <Badge kind="muted">Non</Badge>
+                  <Badge kind="muted">{tr('common.no')}</Badge>
                 ),
             },
             {
@@ -320,7 +320,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                         openEdit(s)
                       }}
                     >
-                      Modifier
+                      {tr('common.edit')}
                     </InlineButton>
                     <InlineButton
                       variant="danger"
@@ -329,7 +329,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                         void handleDelete(s)
                       }}
                     >
-                      Supprimer
+                      {tr('common.delete')}
                     </InlineButton>
                   </div>
                 ) : (
@@ -352,16 +352,16 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         <Modal
           open
           onClose={() => setEditingForm(null)}
-          title={`Modifier ${editingForm.soc.name}`}
+          title={tr('SocAdmin.modifier.societe', { name: editingForm.soc.name })}
           size="lg"
           footer={
             <>
               <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700 hover:!bg-gray-200" onClick={() => setEditingForm(null)}>
-                Annuler
+                {tr('common.cancel')}
               </Button>
               <Button type="button" disabled={saving} onClick={() => void saveEdit()} className="!w-auto">
                 {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-                Enregistrer
+                {tr('common.save')}
               </Button>
             </>
           }
@@ -424,15 +424,15 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         <Modal
           open
           onClose={() => setDeleting(null)}
-          title={`Supprimer la société « ${deleting.name} »`}
+          title={tr('SocAdmin.supprimer.la.societe', { name: deleting.name })}
           footer={
             <>
               <Button type="button" className="!w-auto !bg-gray-100 !text-gray-700 hover:!bg-gray-200" onClick={() => setDeleting(null)} disabled={dependencyLoading}>
-                Annuler
+                {tr('common.cancel')}
               </Button>
               <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                 {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
-                Tout supprimer
+                {tr('SocAdmin.tout.supprimer')}
               </Button>
             </>
           }
@@ -446,7 +446,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
               <div key={`${item.type}-${item.id}`} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
                 <span className="truncate text-sm text-gray-700">{item.label}</span>
                 <span className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                  {DEPENDENCY_LABELS[item.type] ?? item.type}
+                  {tr(DEPENDENCY_LABEL_KEYS[item.type] ?? item.type)}
                 </span>
               </div>
             ))}
@@ -458,10 +458,10 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         <Modal
           open
           onClose={() => setDemoResult(null)}
-          title={`Société démo ${demoResult.number} créée`}
+          title={tr('SocAdmin.societe.demo.creee', { number: demoResult.number })}
           footer={
             <Button type="button" className="!w-auto" onClick={() => setDemoResult(null)}>
-              Fermer
+              {tr('common.close')}
             </Button>
           }
         >

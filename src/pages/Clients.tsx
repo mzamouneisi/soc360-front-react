@@ -112,11 +112,11 @@ export function Clients() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) {
-      setFormError('Le nom du client est obligatoire')
+      setFormError(tr('Clients.nom.obligatoire'))
       return
     }
     if (!form.socId) {
-      setFormError('Sélectionnez la société associée')
+      setFormError(tr('Clients.selectionner.societe.associee'))
       return
     }
     setSubmitting(true)
@@ -140,19 +140,19 @@ export function Clients() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   async function handleDelete(client: ClientDto) {
-    if (!(await dialog.confirm(`Supprimer le client « ${client.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Clients.supprimer.le.client', { name: client.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await clientsApi.delete(client.id)
       setData((data ?? []).filter((c) => c.id !== client.id))
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -167,7 +167,7 @@ export function Clients() {
             <RefreshButton onClick={reload} />
             {canEdit ? (
               <Button className="w-auto" onClick={openCreate}>
-                + Nouveau client
+                + {tr('Clients.nouveau.client')}
               </Button>
             ) : null}
           </>
@@ -185,12 +185,12 @@ export function Clients() {
           columns={[
             {
               key: 'name',
-              label: 'Client',
+              label: tr('Clients.client'),
               render: (c) => <span className="font-medium text-gray-900">{c.name}</span>,
             },
             {
               key: 'contact',
-              label: 'Contact',
+              label: tr('Clients.contact'),
               render: (c) => (
                 <div>
                   {c.contactName ? <p className="text-gray-900">{c.contactName}</p> : null}
@@ -202,26 +202,26 @@ export function Clients() {
             },
             {
               key: 'soc',
-              label: 'Société associée',
+              label: tr('Clients.societe.associee'),
               render: (c) => <span>{c.soc?.name ?? '—'}</span>,
             },
             {
               key: 'socParent',
-              label: 'Société parente',
+              label: tr('Clients.societe.parente'),
               render: (c) => <span>{c.socParent?.name ?? '—'}</span>,
             },
             {
               key: 'notes',
-              label: 'Notes',
+              label: tr('Clients.notes'),
               render: (c) => (
                 <span className="line-clamp-2 max-w-56 text-xs text-gray-500">{c.notes ?? '—'}</span>
               ),
             },
             {
               key: 'active',
-              label: 'Statut',
+              label: tr('common.status'),
               render: (c) => (
-                <Badge kind={c.active ? 'success' : 'muted'}>{c.active ? 'Actif' : 'Inactif'}</Badge>
+                <Badge kind={c.active ? 'success' : 'muted'}>{c.active ? tr('common.active') : tr('common.inactive')}</Badge>
               ),
             },
             {
@@ -231,13 +231,13 @@ export function Clients() {
                 canEdit ? (
                   <div className="flex justify-end gap-1">
                     <InlineButton variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
-                      Modifier
+                      {tr('common.edit')}
                     </InlineButton>
                     <InlineButton
                       variant="danger"
                       onClick={(e) => { e.stopPropagation(); handleDelete(c) }}
                     >
-                      Supprimer
+                      {tr('common.delete')}
                     </InlineButton>
                   </div>
                 ) : (
@@ -257,13 +257,13 @@ export function Clients() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? `Modifier ${editing.name}` : 'Nouveau client'}
+        title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Clients.nouveau.client')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
             <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? 'Enregistrer' : 'Créer'}
+              {editing ? tr('common.save') : tr('common.create')}
             </Button>
           </>
         }
@@ -281,7 +281,7 @@ export function Clients() {
                 {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
-            <Field label={isAdmin ? 'Société parente' : 'Société parente (société de travail)'}>
+            <Field label={isAdmin ? tr('Clients.societe.parente') : tr('Clients.societe.parente.travail')}>
               <Select value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
                 <option value="">{tr('Clients.aucune')}</option>
                 {parentSocs.map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}

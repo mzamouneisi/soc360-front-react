@@ -84,15 +84,15 @@ export function Projects() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) {
-      setFormError('Le nom du projet est obligatoire')
+      setFormError(tr('Projects.nom.obligatoire'))
       return
     }
     if (!form.clientId) {
-      setFormError('Sélectionnez un client')
+      setFormError(tr('Projects.selectionner.client'))
       return
     }
     if (isAdmin && !form.socId) {
-      setFormError('Sélectionnez la société')
+      setFormError(tr('Projects.selectionner.societe'))
       return
     }
     setSubmitting(true)
@@ -117,19 +117,19 @@ export function Projects() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   async function handleDelete(project: ProjectDto) {
-    if (!(await dialog.confirm(`Supprimer le projet « ${project.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Projects.supprimer.le.projet', { name: project.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await projectsApi.delete(project.id)
       setData((data ?? []).filter((p) => p.id !== project.id))
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -144,7 +144,7 @@ export function Projects() {
             <RefreshButton onClick={reload} />
             {canEdit ? (
               <Button className="w-auto" onClick={openCreate}>
-                + Nouveau projet
+                + {tr('Projects.nouveau.projet')}
               </Button>
             ) : null}
           </>
@@ -162,7 +162,7 @@ export function Projects() {
           columns={[
             {
               key: 'name',
-              label: 'Projet',
+              label: tr('Projects.projet'),
               render: (p) => (
                 <div>
                   <p className="font-medium text-gray-900">{p.name}</p>
@@ -172,12 +172,12 @@ export function Projects() {
             },
             {
               key: 'client',
-              label: 'Client',
+              label: tr('Projects.client'),
               render: (p) => <span>{p.client?.name ?? '—'}</span>,
             },
             {
               key: 'dates',
-              label: 'Période',
+              label: tr('common.period'),
               render: (p) => (
                 <span className="text-gray-500">
                   {formatDate(p.startDate)} → {formatDate(p.endDate)}
@@ -186,7 +186,7 @@ export function Projects() {
             },
             {
               key: 'rate',
-              label: 'TJM',
+              label: tr('Projects.tjm'),
               render: (p) => (
                 <span className="font-medium text-gray-900">
                   {formatMoney(p.dailyRate, p.currency)}
@@ -195,14 +195,14 @@ export function Projects() {
             },
             {
               key: 'soc',
-              label: 'Société',
+              label: tr('common.company'),
               render: (p) => (isAdmin ? <span>{p.soc?.name ?? '—'}</span> : <span>—</span>),
             },
             {
               key: 'active',
-              label: 'Statut',
+              label: tr('common.status'),
               render: (p) => (
-                <Badge kind={p.active ? 'success' : 'muted'}>{p.active ? 'Actif' : 'Inactif'}</Badge>
+                <Badge kind={p.active ? 'success' : 'muted'}>{p.active ? tr('common.active') : tr('common.inactive')}</Badge>
               ),
             },
             {
@@ -212,13 +212,13 @@ export function Projects() {
                 canEdit ? (
                   <div className="flex justify-end gap-1">
                     <InlineButton onClick={(e) => { e.stopPropagation(); openEdit(p) }}>
-                      Modifier
+                      {tr('common.edit')}
                     </InlineButton>
                     <InlineButton
                       variant="danger"
                       onClick={(e) => { e.stopPropagation(); handleDelete(p) }}
                     >
-                      Supprimer
+                      {tr('common.delete')}
                     </InlineButton>
                   </div>
                 ) : (
@@ -232,13 +232,13 @@ export function Projects() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? `Modifier ${editing.name}` : 'Nouveau projet'}
+        title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Projects.nouveau.projet')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
             <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? 'Enregistrer' : 'Créer'}
+              {editing ? tr('common.save') : tr('common.create')}
             </Button>
           </>
         }

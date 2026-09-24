@@ -66,11 +66,11 @@ export function ActivityTypes() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!form.code.trim() || !form.labelFr.trim()) {
-      setFormError('Code et libellé sont obligatoires')
+      setFormError(tr('ActivityTypes.code.et.libelle.obligatoires'))
       return
     }
     if (!workingSocId) {
-      setFormError('Aucune société associée à votre compte')
+      setFormError(tr('ActivityTypes.aucune.societe.associee'))
       return
     }
     setSubmitting(true)
@@ -92,15 +92,16 @@ export function ActivityTypes() {
       setModalOpen(false)
       await reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   async function handleToggleActive(t: ActivityTypeDto) {
-    const action = t.active ? 'Désactiver' : 'Réactiver'
-    if (!(await dialog.confirm(`${action} le type « ${t.labelFr} » ?`, { variant: 'question' }))) return
+    if (!(await dialog.confirm(t.active
+      ? tr('ActivityTypes.desactiver.le.type', { name: t.labelFr })
+      : tr('ActivityTypes.reactiver.le.type', { name: t.labelFr }), { variant: 'question' }))) return
     try {
       await activityTypesApi.update(t.id, {
         socId: t.socId,
@@ -112,17 +113,17 @@ export function ActivityTypes() {
       })
       await reload()
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
   async function handleDelete(t: ActivityTypeDto) {
-    if (!(await dialog.confirm(`Supprimer définitivement le type « ${t.labelFr} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('ActivityTypes.supprimer.le.type', { name: t.labelFr }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await activityTypesApi.delete(t.id)
       await reload()
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -137,7 +138,7 @@ export function ActivityTypes() {
             <RefreshButton onClick={reload} />
             {canEdit && workingSocId ? (
               <Button className="w-auto" onClick={openCreate}>
-                + Nouveau type
+                + {tr('ActivityTypes.nouveau.type')}
               </Button>
             ) : null}
           </>
@@ -165,7 +166,7 @@ export function ActivityTypes() {
           columns={[
             {
               key: 'name',
-              label: 'Type',
+              label: tr('common.type'),
               render: (t) => (
                 <div className="flex items-center gap-2">
                   <span
@@ -181,19 +182,19 @@ export function ActivityTypes() {
             },
             {
               key: 'code',
-              label: 'Code',
+              label: tr('ActivityTypes.code'),
               render: (t) => <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{t.code}</code>,
             },
             {
               key: 'soc',
-              label: 'Société',
+              label: tr('common.company'),
               render: (t) => <span className="text-gray-500">{t.socName ?? '—'}</span>,
             },
             {
               key: 'active',
-              label: 'Statut',
+              label: tr('common.status'),
               render: (t) => (
-                <Badge kind={t.active ? 'success' : 'muted'}>{t.active ? 'Actif' : 'Inactif'}</Badge>
+                <Badge kind={t.active ? 'success' : 'muted'}>{t.active ? tr('common.active') : tr('common.inactive')}</Badge>
               ),
             },
             {
@@ -208,10 +209,10 @@ export function ActivityTypes() {
                         openEdit(t)
                       }}
                     >
-                      Modifier
+                      {tr('common.edit')}
                     </InlineButton>
                     <InlineButton onClick={() => handleToggleActive(t)}>
-                      {t.active ? 'Désactiver' : 'Réactiver'}
+                      {t.active ? tr('common.disable') : tr('common.enable')}
                     </InlineButton>
                     <InlineButton
                       variant="danger"
@@ -220,7 +221,7 @@ export function ActivityTypes() {
                         handleDelete(t)
                       }}
                     >
-                      Supprimer
+                      {tr('common.delete')}
                     </InlineButton>
                   </div>
                 ) : (
@@ -242,7 +243,7 @@ export function ActivityTypes() {
           action={
             canEdit && workingSocId ? (
               <Button className="w-auto" onClick={openCreate}>
-                + Nouveau type
+                + {tr('ActivityTypes.nouveau.type')}
               </Button>
             ) : undefined
           }
@@ -252,13 +253,13 @@ export function ActivityTypes() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={form.id != null ? 'Modifier le type' : 'Nouveau type d’activité'}
+        title={form.id != null ? tr('ActivityTypes.modifier.le.type') : tr('ActivityTypes.nouveau.type.d.activite')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
             <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {form.id != null ? 'Enregistrer' : 'Créer'}
+              {form.id != null ? tr('common.save') : tr('common.create')}
             </Button>
           </>
         }

@@ -149,23 +149,23 @@ export function Activities() {
     e.preventDefault()
     const socId = isAdmin ? (form.socId ? Number(form.socId) : null) : workingSocId
     if (!socId) {
-      setFormError('Aucune société associée à votre compte')
+      setFormError(tr('Activities.aucune.societe.associee'))
       return
     }
     if (!form.name.trim() || !form.typeId || !form.projectId) {
-      setFormError('Nom, type et projet sont obligatoires')
+      setFormError(tr('Activities.nom.type.projet.obligatoires'))
       return
     }
     if (needsConsultant && !form.consultantId) {
       setFormError(
         isManager
-          ? 'Sélectionnez un de vos consultants.'
-          : 'Sélectionnez un consultant (une activité ne peut pas être sans consultant).',
+          ? tr('Activities.selectionnez.un.de.vos.consultants')
+          : tr('Activities.selectionnez.un.consultant'),
       )
       return
     }
     if (form.startDate && form.endDate && form.endDate < form.startDate) {
-      setFormError('La date de fin ne peut pas précéder la date de début')
+      setFormError(tr('Activities.date.fin.invalide'))
       return
     }
     setSubmitting(true)
@@ -194,19 +194,19 @@ export function Activities() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   async function handleDelete(activity: ActivityDto) {
-    if (!(await dialog.confirm(`Supprimer l'activité « ${activity.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Activities.supprimer.l.activite', { name: activity.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await activitiesApi.delete(activity.id)
       setData((prev) => (prev ?? []).filter((a) => a.id !== activity.id))
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -222,10 +222,10 @@ export function Activities() {
             {canEdit ? (
               <>
                 <InlineButton variant="primary" onClick={() => navigate('/types-activites')}>
-                  Gérer les types
+                  {tr('Activities.gerer.les.types')}
                 </InlineButton>
                 <Button className="w-auto" onClick={openCreate}>
-                  + Nouvelle activité
+                  + {tr('Activities.nouvelle.activite')}
                 </Button>
               </>
             ) : null}
@@ -301,7 +301,7 @@ export function Activities() {
           columns={[
             {
               key: 'name',
-              label: 'Activité',
+              label: tr('Activities.activite'),
               render: (a) => (
                 <div>
                   <p className="font-medium text-gray-900">{a.name}</p>
@@ -311,12 +311,12 @@ export function Activities() {
             },
             {
               key: 'type',
-              label: 'Type',
+              label: tr('common.type'),
               render: (a) => <Badge kind="info">{a.type?.labelFr ?? '—'}</Badge>,
             },
             {
               key: 'project',
-              label: 'Projet',
+              label: tr('Projects.projet'),
               render: (a) => (
                 <div>
                   <p className="font-medium text-gray-900">{a.project?.name ?? '—'}</p>
@@ -328,7 +328,7 @@ export function Activities() {
             },
             {
               key: 'consultant',
-              label: 'Consultant',
+              label: tr('Activities.consultant'),
               render: (a) => (
                 <span className="text-gray-700">
                   {a.consultant
@@ -339,7 +339,7 @@ export function Activities() {
             },
             {
               key: 'dates',
-              label: 'Période',
+              label: tr('common.period'),
               render: (a) => (
                 <span className="text-gray-600">
                   {a.startDate ? a.startDate : '—'}
@@ -349,35 +349,35 @@ export function Activities() {
             },
             {
               key: 'price',
-              label: 'Tarif',
+              label: tr('Activities.tarif'),
               render: (a) => (
                 <span className="font-medium text-gray-900">{formatMoney(a.price, a.currency)}</span>
               ),
             },
             {
               key: 'allowed',
-              label: 'Week-end / Jours fériés',
+              label: tr('Activities.week.end.jours.feries'),
               render: (a) => (
                 <div className="flex flex-col gap-1">
                   <Badge kind={a.weekendAllowed ? 'success' : 'muted'}>
-                    Week-end : {a.weekendAllowed ? 'Oui' : 'Non'}
+                    {tr('Activities.week.end')} : {a.weekendAllowed ? tr('common.yes') : tr('common.no')}
                   </Badge>
                   <Badge kind={a.holidayAllowed ? 'success' : 'muted'}>
-                    Jours fériés : {a.holidayAllowed ? 'Oui' : 'Non'}
+                    {tr('Activities.jours.feries')} : {a.holidayAllowed ? tr('common.yes') : tr('common.no')}
                   </Badge>
                 </div>
               ),
             },
             {
               key: 'soc',
-              label: 'Société',
+              label: tr('common.company'),
               render: (a) => <span className="text-gray-500">{a.soc?.name ?? '—'}</span>,
             },
             {
               key: 'active',
-              label: 'Statut',
+              label: tr('common.status'),
               render: (a) => (
-                <Badge kind={a.active ? 'success' : 'muted'}>{a.active ? 'Active' : 'Inactive'}</Badge>
+                <Badge kind={a.active ? 'success' : 'muted'}>{a.active ? tr('Activities.active') : tr('Activities.inactive')}</Badge>
               ),
             },
             {
@@ -392,7 +392,7 @@ export function Activities() {
                         openEdit(a)
                       }}
                     >
-                      Modifier
+                      {tr('common.edit')}
                     </InlineButton>
                     <InlineButton
                       variant="danger"
@@ -401,7 +401,7 @@ export function Activities() {
                         handleDelete(a)
                       }}
                     >
-                      Supprimer
+                      {tr('common.delete')}
                     </InlineButton>
                   </div>
                 ) : (
@@ -426,7 +426,7 @@ export function Activities() {
           action={
             canEdit ? (
               <Button className="w-auto" onClick={openCreate}>
-                + Nouvelle activité
+                + {tr('Activities.nouvelle.activite')}
               </Button>
             ) : undefined
           }
@@ -436,13 +436,13 @@ export function Activities() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? `Modifier « ${editing.name} »` : 'Nouvelle activité'}
+        title={editing ? tr('Activities.modifier.activite', { name: editing.name }) : tr('Activities.nouvelle.activite')}
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
             <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? 'Enregistrer' : 'Créer'}
+              {editing ? tr('common.save') : tr('common.create')}
             </Button>
           </>
         }
@@ -532,7 +532,7 @@ export function Activities() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={needsConsultant ? 'Consultant *' : 'Consultant'}>
+            <Field label={needsConsultant ? tr('Activities.consultant.obligatoire') : tr('Activities.consultant')}>
               <Select
                 value={form.consultantId}
                 onChange={(e) => setForm({ ...form, consultantId: e.target.value })}

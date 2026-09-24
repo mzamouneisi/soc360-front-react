@@ -6,6 +6,7 @@ import { Card, RefreshButton } from '../components/ui'
 import { Badge, LoadingBlock, ErrorBlock } from '../components/data'
 import { dashboardApi } from '../api/dashboard'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import {
   CRA_STATUS_LABELS,
   NOTE_FRAIS_STATUS_LABELS,
@@ -23,6 +24,7 @@ const DASH_CARD: CSSProperties = {
 
 export function Dashboard() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const { selectedSoc, selectedSocId } = useSoc()
   const { data, loading, error, reload } = useAsync(() => dashboardApi.overview(), [selectedSocId], {
     enabled: !!user,
@@ -45,7 +47,7 @@ export function Dashboard() {
           </h2>
           <p className="mt-1 text-sm text-gray-500">
             {tr('Dashboard.voici.un.apercu.de.votre.activite')}
-            {activeSocName ? ` chez ${activeSocName}` : ''} · {monthLabel(month)} {year}.
+            {activeSocName ? ` ${tr('Dashboard.chez')} ${activeSocName}` : ''} · {monthLabel(month)} {year}.
           </p>
         </div>
         <RefreshButton onClick={reload} />
@@ -113,7 +115,7 @@ export function Dashboard() {
                   <p className="text-sm font-medium text-gray-500">{tr('Dashboard.mon.cra.du.mois')}</p>
                   {data.craStatus && (
                     <Badge kind={statusBadge(data.craStatus)}>
-                      {CRA_STATUS_LABELS[data.craStatus] ?? data.craStatus}
+                      {dt(CRA_STATUS_LABELS[data.craStatus] ?? data.craStatus)}
                     </Badge>
                   )}
                 </div>
@@ -144,7 +146,7 @@ export function Dashboard() {
                   <p className="text-sm font-medium text-gray-500">{tr('Dashboard.ma.note.de.frais.du.mois')}</p>
                   {data.noteFraisStatus && (
                     <Badge kind={statusBadge(data.noteFraisStatus)}>
-                      {NOTE_FRAIS_STATUS_LABELS[data.noteFraisStatus] ?? data.noteFraisStatus}
+                      {dt(NOTE_FRAIS_STATUS_LABELS[data.noteFraisStatus] ?? data.noteFraisStatus)}
                     </Badge>
                   )}
                 </div>
@@ -183,7 +185,7 @@ export function Dashboard() {
         <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <InfoRow label={tr('Dashboard.nom')} value={`${user.firstName} ${user.lastName}`} />
           <InfoRow label={tr('Dashboard.e.mail')} value={user.email} />
-          <InfoRow label={tr('Dashboard.role')} value={ROLE_LABELS[user.role]} />
+          <InfoRow label={tr('Dashboard.role')} value={dt(ROLE_LABELS[user.role])} />
           <InfoRow label={tr('Dashboard.societe')} value={activeSocName ?? '—'} />
           <InfoRow label={tr('Dashboard.telephone')} value={user.phone ?? '—'} />
           <InfoRow label={tr('Dashboard.identifiant')} value={user.username} />

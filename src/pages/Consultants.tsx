@@ -17,6 +17,7 @@ import {
 } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatDate, formatDateTime, formatMoney } from '../lib/format'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useAsync } from '../lib/useAsync'
 import type { ConsultantDto, ManagerSummary, HistoConsultantDto } from '../api/types'
 import { useCallback, useEffect } from 'react'
@@ -73,6 +74,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export function Consultants() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const { selectedSocId: workingSocContextId } = useSoc()
   const isAdmin = user?.role === 'ADMIN'
   const isResponsible = user?.role === 'RESPONSIBLE_SOC'
@@ -190,20 +192,20 @@ export function Consultants() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!form.firstName.trim() || !form.lastName.trim()) {
-      setFormError('Le prénom et le nom sont obligatoires')
+      setFormError(tr('Consultants.prenom.nom.obligatoires'))
       return
     }
     if (!isAdmin && !form.socId.trim()) {
-      setFormError('Sélectionnez la société')
+      setFormError(tr('Consultants.selectionner.societe'))
       return
     }
     const creatingPerson = !editing && (form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC')
     if (creatingPerson && (!form.username.trim() || !form.email.trim() || !form.password.trim())) {
-      setFormError('Ligne de compte : nom d’utilisateur, email et mot de passe sont requis')
+      setFormError(tr('Consultants.ligne.compte.obligatoire'))
       return
     }
     if ((form.role === 'CONSULTANT' || form.role === 'MANAGER') && !form.managerId) {
-      setFormError('Un consultant ou un manager doit avoir un manager (MANAGER ou RESPONSIBLE_SOC)')
+      setFormError(tr('Consultants.manager.obligatoire'))
       return
     }
     setSubmitting(true)
@@ -237,19 +239,19 @@ export function Consultants() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   async function handleDelete(c: ConsultantDto) {
-    if (!(await dialog.confirm(`Supprimer le collaborateur ${c.firstName} ${c.lastName} ?\nLes CRA, notes de frais et documents associés seront supprimés.`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Consultants.supprimer.le.collaborateur', { name: `${c.firstName} ${c.lastName}` }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await consultantsApi.delete(c.id)
       setData({ ...data!, items: data?.items.filter((x) => x.id !== c.id) ?? [] })
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -262,7 +264,7 @@ export function Consultants() {
       const items = await consultantsApi.history(c.id)
       setHistoryItems(items)
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setHistoryLoading(false)
     }
@@ -279,7 +281,7 @@ export function Consultants() {
       setImportResult(result)
       reload()
     } catch (err) {
-      setImportError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setImportError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setImporting(false)
     }
@@ -300,11 +302,11 @@ export function Consultants() {
               <>
                 {canEdit ? (
                   <InlineButton variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
-                    Importer CSV
+                    {tr('common.importCsv')}
                   </InlineButton>
                 ) : null}
                 <Button className="w-auto" onClick={openCreate}>
-                  + Nouveau collaborateur
+                  + {tr('Consultants.nouveau.collaborateur')}
                 </Button>
               </>
             ) : null}
@@ -334,7 +336,7 @@ export function Consultants() {
             columns={[
               {
                 key: 'name',
-                label: 'Collaborateur',
+                label: tr('Consultants.collaborateur'),
                 render: (c) => (
                   <div>
                     <p className="font-medium text-gray-900">
@@ -346,12 +348,12 @@ export function Consultants() {
               },
               {
                 key: 'username',
-                label: 'Username',
+                label: tr('Consultants.nom.d.utilisateur'),
                 render: (c) => <span className="text-gray-700">@{c.username}</span>,
               },
               {
                 key: 'contact',
-                label: 'Contact',
+                label: tr('Consultants.contact'),
                 render: (c) => (
                   <div>
                     {c.email && <p className="text-gray-700">{c.email}</p>}
@@ -362,36 +364,36 @@ export function Consultants() {
               },
               {
                 key: 'role',
-                label: 'Rôle',
+                label: tr('common.role'),
                 render: (c) => (
                   <Badge kind={c.role === 'RESPONSIBLE_SOC' ? 'info' : c.role === 'MANAGER' ? 'warning' : c.role === 'ADMIN' ? 'success' : 'muted'}>
-                    {ROLE_LABELS[c.role] ?? c.role}
+                    {dt(ROLE_LABELS[c.role] ?? c.role)}
                   </Badge>
                 ),
               },
               {
                 key: 'manager',
-                label: 'Manager',
+                label: tr('Consultants.manager'),
                 render: (c) => <span>{c.managerName ?? '—'}</span>,
               },
               {
                 key: 'salary',
-                label: 'Salaire',
+                label: tr('Consultants.salaire.de.base'),
                 render: (c) => (
                   <span>{formatMoney(c.baseSalary, c.currency ?? 'EUR')}</span>
                 ),
               },
               {
                 key: 'hire',
-                label: 'Embauche',
+                label: tr('Consultants.date.d.embauche'),
                 render: (c) => <span className="text-gray-500">{formatDate(c.hireDate)}</span>,
               },
               {
                 key: 'active',
-                label: 'Statut',
+                label: tr('common.status'),
                 render: (c) => (
                   <Badge kind={c.active ? 'success' : 'muted'}>
-                    {c.active ? 'Actif' : 'Inactif'}
+                    {c.active ? tr('common.active') : tr('common.inactive')}
                   </Badge>
                 ),
               },
@@ -404,20 +406,20 @@ export function Consultants() {
                   return (
                     <div className="flex justify-end gap-1">
                       <InlineButton onClick={(e) => { e.stopPropagation(); openEdit(c) }}>
-                        Modifier
+                        {tr('common.edit')}
                       </InlineButton>
                       <InlineButton
                         className="text-brand-600 hover:bg-brand-50"
                         onClick={(e) => { e.stopPropagation(); openHistory(c) }}
                       >
-                        Historique
+                        {tr('common.history')}
                       </InlineButton>
                       {!isSelf && c.role !== 'ADMIN' && (
                         <InlineButton
                           variant="danger"
                           onClick={(e) => { e.stopPropagation(); handleDelete(c) }}
                         >
-                          Supprimer
+                          {tr('common.delete')}
                         </InlineButton>
                       )}
                     </div>
@@ -446,19 +448,19 @@ export function Consultants() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title={editing
-          ? `Modifier ${editing.firstName} ${editing.lastName}`
+          ? `${tr('common.edit')} ${editing.firstName} ${editing.lastName}`
           : form.role === 'RESPONSIBLE_SOC'
-            ? 'Nouveau responsable société'
+            ? tr('Consultants.nouveau.responsable')
             : form.role === 'MANAGER'
-              ? 'Nouveau manager'
-              : 'Nouveau collaborateur'}
+              ? tr('Consultants.nouveau.manager')
+              : tr('Consultants.nouveau.collaborateur')}
         size="lg"
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
             <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? 'Enregistrer' : 'Créer'}
+              {editing ? tr('common.save') : tr('common.create')}
             </Button>
           </>
         }
@@ -478,7 +480,7 @@ export function Consultants() {
                 >
                   {roleOptions.map((r) => (
                     <option key={r} value={r}>
-                      {ROLE_LABELS[r] ?? r}
+                      {dt(ROLE_LABELS[r] ?? r)}
                     </option>
                   ))}
                 </Select>
@@ -573,8 +575,8 @@ export function Consultants() {
             <div className="rounded-lg border border-brand-200 bg-brand-50 p-3">
               <p className="mb-2 text-sm font-medium text-brand-800">
                 {form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC'
-                  ? 'Compte utilisateur *'
-                  : 'Compte utilisateur (optionnel)'}
+                  ? tr('Consultants.compte.utilisateur.obligatoire')
+                  : tr('Consultants.compte.utilisateur.optionnel')}
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Field label={tr('Consultants.nom.d.utilisateur')}>
@@ -601,9 +603,9 @@ export function Consultants() {
         title={tr('Consultants.importer.des.consultants.csv')}
         footer={
           <>
-            <InlineButton onClick={() => setImportOpen(false)}>Fermer</InlineButton>
+            <InlineButton onClick={() => setImportOpen(false)}>{tr('common.close')}</InlineButton>
             <Button className="w-auto" onClick={handleImport as never} disabled={importing || !importFile}>
-              {importing ? <Spinner className="border-white border-t-transparent" /> : 'Importer'}
+              {importing ? <Spinner className="border-white border-t-transparent" /> : tr('Consultants.importer')}
             </Button>
           </>
         }
@@ -654,8 +656,8 @@ export function Consultants() {
       <Modal
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        title={historyFor ? `Historique de ${historyFor.firstName} ${historyFor.lastName}` : 'Historique'}
-        footer={<InlineButton onClick={() => setHistoryOpen(false)}>Fermer</InlineButton>}
+        title={historyFor ? tr('Consultants.historique.de', { name: `${historyFor.firstName} ${historyFor.lastName}` }) : tr('common.history')}
+        footer={<InlineButton onClick={() => setHistoryOpen(false)}>{tr('common.close')}</InlineButton>}
       >
         {historyLoading && <LoadingBlock />}
         {!historyLoading && historyItems.length === 0 && (
@@ -667,7 +669,7 @@ export function Consultants() {
               <li key={h.id} className="rounded-lg border border-gray-200 p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-900">
-                    {h.action === 'CREATE' ? 'Création' : h.action === 'UPDATE' ? 'Modification' : 'Suppression'}
+                    {h.action === 'CREATE' ? tr('Consultants.creation') : h.action === 'UPDATE' ? tr('Consultants.modification') : tr('Consultants.suppression')}
                   </span>
                   <span className="text-xs text-gray-500">{h.dateMaj ? formatDateTime(h.dateMaj) : ''}</span>
                 </div>

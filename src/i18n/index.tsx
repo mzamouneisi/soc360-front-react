@@ -11,6 +11,7 @@ import {
 import { authApi } from '../api/auth'
 import { i18nApi } from '../api/i18n'
 import { useAuth } from '../auth/AuthContext'
+import { setDynamicLanguage } from '../lib/dynamicTranslate'
 import { setFormatLocale } from '../lib/format'
 import { setTranslationState } from './translate'
 import {
@@ -130,6 +131,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setTranslationState(language, remoteMessages)
+    setDynamicLanguage(language)
   }, [language, remoteMessages])
 
   const setLanguage = useCallback(
