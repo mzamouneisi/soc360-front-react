@@ -903,6 +903,11 @@ export const EXTRACTED_FR: Record<string, string> = {
   "settings.emailTemplate.CRA_SUBMISSION": "CRA soumis",
   "settings.emailTemplate.NOTE_FRAIS_SUBMISSION": "Note de frais soumise",
   "settings.emailTemplate.UNAVAILABILITY_SUBMISSION": "Indisponibilité soumise",
+  "settings.emailTemplate.CRA_VALIDATION": "CRA validé",
+  "settings.emailTemplate.CRA_REJECTION": "CRA rejeté",
+  "settings.emailTemplate.CRA_CANCELLATION": "Annulation de soumission",
+  "settings.emailTemplate.UNAVAILABILITY_VALIDATION": "Indisponibilité validée",
+  "settings.emailTemplate.UNAVAILABILITY_REJECTION": "Indisponibilité rejetée",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1810,6 +1815,11 @@ export const EXTRACTED_EN: Record<string, string> = {
   "settings.emailTemplate.CRA_SUBMISSION": "CRA submitted",
   "settings.emailTemplate.NOTE_FRAIS_SUBMISSION": "Expense report submitted",
   "settings.emailTemplate.UNAVAILABILITY_SUBMISSION": "Unavailability submitted",
+  "settings.emailTemplate.CRA_VALIDATION": "CRA validated",
+  "settings.emailTemplate.CRA_REJECTION": "CRA rejected",
+  "settings.emailTemplate.CRA_CANCELLATION": "Submission cancellation",
+  "settings.emailTemplate.UNAVAILABILITY_VALIDATION": "Unavailability validated",
+  "settings.emailTemplate.UNAVAILABILITY_REJECTION": "Unavailability rejected",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2717,4 +2727,9 @@ export const EXTRACTED_AR: Record<string, string> = {
   "settings.emailTemplate.CRA_SUBMISSION": "تم إرسال CRA",
   "settings.emailTemplate.NOTE_FRAIS_SUBMISSION": "تم إرسال تقرير النفقات",
   "settings.emailTemplate.UNAVAILABILITY_SUBMISSION": "تم إرسال عدم التوفر",
+  "settings.emailTemplate.CRA_VALIDATION": "تم التحقق من CRA",
+  "settings.emailTemplate.CRA_REJECTION": "تم رفض CRA",
+  "settings.emailTemplate.CRA_CANCELLATION": "إلغاء الإرسال",
+  "settings.emailTemplate.UNAVAILABILITY_VALIDATION": "تم التحقق من عدم التوفر",
+  "settings.emailTemplate.UNAVAILABILITY_REJECTION": "تم رفض عدم التوفر",
 }
