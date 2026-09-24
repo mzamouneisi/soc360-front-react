@@ -28,9 +28,62 @@ const THEMES: { id: string; color: string }[] = [
 
 // Mémorise l'état de la section « Traductions de la société » à travers le rechargement
 // du bundle i18n (qui remonte le composant) déclenché après un enregistrement/suppression.
-const trUiMemory = { search: '', selectedKey: '', override: '', focus: false }
+const trUiMemory = { search: '', selectedKey: '', override: '' }
 
 const RETRAD_INPUT_ID = 'retrad_for_soc_and_lang'
+
+function findScrollParent(element: HTMLElement): HTMLElement | null {
+  let parent = element.parentElement
+  while (parent) {
+    const overflowY = window.getComputedStyle(parent).overflowY
+    if ((overflowY === 'auto' || overflowY === 'scroll') && parent.scrollHeight > parent.clientHeight) {
+      return parent
+    }
+    parent = parent.parentElement
+  }
+  return null
+}
+
+function scrollToAndFocus(input: HTMLInputElement): void {
+  const scroller = findScrollParent(input)
+  if (scroller) {
+    const target =
+      input.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      scroller.clientHeight / 2 +
+      input.clientHeight / 2
+    scroller.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
+  } else {
+    input.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }
+  input.focus({ preventScroll: true })
+}
+
+let retradScrollTimer: number | null = null
+
+/**
+ * Fait défiler la page jusqu'à l'input de re-traduction et lui redonne le focus dès qu'il est
+ * disponible/actif (le rechargement du bundle i18n remonte le composant, ce qui recrée le DOM).
+ */
+function scheduleScrollToRetrad(): void {
+  if (retradScrollTimer != null) window.clearTimeout(retradScrollTimer)
+  let attempts = 0
+  const tick = () => {
+    const input = document.getElementById(RETRAD_INPUT_ID)
+    if (input instanceof HTMLInputElement && !input.disabled) {
+      retradScrollTimer = null
+      scrollToAndFocus(input)
+      return
+    }
+    if (attempts++ < 40) {
+      retradScrollTimer = window.setTimeout(tick, 100)
+    } else {
+      retradScrollTimer = null
+    }
+  }
+  tick()
+}
 
 export function Settings() {
   const { user, refreshMe } = useAuth()
@@ -150,17 +203,6 @@ export function Settings() {
   useEffect(() => {
     trUiMemory.override = trOverride
   }, [trOverride])
-
-  useEffect(() => {
-    if (!trUiMemory.focus || trLoading || !trSelected) return
-    trUiMemory.focus = false
-    const input = document.getElementById(RETRAD_INPUT_ID)
-    if (!input) return
-    requestAnimationFrame(() => {
-      input.scrollIntoView({ block: 'center', behavior: 'smooth' })
-      if (input instanceof HTMLInputElement) input.focus({ preventScroll: true })
-    })
-  }, [trLoading, trSelected])
 
   if (!user) return null
   const u = user
@@ -292,8 +334,8 @@ export function Settings() {
       trUiMemory.search = trSearch
       trUiMemory.selectedKey = trSelectedKey
       trUiMemory.override = trOverride
-      trUiMemory.focus = true
       await refresh()
+      scheduleScrollToRetrad()
     } catch (err) {
       setTrError(err instanceof ApiError ? err.message : t('settings.companyTranslations.error'))
     } finally {
@@ -316,8 +358,8 @@ export function Settings() {
       trUiMemory.search = trSearch
       trUiMemory.selectedKey = trSelectedKey
       trUiMemory.override = ''
-      trUiMemory.focus = true
       await refresh()
+      scheduleScrollToRetrad()
     } catch (err) {
       setTrError(err instanceof ApiError ? err.message : t('settings.companyTranslations.error'))
     } finally {
