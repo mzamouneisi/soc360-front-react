@@ -8,6 +8,7 @@ import { holidaysApi } from '../api/holidays'
 import { socHolidaysApi } from '../api/socHolidays'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
 import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, Pagination } from '../components/data'
@@ -173,6 +174,7 @@ export function CraDetail({
 }) {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
 
   const { data: cra, loading, error, setData, reload } = useAsync(
     () => crasApi.getById(id),
@@ -695,7 +697,7 @@ export function CraDetail({
         <div className="flex items-center gap-2">
           <RefreshButton onClick={reload} label="" />
           <Badge kind={statusBadge(cra.status)}>
-            {CRA_STATUS_LABELS[cra.status] ?? cra.status}
+            {dt(CRA_STATUS_LABELS[cra.status] ?? cra.status)}
           </Badge>
           {canCancel && (
             <IconButton

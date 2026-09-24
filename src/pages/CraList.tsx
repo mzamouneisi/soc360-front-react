@@ -16,6 +16,7 @@ import {
   statusBadge,
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { CraDetail } from './CraDetail'
 
 
@@ -26,6 +27,7 @@ function shiftMonth(year: number, month: number, delta: number): { year: number;
 
 export function CraList() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
@@ -357,7 +359,7 @@ export function CraList() {
                       </td>
                       <td className="px-4 py-3">
                         <Badge kind={statusBadge(cra.status)}>
-                          {CRA_STATUS_LABELS[cra.status] ?? cra.status}
+                          {dt(CRA_STATUS_LABELS[cra.status] ?? cra.status)}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{cra.totalWorkedDays} {tr('CraList.j')}</td>

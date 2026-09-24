@@ -3,6 +3,7 @@ import { crasApi } from '../api/cras'
 import type { CraStatus } from '../api/types'
 import { CRA_STATUS_LABELS, formatDateTime } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorBlock, LoadingBlock, Modal, Pagination } from './data'
@@ -19,10 +20,11 @@ export function CraHistoryModal({
 }) {
   const history = useAsync(() => crasApi.history(craId), [craId])
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const rows = history.data ?? []
   const page = usePagination(rows, user?.pageSize ?? 5)
   const statusLabel = (status: CraStatus | null) =>
-    status == null ? '—' : CRA_STATUS_LABELS[status] ?? status
+    status == null ? '—' : dt(CRA_STATUS_LABELS[status] ?? status)
 
   return (
     <Modal

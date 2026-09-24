@@ -14,6 +14,7 @@ import {
   statusBadge,
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { CraDetail } from './CraDetail'
 import { IndispoCalendar } from './IndispoCalendar'
 
@@ -24,6 +25,7 @@ function shiftMonth(year: number, month: number, delta: number): { year: number;
 
 export function IndispoList() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
@@ -230,7 +232,7 @@ export function IndispoList() {
                       </td>
                       <td className="px-4 py-3">
                         <Badge kind={statusBadge(ind.status)}>
-                          {CRA_STATUS_LABELS[ind.status] ?? ind.status}
+                          {dt(CRA_STATUS_LABELS[ind.status] ?? ind.status)}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{ind.totalWorkedDays} {tr('IndispoList.j')}</td>
