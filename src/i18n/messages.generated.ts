@@ -885,6 +885,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "Consultants.mode.paiement": "Mode de paiement",
   "Consultants.tjm.interne": "TJM interne",
   "Consultants.salarie": "Consultant salarié",
+  "Consultants.salarie.label": "Salarié",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1774,6 +1775,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "Consultants.mode.paiement": "Payment method",
   "Consultants.tjm.interne": "Internal daily rate",
   "Consultants.salarie": "Salaried consultant",
+  "Consultants.salarie.label": "Salaried",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2663,4 +2665,5 @@ export const EXTRACTED_AR: Record<string, string> = {
   "Consultants.mode.paiement": "طريقة الدفع",
   "Consultants.tjm.interne": "المعدل اليومي الداخلي",
   "Consultants.salarie": "مستشار بأجر",
+  "Consultants.salarie.label": "بأجر",
 }

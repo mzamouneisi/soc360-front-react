@@ -548,8 +548,8 @@ export function Consultants() {
               {formError}
             </div>
           )}
-          {((!editing && canCreateManager) || (editing && canEdit)) && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {((!editing && canCreateManager) || (editing && canEdit)) && (
               <Field label={tr('Consultants.type.de.collaborateur')}>
                 <Select
                   value={form.role}
@@ -562,8 +562,19 @@ export function Consultants() {
                   ))}
                 </Select>
               </Field>
+            )}
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 pb-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={form.salarie}
+                  onChange={(e) => setForm({ ...form, salarie: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+                {tr('Consultants.salarie.label')}
+              </label>
             </div>
-          )}
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.prenom')}>
               <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
@@ -697,15 +708,6 @@ export function Consultants() {
               onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <input
-              type="checkbox"
-              checked={form.salarie}
-              onChange={(e) => setForm({ ...form, salarie: e.target.checked })}
-              className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-            />
-            {tr('Consultants.salarie')}
-          </label>
           {form.salarie && (
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
