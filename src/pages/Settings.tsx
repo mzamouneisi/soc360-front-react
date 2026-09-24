@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
 import { emailTemplatesApi, type EmailTemplateView } from '../api/emailTemplates'
+import { i18nApi, type TranslatedEntry } from '../api/i18n'
 import { ApiError } from '../api/client'
 import { Card, Field, IconButton, Input, Select, Spinner, Button, Textarea } from '../components/ui'
 import { PageHeader } from '../components/data'
+import { dialog } from '../components/dialog'
 import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
 
@@ -26,7 +28,7 @@ const THEMES: { id: string; color: string }[] = [
 
 export function Settings() {
   const { user, refreshMe } = useAuth()
-  const { t, preference, languages, setLanguage } = useI18n()
+  const { t, preference, languages, setLanguage, language, refresh } = useI18n()
   const [size, setSize] = useState<number>(user?.fontSize ?? 14)
   const [theme, setTheme] = useState<string>(user?.theme || 'ocean')
   const [headerColor, setHeaderColor] = useState<string>(user?.tableHeaderColor || '#f9fafb')
@@ -54,6 +56,25 @@ export function Settings() {
   const [templateError, setTemplateError] = useState<string | null>(null)
   const [templateSaved, setTemplateSaved] = useState(false)
   const selectedTemplate = emailTemplates.find((item) => item.key === templateKey) ?? null
+
+  const [trEntries, setTrEntries] = useState<TranslatedEntry[]>([])
+  const [trSearch, setTrSearch] = useState('')
+  const [trSelectedKey, setTrSelectedKey] = useState('')
+  const [trOverride, setTrOverride] = useState('')
+  const [trLoading, setTrLoading] = useState(false)
+  const [trSaving, setTrSaving] = useState(false)
+  const [trError, setTrError] = useState<string | null>(null)
+  const [trMessage, setTrMessage] = useState<string | null>(null)
+  const trSelected = trEntries.find((entry) => entry.key === trSelectedKey) ?? null
+  const trFiltered = trEntries.filter((entry) => {
+    const q = trSearch.trim().toLowerCase()
+    if (!q) return true
+    return (
+      entry.key.toLowerCase().includes(q) ||
+      entry.value.toLowerCase().includes(q) ||
+      (entry.override ?? '').toLowerCase().includes(q)
+    )
+  })
 
   useEffect(() => {
     if (!canEditTemplates) return
@@ -84,6 +105,33 @@ export function Settings() {
     setTemplateSaved(false)
     setTemplateError(null)
   }, [selectedTemplate])
+
+  useEffect(() => {
+    if (!canEditTemplates) return
+    let cancelled = false
+    setTrLoading(true)
+    i18nApi
+      .companyEntries(language)
+      .then((list) => {
+        if (!cancelled) setTrEntries(list)
+      })
+      .catch(() => {
+        if (!cancelled) setTrError(t('settings.companyTranslations.loadError'))
+      })
+      .finally(() => {
+        if (!cancelled) setTrLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [canEditTemplates, language, t])
+
+  useEffect(() => {
+    if (!trSelected) return
+    setTrOverride(trSelected.override ?? '')
+    setTrMessage(null)
+    setTrError(null)
+  }, [trSelected])
 
   if (!user) return null
   const u = user
@@ -187,6 +235,56 @@ export function Settings() {
       setTemplateError(err instanceof ApiError ? err.message : t('settings.emailTemplates.error'))
     } finally {
       setTemplateSaving(false)
+    }
+  }
+
+  async function handleTrCopy() {
+    if (!trSelected) return
+    if (trOverride.trim() !== '') {
+      const confirmed = await dialog.confirm(t('settings.companyTranslations.confirmOverwrite'), {
+        variant: 'question',
+      })
+      if (!confirmed) return
+    }
+    setTrOverride(trSelected.value)
+  }
+
+  async function handleTrSave() {
+    if (!trSelectedKey || !trOverride.trim()) return
+    setTrSaving(true)
+    setTrError(null)
+    setTrMessage(null)
+    try {
+      await i18nApi.saveCompanyOverride({ lang: language, key: trSelectedKey, value: trOverride })
+      setTrEntries((prev) =>
+        prev.map((entry) => (entry.key === trSelectedKey ? { ...entry, override: trOverride } : entry)),
+      )
+      setTrMessage(t('settings.companyTranslations.saved'))
+      await refresh()
+    } catch (err) {
+      setTrError(err instanceof ApiError ? err.message : t('settings.companyTranslations.error'))
+    } finally {
+      setTrSaving(false)
+    }
+  }
+
+  async function handleTrDelete() {
+    if (!trSelectedKey) return
+    setTrSaving(true)
+    setTrError(null)
+    setTrMessage(null)
+    try {
+      await i18nApi.deleteCompanyOverride(language, trSelectedKey)
+      setTrEntries((prev) =>
+        prev.map((entry) => (entry.key === trSelectedKey ? { ...entry, override: null } : entry)),
+      )
+      setTrOverride('')
+      setTrMessage(t('settings.companyTranslations.deleted'))
+      await refresh()
+    } catch (err) {
+      setTrError(err instanceof ApiError ? err.message : t('settings.companyTranslations.error'))
+    } finally {
+      setTrSaving(false)
     }
   }
 
@@ -529,6 +627,93 @@ export function Settings() {
                     </div>
                   </>
                 )}
+              </div>
+            )}
+          </>
+        )}
+
+        {canEditTemplates && (
+          <>
+            <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.companyTranslations.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {t('settings.companyTranslations.description', { lang: languageLabel(language) })}
+            </p>
+            {trLoading ? (
+              <div className="mt-4">
+                <Spinner />
+              </div>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="space-y-2">
+                  <Input
+                    value={trSearch}
+                    onChange={(e) => setTrSearch(e.target.value)}
+                    placeholder={t('settings.companyTranslations.search')}
+                  />
+                  <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200">
+                    {trFiltered.length === 0 ? (
+                      <p className="px-3 py-4 text-center text-sm text-gray-400">
+                        {t('settings.companyTranslations.empty')}
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-gray-100">
+                        {trFiltered.map((entry) => (
+                          <li key={entry.key}>
+                            <button
+                              type="button"
+                              onClick={() => setTrSelectedKey(entry.key)}
+                              className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm transition hover:bg-gray-50 ${
+                                trSelectedKey === entry.key ? 'bg-brand-50' : ''
+                              }`}
+                            >
+                              <span className="font-mono text-xs text-gray-400">{entry.key}</span>
+                              <span className="text-gray-900">{entry.override ?? entry.value}</span>
+                              {entry.override && (
+                                <span className="text-xs text-brand-600">
+                                  {t('settings.companyTranslations.overridden')}
+                                </span>
+                              )}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <Field label={t('settings.companyTranslations.override')}>
+                    <Input
+                      value={trOverride}
+                      onChange={(e) => setTrOverride(e.target.value)}
+                      disabled={!trSelected}
+                    />
+                  </Field>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <IconButton
+                      icon="copy"
+                      label={t('settings.companyTranslations.copy')}
+                      onClick={() => void handleTrCopy()}
+                      disabled={!trSelected}
+                    />
+                    <IconButton
+                      icon="save"
+                      label={t('settings.companyTranslations.save')}
+                      variant="primary"
+                      onClick={() => void handleTrSave()}
+                      disabled={!trSelected || trSaving || !trOverride.trim()}
+                      loading={trSaving}
+                    />
+                    <IconButton
+                      icon="delete"
+                      label={t('settings.companyTranslations.delete')}
+                      variant="danger"
+                      onClick={() => void handleTrDelete()}
+                      disabled={!trSelected || trSaving || !trSelected.override}
+                    />
+                  </div>
+                  {trMessage && <p className="text-sm text-green-600">{trMessage}</p>}
+                  {trError && <p className="text-sm text-red-600">{trError}</p>}
+                </div>
               </div>
             )}
           </>

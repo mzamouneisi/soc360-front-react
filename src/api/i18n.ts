@@ -42,6 +42,18 @@ export interface AutofillResponse {
   copied: number
 }
 
+export interface TranslatedEntry {
+  key: string
+  value: string
+  override: string | null
+}
+
+export interface CompanyOverrideRequest {
+  lang: string
+  key: string
+  value: string
+}
+
 export const i18nApi = {
   bundle: (lang?: string) =>
     api.get<I18nBundle>('/public/i18n', { lang }),
@@ -63,4 +75,12 @@ export const i18nApi = {
   exportAll: () => api.get<ExportPayload>('/admin/i18n/export'),
   importAll: (payload: ExportPayload) =>
     api.post<ImportResponse>('/admin/i18n/import', payload),
+  companyEntries: (lang: string, search?: string) =>
+    api.get<TranslatedEntry[]>('/i18n/company/entries', { lang, search }),
+  saveCompanyOverride: (payload: CompanyOverrideRequest) =>
+    api.put<TranslatedEntry>('/i18n/company/overrides', payload),
+  deleteCompanyOverride: (lang: string, key: string) =>
+    api.delete<void>(
+      `/i18n/company/overrides?lang=${encodeURIComponent(lang)}&key=${encodeURIComponent(key)}`,
+    ),
 }

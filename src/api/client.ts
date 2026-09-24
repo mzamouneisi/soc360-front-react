@@ -31,8 +31,19 @@ function persistedSocId(): number | null {
 
 let currentSocId: number | null = persistedSocId()
 
+const socListeners = new Set<() => void>()
+
+export function subscribeSocId(listener: () => void): () => void {
+  socListeners.add(listener)
+  return () => {
+    socListeners.delete(listener)
+  }
+}
+
 export function setCurrentSocId(id: number | null): void {
+  if (currentSocId === id) return
   currentSocId = id
+  socListeners.forEach((listener) => listener())
 }
 
 export function getCurrentSocId(): number | null {

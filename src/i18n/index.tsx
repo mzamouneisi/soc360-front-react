@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { authApi } from '../api/auth'
+import { getCurrentSocId, subscribeSocId } from '../api/client'
 import { i18nApi } from '../api/i18n'
 import { useAuth } from '../auth/AuthContext'
 import { setDynamicLanguage } from '../lib/dynamicTranslate'
@@ -99,6 +100,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [remoteMessages, setRemoteMessages] = useState<Record<string, string>>({})
   const [remoteLanguages, setRemoteLanguages] = useState<Language[]>([])
   const [bundleVersion, setBundleVersion] = useState(0)
+  const [socId, setSocId] = useState<number | null>(() => getCurrentSocId())
 
   const userLanguage = isSupported(user?.language) ? user.language : null
   const preference = userLanguage ?? override
@@ -127,7 +129,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void loadBundle()
-  }, [loadBundle])
+  }, [loadBundle, socId])
+
+  useEffect(() => subscribeSocId(() => setSocId(getCurrentSocId())), [])
 
   useEffect(() => {
     setTranslationState(language, remoteMessages)
