@@ -10,17 +10,17 @@ import { useI18n } from '../i18n'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
 
-const THEMES: { id: string; label: string; color: string }[] = [
-  { id: 'ocean', label: 'Océan (bleu)', color: '#3367f6' },
-  { id: 'forest', label: 'Forêt (vert)', color: '#2aa35a' },
-  { id: 'sunset', label: 'Coucher de soleil (orange)', color: '#f97316' },
-  { id: 'lilac', label: 'Lilas (violet)', color: '#8b5cf6' },
-  { id: 'emerald', label: 'Émeraude (turquoise)', color: '#14b8a6' },
-  { id: 'ruby', label: 'Rubis (rouge)', color: '#ef4444' },
-  { id: 'amber', label: 'Ambre (or)', color: '#f59e0b' },
-  { id: 'sky', label: 'Ciel (bleu clair)', color: '#0ea5e9' },
-  { id: 'slate', label: 'Ardoise (gris)', color: '#64748b' },
-  { id: 'rose', label: 'Rose (fuchsia)', color: '#f43f5e' },
+const THEMES: { id: string; color: string }[] = [
+  { id: 'ocean', color: '#3367f6' },
+  { id: 'forest', color: '#2aa35a' },
+  { id: 'sunset', color: '#f97316' },
+  { id: 'lilac', color: '#8b5cf6' },
+  { id: 'emerald', color: '#14b8a6' },
+  { id: 'ruby', color: '#ef4444' },
+  { id: 'amber', color: '#f59e0b' },
+  { id: 'sky', color: '#0ea5e9' },
+  { id: 'slate', color: '#64748b' },
+  { id: 'rose', color: '#f43f5e' },
 ]
 
 export function Settings() {
@@ -66,7 +66,7 @@ export function Settings() {
       await setLanguage(value === 'browser' ? null : value)
       setLanguageSaved(true)
     } catch (err) {
-      setLanguageError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setLanguageError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setLanguageSaving(false)
     }
@@ -107,7 +107,7 @@ export function Settings() {
       await refreshMe()
       setSaved(true)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSaving(false)
     }
@@ -183,7 +183,7 @@ export function Settings() {
             >
               {THEMES.map((th) => (
                 <option key={th.id} value={th.id}>
-                  {th.label}
+                  {t(`settings.theme.${th.id}`)}
                 </option>
               ))}
             </Select>
@@ -194,7 +194,7 @@ export function Settings() {
               style={{ backgroundColor: THEMES.find((th) => th.id === theme)?.color }}
             />
             <span className="text-sm text-gray-500">
-              {THEMES.find((th) => th.id === theme)?.label}
+              {t(`settings.theme.${theme}`)}
             </span>
           </div>
         </div>
@@ -355,14 +355,14 @@ export function Settings() {
             className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
             style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnSaveColor }}
           >
-            Nouvelle note de frais
+            {tr('NoteFraisList.nouvelle.note.de.frais')}
           </button>
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
             style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnDeleteColor }}
           >
-            Supprimer
+            {tr('common.delete')}
           </button>
         </div>
 
