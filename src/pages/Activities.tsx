@@ -8,6 +8,7 @@ import { consultantsApi } from '../api/consultants'
 import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useSoc } from '../soc/SocContext'
 import { Button, Field, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
@@ -49,6 +50,7 @@ const emptyForm: FormState = {
 
 export function Activities() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const { selectedSocId } = useSoc()
   const navigate = useNavigate()
   const isAdmin = user?.role === 'ADMIN'
@@ -304,15 +306,15 @@ export function Activities() {
               label: tr('Activities.activite'),
               render: (a) => (
                 <div>
-                  <p className="font-medium text-gray-900">{a.name}</p>
-                  {a.description && <p className="text-xs text-gray-500">{a.description}</p>}
+                  <p className="font-medium text-gray-900">{dt(a.name)}</p>
+                  {a.description && <p className="text-xs text-gray-500">{dt(a.description)}</p>}
                 </div>
               ),
             },
             {
               key: 'type',
               label: tr('common.type'),
-              render: (a) => <Badge kind="info">{a.type?.labelFr ?? '—'}</Badge>,
+              render: (a) => <Badge kind="info">{a.type ? dt(a.type.labelFr) : '—'}</Badge>,
             },
             {
               key: 'project',
