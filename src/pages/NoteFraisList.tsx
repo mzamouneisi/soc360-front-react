@@ -7,6 +7,7 @@ import { isImageFile, ocrImageText } from '../lib/ocr'
 import { parseReceipt } from '../lib/receipt'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { Button, Card, Field, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
@@ -91,6 +92,7 @@ function fillLineFromText(lines: LineForm[], text: string, filename: string): Li
 
 export function NoteFraisList() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
 
@@ -219,7 +221,7 @@ export function NoteFraisList() {
         )
       }
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -260,7 +262,7 @@ export function NoteFraisList() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
@@ -280,12 +282,12 @@ export function NoteFraisList() {
         const updated = await noteFraisApi.reject(nf.id, comment)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else {
-        if (!(await dialog.confirm(tr('NoteFraisList.supprimer.cette.note.de.frais'), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+        if (!(await dialog.confirm(tr('NoteFraisList.supprimer.cette.note.de.frais'), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
         await noteFraisApi.delete(nf.id)
         setData((prev) => (prev ?? []).filter((x) => x.id !== nf.id))
       }
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -389,12 +391,12 @@ export function NoteFraisList() {
             columns={[
               {
                 key: 'consultant',
-                label: 'Consultant',
+                label: tr('NoteFraisList.consultant'),
                 render: (nf) => <span className="font-medium text-gray-900">{nf.consultantName}</span>,
               },
               {
                 key: 'period',
-                label: 'Période',
+                label: tr('common.period'),
                 render: (nf) => (
                   <span className="text-gray-700">
                     {monthLabel(nf.month)} {nf.year}
@@ -403,26 +405,26 @@ export function NoteFraisList() {
               },
               {
                 key: 'lines',
-                label: 'Lignes',
+                label: tr('NoteFraisList.lignes'),
                 render: (nf) => <span>{nf.lines.length}</span>,
               },
               {
                 key: 'total',
-                label: 'Total',
+                label: tr('NoteFraisList.total'),
                 render: (nf) => <span className="font-semibold text-gray-900">{formatMoney(nf.totalAmount)}</span>,
               },
               {
                 key: 'status',
-                label: 'Statut',
+                label: tr('common.status'),
                 render: (nf) => (
                   <Badge kind={statusBadge(nf.status)}>
-                    {NOTE_FRAIS_STATUS_LABELS[nf.status] ?? nf.status}
+                    {dt(NOTE_FRAIS_STATUS_LABELS[nf.status] ?? nf.status)}
                   </Badge>
                 ),
               },
               {
                 key: 'comment',
-                label: 'Rejet',
+                label: tr('NoteFraisList.rejet'),
                 render: (nf) => (nf.status === 'REJECTED' ? <span className="text-xs text-amber-700">{nf.comment}</span> : <span>—</span>),
               },
               {
@@ -432,12 +434,12 @@ export function NoteFraisList() {
                   <div className="flex justify-end gap-1">
                     {(nf.status === 'DRAFT' || nf.status === 'REJECTED') && (
                       <>
-                        <InlineButton onClick={() => openEdit(nf)}>Modifier</InlineButton>
+                        <InlineButton onClick={() => openEdit(nf)}>{tr('common.edit')}</InlineButton>
                         <InlineButton
                           className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                           onClick={() => changeStatus(nf, 'submit')}
                         >
-                          Soumettre
+                          {tr('Unavailability.soumettre')}
                         </InlineButton>
                       </>
                     )}
@@ -447,13 +449,13 @@ export function NoteFraisList() {
                           className="border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
                           onClick={() => changeStatus(nf, 'validate')}
                         >
-                          Valider
+                          {tr('Unavailability.valider')}
                         </InlineButton>
                         <InlineButton
                           className="border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                           onClick={() => changeStatus(nf, 'reject')}
                         >
-                          Rejeter
+                          {tr('Unavailability.rejeter')}
                         </InlineButton>
                       </>
                     )}
@@ -461,7 +463,7 @@ export function NoteFraisList() {
                       variant="danger"
                       onClick={() => changeStatus(nf, 'delete')}
                     >
-                      Suppr.
+                      {tr('NoteFraisList.suppr')}
                     </InlineButton>
                   </div>
                 ),
@@ -481,14 +483,14 @@ export function NoteFraisList() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? `Modifier la note de ${editing.consultantName}` : 'Nouvelle note de frais'}
+        title={editing ? tr('NoteFraisList.modifier.la.note.de', { name: editing.consultantName }) : tr('NoteFraisList.nouvelle.note.de.frais')}
         size="xl"
         footer={
           <>
-            <InlineButton onClick={() => setModalOpen(false)}>Annuler</InlineButton>
+            <InlineButton onClick={() => setModalOpen(false)}>{tr('common.cancel')}</InlineButton>
             <Button className="w-auto" onClick={handleSubmit as never} disabled={submitting}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              {editing ? 'Enregistrer' : 'Créer'}
+              {editing ? tr('common.save') : tr('common.create')}
             </Button>
           </>
         }

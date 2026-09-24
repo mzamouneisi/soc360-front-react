@@ -847,6 +847,11 @@ export const EXTRACTED_FR: Record<string, string> = {
   "Suppliers.societe.associee.colonne": "Société associée",
   "Suppliers.nom.obligatoire": "Le nom du fournisseur est obligatoire",
   "Suppliers.supprimer.le.fournisseur": "Supprimer le fournisseur « {name} » ?",
+  "NoteFraisList.lignes": "Lignes",
+  "NoteFraisList.rejet": "Rejet",
+  "NoteFraisList.suppr": "Suppr.",
+  "NoteFraisList.nouvelle.note.de.frais": "Nouvelle note de frais",
+  "NoteFraisList.modifier.la.note.de": "Modifier la note de {name}",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1698,6 +1703,11 @@ export const EXTRACTED_EN: Record<string, string> = {
   "Suppliers.societe.associee.colonne": "Associated company",
   "Suppliers.nom.obligatoire": "Supplier name is required",
   "Suppliers.supprimer.le.fournisseur": "Delete supplier \"{name}\"?",
+  "NoteFraisList.lignes": "Lines",
+  "NoteFraisList.rejet": "Rejection",
+  "NoteFraisList.suppr": "Del.",
+  "NoteFraisList.nouvelle.note.de.frais": "New expense report",
+  "NoteFraisList.modifier.la.note.de": "Edit the expense report of {name}",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2549,4 +2559,9 @@ export const EXTRACTED_AR: Record<string, string> = {
   "Suppliers.societe.associee.colonne": "الشركة المرتبطة",
   "Suppliers.nom.obligatoire": "اسم المورد مطلوب",
   "Suppliers.supprimer.le.fournisseur": "حذف المورد «{name}»؟",
+  "NoteFraisList.lignes": "أسطر",
+  "NoteFraisList.rejet": "الرفض",
+  "NoteFraisList.suppr": "حذف",
+  "NoteFraisList.nouvelle.note.de.frais": "تقرير نفقات جديد",
+  "NoteFraisList.modifier.la.note.de": "تعديل تقرير {name}",
 }
