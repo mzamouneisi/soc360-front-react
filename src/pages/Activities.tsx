@@ -223,7 +223,7 @@ export function Activities() {
             <RefreshButton onClick={reload} />
             {canEdit ? (
               <>
-                <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="primary" onClick={openCreate} />
+                <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} />
                 <InlineButton className="ml-2" variant="primary" onClick={() => navigate('/types-activites')}>
                   {tr('Activities.gerer.les.types')}
                 </InlineButton>
@@ -425,7 +425,7 @@ export function Activities() {
           description={tr('Activities.creez.des.prestations.facturables.pour.vos.cra')}
           action={
             canEdit ? (
-              <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="primary" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} />
             ) : undefined
           }
         />

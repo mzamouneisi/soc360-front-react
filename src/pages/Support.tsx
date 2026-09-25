@@ -133,7 +133,7 @@ export function Support() {
             <IconButton
               icon="add"
               label={tr('Support.nouveau.ticket')}
-              variant="primary"
+              variant="new"
               onClick={() => {
                 setCreateOpen(true)
                 setFormError(null)
@@ -223,7 +223,7 @@ export function Support() {
             <IconButton
               icon="add"
               label={tr('Support.nouveau.ticket')}
-              variant="primary"
+              variant="new"
               onClick={() => {
                 setCreateOpen(true)
                 setFormError(null)

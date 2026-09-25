@@ -160,7 +160,7 @@ export function FichePaie() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('FichePaie.nouvelle.fiche.de.paie')} variant="primary" onClick={openCreate} />
+              <IconButton icon="add" label={tr('FichePaie.nouvelle.fiche.de.paie')} variant="new" onClick={openCreate} />
             ) : null}
           </>
         }

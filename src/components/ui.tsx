@@ -212,13 +212,15 @@ export function InlineButton({
   children,
   style,
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' | 'ok' | 'new' }) {
   const variants = {
     neutral: 'border border-gray-300 hover:brightness-95',
     danger: 'border border-transparent text-white hover:brightness-95',
     primary: 'border border-transparent text-white hover:brightness-95',
     soft: 'border hover:brightness-95',
     history: 'border hover:brightness-95',
+    ok: 'border border-transparent hover:brightness-95',
+    new: 'border border-transparent hover:brightness-95',
   }
   const background =
     variant === 'primary'
@@ -227,7 +229,11 @@ export function InlineButton({
         ? { backgroundColor: 'var(--btn-delete-color)' }
         : variant === 'neutral'
           ? { backgroundColor: 'var(--btn-cancel-color)', color: 'var(--btn-cancel-text-color)' }
-          : {}
+          : variant === 'ok'
+            ? { backgroundColor: 'var(--btn-ok-color)', color: 'var(--btn-ok-text-color)' }
+            : variant === 'new'
+              ? { backgroundColor: 'var(--btn-new-color)', color: 'var(--btn-new-text-color)' }
+              : {}
   const soft =
     variant === 'soft'
       ? {
@@ -292,7 +298,7 @@ export function IconButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   icon: IconName
   label: string
-  variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history'
+  variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' | 'ok' | 'new'
   loading?: boolean
 }) {
   return (

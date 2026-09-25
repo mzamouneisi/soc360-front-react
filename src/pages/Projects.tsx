@@ -143,7 +143,7 @@ export function Projects() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('Projects.nouveau.projet')} variant="primary" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Projects.nouveau.projet')} variant="new" onClick={openCreate} />
             ) : null}
           </>
         }

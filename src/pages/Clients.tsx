@@ -166,7 +166,7 @@ export function Clients() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('Clients.nouveau.client')} variant="primary" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Clients.nouveau.client')} variant="new" onClick={openCreate} />
             ) : null}
           </>
         }

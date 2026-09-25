@@ -179,6 +179,10 @@ body {
   --btn-submit-text-color: #1d48eb;
   --btn-history-color: #e0e7ff;
   --btn-history-text-color: #1d48eb;
+  --btn-ok-color: #16a34a;
+  --btn-ok-text-color: #ffffff;
+  --btn-new-color: #0ea5e9;
+  --btn-new-text-color: #ffffff;
   --app-bg-color: #bae6fd;
   --app-bg: linear-gradient(
     135deg,

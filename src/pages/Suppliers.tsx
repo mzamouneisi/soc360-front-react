@@ -168,7 +168,7 @@ export function Suppliers() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('Suppliers.nouveau.fournisseur')} variant="primary" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Suppliers.nouveau.fournisseur')} variant="new" onClick={openCreate} />
             ) : null}
           </>
         }

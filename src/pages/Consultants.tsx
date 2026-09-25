@@ -373,7 +373,7 @@ export function Consultants() {
             <RefreshButton onClick={reload} />
             {canCreate ? (
               <>
-                <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="primary" onClick={openCreate} />
+                <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="new" onClick={openCreate} />
                 {canEdit ? (
                   <InlineButton className="ml-2" variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
                     {tr('common.importCsv')}

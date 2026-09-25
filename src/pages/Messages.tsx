@@ -109,7 +109,7 @@ export function Messages() {
               <IconButton
                 icon="add"
                 label={tr('Messages.nouveau.message')}
-                variant="primary"
+                variant="new"
                 onClick={() => {
                   setComposeOpen(true)
                   setFormError(null)

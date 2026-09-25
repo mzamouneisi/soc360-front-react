@@ -139,7 +139,7 @@ export function ActivityTypes() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit && workingSocId ? (
-              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="primary" onClick={openCreate} />
+              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} />
             ) : null}
           </>
         }
@@ -244,7 +244,7 @@ export function ActivityTypes() {
           description={tr('ActivityTypes.creez.des.types.de.prestations.pour.vos.activites.et.vos.cra')}
           action={
             canEdit && workingSocId ? (
-              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="primary" onClick={openCreate} />
+              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} />
             ) : undefined
           }
         />

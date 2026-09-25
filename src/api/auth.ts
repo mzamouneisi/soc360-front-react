@@ -90,6 +90,10 @@ export const authApi = {
     buttonSubmitTextColor: string
     buttonHistoryColor: string
     buttonHistoryTextColor: string
+    buttonOkColor: string
+    buttonOkTextColor: string
+    buttonNewColor: string
+    buttonNewTextColor: string
   }) => api.put<UserDto>('/auth/me/button-settings', payload),
   updateBackgroundColor: (backgroundColor: string) =>
     api.put<UserDto>('/auth/me/background-color', { backgroundColor }),

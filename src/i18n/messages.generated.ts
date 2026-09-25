@@ -986,6 +986,10 @@ export const EXTRACTED_FR: Record<string, string> = {
   "settings.buttons.submitTextColor": "Couleur texte Soumettre",
   "settings.buttons.historyColor": "Couleur bouton Historique",
   "settings.buttons.historyTextColor": "Couleur texte Historique",
+  "settings.buttons.okColor": "Couleur bouton OK",
+  "settings.buttons.okTextColor": "Couleur texte OK",
+  "settings.buttons.newColor": "Couleur bouton Nouveau",
+  "settings.buttons.newTextColor": "Couleur texte Nouveau",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1976,6 +1980,10 @@ export const EXTRACTED_EN: Record<string, string> = {
   "settings.buttons.submitTextColor": "Submit text colour",
   "settings.buttons.historyColor": "History button colour",
   "settings.buttons.historyTextColor": "History text colour",
+  "settings.buttons.okColor": "OK button colour",
+  "settings.buttons.okTextColor": "OK text colour",
+  "settings.buttons.newColor": "New button colour",
+  "settings.buttons.newTextColor": "New text colour",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2966,4 +2974,8 @@ export const EXTRACTED_AR: Record<string, string> = {
   "settings.buttons.submitTextColor": "لون نص الإرسال",
   "settings.buttons.historyColor": "لون زر السجل",
   "settings.buttons.historyTextColor": "لون نص السجل",
+  "settings.buttons.okColor": "لون زر موافق",
+  "settings.buttons.okTextColor": "لون نص موافق",
+  "settings.buttons.newColor": "لون زر جديد",
+  "settings.buttons.newTextColor": "لون نص جديد",
 }

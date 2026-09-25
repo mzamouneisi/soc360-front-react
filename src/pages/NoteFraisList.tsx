@@ -314,7 +314,7 @@ export function NoteFraisList() {
                 </option>
               ))}
             </Select>
-            <IconButton icon="add" label={tr('NoteFraisList.nouvelle.note.de.frais')} variant="primary" onClick={openCreate} />
+            <IconButton icon="add" label={tr('NoteFraisList.nouvelle.note.de.frais')} variant="new" onClick={openCreate} />
           </div>
         }
       />

@@ -250,7 +250,7 @@ export function Unavailability() {
         count={filtered.length}
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         actions={
-          <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="primary" onClick={openCreate} />
+          <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="new" onClick={openCreate} />
         }
       />
 

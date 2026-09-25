@@ -165,9 +165,9 @@ export function DialogHost() {
   const primaryClass = options.danger
     ? 'hover:brightness-95 focus:ring-red-500/40'
     : 'hover:brightness-95 focus:ring-brand-500/40'
-  const primaryStyle = {
-    backgroundColor: options.danger ? 'var(--btn-delete-color)' : 'var(--btn-save-color)',
-  }
+  const primaryStyle = options.danger
+    ? { backgroundColor: 'var(--btn-delete-color)', color: '#ffffff' }
+    : { backgroundColor: 'var(--btn-ok-color)', color: 'var(--btn-ok-text-color)' }
 
   return createPortal(
     <div

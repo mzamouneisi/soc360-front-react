@@ -127,7 +127,7 @@ export function Documents() {
         actions={
           <>
             <RefreshButton onClick={reload} />
-            <IconButton icon="add" label={tr('Documents.partager.un.document')} variant="primary" onClick={openUpload} />
+            <IconButton icon="add" label={tr('Documents.partager.un.document')} variant="new" onClick={openUpload} />
           </>
         }
       />

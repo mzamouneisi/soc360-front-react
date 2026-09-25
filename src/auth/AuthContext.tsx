@@ -43,6 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.style.setProperty('--btn-submit-text-color', user?.buttonSubmitTextColor || '#1d48eb')
     doc.style.setProperty('--btn-history-color', user?.buttonHistoryColor || '#e0e7ff')
     doc.style.setProperty('--btn-history-text-color', user?.buttonHistoryTextColor || '#1d48eb')
+    doc.style.setProperty('--btn-ok-color', user?.buttonOkColor || '#16a34a')
+    doc.style.setProperty('--btn-ok-text-color', user?.buttonOkTextColor || '#ffffff')
+    doc.style.setProperty('--btn-new-color', user?.buttonNewColor || '#0ea5e9')
+    doc.style.setProperty('--btn-new-text-color', user?.buttonNewTextColor || '#ffffff')
     doc.style.setProperty('--app-bg-color', user?.backgroundColor || '#bae6fd')
   }, [
     user?.fontSize,
@@ -59,6 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.buttonSubmitTextColor,
     user?.buttonHistoryColor,
     user?.buttonHistoryTextColor,
+    user?.buttonOkColor,
+    user?.buttonOkTextColor,
+    user?.buttonNewColor,
+    user?.buttonNewTextColor,
     user?.backgroundColor,
   ])
 

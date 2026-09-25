@@ -103,6 +103,10 @@ export function Settings() {
   const [btnSubmitTextColor, setBtnSubmitTextColor] = useState<string>(user?.buttonSubmitTextColor || '#1d48eb')
   const [btnHistoryColor, setBtnHistoryColor] = useState<string>(user?.buttonHistoryColor || '#e0e7ff')
   const [btnHistoryTextColor, setBtnHistoryTextColor] = useState<string>(user?.buttonHistoryTextColor || '#1d48eb')
+  const [btnOkColor, setBtnOkColor] = useState<string>(user?.buttonOkColor || '#16a34a')
+  const [btnOkTextColor, setBtnOkTextColor] = useState<string>(user?.buttonOkTextColor || '#ffffff')
+  const [btnNewColor, setBtnNewColor] = useState<string>(user?.buttonNewColor || '#0ea5e9')
+  const [btnNewTextColor, setBtnNewTextColor] = useState<string>(user?.buttonNewTextColor || '#ffffff')
   const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -229,6 +233,10 @@ export function Settings() {
     (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor ||
     (u.buttonHistoryColor || '#e0e7ff') !== btnHistoryColor ||
     (u.buttonHistoryTextColor || '#1d48eb') !== btnHistoryTextColor ||
+    (u.buttonOkColor || '#16a34a') !== btnOkColor ||
+    (u.buttonOkTextColor || '#ffffff') !== btnOkTextColor ||
+    (u.buttonNewColor || '#0ea5e9') !== btnNewColor ||
+    (u.buttonNewTextColor || '#ffffff') !== btnNewTextColor ||
     (u.backgroundColor || '#bae6fd') !== bgColor
 
   async function handleLanguageChange(value: string) {
@@ -272,7 +280,11 @@ export function Settings() {
           (u.buttonSubmitColor || '#e0e7ff') !== btnSubmitColor ||
           (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor ||
           (u.buttonHistoryColor || '#e0e7ff') !== btnHistoryColor ||
-          (u.buttonHistoryTextColor || '#1d48eb') !== btnHistoryTextColor) {
+          (u.buttonHistoryTextColor || '#1d48eb') !== btnHistoryTextColor ||
+          (u.buttonOkColor || '#16a34a') !== btnOkColor ||
+          (u.buttonOkTextColor || '#ffffff') !== btnOkTextColor ||
+          (u.buttonNewColor || '#0ea5e9') !== btnNewColor ||
+          (u.buttonNewTextColor || '#ffffff') !== btnNewTextColor) {
         await authApi.updateButtonSettings({
           buttonSmallWidth: btnSmallWidth,
           buttonLargeWidth: btnLargeWidth,
@@ -284,6 +296,10 @@ export function Settings() {
           buttonSubmitTextColor: btnSubmitTextColor,
           buttonHistoryColor: btnHistoryColor,
           buttonHistoryTextColor: btnHistoryTextColor,
+          buttonOkColor: btnOkColor,
+          buttonOkTextColor: btnOkTextColor,
+          buttonNewColor: btnNewColor,
+          buttonNewTextColor: btnNewTextColor,
         })
       }
       if ((u.backgroundColor || '#bae6fd') !== bgColor) {
@@ -418,6 +434,94 @@ export function Settings() {
         {languageError && <p className="mt-3 text-sm text-red-600">{languageError}</p>}
         {languageSaved && (
           <p className="mt-3 text-sm text-green-600">{t('settings.language.saved')}</p>
+        )}
+
+        {canEditTemplates && (
+          <div>
+            <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.companyTranslations.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {t('settings.companyTranslations.description', { lang: languageLabel(language) })}
+            </p>
+            {trLoading ? (
+              <div className="mt-4">
+                <Spinner />
+              </div>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="space-y-2">
+                  <Input
+                    value={trSearch}
+                    onChange={(e) => setTrSearch(e.target.value)}
+                    placeholder={t('settings.companyTranslations.search')}
+                  />
+                  <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200">
+                    {trFiltered.length === 0 ? (
+                      <p className="px-3 py-4 text-center text-sm text-gray-400">
+                        {t('settings.companyTranslations.empty')}
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-gray-100">
+                        {trFiltered.map((entry) => (
+                          <li key={entry.key}>
+                            <button
+                              type="button"
+                              onClick={() => setTrSelectedKey(entry.key)}
+                              className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm transition hover:bg-gray-50 ${
+                                trSelectedKey === entry.key ? 'bg-brand-50' : ''
+                              }`}
+                            >
+                              <span className="font-mono text-xs text-gray-400">{entry.key}</span>
+                              <span className="text-gray-900">{entry.override ?? entry.value}</span>
+                              {entry.override && (
+                                <span className="text-xs text-brand-600">
+                                  {t('settings.companyTranslations.overridden')}
+                                </span>
+                              )}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <Field label={t('settings.companyTranslations.override')}>
+                    <Input
+                      id={RETRAD_INPUT_ID}
+                      value={trOverride}
+                      onChange={(e) => setTrOverride(e.target.value)}
+                      disabled={!trSelected}
+                    />
+                  </Field>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <IconButton
+                      icon="copy"
+                      label={t('settings.companyTranslations.copy')}
+                      onClick={() => void handleTrCopy()}
+                      disabled={!trSelected}
+                    />
+                    <IconButton
+                      icon="save"
+                      label={t('settings.companyTranslations.save')}
+                      variant="primary"
+                      onClick={() => void handleTrSave()}
+                      disabled={!trSelected || trSaving || !trOverride.trim()}
+                      loading={trSaving}
+                    />
+                    <IconButton
+                      icon="delete"
+                      label={t('settings.companyTranslations.delete')}
+                      variant="danger"
+                      onClick={() => void handleTrDelete()}
+                      disabled={!trSelected || trSaving || !trSelected.override}
+                    />
+                  </div>
+                  {trMessage && <p className="text-sm text-green-600">{trMessage}</p>}
+                  {trError && <p className="text-sm text-red-600">{trError}</p>}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.fontSize.title')}</h3>
@@ -702,20 +806,76 @@ export function Settings() {
               <span className="text-sm text-gray-500">{btnHistoryTextColor}</span>
             </div>
           </Field>
+          <Field label={t('settings.buttons.newColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnNewColor}
+                onChange={(e) => {
+                  setBtnNewColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnNewColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.newTextColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnNewTextColor}
+                onChange={(e) => {
+                  setBtnNewTextColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnNewTextColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.okColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnOkColor}
+                onChange={(e) => {
+                  setBtnOkColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnOkColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.okTextColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnOkTextColor}
+                onChange={(e) => {
+                  setBtnOkTextColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnOkTextColor}</span>
+            </div>
+          </Field>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
           <span className="text-sm text-gray-500">{t('settings.buttons.preview')} :</span>
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
-            style={{ minWidth: `${btnSmallWidth}px`, backgroundColor: btnSaveColor }}
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition hover:brightness-95"
+            style={{ minWidth: `${btnSmallWidth}px`, backgroundColor: btnOkColor, color: btnOkTextColor }}
           >
             OK
           </button>
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
-            style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnSaveColor }}
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition hover:brightness-95"
+            style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnNewColor, color: btnNewTextColor }}
           >
             {tr('NoteFraisList.nouvelle.note.de.frais')}
           </button>
@@ -852,94 +1012,6 @@ export function Settings() {
               </div>
             )}
           </>
-        )}
-
-        {canEditTemplates && (
-          <div>
-            <h3 className="mt-8 text-sm font-semibold text-gray-900">{t('settings.companyTranslations.title')}</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {t('settings.companyTranslations.description', { lang: languageLabel(language) })}
-            </p>
-            {trLoading ? (
-              <div className="mt-4">
-                <Spinner />
-              </div>
-            ) : (
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div className="space-y-2">
-                  <Input
-                    value={trSearch}
-                    onChange={(e) => setTrSearch(e.target.value)}
-                    placeholder={t('settings.companyTranslations.search')}
-                  />
-                  <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200">
-                    {trFiltered.length === 0 ? (
-                      <p className="px-3 py-4 text-center text-sm text-gray-400">
-                        {t('settings.companyTranslations.empty')}
-                      </p>
-                    ) : (
-                      <ul className="divide-y divide-gray-100">
-                        {trFiltered.map((entry) => (
-                          <li key={entry.key}>
-                            <button
-                              type="button"
-                              onClick={() => setTrSelectedKey(entry.key)}
-                              className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm transition hover:bg-gray-50 ${
-                                trSelectedKey === entry.key ? 'bg-brand-50' : ''
-                              }`}
-                            >
-                              <span className="font-mono text-xs text-gray-400">{entry.key}</span>
-                              <span className="text-gray-900">{entry.override ?? entry.value}</span>
-                              {entry.override && (
-                                <span className="text-xs text-brand-600">
-                                  {t('settings.companyTranslations.overridden')}
-                                </span>
-                              )}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <Field label={t('settings.companyTranslations.override')}>
-                    <Input
-                      id={RETRAD_INPUT_ID}
-                      value={trOverride}
-                      onChange={(e) => setTrOverride(e.target.value)}
-                      disabled={!trSelected}
-                    />
-                  </Field>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <IconButton
-                      icon="copy"
-                      label={t('settings.companyTranslations.copy')}
-                      onClick={() => void handleTrCopy()}
-                      disabled={!trSelected}
-                    />
-                    <IconButton
-                      icon="save"
-                      label={t('settings.companyTranslations.save')}
-                      variant="primary"
-                      onClick={() => void handleTrSave()}
-                      disabled={!trSelected || trSaving || !trOverride.trim()}
-                      loading={trSaving}
-                    />
-                    <IconButton
-                      icon="delete"
-                      label={t('settings.companyTranslations.delete')}
-                      variant="danger"
-                      onClick={() => void handleTrDelete()}
-                      disabled={!trSelected || trSaving || !trSelected.override}
-                    />
-                  </div>
-                  {trMessage && <p className="text-sm text-green-600">{trMessage}</p>}
-                  {trError && <p className="text-sm text-red-600">{trError}</p>}
-                </div>
-              </div>
-            )}
-          </div>
         )}
 
         <Button
