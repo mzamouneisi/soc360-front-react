@@ -965,6 +965,16 @@ export const EXTRACTED_FR: Record<string, string> = {
   "CraDetail.ce.cra": "Ce CRA",
   "CraDetail.cette.indispo": "Cette Indispo",
   "common.send": "Envoyer",
+  "Messages.reception": "Réception",
+  "Messages.envoyes": "Envoyés",
+  "Messages.objet.colonne": "Objet",
+  "Messages.expediteur": "Expéditeur",
+  "Messages.destinataire.colonne": "Destinataire",
+  "Messages.date": "Date",
+  "Messages.boite.reception.vide": "Votre boîte de réception est vide.",
+  "Messages.aucun.envoi": "Vous n’avez rien envoyé.",
+  "Messages.de": "De",
+  "Messages.a": "À",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1934,6 +1944,16 @@ export const EXTRACTED_EN: Record<string, string> = {
   "CraDetail.ce.cra": "This timesheet",
   "CraDetail.cette.indispo": "This leave",
   "common.send": "Send",
+  "Messages.reception": "Inbox",
+  "Messages.envoyes": "Sent",
+  "Messages.objet.colonne": "Subject",
+  "Messages.expediteur": "Sender",
+  "Messages.destinataire.colonne": "Recipient",
+  "Messages.date": "Date",
+  "Messages.boite.reception.vide": "Your inbox is empty.",
+  "Messages.aucun.envoi": "You haven’t sent anything.",
+  "Messages.de": "From",
+  "Messages.a": "To",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2903,4 +2923,14 @@ export const EXTRACTED_AR: Record<string, string> = {
   "CraDetail.ce.cra": "هذا الكشف",
   "CraDetail.cette.indispo": "هذه الإجازة",
   "common.send": "إرسال",
+  "Messages.reception": "الوارد",
+  "Messages.envoyes": "المرسلة",
+  "Messages.objet.colonne": "الموضوع",
+  "Messages.expediteur": "المرسل",
+  "Messages.destinataire.colonne": "المستلم",
+  "Messages.date": "التاريخ",
+  "Messages.boite.reception.vide": "صندوق الوارد فارغ.",
+  "Messages.aucun.envoi": "لم ترسل أي شيء.",
+  "Messages.de": "من",
+  "Messages.a": "إلى",
 }

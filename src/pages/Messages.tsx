@@ -92,8 +92,8 @@ export function Messages() {
   }
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'inbox', label: 'Réception' },
-    { key: 'sent', label: 'Envoyés' },
+    { key: 'inbox', label: tr('Messages.reception') },
+    { key: 'sent', label: tr('Messages.envoyes') },
   ]
 
   return (
@@ -156,7 +156,7 @@ export function Messages() {
             columns={[
               {
                 key: 'subject',
-                label: 'Objet',
+                label: tr('Messages.objet.colonne'),
                 render: (m) => (
                   <div>
                     <p className={`font-medium ${m.read ? 'text-gray-700' : 'text-gray-900'}`}>
@@ -171,7 +171,7 @@ export function Messages() {
               },
               {
                 key: 'person',
-                label: tab === 'inbox' ? 'Expéditeur' : 'Destinataire',
+                label: tab === 'inbox' ? tr('Messages.expediteur') : tr('Messages.destinataire.colonne'),
                 render: (m) => {
                   const person = tab === 'inbox' ? m.sender : m.recipient
                   return person ? `${person.firstName} ${person.lastName}` : '—'
@@ -179,7 +179,7 @@ export function Messages() {
               },
               {
                 key: 'date',
-                label: 'Date',
+                label: tr('Messages.date'),
                 render: (m) => <span className="text-gray-500">{formatDateTime(m.createdAt)}</span>,
               },
             ]}
@@ -191,7 +191,7 @@ export function Messages() {
       {!loading && data && data.items.length === 0 && (
         <EmptyState
           title={tr('Messages.aucun.message')}
-          description={tab === 'inbox' ? 'Votre boîte de réception est vide.' : 'Vous n’avez rien envoyé.'}
+          description={tab === 'inbox' ? tr('Messages.boite.reception.vide') : tr('Messages.aucun.envoi')}
         />
       )}
 
@@ -247,7 +247,7 @@ export function Messages() {
         {viewing && (
           <div className="space-y-3">
             <p className="text-sm text-gray-500">
-              {tab === 'inbox' ? 'De' : 'À'} :{' '}
+              {tab === 'inbox' ? tr('Messages.de') : tr('Messages.a')} :{' '}
               {(tab === 'inbox' ? viewing.sender : viewing.recipient)
                 ? `${(tab === 'inbox' ? viewing.sender : viewing.recipient)!.firstName} ${
                     (tab === 'inbox' ? viewing.sender : viewing.recipient)!.lastName
