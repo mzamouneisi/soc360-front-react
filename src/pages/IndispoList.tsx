@@ -263,8 +263,7 @@ export function IndispoList() {
                               icon="delete"
                               label={tr('IndispoList.supprimer')}
                               variant="danger"
-                              onClick={() => handleDelete(ind)}
-                            />
+                              onClick={() => handleDelete(ind)} id="IndispoList.supprimer" />
                           )}
                         </div>
                       </td>

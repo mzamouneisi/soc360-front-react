@@ -174,7 +174,7 @@ export function Facturation() {
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card className="p-5">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">{tr('Facturation.missions.facturables')}</h3>
+                <h3 className="text-lg font-semibold text-gray-900" id="Facturation.missions.facturables">{tr('Facturation.missions.facturables')}</h3>
                 <div className="flex gap-2">
                   <InlineButton onClick={() => handleExport('csv')} disabled={exporting !== null}>
                     {exporting === 'csv' ? <Spinner /> : 'CRA CSV'}
@@ -209,7 +209,7 @@ export function Facturation() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="text-lg font-semibold text-gray-900">{tr('Facturation.paiements')}</h3>
+              <h3 className="text-lg font-semibold text-gray-900" id="Facturation.paiements">{tr('Facturation.paiements')}</h3>
               <div className="mt-4 divide-y divide-gray-100">
                 {(detail.payments ?? []).map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-3">

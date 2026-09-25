@@ -127,7 +127,7 @@ export function Documents() {
         actions={
           <>
             <RefreshButton onClick={reload} />
-            <IconButton icon="add" label={tr('Documents.partager.un.document')} variant="new" onClick={openUpload} />
+            <IconButton icon="add" label={tr('Documents.partager.un.document')} variant="new" onClick={openUpload} id="Documents.partager.un.document" />
           </>
         }
       />
@@ -255,7 +255,7 @@ export function Documents() {
             </button>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Documents.categorie')}>
+            <Field label={tr('Documents.categorie')} id="Documents.categorie">
               <Select value={category} onChange={(e) => setCategory(e.target.value)}>
                 {DOCUMENT_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -265,7 +265,7 @@ export function Documents() {
               </Select>
             </Field>
             {!isConsultant && (
-              <Field label={tr('Documents.consultant.concerne')}>
+              <Field label={tr('Documents.consultant.concerne')} id="Documents.consultant.concerne">
                 <Select value={consultantId} onChange={(e) => setConsultantId(e.target.value)}>
                   <option value="">{tr('Documents.tous.general')}</option>
                   {(summaries ?? []).map((c) => (
@@ -277,24 +277,24 @@ export function Documents() {
               </Field>
             )}
           </div>
-          <Field label={tr('Documents.description')}>
+          <Field label={tr('Documents.description')} id="Documents.description">
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={tr('Documents.contrat.signe.avenant')}
             />
           </Field>
-          <Field label={tr('Documents.expiration.optionnel')}>
+          <Field label={tr('Documents.expiration.optionnel')} id="Documents.expiration.optionnel">
             <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
           </Field>
-          <Field label={tr('Documents.visibilite')}>
+          <Field label={tr('Documents.visibilite')} id="Documents.visibilite">
             <Select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
               <option value="PRIVATE">{tr('Documents.prive.personnes.choisies')}</option>
               <option value="PUBLIC">{tr('Documents.public.toute.la.societe')}</option>
             </Select>
           </Field>
           {visibility === 'PRIVATE' && (
-            <Field label={tr('Documents.partager.avec')}>
+            <Field label={tr('Documents.partager.avec')} id="Documents.partager.avec">
               <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-gray-200 p-2">
                 {(shareTargets ?? []).length === 0 && (
                   <p className="px-2 py-1 text-sm text-gray-400">{tr('Documents.aucune.personne.a.partager')}</p>

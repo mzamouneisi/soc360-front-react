@@ -73,7 +73,7 @@ export function VerifyEmail() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
             {tr('VerifyEmail.e')}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{tr('VerifyEmail.validation.de.l.inscription')}</h1>
+          <h1 className="text-2xl font-bold text-gray-900" id="VerifyEmail.validation.de.l.inscription">{tr('VerifyEmail.validation.de.l.inscription')}</h1>
           <p className="mt-1 text-sm text-gray-500">
             {tr('VerifyEmail.confirmez.votre.mot.de.passe.et.choisissez.en.un.nouveau.pou')}
           </p>
@@ -98,7 +98,7 @@ export function VerifyEmail() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label={tr('VerifyEmail.mot.de.passe.actuel.utilise.a.l.inscription')}>
+          <Field label={tr('VerifyEmail.mot.de.passe.actuel.utilise.a.l.inscription')} id="VerifyEmail.mot.de.passe.actuel.utilise.a.l.inscription">
             <Input
               type="password"
               autoComplete="current-password"
@@ -110,7 +110,7 @@ export function VerifyEmail() {
             />
           </Field>
 
-          <Field label={tr('VerifyEmail.nouveau.mot.de.passe')}>
+          <Field label={tr('VerifyEmail.nouveau.mot.de.passe')} id="VerifyEmail.nouveau.mot.de.passe">
             <Input
               type="password"
               autoComplete="new-password"
@@ -122,7 +122,7 @@ export function VerifyEmail() {
             />
           </Field>
 
-          <Field label={tr('VerifyEmail.confirmer.le.nouveau.mot.de.passe')}>
+          <Field label={tr('VerifyEmail.confirmer.le.nouveau.mot.de.passe')} id="VerifyEmail.confirmer.le.nouveau.mot.de.passe">
             <Input
               type="password"
               autoComplete="new-password"

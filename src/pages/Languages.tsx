@@ -287,7 +287,7 @@ export function Languages() {
       )}
 
       <Card className="mb-6 p-6">
-        <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.langues.disponibles')}</h3>
+        <h3 className="text-sm font-semibold text-gray-900" id="Languages.langues.disponibles">{tr('Languages.langues.disponibles')}</h3>
         <p className="mt-1 text-sm text-gray-500">
           {tr('Languages.ajouter.une.langue.cree.une.nouvelle.colonne.dans.la.table.d')}
         </p>
@@ -317,7 +317,7 @@ export function Languages() {
         </div>
 
         <div className="mt-6 flex flex-wrap items-start gap-4">
-          <Field label={tr('Languages.filtrer.les.langues')}>
+          <Field label={tr('Languages.filtrer.les.langues')} id="Languages.filtrer.les.langues">
             <Input
               className="w-56"
               value={languageFilter}
@@ -325,7 +325,7 @@ export function Languages() {
               onChange={(e) => setLanguageFilter(e.target.value)}
             />
           </Field>
-          <Field label={tr('Languages.langues.connues')}>
+          <Field label={tr('Languages.langues.connues')} id="Languages.langues.connues">
             <select
               size={5}
               value={selectedCode}
@@ -357,7 +357,7 @@ export function Languages() {
         </div>
 
         <div className="mt-6 rounded-lg border border-brand-100 bg-brand-50/40 p-4">
-          <h4 className="text-sm font-semibold text-gray-900">
+          <h4 className="text-sm font-semibold text-gray-900" id="Languages.remplir.les.traductions.d.une.langue">
             {tr('Languages.remplir.les.traductions.d.une.langue')}
           </h4>
           <p className="mt-1 text-sm text-gray-500">
@@ -410,9 +410,9 @@ export function Languages() {
       </Card>
 
       <Card className="mb-6 p-6">
-        <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.ajouter.une.cle')}</h3>
+        <h3 className="text-sm font-semibold text-gray-900" id="Languages.ajouter.une.cle">{tr('Languages.ajouter.une.cle')}</h3>
         <div className="mt-4 flex flex-wrap items-end gap-4">
-          <Field label={tr('Languages.cle')}>
+          <Field label={tr('Languages.cle')} id="Languages.cle">
             <Input
               className="w-64"
               value={newKey}
@@ -439,11 +439,11 @@ export function Languages() {
 
       <Card className="p-6">
         <div className="flex items-baseline gap-2">
-          <h3 className="text-sm font-semibold text-gray-900">{tr('Languages.chaines.traduites')}</h3>
+          <h3 className="text-sm font-semibold text-gray-900" id="Languages.chaines.traduites">{tr('Languages.chaines.traduites')}</h3>
           <span className="text-sm font-semibold text-gray-500">{entryCount}</span>
         </div>
         <div className="mt-4 flex flex-wrap items-end gap-3">
-          <Field label={tr('languages.searchRows')}>
+          <Field label={tr('languages.searchRows')} id="languages.searchRows">
             <Input
               className="max-w-full"
               style={{ width: '54rem' }}
@@ -513,14 +513,12 @@ export function Languages() {
                         variant="primary"
                         className="mr-1.5"
                         onClick={() => void saveRow(entry)}
-                        disabled={saving === entry.id} loading={saving === entry.id}
-                      />
+                        disabled={saving === entry.id} loading={saving === entry.id} id="Languages.enregistrer" />
                       <IconButton
                         icon="delete"
                         label={tr('Languages.supprimer')}
                         variant="danger"
-                        onClick={() => void deleteRow(entry)}
-                      />
+                        onClick={() => void deleteRow(entry)} id="Languages.supprimer" />
                     </td>
                   </tr>
                 ))}

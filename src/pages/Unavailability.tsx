@@ -250,7 +250,7 @@ export function Unavailability() {
         count={filtered.length}
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         actions={
-          <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="new" onClick={openCreate} />
+          <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="new" onClick={openCreate} id="Unavailability.nouvelle.indisponibilite" />
         }
       />
 
@@ -293,7 +293,7 @@ export function Unavailability() {
           </h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {!isConsultant && (
-              <Field label={tr('Unavailability.consultant')}>
+              <Field label={tr('Unavailability.consultant')} id="Unavailability.consultant">
                 <Select
                   value={formConsultantId ?? ''}
                   onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
@@ -308,7 +308,7 @@ export function Unavailability() {
                 </Select>
               </Field>
             )}
-            <Field label={tr('Unavailability.type')}>
+            <Field label={tr('Unavailability.type')} id="Unavailability.type">
               <Select value={formType} onChange={(e) => setFormType(e.target.value as UnavailabilityType)}>
                 {TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -317,13 +317,13 @@ export function Unavailability() {
                 ))}
               </Select>
             </Field>
-            <Field label={tr('Unavailability.du')}>
+            <Field label={tr('Unavailability.du')} id="Unavailability.du">
               <Input type="date" value={formStart} onChange={(e) => setFormStart(e.target.value)} />
             </Field>
-            <Field label={tr('Unavailability.au')}>
+            <Field label={tr('Unavailability.au')} id="Unavailability.au">
               <Input type="date" value={formEnd} onChange={(e) => setFormEnd(e.target.value)} />
             </Field>
-            <Field label={tr('Unavailability.commentaire')}>
+            <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
               <Textarea
                 rows={1}
                 value={formComment}
@@ -342,8 +342,7 @@ export function Unavailability() {
               icon="cancel"
               label={tr('Unavailability.annuler')}
               onClick={() => setShowForm(false)}
-              disabled={saving}
-            />
+              disabled={saving} id="Unavailability.annuler" />
             <IconButton
               icon={editingId != null ? 'save' : 'add'}
               label={editingId != null ? 'Enregistrer' : 'Créer'}
@@ -454,8 +453,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 openEdit(u)
-                              }}
-                            />
+                              }} id="Unavailability.editer" />
                           )}
                           {canSubmit(u) && (
                             <IconButton
@@ -464,8 +462,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleSubmit(u)
-                              }}
-                            />
+                              }} id="Unavailability.soumettre" />
                           )}
                           {canCancel(u) && (
                             <IconButton
@@ -475,8 +472,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleCancel(u)
-                              }}
-                            />
+                              }} id="Unavailability.annuler.la.soumission" />
                           )}
                           {canReview(u) && (
                             <>
@@ -487,8 +483,7 @@ export function Unavailability() {
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   void handleValidate(u)
-                                }}
-                              />
+                                }} id="Unavailability.valider" />
                               <IconButton
                                 icon="reject"
                                 label={tr('Unavailability.rejeter')}
@@ -496,8 +491,7 @@ export function Unavailability() {
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   void handleReject(u)
-                                }}
-                              />
+                                }} id="Unavailability.rejeter" />
                             </>
                           )}
                           {canDelete(u) && (
@@ -508,8 +502,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleDelete(u)
-                              }}
-                            />
+                              }} id="Unavailability.supprimer" />
                           )}
                           <IconButton
                             icon="history"
@@ -518,8 +511,7 @@ export function Unavailability() {
                             onClick={(e) => {
                               e.stopPropagation()
                               setHistoryFor(u)
-                            }}
-                          />
+                            }} id="Unavailability.historique" />
                         </div>
                       </td>
                     </tr>
@@ -584,13 +576,13 @@ function UnavailabilityHistoryModal({
       >
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">{tr('Unavailability.historique.de.l.indisponibilite')} ({historyPage.total})</h3>
+            <h3 className="text-sm font-semibold text-gray-900" id="Unavailability.historique.de.l.indisponibilite">{tr('Unavailability.historique.de.l.indisponibilite')} ({historyPage.total})</h3>
             <p className="text-xs text-gray-500">
               {unavailability.consultantName} — {UNAVAILABILITY_TYPE_LABELS[unavailability.type]}{' '}
               ({unavailability.startDate} → {unavailability.endDate})
             </p>
           </div>
-          <IconButton icon="close" label={tr('Unavailability.fermer')} onClick={onClose} />
+          <IconButton icon="close" label={tr('Unavailability.fermer')} onClick={onClose} id="Unavailability.fermer" />
         </div>
 
         {history.loading && <LoadingBlock />}

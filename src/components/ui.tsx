@@ -163,16 +163,18 @@ export function Card({
 
 export function Field({
   label,
+  id,
   error,
   children,
 }: {
   label: string
+  id?: string
   error?: string
   children: ReactNode
 }) {
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label id={id} className="block text-sm font-medium text-gray-700">{label}</label>
       {children}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>

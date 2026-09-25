@@ -197,7 +197,7 @@ export function MainLayout() {
 
   return (
     <div className="flex h-full">
-      <aside className="flex w-64 shrink-0 flex-col overflow-y-auto bg-gray-900 text-gray-300">
+      <aside id="app-sidebar" className="flex w-64 shrink-0 flex-col overflow-y-auto bg-gray-900 text-gray-300">
         <div className="flex h-16 shrink-0 items-center gap-2 px-5 text-lg font-bold text-white">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-extrabold">
             {tr('MainLayout.e')}
@@ -233,7 +233,7 @@ export function MainLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
+        <header id="app-header" className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
           <div>
             {isAdmin ? (
               <NavLink
@@ -280,7 +280,7 @@ export function MainLayout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--app-bg)' }}>
+        <main id="app-main" className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--app-bg)' }}>
           <Outlet />
         </main>
       </div>

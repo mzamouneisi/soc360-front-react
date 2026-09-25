@@ -45,7 +45,7 @@ export function ChangePassword() {
     <div className="flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{tr('ChangePassword.changer.le.mot.de.passe')}</h1>
+          <h1 className="text-2xl font-bold text-gray-900" id="ChangePassword.changer.le.mot.de.passe">{tr('ChangePassword.changer.le.mot.de.passe')}</h1>
           <p className="mt-1 text-sm text-gray-500">
             {forced
               ? 'Votre premier mot de passe doit être modifié avant de continuer.'
@@ -66,7 +66,7 @@ export function ChangePassword() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label={tr('ChangePassword.mot.de.passe.actuel')}>
+          <Field label={tr('ChangePassword.mot.de.passe.actuel')} id="ChangePassword.mot.de.passe.actuel">
             <Input
               type="password"
               autoComplete="current-password"
@@ -77,7 +77,7 @@ export function ChangePassword() {
             />
           </Field>
 
-          <Field label={tr('ChangePassword.nouveau.mot.de.passe')}>
+          <Field label={tr('ChangePassword.nouveau.mot.de.passe')} id="ChangePassword.nouveau.mot.de.passe">
             <Input
               type="password"
               autoComplete="new-password"
@@ -88,7 +88,7 @@ export function ChangePassword() {
             />
           </Field>
 
-          <Field label={tr('ChangePassword.confirmer.le.nouveau.mot.de.passe')}>
+          <Field label={tr('ChangePassword.confirmer.le.nouveau.mot.de.passe')} id="ChangePassword.confirmer.le.nouveau.mot.de.passe">
             <Input
               type="password"
               autoComplete="new-password"

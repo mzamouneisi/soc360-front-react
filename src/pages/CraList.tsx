@@ -387,15 +387,13 @@ export function CraList() {
                             icon="history"
                             label={tr('CraList.historique')}
                             variant="history"
-                            onClick={() => setHistoryCra(cra)}
-                          />
+                            onClick={() => setHistoryCra(cra)} id="CraList.historique" />
                           {editable(cra) && (
                             <IconButton
                               icon="delete"
                               label={tr('CraList.supprimer')}
                               variant="danger"
-                              onClick={() => handleDelete(cra)}
-                            />
+                              onClick={() => handleDelete(cra)} id="CraList.supprimer" />
                           )}
                           {canValidate(cra) && cra.status === 'SUBMITTED' && (
                             <>
@@ -403,14 +401,12 @@ export function CraList() {
                                 icon="check"
                                 label={tr('CraList.valider')}
                                 variant="soft"
-                                onClick={() => changeStatus(cra.id, 'validate')}
-                              />
+                                onClick={() => changeStatus(cra.id, 'validate')} id="CraList.valider" />
                               <IconButton
                                 icon="reject"
                                 label={tr('CraList.rejeter')}
                                 variant="danger"
-                                onClick={() => changeStatus(cra.id, 'reject')}
-                              />
+                                onClick={() => changeStatus(cra.id, 'reject')} id="CraList.rejeter" />
                             </>
                           )}
                         </div>
@@ -428,8 +424,7 @@ export function CraList() {
                 icon="chevronLeft"
                 label={tr('CraList.precedent')}
                 disabled={safePage === 0}
-                onClick={() => setPage(safePage - 1)}
-              />
+                onClick={() => setPage(safePage - 1)} id="CraList.precedent" />
               <span className="text-sm text-gray-500">
                 {tr('CraList.page')} {safePage + 1} / {totalPages}
               </span>
@@ -437,8 +432,7 @@ export function CraList() {
                 icon="chevronRight"
                 label={tr('CraList.suivant')}
                 disabled={safePage >= totalPages - 1}
-                onClick={() => setPage(safePage + 1)}
-              />
+                onClick={() => setPage(safePage + 1)} id="CraList.suivant" />
             </div>
           )}
         </>
@@ -471,11 +465,11 @@ export function CraList() {
           </Select>
         </label>
         <div className="flex items-center gap-1">
-          <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev} />
+          <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev} id="CraList.mois.precedent" />
           <InlineButton onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
             {tr('CraList.mois.courant')}
           </InlineButton>
-          <IconButton icon="chevronRight" label={tr('CraList.mois.suivant')} onClick={goNext} />
+          <IconButton icon="chevronRight" label={tr('CraList.mois.suivant')} onClick={goNext} id="CraList.mois.suivant" />
         </div>
       </Card>
 

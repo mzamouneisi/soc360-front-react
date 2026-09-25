@@ -44,7 +44,7 @@ export function Login() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
             {tr('Login.e')}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{tr('Login.soc360')}</h1>
+          <h1 className="text-2xl font-bold text-gray-900" id="Login.soc360">{tr('Login.soc360')}</h1>
           <p className="mt-1 text-sm text-gray-500">{t('login.subtitle')}</p>
         </div>
 
@@ -55,7 +55,7 @@ export function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label={t('login.username')}>
+          <Field label={t('login.username')} id="login.username">
             <Input
               type="text"
               autoComplete="username"
@@ -66,7 +66,7 @@ export function Login() {
             />
           </Field>
 
-          <Field label={t('login.password')}>
+          <Field label={t('login.password')} id="login.password">
             <Input
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"

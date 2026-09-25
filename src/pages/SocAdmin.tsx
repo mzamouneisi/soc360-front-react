@@ -233,9 +233,9 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         actions={
           <>
             <RefreshButton onClick={reload} variant="primary" />
-            <IconButton icon="add" label={tr('SocAdmin.nouvelle.societe')} variant="new" onClick={() => setAddOpen(true)} />
+            <IconButton icon="add" label={tr('SocAdmin.nouvelle.societe')} variant="new" onClick={() => setAddOpen(true)} id="SocAdmin.nouvelle.societe" />
             {isAdmin && (
-              <IconButton icon="add" label={tr('SocAdmin.societe.demo')} variant="new" onClick={() => void createDemoSoc()} disabled={demoCreating} loading={demoCreating} />
+              <IconButton icon="add" label={tr('SocAdmin.societe.demo')} variant="new" onClick={() => void createDemoSoc()} disabled={demoCreating} loading={demoCreating} id="SocAdmin.societe.demo" />
             )}
           </>
         }
@@ -315,8 +315,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(s)
-                      }}
-                    />
+                      }} id="common.edit" />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
@@ -324,8 +323,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                       onClick={(e) => {
                         e.stopPropagation()
                         void handleDelete(s)
-                      }}
-                    />
+                      }} id="common.delete" />
                   </div>
                 ) : (
                   <></>
@@ -351,65 +349,64 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           size="lg"
           footer={
             <>
-              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setEditingForm(null)} />
+              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setEditingForm(null)} id="common.cancel" />
               <IconButton
                 icon="save"
                 label={tr('common.save')}
                 variant="primary"
                 type="button"
                 disabled={saving} loading={saving}
-                onClick={() => void saveEdit()}
-              />
+                onClick={() => void saveEdit()} id="common.save" />
             </>
           }
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('SocAdmin.nom.de.la.societe')}>
+            <Field label={tr('SocAdmin.nom.de.la.societe')} id="SocAdmin.nom.de.la.societe">
               <Input value={editingForm.form.name} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, name: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.siret')}>
+            <Field label={tr('SocAdmin.siret')} id="SocAdmin.siret">
               <Input value={editingForm.form.siret} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, siret: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.gerant')}>
+            <Field label={tr('SocAdmin.gerant')} id="SocAdmin.gerant">
               <Input value={editingForm.form.gerant} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, gerant: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.code.naf')}>
+            <Field label={tr('SocAdmin.code.naf')} id="SocAdmin.code.naf">
               <Input value={editingForm.form.codeNaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, codeNaf: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.urssaf')}>
+            <Field label={tr('SocAdmin.urssaf')} id="SocAdmin.urssaf">
               <Input value={editingForm.form.urssaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, urssaf: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.categorie.entreprise')}>
+            <Field label={tr('SocAdmin.categorie.entreprise')} id="SocAdmin.categorie.entreprise">
               <Input value={editingForm.form.categorieEntreprise} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, categorieEntreprise: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.date.de.creation')}>
+            <Field label={tr('SocAdmin.date.de.creation')} id="SocAdmin.date.de.creation">
               <Input type="date" value={editingForm.form.dateCreation} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateCreation: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.date.de.fermeture')}>
+            <Field label={tr('SocAdmin.date.de.fermeture')} id="SocAdmin.date.de.fermeture">
               <Input type="date" value={editingForm.form.dateFermeture} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateFermeture: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.site.web')}>
+            <Field label={tr('SocAdmin.site.web')} id="SocAdmin.site.web">
               <Input type="url" value={editingForm.form.website} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, website: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.rue')}>
+            <Field label={tr('SocAdmin.rue')} id="SocAdmin.rue">
               <Input value={editingForm.form.street} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, street: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.code.postal')}>
+            <Field label={tr('SocAdmin.code.postal')} id="SocAdmin.code.postal">
               <Input value={editingForm.form.zipCode} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, zipCode: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.ville')}>
+            <Field label={tr('SocAdmin.ville')} id="SocAdmin.ville">
               <Input value={editingForm.form.city} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, city: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.pays')}>
+            <Field label={tr('SocAdmin.pays')} id="SocAdmin.pays">
               <Input value={editingForm.form.country} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, country: e.target.value } })} />
             </Field>
             <div className="sm:col-span-2">
-              <Field label={tr('SocAdmin.description')}>
+              <Field label={tr('SocAdmin.description')} id="SocAdmin.description">
                 <Textarea rows={3} value={editingForm.form.description} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, description: e.target.value } })} />
               </Field>
             </div>
             <div className="sm:col-span-2">
-              <Field label={tr('SocAdmin.informations.web')}>
+              <Field label={tr('SocAdmin.informations.web')} id="SocAdmin.informations.web">
                 <Textarea rows={3} value={editingForm.form.infosWeb} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, infosWeb: e.target.value } })} />
               </Field>
             </div>
@@ -424,7 +421,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           title={tr('SocAdmin.supprimer.la.societe', { name: deleting.name })}
           footer={
             <>
-              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setDeleting(null)} disabled={dependencyLoading} />
+              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setDeleting(null)} disabled={dependencyLoading} id="common.cancel" />
               <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                 {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                 {tr('SocAdmin.tout.supprimer')}
@@ -455,7 +452,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           onClose={() => setDemoResult(null)}
           title={tr('SocAdmin.societe.demo.creee', { number: demoResult.number })}
           footer={
-            <IconButton icon="close" label={tr('common.close')} type="button" onClick={() => setDemoResult(null)} />
+            <IconButton icon="close" label={tr('common.close')} type="button" onClick={() => setDemoResult(null)} id="common.close" />
           }
         >
           <div className="space-y-2 text-sm">

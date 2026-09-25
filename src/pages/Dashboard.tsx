@@ -42,7 +42,7 @@ export function Dashboard() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900" id="Dashboard.bonjour">
             {tr('Dashboard.bonjour')} {user.firstName} 👋
           </h2>
           <p className="mt-1 text-sm text-gray-500">
@@ -181,7 +181,7 @@ export function Dashboard() {
       )}
 
       <Card className="p-5" style={DASH_CARD}>
-        <h3 className="text-lg font-semibold text-gray-900">{tr('Dashboard.mon.profil')}</h3>
+        <h3 className="text-lg font-semibold text-gray-900" id="Dashboard.mon.profil">{tr('Dashboard.mon.profil')}</h3>
         <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <InfoRow label={tr('Dashboard.nom')} value={`${user.firstName} ${user.lastName}`} />
           <InfoRow label={tr('Dashboard.e.mail')} value={user.email} />

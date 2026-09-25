@@ -285,7 +285,7 @@ export function Tables() {
             <InlineButton variant="soft" onClick={() => loadTable(selected)} disabled={loading}>
               {tr('Tables.recharger')}
             </InlineButton>
-            <IconButton icon="add" label={tr('Tables.ajouter.une.ligne')} variant="new" onClick={openInsert} disabled={loading || columns.length === 0} />
+            <IconButton icon="add" label={tr('Tables.ajouter.une.ligne')} variant="new" onClick={openInsert} disabled={loading || columns.length === 0} id="Tables.ajouter.une.ligne" />
           </>
         )}
       </div>
@@ -374,14 +374,12 @@ export function Tables() {
                             onClick={() => {
                               setInserting(false)
                               setDraft({ ...row })
-                            }}
-                          />
+                            }} id="Tables.modifier" />
                           <IconButton
                             icon="delete"
                             label={tr('Tables.supprimer')}
                             variant="danger"
-                            onClick={() => deleteRow(row)}
-                          />
+                            onClick={() => deleteRow(row)} id="Tables.supprimer" />
                         </td>
                       </tr>
                     ))}

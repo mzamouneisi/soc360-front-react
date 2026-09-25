@@ -167,7 +167,7 @@ export function Profile() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="p-6">
-          <h3 className="text-sm font-semibold text-gray-900">{tr('Profile.informations')}</h3>
+          <h3 className="text-sm font-semibold text-gray-900" id="Profile.informations">{tr('Profile.informations')}</h3>
           <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
@@ -243,7 +243,7 @@ export function Profile() {
           </dl>
           {user.manager && (
             <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <h4 className="text-sm font-semibold text-gray-900">{tr('Profile.manager')}</h4>
+              <h4 className="text-sm font-semibold text-gray-900" id="Profile.manager">{tr('Profile.manager')}</h4>
               <dl className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <dt className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
@@ -272,15 +272,15 @@ export function Profile() {
           )}
           {user.role === 'RESPONSIBLE_SOC' && editingSoc && (
             <div className="mt-4 grid grid-cols-1 gap-4 rounded-lg border border-brand-100 bg-brand-50/40 p-4 sm:grid-cols-2">
-              <Field label={tr('Profile.nom.de.la.societe')}><Input value={editingSoc.name} onChange={(e) => setEditingSoc({ ...editingSoc, name: e.target.value })} /></Field>
-              <Field label={tr('Profile.siret')}><Input value={editingSoc.siret ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, siret: e.target.value })} /></Field>
-              <Field label={tr('Profile.description')}><Textarea rows={2} value={editingSoc.description ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, description: e.target.value })} /></Field>
-              <Field label={tr('Profile.informations.web')}><Textarea rows={2} value={editingSoc.infosWeb ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, infosWeb: e.target.value })} /></Field>
-              <Field label={tr('Profile.site.web')}><Input type="url" value={editingSoc.website ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, website: e.target.value })} /></Field>
-              <Field label={tr('Profile.gerant')}><Input value={editingSoc.gerant ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, gerant: e.target.value })} /></Field>
+              <Field label={tr('Profile.nom.de.la.societe')} id="Profile.nom.de.la.societe"><Input value={editingSoc.name} onChange={(e) => setEditingSoc({ ...editingSoc, name: e.target.value })} /></Field>
+              <Field label={tr('Profile.siret')} id="Profile.siret"><Input value={editingSoc.siret ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, siret: e.target.value })} /></Field>
+              <Field label={tr('Profile.description')} id="Profile.description"><Textarea rows={2} value={editingSoc.description ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, description: e.target.value })} /></Field>
+              <Field label={tr('Profile.informations.web')} id="Profile.informations.web"><Textarea rows={2} value={editingSoc.infosWeb ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, infosWeb: e.target.value })} /></Field>
+              <Field label={tr('Profile.site.web')} id="Profile.site.web"><Input type="url" value={editingSoc.website ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, website: e.target.value })} /></Field>
+              <Field label={tr('Profile.gerant')} id="Profile.gerant"><Input value={editingSoc.gerant ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, gerant: e.target.value })} /></Field>
               <div className="flex gap-2 sm:col-span-2">
-                <IconButton type="button" icon="save" label={tr('Profile.enregistrer')} variant="primary" className="!w-auto" onClick={() => void saveSoc()} disabled={socSaving} loading={socSaving} />
-                <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setEditingSoc(null)} />
+                <IconButton type="button" icon="save" label={tr('Profile.enregistrer')} variant="primary" className="!w-auto" onClick={() => void saveSoc()} disabled={socSaving} loading={socSaving} id="Profile.enregistrer" />
+                <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setEditingSoc(null)} id="Profile.annuler" />
               </div>
             </div>
           )}
@@ -289,7 +289,7 @@ export function Profile() {
           {deletingSoc && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
               <div className="flex h-[500px] w-[500px] max-h-[90vh] max-w-[92vw] flex-col rounded-xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true">
-                <h3 className="text-lg font-semibold text-gray-900">{tr('Profile.supprimer.la.societe')} {deletingSoc.name} »</h3>
+                <h3 className="text-lg font-semibold text-gray-900" id="Profile.supprimer.la.societe">{tr('Profile.supprimer.la.societe')} {deletingSoc.name} »</h3>
                 <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {tr('Profile.attention.cette.societe.sera.supprimee.avec.tous.ses.objets.')}
                 </div>
@@ -308,7 +308,7 @@ export function Profile() {
                   ))}
                 </div>
                 <div className="mt-4 flex items-center justify-end gap-2 border-t border-gray-200 pt-3">
-                  <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading} />
+                  <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading} id="Profile.annuler" />
                   <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                     {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                     {tr('Profile.tout.supprimer')}
@@ -320,7 +320,7 @@ export function Profile() {
         </Card>
 
         <Card className="p-6">
-          <h3 className="text-sm font-semibold text-gray-900">{tr('Profile.changer.le.mot.de.passe')}</h3>
+          <h3 className="text-sm font-semibold text-gray-900" id="Profile.changer.le.mot.de.passe">{tr('Profile.changer.le.mot.de.passe')}</h3>
           <div className="mt-4 space-y-4">
             {changeSuccess && (
               <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
@@ -328,7 +328,7 @@ export function Profile() {
               </div>
             )}
             {changeError && <ErrorBlock message={changeError} />}
-            <Field label={tr('Profile.mot.de.passe.actuel')}>
+            <Field label={tr('Profile.mot.de.passe.actuel')} id="Profile.mot.de.passe.actuel">
               <Input
                 type="password"
                 autoComplete="current-password"
@@ -336,7 +336,7 @@ export function Profile() {
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
             </Field>
-            <Field label={tr('Profile.nouveau.mot.de.passe')}>
+            <Field label={tr('Profile.nouveau.mot.de.passe')} id="Profile.nouveau.mot.de.passe">
               <Input
                 type="password"
                 autoComplete="new-password"
@@ -344,7 +344,7 @@ export function Profile() {
                 onChange={(e) => setNewPassword(e.target.value)}
               />
             </Field>
-            <Field label={tr('Profile.confirmation')}>
+            <Field label={tr('Profile.confirmation')} id="Profile.confirmation">
               <Input
                 type="password"
                 autoComplete="new-password"
@@ -361,7 +361,7 @@ export function Profile() {
       </div>
 
       <Card className="mt-6 p-6">
-        <h3 className="text-sm font-semibold text-gray-900">{tr('Profile.historique.des.connexions')} ({connPage.total})</h3>
+        <h3 className="text-sm font-semibold text-gray-900" id="Profile.historique.des.connexions">{tr('Profile.historique.des.connexions')} ({connPage.total})</h3>
         {connectionsLoading ? (
           <LoadingBlock />
         ) : (

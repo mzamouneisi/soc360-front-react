@@ -113,8 +113,7 @@ export function Messages() {
                 onClick={() => {
                   setComposeOpen(true)
                   setFormError(null)
-                }}
-              />
+                }} id="Messages.nouveau.message" />
             ) : null}
           </>
         }
@@ -201,8 +200,8 @@ export function Messages() {
         title={tr('Messages.nouveau.message')}
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setComposeOpen(false)} />
-            <IconButton icon="send" label={tr('common.send')} variant="primary" className="w-auto" onClick={handleSend as never} disabled={submitting} loading={submitting} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setComposeOpen(false)} id="common.cancel" />
+            <IconButton icon="send" label={tr('common.send')} variant="primary" className="w-auto" onClick={handleSend as never} disabled={submitting} loading={submitting} id="common.send" />
           </>
         }
       >
@@ -212,7 +211,7 @@ export function Messages() {
               {formError}
             </div>
           )}
-          <Field label={tr('Messages.destinataire')}>
+          <Field label={tr('Messages.destinataire')} id="Messages.destinataire">
             <Select value={recipientId} onChange={(e) => setRecipientId(e.target.value)}>
               <option value="">{tr('Messages.selectionner')}</option>
               {(users?.items ?? [])
@@ -224,10 +223,10 @@ export function Messages() {
                 ))}
             </Select>
           </Field>
-          <Field label={tr('Messages.objet')}>
+          <Field label={tr('Messages.objet')} id="Messages.objet">
             <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
           </Field>
-          <Field label={tr('Messages.message')}>
+          <Field label={tr('Messages.message')} id="Messages.message">
             <Textarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
           </Field>
         </form>
@@ -239,8 +238,8 @@ export function Messages() {
         title={viewing?.subject ?? 'Message'}
         footer={
           <>
-            <IconButton icon="close" label={tr('common.close')} onClick={() => setViewing(null)} />
-            <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={handleDelete} />
+            <IconButton icon="close" label={tr('common.close')} onClick={() => setViewing(null)} id="common.close" />
+            <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={handleDelete} id="common.delete" />
           </>
         }
       >

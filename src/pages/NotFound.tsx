@@ -5,7 +5,7 @@ export function NotFound() {
   return (
     <div className="flex min-h-full flex-col items-center justify-center bg-gray-50 p-6">
       <p className="text-6xl font-bold text-brand-600">404</p>
-      <h1 className="mt-4 text-xl font-semibold text-gray-900">
+      <h1 className="mt-4 text-xl font-semibold text-gray-900" id="NotFound.page.introuvable">
         {tr('NotFound.page.introuvable')}
       </h1>
       <p className="mt-1 text-sm text-gray-500">

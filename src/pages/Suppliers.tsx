@@ -168,7 +168,7 @@ export function Suppliers() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('Suppliers.nouveau.fournisseur')} variant="new" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Suppliers.nouveau.fournisseur')} variant="new" onClick={openCreate} id="Suppliers.nouveau.fournisseur" />
             ) : null}
           </>
         }
@@ -233,14 +233,12 @@ export function Suppliers() {
                     <IconButton
                       icon="edit"
                       label={tr('common.edit')}
-                      onClick={(e) => { e.stopPropagation(); openEdit(s) }}
-                    />
+                      onClick={(e) => { e.stopPropagation(); openEdit(s) }} id="common.edit" />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
                       variant="danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(s) }}
-                    />
+                      onClick={(e) => { e.stopPropagation(); handleDelete(s) }} id="common.delete" />
                   </div>
                 ) : (
                   <></>
@@ -262,7 +260,7 @@ export function Suppliers() {
         title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Suppliers.nouveau.fournisseur')}
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton
               icon={editing ? 'save' : 'add'}
               label={editing ? tr('common.save') : tr('common.create')}
@@ -280,7 +278,7 @@ export function Suppliers() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Suppliers.societe.associee')}>
+            <Field label={tr('Suppliers.societe.associee')} id="Suppliers.societe.associee">
               <Select value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
                 <option value="">{tr('Suppliers.selectionner')}</option>
                 {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
@@ -293,10 +291,10 @@ export function Suppliers() {
               </Select>
             </Field>
           </div>
-          <Field label={tr('Suppliers.nom.du.fournisseur')}>
+          <Field label={tr('Suppliers.nom.du.fournisseur')} id="Suppliers.nom.du.fournisseur">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
-          <Field label={tr('Suppliers.notes.infos.specifiques.pour.votre.societe')}>
+          <Field label={tr('Suppliers.notes.infos.specifiques.pour.votre.societe')} id="Suppliers.notes.infos.specifiques.pour.votre.societe">
             <Textarea
               rows={2}
               value={form.notes}
@@ -305,20 +303,20 @@ export function Suppliers() {
             />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Suppliers.contact')}>
+            <Field label={tr('Suppliers.contact')} id="Suppliers.contact">
               <Input
                 value={form.contactName}
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
               />
             </Field>
-            <Field label={tr('Suppliers.telephone')}>
+            <Field label={tr('Suppliers.telephone')} id="Suppliers.telephone">
               <Input
                 value={form.contactPhone}
                 onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               />
             </Field>
           </div>
-          <Field label={tr('Suppliers.e.mail.du.contact')}>
+          <Field label={tr('Suppliers.e.mail.du.contact')} id="Suppliers.e.mail.du.contact">
             <Input
               type="email"
               value={form.contactEmail}

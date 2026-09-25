@@ -166,7 +166,7 @@ export function Clients() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('Clients.nouveau.client')} variant="new" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Clients.nouveau.client')} variant="new" onClick={openCreate} id="Clients.nouveau.client" />
             ) : null}
           </>
         }
@@ -232,14 +232,12 @@ export function Clients() {
                       icon="edit"
                       label={tr('common.edit')}
                       variant="primary"
-                      onClick={(e) => { e.stopPropagation(); openEdit(c) }}
-                    />
+                      onClick={(e) => { e.stopPropagation(); openEdit(c) }} id="common.edit" />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
                       variant="danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(c) }}
-                    />
+                      onClick={(e) => { e.stopPropagation(); handleDelete(c) }} id="common.delete" />
                   </div>
                 ) : (
                   <></>
@@ -261,7 +259,7 @@ export function Clients() {
         title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Clients.nouveau.client')}
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton
               icon={editing ? 'save' : 'add'}
               label={editing ? tr('common.save') : tr('common.create')}
@@ -279,7 +277,7 @@ export function Clients() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Clients.societe.associee')}>
+            <Field label={tr('Clients.societe.associee')} id="Clients.societe.associee">
               <Select value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
                 <option value="">{tr('Clients.selectionner')}</option>
                 {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
@@ -292,10 +290,10 @@ export function Clients() {
               </Select>
             </Field>
           </div>
-          <Field label={tr('Clients.nom.du.client')}>
+          <Field label={tr('Clients.nom.du.client')} id="Clients.nom.du.client">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
-          <Field label={tr('Clients.notes.infos.specifiques.pour.votre.societe')}>
+          <Field label={tr('Clients.notes.infos.specifiques.pour.votre.societe')} id="Clients.notes.infos.specifiques.pour.votre.societe">
             <Textarea
               rows={2}
               value={form.notes}
@@ -304,20 +302,20 @@ export function Clients() {
             />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Clients.contact')}>
+            <Field label={tr('Clients.contact')} id="Clients.contact">
               <Input
                 value={form.contactName}
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
               />
             </Field>
-            <Field label={tr('Clients.telephone')}>
+            <Field label={tr('Clients.telephone')} id="Clients.telephone">
               <Input
                 value={form.contactPhone}
                 onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               />
             </Field>
           </div>
-          <Field label={tr('Clients.e.mail.du.contact')}>
+          <Field label={tr('Clients.e.mail.du.contact')} id="Clients.e.mail.du.contact">
             <Input
               type="email"
               value={form.contactEmail}

@@ -223,7 +223,7 @@ export function Activities() {
             <RefreshButton onClick={reload} />
             {canEdit ? (
               <>
-                <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} />
+                <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} id="Activities.nouvelle.activite" />
                 <InlineButton className="ml-2" variant="primary" onClick={() => navigate('/types-activites')}>
                   {tr('Activities.gerer.les.types')}
                 </InlineButton>
@@ -235,7 +235,7 @@ export function Activities() {
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="w-56">
-          <Field label={tr('Activities.consultant')}>
+          <Field label={tr('Activities.consultant')} id="Activities.consultant">
             <Select
               value={consultantFilter}
               onChange={(e) => setConsultantFilter(e.target.value)}
@@ -250,7 +250,7 @@ export function Activities() {
           </Field>
         </div>
         <div className="w-56">
-          <Field label={tr('Activities.type.d.activite')}>
+          <Field label={tr('Activities.type.d.activite')} id="Activities.type.d.activite">
             <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
               <option value="">{tr('Activities.tous.les.types')}</option>
               {(filterTypes ?? []).map((t) => (
@@ -392,8 +392,7 @@ export function Activities() {
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(a)
-                      }}
-                    />
+                      }} id="common.edit" />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
@@ -401,8 +400,7 @@ export function Activities() {
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete(a)
-                      }}
-                    />
+                      }} id="common.delete" />
                   </div>
                 ) : (
                   <></>
@@ -425,7 +423,7 @@ export function Activities() {
           description={tr('Activities.creez.des.prestations.facturables.pour.vos.cra')}
           action={
             canEdit ? (
-              <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} id="Activities.nouvelle.activite" />
             ) : undefined
           }
         />
@@ -437,7 +435,7 @@ export function Activities() {
         title={editing ? tr('Activities.modifier.activite', { name: editing.name }) : tr('Activities.nouvelle.activite')}
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton
               icon={editing ? 'save' : 'add'}
               label={editing ? tr('common.save') : tr('common.create')}
@@ -455,7 +453,7 @@ export function Activities() {
             </div>
           )}
           {isAdmin && (
-            <Field label={tr('Activities.societe')}>
+            <Field label={tr('Activities.societe')} id="Activities.societe">
               <Select
                 value={form.socId}
                 onChange={(e) =>
@@ -477,16 +475,16 @@ export function Activities() {
               </Select>
             </Field>
           )}
-          <Field label={tr('Activities.nom')}>
+          <Field label={tr('Activities.nom')} id="Activities.nom">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
-          <Field label={tr('Activities.description')}>
+          <Field label={tr('Activities.description')} id="Activities.description">
             <Input
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </Field>
-          <Field label={tr('Activities.projet')}>
+          <Field label={tr('Activities.projet')} id="Activities.projet">
             <Select
               value={form.projectId}
               onChange={(e) => setForm({ ...form, projectId: e.target.value })}
@@ -501,7 +499,7 @@ export function Activities() {
             </Select>
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Field label={tr('Activities.type')}>
+            <Field label={tr('Activities.type')} id="Activities.type">
               <Select value={form.typeId} onChange={(e) => setForm({ ...form, typeId: e.target.value })}>
                 <option value="">{tr('Activities.selectionner')}</option>
                 {(types ?? []).map((t) => (
@@ -511,7 +509,7 @@ export function Activities() {
                 ))}
               </Select>
             </Field>
-            <Field label={tr('Activities.prix')}>
+            <Field label={tr('Activities.prix')} id="Activities.prix">
               <Input
                 type="number"
                 step="0.01"
@@ -520,7 +518,7 @@ export function Activities() {
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
               />
             </Field>
-            <Field label={tr('Activities.devise')}>
+            <Field label={tr('Activities.devise')} id="Activities.devise">
               <Select
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
@@ -552,14 +550,14 @@ export function Activities() {
                 ))}
               </Select>
             </Field>
-            <Field label={tr('Activities.date.de.debut')}>
+            <Field label={tr('Activities.date.de.debut')} id="Activities.date.de.debut">
               <Input
                 type="date"
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
               />
             </Field>
-            <Field label={tr('Activities.date.de.fin.optionnelle')}>
+            <Field label={tr('Activities.date.de.fin.optionnelle')} id="Activities.date.de.fin.optionnelle">
               <Input
                 type="date"
                 value={form.endDate}

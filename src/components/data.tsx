@@ -138,6 +138,7 @@ export function Table<T>({
               {columns.map((col) => (
                 <th
                   key={col.key}
+                  id={col.key}
                   className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
                 >
                   {col.label}

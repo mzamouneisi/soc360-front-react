@@ -373,7 +373,7 @@ export function Consultants() {
             <RefreshButton onClick={reload} />
             {canCreate ? (
               <>
-                <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="new" onClick={openCreate} />
+                <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="new" onClick={openCreate} id="Consultants.nouveau.collaborateur" />
                 {canEdit ? (
                   <InlineButton className="ml-2" variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
                     {tr('common.importCsv')}
@@ -485,10 +485,10 @@ export function Consultants() {
                   if (!canEdit) return <></>
                   return (
                     <div className="flex justify-end gap-1">
-                      <IconButton icon="edit" label={tr('common.edit')} variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }} />
-                      <IconButton icon="history" label={tr('common.history')} variant="history" onClick={(e) => { e.stopPropagation(); openHistory(c) }} />
+                      <IconButton icon="edit" label={tr('common.edit')} variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }} id="common.edit" />
+                      <IconButton icon="history" label={tr('common.history')} variant="history" onClick={(e) => { e.stopPropagation(); openHistory(c) }} id="common.history" />
                       {!isSelf && c.role !== 'ADMIN' && (
-                        <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={(e) => { e.stopPropagation(); handleDelete(c) }} />
+                        <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={(e) => { e.stopPropagation(); handleDelete(c) }} id="common.delete" />
                       )}
                     </div>
                   )
@@ -525,7 +525,7 @@ export function Consultants() {
         size="lg"
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
           </>
         }
@@ -538,7 +538,7 @@ export function Consultants() {
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {((!editing && canCreateManager) || (editing && canEdit)) && (
-              <Field label={tr('Consultants.type.de.collaborateur')}>
+              <Field label={tr('Consultants.type.de.collaborateur')} id="Consultants.type.de.collaborateur">
                 <Select
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value, username: '', password: '' })}
@@ -564,37 +564,37 @@ export function Consultants() {
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.prenom')}>
+            <Field label={tr('Consultants.prenom')} id="Consultants.prenom">
               <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
             </Field>
-            <Field label={tr('Consultants.nom')}>
+            <Field label={tr('Consultants.nom')} id="Consultants.nom">
               <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.email')}>
+            <Field label={tr('Consultants.email')} id="Consultants.email">
               <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </Field>
-            <Field label={tr('Consultants.telephone')}>
+            <Field label={tr('Consultants.telephone')} id="Consultants.telephone">
               <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </Field>
           </div>
           {editing && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label={tr('Consultants.nom.d.utilisateur')}>
+              <Field label={tr('Consultants.nom.d.utilisateur')} id="Consultants.nom.d.utilisateur">
                 <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
               </Field>
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.poste')}>
+            <Field label={tr('Consultants.poste')} id="Consultants.poste">
               <Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
             </Field>
-            <Field label={tr('Consultants.nationalite')}>
+            <Field label={tr('Consultants.nationalite')} id="Consultants.nationalite">
               <Input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder={tr('Consultants.fr')} />
             </Field>
           </div>
-          <Field label={tr('Consultants.adresse')}>
+          <Field label={tr('Consultants.adresse')} id="Consultants.adresse">
             <div className="flex items-center gap-2">
               <Input
                 value={form.address}
@@ -638,18 +638,18 @@ export function Consultants() {
             )}
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.date.d.embauche')}>
+            <Field label={tr('Consultants.date.d.embauche')} id="Consultants.date.d.embauche">
               <Input type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
             </Field>
-            <Field label={tr('Consultants.date.de.naissance')}>
+            <Field label={tr('Consultants.date.de.naissance')} id="Consultants.date.de.naissance">
               <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.n.de.securite.sociale')}>
+            <Field label={tr('Consultants.n.de.securite.sociale')} id="Consultants.n.de.securite.sociale">
               <Input value={form.socialNumber} onChange={(e) => setForm({ ...form, socialNumber: e.target.value })} />
             </Field>
-            <Field label={tr('Consultants.manager')}>
+            <Field label={tr('Consultants.manager')} id="Consultants.manager">
               <Select value={form.managerId} onChange={(e) => setForm({ ...form, managerId: e.target.value })}>
                 <option value="">{tr('Consultants.aucun')}</option>
                 {managerOptions.map((m) => (
@@ -670,7 +670,7 @@ export function Consultants() {
                 onChange={(e) => setForm({ ...form, salary: e.target.value })}
               />
             </Field>
-            <Field label={tr('Consultants.devise')}>
+            <Field label={tr('Consultants.devise')} id="Consultants.devise">
               <Select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
                 <option value="EUR">{tr('Consultants.eur')}</option>
                 <option value="USD">{tr('Consultants.usd')}</option>
@@ -678,7 +678,7 @@ export function Consultants() {
               </Select>
             </Field>
           </div>
-          <Field label={tr('Consultants.mode.paiement')}>
+          <Field label={tr('Consultants.mode.paiement')} id="Consultants.mode.paiement">
             <Input
               value={form.modePaiement}
               onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
@@ -687,13 +687,13 @@ export function Consultants() {
           {form.employee && (
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label={tr('Consultants.statut.professionnel')}>
+                <Field label={tr('Consultants.statut.professionnel')} id="Consultants.statut.professionnel">
                   <Input
                     value={form.statutProfessionnel}
                     onChange={(e) => setForm({ ...form, statutProfessionnel: e.target.value })}
                   />
                 </Field>
-                <Field label={tr('Consultants.position')}>
+                <Field label={tr('Consultants.position')} id="Consultants.position">
                   <Input
                     value={form.positionProfessionnelle}
                     onChange={(e) => setForm({ ...form, positionProfessionnelle: e.target.value })}
@@ -701,13 +701,13 @@ export function Consultants() {
                 </Field>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label={tr('Consultants.coefficient')}>
+                <Field label={tr('Consultants.coefficient')} id="Consultants.coefficient">
                   <Input
                     value={form.coefficient}
                     onChange={(e) => setForm({ ...form, coefficient: e.target.value })}
                   />
                 </Field>
-                <Field label={tr('Consultants.matricule')}>
+                <Field label={tr('Consultants.matricule')} id="Consultants.matricule">
                   <Input
                     value={form.matricule}
                     onChange={(e) => setForm({ ...form, matricule: e.target.value })}
@@ -717,7 +717,7 @@ export function Consultants() {
             </>
           )}
           {isAdmin && (
-            <Field label={tr('Consultants.societe')}>
+            <Field label={tr('Consultants.societe')} id="Consultants.societe">
               <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
                 <option value="">{tr('Consultants.selectionner')}</option>
                 {(socs ?? []).map((soc) => (
@@ -736,13 +736,13 @@ export function Consultants() {
                   : tr('Consultants.compte.utilisateur.optionnel')}
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <Field label={tr('Consultants.nom.d.utilisateur')}>
+                <Field label={tr('Consultants.nom.d.utilisateur')} id="Consultants.nom.d.utilisateur">
                   <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
                 </Field>
-                <Field label={tr('Consultants.email.de.connexion')}>
+                <Field label={tr('Consultants.email.de.connexion')} id="Consultants.email.de.connexion">
                   <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </Field>
-                <Field label={tr('Consultants.mot.de.passe.initial')}>
+                <Field label={tr('Consultants.mot.de.passe.initial')} id="Consultants.mot.de.passe.initial">
                   <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
                 </Field>
               </div>
@@ -760,8 +760,8 @@ export function Consultants() {
         title={tr('Consultants.importer.des.consultants.csv')}
         footer={
           <>
-            <IconButton icon="close" label={tr('common.close')} onClick={() => setImportOpen(false)} />
-            <IconButton icon="upload" label={tr('Consultants.importer')} variant="primary" className="w-auto" onClick={handleImport as never} disabled={importing || !importFile} loading={importing} />
+            <IconButton icon="close" label={tr('common.close')} onClick={() => setImportOpen(false)} id="common.close" />
+            <IconButton icon="upload" label={tr('Consultants.importer')} variant="primary" className="w-auto" onClick={handleImport as never} disabled={importing || !importFile} loading={importing} id="Consultants.importer" />
           </>
         }
       >
@@ -770,7 +770,7 @@ export function Consultants() {
             {tr('Consultants.format.attendu')} <code className="rounded bg-gray-100 px-1">{tr('Consultants.prenom.nom.email.telephone.poste.dateembauche.aaaa.mm.jj.dat')}</code>
           </p>
           {isAdmin && (
-            <Field label={tr('Consultants.societe')}>
+            <Field label={tr('Consultants.societe')} id="Consultants.societe">
               <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
                 <option value="">{tr('Consultants.selectionner')}</option>
                 {(socs ?? []).map((soc) => (
@@ -812,7 +812,7 @@ export function Consultants() {
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
         title={historyFor ? tr('Consultants.historique.de', { name: `${historyFor.firstName} ${historyFor.lastName}` }) : tr('common.history')}
-        footer={<IconButton icon="close" label={tr('common.close')} onClick={() => setHistoryOpen(false)} />}
+        footer={<IconButton icon="close" label={tr('common.close')} onClick={() => setHistoryOpen(false)} id="common.close" />}
       >
         {historyLoading && <LoadingBlock />}
         {!historyLoading && historyItems.length === 0 && (

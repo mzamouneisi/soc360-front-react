@@ -314,7 +314,7 @@ export function NoteFraisList() {
                 </option>
               ))}
             </Select>
-            <IconButton icon="add" label={tr('NoteFraisList.nouvelle.note.de.frais')} variant="new" onClick={openCreate} />
+            <IconButton icon="add" label={tr('NoteFraisList.nouvelle.note.de.frais')} variant="new" onClick={openCreate} id="NoteFraisList.nouvelle.note.de.frais" />
           </div>
         }
       />
@@ -336,7 +336,7 @@ export function NoteFraisList() {
 
       {!isConsultant && totalsByMonth && Object.keys(totalsByMonth).length > 0 && (
         <Card className="mt-6 p-5">
-          <h3 className="text-sm font-semibold text-gray-900">{tr('NoteFraisList.montants.par.mois')}</h3>
+          <h3 className="text-sm font-semibold text-gray-900" id="NoteFraisList.montants.par.mois">{tr('NoteFraisList.montants.par.mois')}</h3>
           <div className="mt-4 flex flex-wrap items-end gap-6">
             {Array.from({ length: 12 }, (_, i) => i + 1).map((_, i) => {
               const value = totalsByMonth[String(i + 1)] ?? 0
@@ -363,7 +363,7 @@ export function NoteFraisList() {
 
       {!isConsultant && totalsByCategory && Object.keys(totalsByCategory).length > 0 && (
         <Card className="mt-6 p-5">
-          <h3 className="text-sm font-semibold text-gray-900">{tr('NoteFraisList.montants.par.categorie')}</h3>
+          <h3 className="text-sm font-semibold text-gray-900" id="NoteFraisList.montants.par.categorie">{tr('NoteFraisList.montants.par.categorie')}</h3>
           <div className="mt-3 flex flex-wrap gap-2">
             {Object.entries(totalsByCategory).map(([cat, value]) => (
               <span
@@ -432,17 +432,17 @@ export function NoteFraisList() {
                   <div className="flex justify-end gap-1">
                     {(nf.status === 'DRAFT' || nf.status === 'REJECTED') && (
                       <>
-                        <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} />
-                        <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => changeStatus(nf, 'submit')} />
+                        <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} id="common.edit" />
+                        <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => changeStatus(nf, 'submit')} id="Unavailability.soumettre" />
                       </>
                     )}
                     {canValidate && nf.status === 'SUBMITTED' && (
                       <>
-                        <IconButton icon="check" label={tr('Unavailability.valider')} variant="soft" onClick={() => changeStatus(nf, 'validate')} />
-                        <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => changeStatus(nf, 'reject')} />
+                        <IconButton icon="check" label={tr('Unavailability.valider')} variant="soft" onClick={() => changeStatus(nf, 'validate')} id="Unavailability.valider" />
+                        <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => changeStatus(nf, 'reject')} id="Unavailability.rejeter" />
                       </>
                     )}
-                    <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={() => changeStatus(nf, 'delete')} />
+                    <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={() => changeStatus(nf, 'delete')} id="NoteFraisList.suppr" />
                   </div>
                 ),
               },
@@ -465,7 +465,7 @@ export function NoteFraisList() {
         size="xl"
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
           </>
         }
@@ -478,7 +478,7 @@ export function NoteFraisList() {
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {!isConsultant && (
-              <Field label={tr('NoteFraisList.consultant')}>
+              <Field label={tr('NoteFraisList.consultant')} id="NoteFraisList.consultant">
                 <Select
                   value={form.consultantId}
                   onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
@@ -492,7 +492,7 @@ export function NoteFraisList() {
                 </Select>
               </Field>
             )}
-            <Field label={tr('NoteFraisList.mois')}>
+            <Field label={tr('NoteFraisList.mois')} id="NoteFraisList.mois">
               <Select
                 value={form.month}
                 onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
@@ -504,7 +504,7 @@ export function NoteFraisList() {
                 ))}
               </Select>
             </Field>
-            <Field label={tr('NoteFraisList.annee')}>
+            <Field label={tr('NoteFraisList.annee')} id="NoteFraisList.annee">
               <Select
                 value={form.year}
                 onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
@@ -695,7 +695,7 @@ export function NoteFraisList() {
             )}
           </div>
 
-          <Field label={tr('NoteFraisList.infos.facture.texte.de.la.facture')}>
+          <Field label={tr('NoteFraisList.infos.facture.texte.de.la.facture')} id="NoteFraisList.infos.facture.texte.de.la.facture">
             <Textarea
               rows={4}
               placeholder={tr('NoteFraisList.collez.ou.saisissez.ici.le.contenu.de.la.facture.du.ticket')}

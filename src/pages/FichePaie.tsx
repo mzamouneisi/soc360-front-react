@@ -160,7 +160,7 @@ export function FichePaie() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('FichePaie.nouvelle.fiche.de.paie')} variant="new" onClick={openCreate} />
+              <IconButton icon="add" label={tr('FichePaie.nouvelle.fiche.de.paie')} variant="new" onClick={openCreate} id="FichePaie.nouvelle.fiche.de.paie" />
             ) : null}
           </>
         }
@@ -287,7 +287,7 @@ export function FichePaie() {
               {formError}
             </div>
           )}
-          <Field label={tr('FichePaie.consultant')}>
+          <Field label={tr('FichePaie.consultant')} id="FichePaie.consultant">
             <Select
               value={form.consultantId}
               onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
@@ -301,19 +301,19 @@ export function FichePaie() {
             </Select>
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('FichePaie.periode.aaaa.mm')}>
+            <Field label={tr('FichePaie.periode.aaaa.mm')} id="FichePaie.periode.aaaa.mm">
               <Input
                 value={form.period}
                 onChange={(e) => setForm({ ...form, period: e.target.value })}
                 placeholder="2025-06"
               />
             </Field>
-            <Field label={tr('FichePaie.date.d.emission')}>
+            <Field label={tr('FichePaie.date.d.emission')} id="FichePaie.date.d.emission">
               <Input type="date" value={form.issuedAt} onChange={(e) => setForm({ ...form, issuedAt: e.target.value })} />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('FichePaie.salaire.brut')}>
+            <Field label={tr('FichePaie.salaire.brut')} id="FichePaie.salaire.brut">
               <Input
                 type="number"
                 step="0.01"
@@ -321,7 +321,7 @@ export function FichePaie() {
                 onChange={(e) => setForm({ ...form, grossSalary: e.target.value })}
               />
             </Field>
-            <Field label={tr('FichePaie.salaire.net')}>
+            <Field label={tr('FichePaie.salaire.net')} id="FichePaie.salaire.net">
               <Input
                 type="number"
                 step="0.01"
@@ -331,7 +331,7 @@ export function FichePaie() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('FichePaie.cout.employeur')}>
+            <Field label={tr('FichePaie.cout.employeur')} id="FichePaie.cout.employeur">
               <Input
                 type="number"
                 step="0.01"
@@ -339,7 +339,7 @@ export function FichePaie() {
                 onChange={(e) => setForm({ ...form, employerCost: e.target.value })}
               />
             </Field>
-            <Field label={tr('FichePaie.charges.impots')}>
+            <Field label={tr('FichePaie.charges.impots')} id="FichePaie.charges.impots">
               <Input
                 type="number"
                 step="0.01"
@@ -348,7 +348,7 @@ export function FichePaie() {
               />
             </Field>
           </div>
-          <Field label={tr('FichePaie.commentaire')}>
+          <Field label={tr('FichePaie.commentaire')} id="FichePaie.commentaire">
             <Input
               value={form.comment}
               onChange={(e) => setForm({ ...form, comment: e.target.value })}

@@ -46,7 +46,7 @@ export function ResetPassword() {
     <div className="flex min-h-full items-center justify-center bg-gradient-to-br from-brand-900 via-brand-800 to-brand-950 p-6">
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">{tr('ResetPassword.nouveau.mot.de.passe')}</h1>
+          <h1 className="text-2xl font-bold text-gray-900" id="ResetPassword.nouveau.mot.de.passe">{tr('ResetPassword.nouveau.mot.de.passe')}</h1>
           <p className="mt-1 text-sm text-gray-500">{tr('ResetPassword.choisissez.un.nouveau.mot.de.passe')}</p>
         </div>
 
@@ -71,7 +71,7 @@ export function ResetPassword() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label={tr('ResetPassword.nouveau.mot.de.passe')}>
+          <Field label={tr('ResetPassword.nouveau.mot.de.passe')} id="ResetPassword.nouveau.mot.de.passe">
             <Input
               type="password"
               autoComplete="new-password"
@@ -83,7 +83,7 @@ export function ResetPassword() {
             />
           </Field>
 
-          <Field label={tr('ResetPassword.confirmer.le.nouveau.mot.de.passe')}>
+          <Field label={tr('ResetPassword.confirmer.le.nouveau.mot.de.passe')} id="ResetPassword.confirmer.le.nouveau.mot.de.passe">
             <Input
               type="password"
               autoComplete="new-password"

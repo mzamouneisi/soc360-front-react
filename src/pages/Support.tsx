@@ -137,8 +137,7 @@ export function Support() {
               onClick={() => {
                 setCreateOpen(true)
                 setFormError(null)
-              }}
-            />
+              }} id="Support.nouveau.ticket" />
           </>
         }
       />
@@ -227,8 +226,7 @@ export function Support() {
               onClick={() => {
                 setCreateOpen(true)
                 setFormError(null)
-              }}
-            />
+              }} id="Support.nouveau.ticket" />
           }
         />
       )}
@@ -239,8 +237,8 @@ export function Support() {
         title={tr('Support.nouveau.ticket')}
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setCreateOpen(false)} />
-            <IconButton icon="add" label={tr('Support.creer.le.ticket')} variant="primary" onClick={handleCreate as never} disabled={submitting} loading={submitting} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setCreateOpen(false)} id="common.cancel" />
+            <IconButton icon="add" label={tr('Support.creer.le.ticket')} variant="primary" onClick={handleCreate as never} disabled={submitting} loading={submitting} id="Support.creer.le.ticket" />
           </>
         }
       >
@@ -250,14 +248,14 @@ export function Support() {
               {formError}
             </div>
           )}
-          <Field label={tr('Support.titre')}>
+          <Field label={tr('Support.titre')} id="Support.titre">
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </Field>
-          <Field label={tr('Support.description')}>
+          <Field label={tr('Support.description')} id="Support.description">
             <Textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Support.priorite')}>
+            <Field label={tr('Support.priorite')} id="Support.priorite">
               <Select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TicketPriority)}
@@ -268,7 +266,7 @@ export function Support() {
                 <option value="URGENT">{tr('Support.urgente')}</option>
               </Select>
             </Field>
-            <Field label={tr('Support.categorie')}>
+            <Field label={tr('Support.categorie')} id="Support.categorie">
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -347,8 +345,7 @@ export function Support() {
                   variant="primary"
                   className="w-auto"
                   onClick={handleAddExchange}
-                  disabled={exchangeSubmitting || !exchangeBody.trim()}
-                />
+                  disabled={exchangeSubmitting || !exchangeBody.trim()} id="Support.envoyer" />
               </div>
             </div>
           </div>

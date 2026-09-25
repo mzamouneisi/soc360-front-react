@@ -704,11 +704,10 @@ export function CraDetail({
               icon="cancel"
               label={tr('CraDetail.annuler')}
               variant="danger"
-              onClick={() => setCancelOpen(true)}
-            />
+              onClick={() => setCancelOpen(true)} id="CraDetail.annuler" />
           )}
           <span className="text-sm text-gray-500">{cra.totalWorkedDays} {tr('CraDetail.j')}</span>
-          <IconButton icon="history" label={tr('CraDetail.historique')} variant="history" onClick={openHistory} />
+          <IconButton icon="history" label={tr('CraDetail.historique')} variant="history" onClick={openHistory} id="CraDetail.historique" />
           <InlineButton onClick={handleExportClientPdf}>{tr('CraDetail.export.pdf.client')}</InlineButton>
           <InlineButton onClick={handleExportCompanyPdf}>{tr('CraDetail.export.pdf.ma.societe')}</InlineButton>
         </div>
@@ -1060,8 +1059,7 @@ export function CraDetail({
             variant="primary"
             className="flex-1"
             onClick={handleSave}
-            disabled={saving} loading={saving}
-          />
+            disabled={saving} loading={saving} id="CraDetail.enregistrer" />
         )}
         {canAddEvents && !managerCanAct && (
           <IconButton
@@ -1075,8 +1073,7 @@ export function CraDetail({
               !isIndispo && !craValid
                 ? tr('CraDetail.cra.incomplet.jours')
                 : tr('CraDetail.soumettre.pour.validation')
-            }
-          />
+            } id="CraDetail.soumettre" />
         )}
         {managerCanAct && (
           <>
@@ -1087,8 +1084,7 @@ export function CraDetail({
                 variant="soft"
                 className="w-full"
                 onClick={handleValidate}
-                disabled={!hasInactiveEvent}
-              />
+                disabled={!hasInactiveEvent} id="CraDetail.valider.tout" />
             </span>
             <span className="flex-1" title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
               <Button
@@ -1282,7 +1278,7 @@ function FillRangeModal({
     >
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <Field label={tr('CraDetail.date.de.debut')}>
+          <Field label={tr('CraDetail.date.de.debut')} id="CraDetail.date.de.debut">
             <Input
               type="date"
               min={monthStart}
@@ -1291,7 +1287,7 @@ function FillRangeModal({
               onChange={(e) => setStart(e.target.value)}
             />
           </Field>
-          <Field label={tr('CraDetail.date.de.fin')}>
+          <Field label={tr('CraDetail.date.de.fin')} id="CraDetail.date.de.fin">
             <Input
               type="date"
               min={monthStart}
@@ -1519,7 +1515,7 @@ function RangeValidModal({
           : 'Toutes les activités de la plage seront marquées comme non validées.'}
       </p>
       <div className="grid grid-cols-2 gap-3">
-        <Field label={tr('CraDetail.date.de.debut')}>
+        <Field label={tr('CraDetail.date.de.debut')} id="CraDetail.date.de.debut">
           <Input
             type="date"
             min={monthStart}
@@ -1528,7 +1524,7 @@ function RangeValidModal({
             onChange={(e) => setStart(e.target.value)}
           />
         </Field>
-        <Field label={tr('CraDetail.date.de.fin')}>
+        <Field label={tr('CraDetail.date.de.fin')} id="CraDetail.date.de.fin">
           <Input
             type="date"
             min={monthStart}
@@ -1624,7 +1620,7 @@ function SendBackModal({
       <p className="mb-3 text-sm text-gray-500">
         {tr('CraDetail.indiquez.un.commentaire.obligatoire')}
       </p>
-      <Field label={tr('CraDetail.commentaire.2')}>
+      <Field label={tr('CraDetail.commentaire.2')} id="CraDetail.commentaire.2">
         <Textarea
           rows={4}
           value={comment}

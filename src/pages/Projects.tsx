@@ -143,7 +143,7 @@ export function Projects() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit ? (
-              <IconButton icon="add" label={tr('Projects.nouveau.projet')} variant="new" onClick={openCreate} />
+              <IconButton icon="add" label={tr('Projects.nouveau.projet')} variant="new" onClick={openCreate} id="Projects.nouveau.projet" />
             ) : null}
           </>
         }
@@ -212,14 +212,12 @@ export function Projects() {
                     <IconButton
                       icon="edit"
                       label={tr('common.edit')}
-                      onClick={(e) => { e.stopPropagation(); openEdit(p) }}
-                    />
+                      onClick={(e) => { e.stopPropagation(); openEdit(p) }} id="common.edit" />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
                       variant="danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(p) }}
-                    />
+                      onClick={(e) => { e.stopPropagation(); handleDelete(p) }} id="common.delete" />
                   </div>
                 ) : (
                   <></>
@@ -235,7 +233,7 @@ export function Projects() {
         title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Projects.nouveau.projet')}
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton
               icon={editing ? 'save' : 'add'}
               label={editing ? tr('common.save') : tr('common.create')}
@@ -252,10 +250,10 @@ export function Projects() {
               {formError}
             </div>
           )}
-          <Field label={tr('Projects.nom.du.projet')}>
+          <Field label={tr('Projects.nom.du.projet')} id="Projects.nom.du.projet">
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
-          <Field label={tr('Projects.description')}>
+          <Field label={tr('Projects.description')} id="Projects.description">
             <Textarea
               rows={2}
               value={form.description}
@@ -263,7 +261,7 @@ export function Projects() {
             />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Projects.client')}>
+            <Field label={tr('Projects.client')} id="Projects.client">
               <Select
                 value={form.clientId}
                 onChange={(e) => setForm({ ...form, clientId: e.target.value })}
@@ -277,7 +275,7 @@ export function Projects() {
               </Select>
             </Field>
             {isAdmin && (
-              <Field label={tr('Projects.societe')}>
+              <Field label={tr('Projects.societe')} id="Projects.societe">
                 <Select
                   value={form.socId}
                   onChange={(e) => setForm({ ...form, socId: e.target.value })}
@@ -293,14 +291,14 @@ export function Projects() {
             )}
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Projects.debut')}>
+            <Field label={tr('Projects.debut')} id="Projects.debut">
               <Input
                 type="date"
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
               />
             </Field>
-            <Field label={tr('Projects.fin')}>
+            <Field label={tr('Projects.fin')} id="Projects.fin">
               <Input
                 type="date"
                 value={form.endDate}
@@ -309,7 +307,7 @@ export function Projects() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Projects.tjm')}>
+            <Field label={tr('Projects.tjm')} id="Projects.tjm">
               <Input
                 type="number"
                 step="0.01"
@@ -318,7 +316,7 @@ export function Projects() {
                 onChange={(e) => setForm({ ...form, dailyRate: e.target.value })}
               />
             </Field>
-            <Field label={tr('Projects.devise')}>
+            <Field label={tr('Projects.devise')} id="Projects.devise">
               <Select
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}

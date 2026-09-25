@@ -139,7 +139,7 @@ export function ActivityTypes() {
           <>
             <RefreshButton onClick={reload} />
             {canEdit && workingSocId ? (
-              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} />
+              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} id="ActivityTypes.nouveau.type" />
             ) : null}
           </>
         }
@@ -209,8 +209,7 @@ export function ActivityTypes() {
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(t)
-                      }}
-                    />
+                      }} id="common.edit" />
                     <IconButton
                       icon={t.active ? 'toggleOff' : 'toggleOn'}
                       label={t.active ? tr('common.disable') : tr('common.enable')}
@@ -223,8 +222,7 @@ export function ActivityTypes() {
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete(t)
-                      }}
-                    />
+                      }} id="common.delete" />
                   </div>
                 ) : (
                   <></>
@@ -244,7 +242,7 @@ export function ActivityTypes() {
           description={tr('ActivityTypes.creez.des.types.de.prestations.pour.vos.activites.et.vos.cra')}
           action={
             canEdit && workingSocId ? (
-              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} />
+              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} id="ActivityTypes.nouveau.type" />
             ) : undefined
           }
         />
@@ -256,7 +254,7 @@ export function ActivityTypes() {
         title={form.id != null ? tr('ActivityTypes.modifier.le.type') : tr('ActivityTypes.nouveau.type.d.activite')}
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton
               icon={form.id != null ? 'save' : 'add'}
               label={form.id != null ? tr('common.save') : tr('common.create')}
@@ -274,14 +272,14 @@ export function ActivityTypes() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('ActivityTypes.code')}>
+            <Field label={tr('ActivityTypes.code')} id="ActivityTypes.code">
               <Input
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
                 placeholder={tr('ActivityTypes.mission')}
               />
             </Field>
-            <Field label={tr('ActivityTypes.libelle.fr')}>
+            <Field label={tr('ActivityTypes.libelle.fr')} id="ActivityTypes.libelle.fr">
               <Input
                 value={form.labelFr}
                 onChange={(e) => setForm({ ...form, labelFr: e.target.value })}
@@ -290,14 +288,14 @@ export function ActivityTypes() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('ActivityTypes.libelle.en')}>
+            <Field label={tr('ActivityTypes.libelle.en')} id="ActivityTypes.libelle.en">
               <Input
                 value={form.labelEn}
                 onChange={(e) => setForm({ ...form, labelEn: e.target.value })}
                 placeholder={tr('ActivityTypes.mission.2')}
               />
             </Field>
-            <Field label={tr('ActivityTypes.couleur')}>
+            <Field label={tr('ActivityTypes.couleur')} id="ActivityTypes.couleur">
               <div className="flex items-center gap-2">
                 <input
                   type="color"
