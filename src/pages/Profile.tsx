@@ -172,31 +172,31 @@ export function Profile() {
           <h3 className="text-sm font-semibold text-gray-900" id="Profile.informations">{tr('Profile.informations')}</h3>
           <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
+              <dt id="Profile.nom.complet" className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
               <dd className="text-sm font-medium text-gray-900">
                 {user.firstName} {user.lastName}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">{tr('Profile.identifiant')}</dt>
+              <dt id="Profile.identifiant" className="text-sm text-gray-500">{tr('Profile.identifiant')}</dt>
               <dd className="text-sm font-medium text-gray-900">{user.username}</dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">{tr('Profile.e.mail')}</dt>
+              <dt id="Profile.e.mail" className="text-sm text-gray-500">{tr('Profile.e.mail')}</dt>
               <dd className="text-sm font-medium text-gray-900">{user.email}</dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">{tr('Profile.telephone')}</dt>
+              <dt id="Profile.telephone" className="text-sm text-gray-500">{tr('Profile.telephone')}</dt>
               <dd className="text-sm font-medium text-gray-900">{user.phone ?? '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">{tr('Profile.role')}</dt>
+              <dt id="Profile.role" className="text-sm text-gray-500">{tr('Profile.role')}</dt>
               <dd className="text-sm font-medium text-gray-900">
                 <Badge kind="info">{dt(ROLE_LABELS[user.role] ?? user.role)}</Badge>
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">{tr('Profile.societes')}</dt>
+              <dt id="Profile.societes" className="text-sm text-gray-500">{tr('Profile.societes')}</dt>
               <dd className="text-sm font-medium text-gray-900">
                 {socs.length > 0 ? (
                   <ul className="space-y-1">
@@ -248,23 +248,23 @@ export function Profile() {
               <h4 className="text-sm font-semibold text-gray-900" id="Profile.manager">{tr('Profile.manager')}</h4>
               <dl className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
+                  <dt id="Profile.manager.nom.complet" className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
                   <dd className="text-sm font-medium text-gray-900">{user.manager.fullName}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">{tr('Profile.username')}</dt>
+                  <dt id="Profile.manager.username" className="text-sm text-gray-500">{tr('Profile.username')}</dt>
                   <dd className="text-sm font-medium text-gray-900">{user.manager.username}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">{tr('Profile.e.mail')}</dt>
+                  <dt id="Profile.manager.e.mail" className="text-sm text-gray-500">{tr('Profile.e.mail')}</dt>
                   <dd className="text-sm font-medium text-gray-900">{user.manager.email}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">{tr('Profile.telephone')}</dt>
+                  <dt id="Profile.manager.telephone" className="text-sm text-gray-500">{tr('Profile.telephone')}</dt>
                   <dd className="text-sm font-medium text-gray-900">{user.manager.phone ?? '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">{tr('Profile.role')}</dt>
+                  <dt id="Profile.manager.role" className="text-sm text-gray-500">{tr('Profile.role')}</dt>
                   <dd className="text-sm font-medium text-gray-900">
                     {user.manager.role ? <Badge kind="warning">{dt(ROLE_LABELS[user.manager.role as keyof typeof ROLE_LABELS] ?? user.manager.role)}</Badge> : '—'}
                   </dd>
@@ -295,7 +295,7 @@ export function Profile() {
                 <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {tr('Profile.attention.cette.societe.sera.supprimee.avec.tous.ses.objets.')}
                 </div>
-                <p className="mt-3 text-sm font-medium text-gray-700">
+                <p id="Profile.objets.lies" className="mt-3 text-sm font-medium text-gray-700">
                   {tr('Profile.objets.lies')}{dependencies.length})
                 </p>
                 <div className="mt-2 flex-1 space-y-2 overflow-y-auto">
@@ -311,7 +311,7 @@ export function Profile() {
                 </div>
                 <div className="mt-4 flex items-center justify-end gap-2 border-t border-gray-200 pt-3">
                   <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading} id="Profile.annuler" />
-                  <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
+                  <Button id="Profile.tout.supprimer" type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                     {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                     {tr('Profile.tout.supprimer')}
                   </Button>
@@ -354,7 +354,7 @@ export function Profile() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </Field>
-            <Button className="w-auto" onClick={handleChangePassword} disabled={changing}>
+            <Button id="Profile.mettre.a.jour" className="w-auto" onClick={handleChangePassword} disabled={changing}>
               {changing ? <Spinner className="border-white border-t-transparent" /> : null}
               {tr('Profile.mettre.a.jour')}
             </Button>
@@ -374,16 +374,16 @@ export function Profile() {
                   <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
                     #
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="Profile.date" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Profile.date')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="Profile.ip" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Profile.ip')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="Profile.navigateur" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Profile.navigateur')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="Profile.statut" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Profile.statut')}
                   </th>
                 </tr>
@@ -406,7 +406,7 @@ export function Profile() {
                 ))}
                 {connList.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-400">
+                    <td id="Profile.aucune.connexion.enregistree" colSpan={5} className="px-4 py-6 text-center text-sm text-gray-400">
                       {tr('Profile.aucune.connexion.enregistree')}
                     </td>
                   </tr>
