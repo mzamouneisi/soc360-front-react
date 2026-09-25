@@ -975,6 +975,11 @@ export const EXTRACTED_FR: Record<string, string> = {
   "Messages.aucun.envoi": "Vous n’avez rien envoyé.",
   "Messages.de": "De",
   "Messages.a": "À",
+  "Support.titre.description.obligatoires": "Le titre et la description sont obligatoires",
+  "Support.ticket": "Ticket",
+  "Support.cree.par": "Créé par",
+  "Support.assigne.a": "Assigné à",
+  "Support.general": "Général",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1954,6 +1959,11 @@ export const EXTRACTED_EN: Record<string, string> = {
   "Messages.aucun.envoi": "You haven’t sent anything.",
   "Messages.de": "From",
   "Messages.a": "To",
+  "Support.titre.description.obligatoires": "Title and description are required",
+  "Support.ticket": "Ticket",
+  "Support.cree.par": "Created by",
+  "Support.assigne.a": "Assigned to",
+  "Support.general": "General",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2933,4 +2943,9 @@ export const EXTRACTED_AR: Record<string, string> = {
   "Messages.aucun.envoi": "لم ترسل أي شيء.",
   "Messages.de": "من",
   "Messages.a": "إلى",
+  "Support.titre.description.obligatoires": "العنوان والوصف مطلوبان",
+  "Support.ticket": "تذكرة",
+  "Support.cree.par": "أنشأه",
+  "Support.assigne.a": "مُسند إلى",
+  "Support.general": "عام",
 }

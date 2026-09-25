@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { supportApi } from '../api/support'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { Field, IconButton, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import {
   Badge,
@@ -31,6 +32,7 @@ import type {
 
 export function Support() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const canManage = user?.role === 'ADMIN'
   const [page, setPage] = useState(0)
   const [mine, setMine] = useState(false)
@@ -67,7 +69,7 @@ export function Support() {
   async function handleCreate(e: FormEvent) {
     e.preventDefault()
     if (!title.trim() || !description.trim()) {
-      setFormError('Le titre et la description sont obligatoires')
+      setFormError(tr('Support.titre.description.obligatoires'))
       return
     }
     setSubmitting(true)
@@ -167,43 +169,43 @@ export function Support() {
             columns={[
               {
                 key: 'title',
-                label: 'Ticket',
+                label: tr('Support.ticket'),
                 render: (t) => (
                   <div>
                     <p className="font-medium text-gray-900">{t.title}</p>
                     <p className="text-xs text-gray-500">
-                      {t.category ?? 'Général'} · {formatDateTime(t.createdAt)}
+                      {t.category ?? tr('Support.general')} · {formatDateTime(t.createdAt)}
                     </p>
                   </div>
                 ),
               },
               {
                 key: 'status',
-                label: 'Statut',
+                label: tr('common.status'),
                 render: (t) => (
                   <Badge kind={statusBadge(t.status)}>
-                    {TICKET_STATUS_LABELS[t.status] ?? t.status}
+                    {dt(TICKET_STATUS_LABELS[t.status] ?? t.status)}
                   </Badge>
                 ),
               },
               {
                 key: 'priority',
-                label: 'Priorité',
+                label: tr('Support.priorite'),
                 render: (t) => (
                   <Badge kind={t.priority === 'URGENT' || t.priority === 'HIGH' ? 'error' : 'muted'}>
-                    {TICKET_PRIORITY_LABELS[t.priority] ?? t.priority}
+                    {dt(TICKET_PRIORITY_LABELS[t.priority] ?? t.priority)}
                   </Badge>
                 ),
               },
               {
                 key: 'creator',
-                label: 'Créé par',
+                label: tr('Support.cree.par'),
                 render: (t) =>
                   t.creator ? `${t.creator.firstName} ${t.creator.lastName}` : '—',
               },
               {
                 key: 'assigned',
-                label: 'Assigné à',
+                label: tr('Support.assigne.a'),
                 render: (t) =>
                   t.assignedTo ? `${t.assignedTo.firstName} ${t.assignedTo.lastName}` : '—',
               },
