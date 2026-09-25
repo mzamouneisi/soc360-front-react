@@ -964,6 +964,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "CraDetail.cra.incomplet.jours": "CRA incomplet : chaque jour travaillé doit totaliser 1 jour.",
   "CraDetail.ce.cra": "Ce CRA",
   "CraDetail.cette.indispo": "Cette Indispo",
+  "common.send": "Envoyer",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1932,6 +1933,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "CraDetail.cra.incomplet.jours": "Incomplete timesheet: each worked day must total 1 day.",
   "CraDetail.ce.cra": "This timesheet",
   "CraDetail.cette.indispo": "This leave",
+  "common.send": "Send",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2900,4 +2902,5 @@ export const EXTRACTED_AR: Record<string, string> = {
   "CraDetail.cra.incomplet.jours": "كشف غير مكتمل: يجب أن يساوي كل يوم عمل يومًا واحدًا.",
   "CraDetail.ce.cra": "هذا الكشف",
   "CraDetail.cette.indispo": "هذه الإجازة",
+  "common.send": "إرسال",
 }

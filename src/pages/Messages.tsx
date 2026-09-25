@@ -201,8 +201,8 @@ export function Messages() {
         title={tr('Messages.nouveau.message')}
         footer={
           <>
-            <IconButton icon="cancel" label="Annuler" onClick={() => setComposeOpen(false)} />
-            <IconButton icon="send" label="Envoyer" variant="primary" className="w-auto" onClick={handleSend as never} disabled={submitting} loading={submitting} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setComposeOpen(false)} />
+            <IconButton icon="send" label={tr('common.send')} variant="primary" className="w-auto" onClick={handleSend as never} disabled={submitting} loading={submitting} />
           </>
         }
       >
@@ -239,8 +239,8 @@ export function Messages() {
         title={viewing?.subject ?? 'Message'}
         footer={
           <>
-            <IconButton icon="close" label="Fermer" onClick={() => setViewing(null)} />
-            <IconButton icon="delete" label="Supprimer" variant="danger" onClick={handleDelete} />
+            <IconButton icon="close" label={tr('common.close')} onClick={() => setViewing(null)} />
+            <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={handleDelete} />
           </>
         }
       >
