@@ -192,7 +192,7 @@ export function Profile() {
             <div>
               <dt id="Profile.role" className="text-sm text-gray-500">{tr('Profile.role')}</dt>
               <dd className="text-sm font-medium text-gray-900">
-                <Badge kind="info">{dt(ROLE_LABELS[user.role] ?? user.role)}</Badge>
+                <Badge id="Profile.role.value" kind="info">{dt(ROLE_LABELS[user.role] ?? user.role)}</Badge>
               </dd>
             </div>
             <div>
@@ -207,6 +207,7 @@ export function Profile() {
                         {user.role === 'RESPONSIBLE_SOC' && (
                           <span className="ml-auto flex gap-2">
                             <Button
+                              id={`Profile.societe.${e.id}.selectionner`}
                               type="button"
                               aria-label={`Sélectionner ${e.name}`}
                               title={e.id === selectedSocId ? 'Société de travail' : 'Travailler avec cette société'}
@@ -217,6 +218,7 @@ export function Profile() {
                               <svg className="h-4 w-4" viewBox="0 0 24 24" fill={e.id === selectedSocId ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
                             </Button>
                             <Button
+                              id={`Profile.societe.${e.id}.favorite`}
                               type="button"
                               aria-label={e.id === favoriteSocId ? 'Société favorite' : 'Définir comme favorite'}
                               title={e.id === favoriteSocId ? 'Société favorite' : 'Définir comme favorite'}
@@ -226,10 +228,10 @@ export function Profile() {
                             >
                               <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clipRule="evenodd" /></svg>
                             </Button>
-                            <Button type="button" aria-label={`Modifier ${e.name}`} title={tr('Profile.modifier')} className="!w-auto !bg-gray-100 !px-2 !py-1 !text-xs !text-gray-700" onClick={() => void editSoc(e.id)}>
+                            <Button id={`Profile.societe.${e.id}.modifier`} type="button" aria-label={`Modifier ${e.name}`} title={tr('Profile.modifier')} className="!w-auto !bg-gray-100 !px-2 !py-1 !text-xs !text-gray-700" onClick={() => void editSoc(e.id)}>
                               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" /></svg>
                             </Button>
-                            <Button type="button" variant="danger" aria-label={`Supprimer ${e.name}`} title={tr('Profile.supprimer')} className="!w-auto !px-2 !py-1 !text-xs" onClick={() => void deleteSoc(e.id, e.name)}>
+                            <Button id={`Profile.societe.${e.id}.supprimer`} type="button" variant="danger" aria-label={`Supprimer ${e.name}`} title={tr('Profile.supprimer')} className="!w-auto !px-2 !py-1 !text-xs" onClick={() => void deleteSoc(e.id, e.name)}>
                               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="m19 6-1 14H6L5 6" /><path d="M10 11v5M14 11v5" /></svg>
                             </Button>
                           </span>
@@ -266,7 +268,7 @@ export function Profile() {
                 <div>
                   <dt id="Profile.manager.role" className="text-sm text-gray-500">{tr('Profile.role')}</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    {user.manager.role ? <Badge kind="warning">{dt(ROLE_LABELS[user.manager.role as keyof typeof ROLE_LABELS] ?? user.manager.role)}</Badge> : '—'}
+                    {user.manager.role ? <Badge id="Profile.manager.role.value" kind="warning">{dt(ROLE_LABELS[user.manager.role as keyof typeof ROLE_LABELS] ?? user.manager.role)}</Badge> : '—'}
                   </dd>
                 </div>
               </dl>
@@ -292,7 +294,7 @@ export function Profile() {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
               <div className="flex h-[500px] w-[500px] max-h-[90vh] max-w-[92vw] flex-col rounded-xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true">
                 <h3 className="text-lg font-semibold text-gray-900" id="Profile.supprimer.la.societe">{tr('Profile.supprimer.la.societe')} {deletingSoc.name} »</h3>
-                <div className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <div id="Profile.attention.cette.societe.sera.supprimee.avec.tous.ses.objets." className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {tr('Profile.attention.cette.societe.sera.supprimee.avec.tous.ses.objets.')}
                 </div>
                 <p id="Profile.objets.lies" className="mt-3 text-sm font-medium text-gray-700">
@@ -325,7 +327,7 @@ export function Profile() {
           <h3 className="text-sm font-semibold text-gray-900" id="Profile.changer.le.mot.de.passe">{tr('Profile.changer.le.mot.de.passe')}</h3>
           <div className="mt-4 space-y-4">
             {changeSuccess && (
-              <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+              <div id="Profile.mot.de.passe.mis.a.jour" className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
                 {tr('Profile.mot.de.passe.mis.a.jour')}
               </div>
             )}
@@ -398,7 +400,7 @@ export function Profile() {
                     <td className="px-4 py-3 text-sm text-gray-700">{c.ipAddress}</td>
                     <td className="max-w-xs truncate px-4 py-3 text-sm text-gray-500">{c.userAgent}</td>
                     <td className="px-4 py-3">
-                      <Badge kind={c.success ? 'success' : 'error'}>
+                      <Badge id={`Profile.statut.value.${c.id}`} kind={c.success ? 'success' : 'error'}>
                         {dt(c.success ? 'Succès' : 'Échec')}
                       </Badge>
                     </td>

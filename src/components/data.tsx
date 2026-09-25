@@ -7,13 +7,16 @@ import { useI18n } from '../i18n'
 
 export function Badge({
   kind = 'muted',
+  id,
   children,
 }: {
   kind?: string
+  id?: string
   children: ReactNode
 }) {
   return (
     <span
+      id={id}
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClasses(kind)}`}
     >
       {children}
