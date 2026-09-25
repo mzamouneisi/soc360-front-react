@@ -45,7 +45,7 @@ export function VerifyEmail() {
       setSuccess(true)
       setTimeout(() => navigate('/', { replace: true }), 1500)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
@@ -60,7 +60,7 @@ export function VerifyEmail() {
       const response = await authApi.resendVerification(resendEmail)
       setResendMessage(response.message)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setResending(false)
     }

@@ -68,7 +68,7 @@ export function Facturation() {
         await crasApi.exportPdf({ socId, month, year })
       }
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setExporting(null)
     }

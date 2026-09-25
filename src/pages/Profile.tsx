@@ -73,7 +73,7 @@ export function Profile() {
       setNewPassword('')
       setConfirmPassword('')
     } catch (err) {
-      setChangeError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setChangeError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setChanging(false)
     }
@@ -115,7 +115,7 @@ export function Profile() {
   }
 
   async function deleteSoc(id: number, name: string) {
-    if (!(await dialog.confirm(`Supprimer la société « ${name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Profile.supprimer.la.societe.confirm', { name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     setSocError(null)
     setSocMessage(null)
     try {

@@ -92,7 +92,7 @@ export function Languages() {
   }
 
   async function deleteRow(entry: LanguageEntry) {
-    if (!(await dialog.confirm(tr('languages.confirmDeleteKey', { key: entry.key }), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('languages.confirmDeleteKey', { key: entry.key }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     setError(null)
     setMessage(null)
     try {
@@ -173,7 +173,7 @@ export function Languages() {
   }
 
   async function removeLanguage(code: string) {
-    if (!(await dialog.confirm(tr('languages.confirmDeleteLanguage', { code }), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('languages.confirmDeleteLanguage', { code }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     setError(null)
     setMessage(null)
     try {

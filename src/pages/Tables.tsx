@@ -114,7 +114,7 @@ export function Tables() {
       setError(null)
       setTables(await tablesApi.list())
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inattendue')
+      setError(err instanceof Error ? err.message : tr('common.unexpectedError'))
     }
   }, [])
 
@@ -134,7 +134,7 @@ export function Tables() {
       setRows(lineRows)
       setColumns(lineColumns)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inattendue')
+      setError(err instanceof Error ? err.message : tr('common.unexpectedError'))
     } finally {
       setLoading(false)
     }
@@ -180,7 +180,7 @@ export function Tables() {
       setSqlResult(result)
       if (selected) loadTable(selected)
     } catch (err) {
-      setSqlError(err instanceof Error ? err.message : 'Erreur inattendue')
+      setSqlError(err instanceof Error ? err.message : tr('common.unexpectedError'))
     } finally {
       setSqlLoading(false)
     }
@@ -204,7 +204,7 @@ export function Tables() {
       setDraft(null)
       await loadTable(selected)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inattendue')
+      setError(err instanceof Error ? err.message : tr('common.unexpectedError'))
     } finally {
       setSaving(false)
     }
@@ -228,7 +228,7 @@ export function Tables() {
       setInserting(false)
       await loadTable(selected)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inattendue')
+      setError(err instanceof Error ? err.message : tr('common.unexpectedError'))
     } finally {
       setSaving(false)
     }
@@ -237,7 +237,7 @@ export function Tables() {
   const deleteRow = async (row: Record<string, unknown>) => {
     if (!selected || !idKey || !idColumn) return
     const idValue = cellValue(row, idKey)
-    if (!(await dialog.confirm(`Supprimer la ligne ${idKey} = ${displayValue(idValue)} ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Tables.supprimer.la.ligne', { key: idKey, value: displayValue(idValue) }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     setSaving(true)
     setError(null)
     try {
@@ -248,7 +248,7 @@ export function Tables() {
       await tablesApi.executeSql(`DELETE FROM ${selected} WHERE ${where}`)
       await loadTable(selected)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inattendue')
+      setError(err instanceof Error ? err.message : tr('common.unexpectedError'))
     } finally {
       setSaving(false)
     }

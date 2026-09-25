@@ -36,7 +36,7 @@ export function ResetPassword() {
       setSuccess(true)
       setTimeout(() => navigate('/login', { replace: true }), 2000)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }

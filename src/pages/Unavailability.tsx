@@ -186,7 +186,7 @@ export function Unavailability() {
       setShowForm(false)
       list.reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSaving(false)
     }
@@ -204,7 +204,7 @@ export function Unavailability() {
       list.reload()
       if (selectedId === u.id) setSelectedId(u.id)
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -216,18 +216,18 @@ export function Unavailability() {
     return runAction(
       u,
       () => unavailabilityApi.cancel(u.id),
-      'Retourner cette indisponibilité au brouillon ? Elle restera modifiable.',
+      tr('Unavailability.retour.au.brouillon'),
     )
   }
 
   async function handleValidate(u: UnavailabilityDto) {
-    const comment = await dialog.prompt('Commentaire de validation à envoyer au consultant :')
+    const comment = await dialog.prompt(tr('Unavailability.commentaire.validation'))
     if (comment === null) return
     return runAction(u, () => unavailabilityApi.validate(u.id, comment))
   }
 
   async function handleReject(u: UnavailabilityDto) {
-    const comment = await dialog.prompt('Motif du rejet à envoyer au consultant :')
+    const comment = await dialog.prompt(tr('Unavailability.motif.du.rejet.consultant'))
     if (comment === null) return
     return runAction(u, () => unavailabilityApi.reject(u.id, comment))
   }
@@ -236,8 +236,10 @@ export function Unavailability() {
     return runAction(
       u,
       () => unavailabilityApi.delete(u.id),
-      `Supprimer cette indisponibilité (${UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type}) ?`,
-      { danger: true, okLabel: 'Supprimer' },
+      tr('Unavailability.supprimer.cette.indisponibilite', {
+        type: dt(UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type),
+      }),
+      { danger: true, okLabel: tr('common.delete') },
     )
   }
 
@@ -248,7 +250,7 @@ export function Unavailability() {
         count={filtered.length}
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         actions={
-          <IconButton icon="add" label="Nouvelle indisponibilité" variant="primary" onClick={openCreate} />
+          <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="primary" onClick={openCreate} />
         }
       />
 
@@ -287,7 +289,7 @@ export function Unavailability() {
       {showForm && (
         <Card className="mb-4 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">
-            {editingId != null ? 'Modifier l’indisponibilité' : 'Nouvelle indisponibilité'}
+            {editingId != null ? tr('Unavailability.modifier.l.indisponibilite') : tr('Unavailability.nouvelle.indisponibilite')}
           </h3>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {!isConsultant && (
@@ -360,12 +362,12 @@ export function Unavailability() {
       {!list.loading && filtered.length === 0 && (
         <Card className="flex flex-col items-center justify-center py-14">
           <p className="text-sm font-medium text-gray-900">
-            {search.trim() ? 'Aucune indisponibilité ne correspond au filtre' : 'Aucune indisponibilité'}
+            {search.trim() ? tr('Unavailability.aucune.indisponibilite.filtre') : tr('Unavailability.aucune.indisponibilite')}
           </p>
           <p className="mt-1 text-sm text-gray-500">
             {search.trim()
-              ? 'Modifiez votre recherche.'
-              : 'Cliquez sur « Nouvelle indisponibilité » pour en déclarer une.'}
+              ? tr('Unavailability.modifiez.votre.recherche')
+              : tr('Unavailability.cliquez.sur.nouvelle.indisponibilite')}
           </p>
         </Card>
       )}
@@ -571,6 +573,7 @@ function UnavailabilityHistoryModal({
     [unavailability.id],
   )
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const historyPage = usePagination(history.data ?? [], user?.pageSize ?? 5)
 
   return (
@@ -620,7 +623,7 @@ function UnavailabilityHistoryModal({
                       {formatDateTime(h.dateModifIndispo)}
                     </td>
                     <td className="px-3 py-2 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
-                    <td className="px-3 py-2 text-sm text-gray-600">{h.comment ?? '—'}</td>
+                    <td className="px-3 py-2 text-sm text-gray-600">{h.comment ? dt(h.comment) : '—'}</td>
                     <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsBefore} {tr('Unavailability.j')}</td>
                     <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsAfter} {tr('Unavailability.j')}</td>
                   </tr>

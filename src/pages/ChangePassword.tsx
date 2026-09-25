@@ -33,7 +33,7 @@ export function ChangePassword() {
       setSuccess(true)
       setTimeout(() => navigate('/', { replace: true }), 1500)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }

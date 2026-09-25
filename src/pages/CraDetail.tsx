@@ -455,7 +455,7 @@ export function CraDetail({
       onChange?.()
       return true
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
       return false
     } finally {
       setSaving(false)
@@ -481,7 +481,7 @@ export function CraDetail({
       setData(updated)
       onChange?.()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
@@ -499,7 +499,7 @@ export function CraDetail({
       setData(updated)
       onChange?.()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -512,7 +512,7 @@ export function CraDetail({
       setData(updated)
       onChange?.()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -530,7 +530,7 @@ export function CraDetail({
       setData(updated)
       onChange?.()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -549,7 +549,7 @@ export function CraDetail({
       setData(updated)
       onChange?.()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -563,7 +563,7 @@ export function CraDetail({
       onChange?.()
       setCancelOpen(false)
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSending(false)
     }
@@ -581,14 +581,14 @@ export function CraDetail({
       if (onClose) onClose()
       else navigate(cra.type === 'CONGE' ? '/indispos' : '/cras')
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSending(false)
     }
   }
 
   async function handleDeleteAll() {
-    if (!(await dialog.confirm(tr('CraDetail.supprimer.tous.les.evenements.ajoutes'), { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('CraDetail.supprimer.tous.les.evenements.ajoutes'), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     removeAllEvents()
   }
 
@@ -602,7 +602,7 @@ export function CraDetail({
     try {
       await crasApi.exportClientPdf(cra.id)
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -611,7 +611,7 @@ export function CraDetail({
     try {
       await crasApi.exportCompanyPdf(cra.id)
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 

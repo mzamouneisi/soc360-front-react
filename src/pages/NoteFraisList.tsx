@@ -277,7 +277,7 @@ export function NoteFraisList() {
         const updated = await noteFraisApi.validate(nf.id)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else if (action === 'reject') {
-        const comment = await dialog.prompt('Motif du rejet :')
+        const comment = await dialog.prompt(tr('common.rejectionReason'))
         if (comment === null) return
         const updated = await noteFraisApi.reject(nf.id, comment)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))

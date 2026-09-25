@@ -155,19 +155,19 @@ export function CraList() {
 
   async function changeStatus(id: number, action: 'validate' | 'reject') {
     if (action === 'reject') {
-      const comment = await dialog.prompt('Motif du rejet :')
+      const comment = await dialog.prompt(tr('common.rejectionReason'))
       if (comment === null) return
       try {
         await crasApi.reject(id, comment)
       } catch (err) {
-        void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+        void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
         return
       }
     } else {
       try {
         await crasApi.validate(id)
       } catch (err) {
-        void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+        void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
         return
       }
     }
@@ -177,8 +177,11 @@ export function CraList() {
   async function handleDelete(c: CraDto) {
     if (
       !(await dialog.confirm(
-        `Supprimer le CRA de ${c.consultantName ?? '—'} (${monthLabel(c.month)} ${c.year}) ?`,
-        { variant: 'warning', danger: true, okLabel: 'Supprimer' },
+        tr('CraList.supprimer.le.cra', {
+          name: c.consultantName ?? '—',
+          period: `${monthLabel(c.month)} ${c.year}`,
+        }),
+        { variant: 'warning', danger: true, okLabel: tr('common.delete') },
       ))
     )
       return
@@ -187,7 +190,7 @@ export function CraList() {
       if (openCraId === c.id) setOpenCraId(null)
       reload()
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -221,7 +224,7 @@ export function CraList() {
         setMonth(period.month)
       }
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -376,7 +379,7 @@ export function CraList() {
                         <div className="flex flex-wrap items-center gap-2">
                           <IconButton
                             icon={editable(cra) ? 'edit' : 'view'}
-                            label={editable(cra) ? 'Éditer' : 'Ouvrir'}
+                            label={editable(cra) ? tr('CraList.editer') : tr('CraList.ouvrir')}
                             variant="primary"
                             onClick={() => setOpenCraId(cra.id)}
                           />
@@ -421,18 +424,21 @@ export function CraList() {
 
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
-              <InlineButton disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
-                {tr('CraList.precedent')}
-              </InlineButton>
+              <IconButton
+                icon="chevronLeft"
+                label={tr('CraList.precedent')}
+                disabled={safePage === 0}
+                onClick={() => setPage(safePage - 1)}
+              />
               <span className="text-sm text-gray-500">
                 {tr('CraList.page')} {safePage + 1} / {totalPages}
               </span>
-              <InlineButton
+              <IconButton
+                icon="chevronRight"
+                label={tr('CraList.suivant')}
                 disabled={safePage >= totalPages - 1}
                 onClick={() => setPage(safePage + 1)}
-              >
-                {tr('CraList.suivant')}
-              </InlineButton>
+              />
             </div>
           )}
         </>
@@ -465,15 +471,11 @@ export function CraList() {
           </Select>
         </label>
         <div className="flex items-center gap-1">
-          <InlineButton onClick={goPrev} title={tr('CraList.mois.precedent')}>
-            ◀
-          </InlineButton>
+          <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev} />
           <InlineButton onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
             {tr('CraList.mois.courant')}
           </InlineButton>
-          <InlineButton onClick={goNext} title={tr('CraList.mois.suivant')}>
-            ▶
-          </InlineButton>
+          <IconButton icon="chevronRight" label={tr('CraList.mois.suivant')} onClick={goNext} />
         </div>
       </Card>
 

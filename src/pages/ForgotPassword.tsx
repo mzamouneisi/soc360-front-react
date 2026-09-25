@@ -20,7 +20,7 @@ export function ForgotPassword() {
       const response = await authApi.forgotPassword(email)
       setMessage(response.message)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }

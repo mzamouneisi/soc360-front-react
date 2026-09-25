@@ -70,7 +70,7 @@ export function Register() {
       })
       setMessage(response.message)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
@@ -117,7 +117,7 @@ const companyWebsite = ensureHttps(company.website)
   }
 
   async function clearCompanySearch() {
-    if (!(await dialog.confirm(tr('Register.voulez.vous.effacer.tous.les.champs.du.formulaire'), { variant: 'warning', okLabel: 'Effacer' }))) return
+    if (!(await dialog.confirm(tr('Register.voulez.vous.effacer.tous.les.champs.du.formulaire'), { variant: 'warning', okLabel: tr('common.erase') }))) return
 
     setSocName('')
     setSiret('')

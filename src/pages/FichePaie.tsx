@@ -112,7 +112,7 @@ export function FichePaie() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
@@ -129,7 +129,7 @@ export function FichePaie() {
       await fichePaieApi.uploadFile(fp.id, input.files[0])
       reload()
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setUploadingId(null)
       input.value = ''
@@ -137,12 +137,12 @@ export function FichePaie() {
   }
 
   async function handleDelete(fp: FichePaieDto) {
-    if (!(await dialog.confirm(`Supprimer la fiche de paie de ${fp.period} ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('FichePaie.supprimer.la.fiche', { period: fp.period }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await fichePaieApi.delete(fp.id)
       setData((prev) => (prev ?? []).filter((x) => x.id !== fp.id))
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 

@@ -110,8 +110,11 @@ export function IndispoList() {
   async function handleDelete(c: CraDto) {
     if (
       !(await dialog.confirm(
-        `Supprimer l'Indispo de ${c.consultantName ?? '—'} (${monthLabel(c.month)} ${c.year}) ?`,
-        { variant: 'warning', danger: true, okLabel: 'Supprimer' },
+        tr('IndispoList.supprimer.l.indispo', {
+          name: c.consultantName ?? '—',
+          period: `${monthLabel(c.month)} ${c.year}`,
+        }),
+        { variant: 'warning', danger: true, okLabel: tr('common.delete') },
       ))
     )
       return
@@ -121,7 +124,7 @@ export function IndispoList() {
       if (selectedId === c.id) setSelectedId(null)
       reload()
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
@@ -131,7 +134,7 @@ export function IndispoList() {
       const ind = await crasApi.getOrCreate(user.consultantId, year, month, 'CONGE')
       setOpenId(ind.id)
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 

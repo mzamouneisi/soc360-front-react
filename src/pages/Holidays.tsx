@@ -44,7 +44,7 @@ export function Holidays() {
         if (!cancelled) setHolidays(data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+        if (!cancelled) setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
       })
     return () => {
       cancelled = true
@@ -85,38 +85,38 @@ export function Holidays() {
     const key = toDateString(date)
     const existing = byDate.get(key)
     if (existing) {
-      if (!(await dialog.confirm(`Supprimer le jour férié « ${existing.label} » du ${key} ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+      if (!(await dialog.confirm(tr('Holidays.supprimer.le.jour.ferie', { label: existing.label, date: key }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
       try {
         await socHolidaysApi.delete(existing.id)
         setHolidays((prev) => prev.filter((h) => h.id !== existing.id))
-        setFeedback('Jour férié supprimé.')
+        setFeedback(tr('Holidays.jour.ferie.supprime'))
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+        setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
       }
       return
     }
-    const label = await dialog.prompt('Libellé du jour férié :', 'Jour férié')
+    const label = await dialog.prompt(tr('Holidays.libelle.du.jour.ferie'), tr('Holidays.jour.ferie'))
     if (label === null) return
     try {
-      const created = await socHolidaysApi.create(key, label.trim() || 'Jour férié')
+      const created = await socHolidaysApi.create(key, label.trim() || tr('Holidays.jour.ferie'))
       setHolidays((prev) => [...prev, created].sort((a, b) => a.date.localeCompare(b.date)))
-      setFeedback('Jour férié ajouté.')
+      setFeedback(tr('Holidays.jour.ferie.ajoute'))
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
   async function duplicateToNextYear() {
     if (!canEdit) return
-    if (!(await dialog.confirm(`Dupliquer les jours fériés de ${year} vers ${year + 1} ?`, { variant: 'question' }))) return
+    if (!(await dialog.confirm(tr('Holidays.dupliquer.confirm', { from: year, to: year + 1 }), { variant: 'question' }))) return
     try {
       const copied = await socHolidaysApi.duplicate(year)
-      setFeedback(`${copied} jour(s) férié(s) dupliqué(s) vers ${year + 1}.`)
+      setFeedback(tr('Holidays.dupliquer.resultat', { count: copied, to: year + 1 }))
       if (copied > 0 && month === 11) {
         // reste sur le même mois ; le rechargement de l'année se fera au clic sur "suiv"
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 

@@ -86,7 +86,7 @@ export function Documents() {
       setModalOpen(false)
       reload()
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
@@ -96,17 +96,17 @@ export function Documents() {
     try {
       await documentsApi.download(doc.id, doc.name)
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
   async function handleDelete(doc: HrDocumentDto) {
-    if (!(await dialog.confirm(`Supprimer le document « ${doc.name} » ?`, { variant: 'warning', danger: true, okLabel: 'Supprimer' }))) return
+    if (!(await dialog.confirm(tr('Documents.supprimer.le.document', { name: doc.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
       await documentsApi.delete(doc.id)
       setData((prev) => (prev ?? []).filter((d) => d.id !== doc.id))
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur inattendue')
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
 
