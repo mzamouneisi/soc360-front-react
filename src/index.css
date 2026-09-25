@@ -173,6 +173,10 @@ body {
   --btn-large-width: 100px;
   --btn-save-color: #1d48eb;
   --btn-delete-color: #dc2626;
+  --btn-cancel-color: #ffffff;
+  --btn-cancel-text-color: #374151;
+  --btn-submit-color: #e0e7ff;
+  --btn-submit-text-color: #1d48eb;
   --app-bg-color: #bae6fd;
   --app-bg: linear-gradient(
     135deg,

@@ -212,8 +212,12 @@ export function DialogHost() {
             <button
               type="button"
               onClick={abort}
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
-              style={{ minWidth: 'var(--btn-large-width)' }}
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-300 px-4 text-sm font-semibold transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+              style={{
+                minWidth: 'var(--btn-large-width)',
+                backgroundColor: 'var(--btn-cancel-color)',
+                color: 'var(--btn-cancel-text-color)',
+              }}
             >
               {cancelLabel}
             </button>

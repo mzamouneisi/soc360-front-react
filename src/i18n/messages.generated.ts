@@ -980,6 +980,10 @@ export const EXTRACTED_FR: Record<string, string> = {
   "Support.cree.par": "Créé par",
   "Support.assigne.a": "Assigné à",
   "Support.general": "Général",
+  "settings.buttons.cancelColor": "Couleur bouton Annuler",
+  "settings.buttons.cancelTextColor": "Couleur texte Annuler",
+  "settings.buttons.submitColor": "Couleur bouton Soumettre",
+  "settings.buttons.submitTextColor": "Couleur texte Soumettre",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1964,6 +1968,10 @@ export const EXTRACTED_EN: Record<string, string> = {
   "Support.cree.par": "Created by",
   "Support.assigne.a": "Assigned to",
   "Support.general": "General",
+  "settings.buttons.cancelColor": "Cancel button colour",
+  "settings.buttons.cancelTextColor": "Cancel text colour",
+  "settings.buttons.submitColor": "Submit button colour",
+  "settings.buttons.submitTextColor": "Submit text colour",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2948,4 +2956,8 @@ export const EXTRACTED_AR: Record<string, string> = {
   "Support.cree.par": "أنشأه",
   "Support.assigne.a": "مُسند إلى",
   "Support.general": "عام",
+  "settings.buttons.cancelColor": "لون زر الإلغاء",
+  "settings.buttons.cancelTextColor": "لون نص الإلغاء",
+  "settings.buttons.submitColor": "لون زر الإرسال",
+  "settings.buttons.submitTextColor": "لون نص الإرسال",
 }

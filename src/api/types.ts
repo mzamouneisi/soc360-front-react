@@ -96,6 +96,10 @@ export interface UserDto {
   buttonLargeWidth: number
   buttonSaveColor: string
   buttonDeleteColor: string
+  buttonCancelColor: string
+  buttonCancelTextColor: string
+  buttonSubmitColor: string
+  buttonSubmitTextColor: string
   backgroundColor: string
   manager: ManagerInfo | null
 }

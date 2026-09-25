@@ -96,7 +96,7 @@ export function Button({
     yellow: 'bg-yellow-500 text-white hover:bg-yellow-600',
     green: 'bg-green-600 text-white hover:bg-green-700',
     danger: 'text-white hover:brightness-95',
-    neutral: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+    neutral: 'border border-gray-300 hover:brightness-95',
   }
   const resolved: 'sm' | 'lg' =
     size === 'auto' ? (labelLength(children) > 12 ? 'lg' : 'sm') : size
@@ -105,7 +105,9 @@ export function Button({
       ? { backgroundColor: 'var(--btn-save-color)' }
       : variant === 'danger'
         ? { backgroundColor: 'var(--btn-delete-color)' }
-        : {}
+        : variant === 'neutral'
+          ? { backgroundColor: 'var(--btn-cancel-color)', color: 'var(--btn-cancel-text-color)' }
+          : {}
   return (
     <button
       className={`inline-flex w-auto items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
@@ -212,7 +214,7 @@ export function InlineButton({
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' | 'soft' }) {
   const variants = {
-    neutral: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+    neutral: 'border border-gray-300 hover:brightness-95',
     danger: 'border border-transparent text-white hover:brightness-95',
     primary: 'border border-transparent text-white hover:brightness-95',
     soft: 'border hover:brightness-95',
@@ -222,13 +224,15 @@ export function InlineButton({
       ? { backgroundColor: 'var(--btn-save-color)' }
       : variant === 'danger'
         ? { backgroundColor: 'var(--btn-delete-color)' }
-        : {}
+        : variant === 'neutral'
+          ? { backgroundColor: 'var(--btn-cancel-color)', color: 'var(--btn-cancel-text-color)' }
+          : {}
   const soft =
     variant === 'soft'
       ? {
-          color: 'var(--btn-save-color)',
-          borderColor: 'color-mix(in srgb, var(--btn-save-color) 30%, white)',
-          backgroundColor: 'color-mix(in srgb, var(--btn-save-color) 12%, white)',
+          color: 'var(--btn-submit-text-color)',
+          borderColor: 'var(--btn-submit-color)',
+          backgroundColor: 'var(--btn-submit-color)',
         }
       : {}
   return (

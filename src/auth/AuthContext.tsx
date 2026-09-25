@@ -37,6 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.style.setProperty('--btn-large-width', `${user?.buttonLargeWidth ?? 100}px`)
     doc.style.setProperty('--btn-save-color', user?.buttonSaveColor || '#1d48eb')
     doc.style.setProperty('--btn-delete-color', user?.buttonDeleteColor || '#dc2626')
+    doc.style.setProperty('--btn-cancel-color', user?.buttonCancelColor || '#ffffff')
+    doc.style.setProperty('--btn-cancel-text-color', user?.buttonCancelTextColor || '#374151')
+    doc.style.setProperty('--btn-submit-color', user?.buttonSubmitColor || '#e0e7ff')
+    doc.style.setProperty('--btn-submit-text-color', user?.buttonSubmitTextColor || '#1d48eb')
     doc.style.setProperty('--app-bg-color', user?.backgroundColor || '#bae6fd')
   }, [
     user?.fontSize,
@@ -47,6 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.buttonLargeWidth,
     user?.buttonSaveColor,
     user?.buttonDeleteColor,
+    user?.buttonCancelColor,
+    user?.buttonCancelTextColor,
+    user?.buttonSubmitColor,
+    user?.buttonSubmitTextColor,
     user?.backgroundColor,
   ])
 

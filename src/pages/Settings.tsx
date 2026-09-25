@@ -97,6 +97,10 @@ export function Settings() {
   const [btnLargeWidth, setBtnLargeWidth] = useState<number>(user?.buttonLargeWidth ?? 100)
   const [btnSaveColor, setBtnSaveColor] = useState<string>(user?.buttonSaveColor || '#1d48eb')
   const [btnDeleteColor, setBtnDeleteColor] = useState<string>(user?.buttonDeleteColor || '#dc2626')
+  const [btnCancelColor, setBtnCancelColor] = useState<string>(user?.buttonCancelColor || '#ffffff')
+  const [btnCancelTextColor, setBtnCancelTextColor] = useState<string>(user?.buttonCancelTextColor || '#374151')
+  const [btnSubmitColor, setBtnSubmitColor] = useState<string>(user?.buttonSubmitColor || '#e0e7ff')
+  const [btnSubmitTextColor, setBtnSubmitTextColor] = useState<string>(user?.buttonSubmitTextColor || '#1d48eb')
   const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -217,6 +221,10 @@ export function Settings() {
     (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
     (u.buttonSaveColor || '#1d48eb') !== btnSaveColor ||
     (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor ||
+    (u.buttonCancelColor || '#ffffff') !== btnCancelColor ||
+    (u.buttonCancelTextColor || '#374151') !== btnCancelTextColor ||
+    (u.buttonSubmitColor || '#e0e7ff') !== btnSubmitColor ||
+    (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor ||
     (u.backgroundColor || '#bae6fd') !== bgColor
 
   async function handleLanguageChange(value: string) {
@@ -254,12 +262,20 @@ export function Settings() {
       if ((u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
           (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
           (u.buttonSaveColor || '#1d48eb') !== btnSaveColor ||
-          (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor) {
+          (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor ||
+          (u.buttonCancelColor || '#ffffff') !== btnCancelColor ||
+          (u.buttonCancelTextColor || '#374151') !== btnCancelTextColor ||
+          (u.buttonSubmitColor || '#e0e7ff') !== btnSubmitColor ||
+          (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor) {
         await authApi.updateButtonSettings({
           buttonSmallWidth: btnSmallWidth,
           buttonLargeWidth: btnLargeWidth,
           buttonSaveColor: btnSaveColor,
           buttonDeleteColor: btnDeleteColor,
+          buttonCancelColor: btnCancelColor,
+          buttonCancelTextColor: btnCancelTextColor,
+          buttonSubmitColor: btnSubmitColor,
+          buttonSubmitTextColor: btnSubmitTextColor,
         })
       }
       if ((u.backgroundColor || '#bae6fd') !== bgColor) {
@@ -594,6 +610,62 @@ export function Settings() {
               <span className="text-sm text-gray-500">{btnDeleteColor}</span>
             </div>
           </Field>
+          <Field label={t('settings.buttons.cancelColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnCancelColor}
+                onChange={(e) => {
+                  setBtnCancelColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnCancelColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.cancelTextColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnCancelTextColor}
+                onChange={(e) => {
+                  setBtnCancelTextColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnCancelTextColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.submitColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnSubmitColor}
+                onChange={(e) => {
+                  setBtnSubmitColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnSubmitColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.submitTextColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnSubmitTextColor}
+                onChange={(e) => {
+                  setBtnSubmitTextColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnSubmitTextColor}</span>
+            </div>
+          </Field>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
           <span className="text-sm text-gray-500">{t('settings.buttons.preview')} :</span>
@@ -617,6 +689,29 @@ export function Settings() {
             style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnDeleteColor }}
           >
             {tr('common.delete')}
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold transition hover:brightness-95"
+            style={{
+              minWidth: `${btnLargeWidth}px`,
+              backgroundColor: btnCancelColor,
+              color: btnCancelTextColor,
+            }}
+          >
+            {tr('common.cancel')}
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition hover:brightness-95"
+            style={{
+              minWidth: `${btnLargeWidth}px`,
+              backgroundColor: btnSubmitColor,
+              color: btnSubmitTextColor,
+              borderColor: btnSubmitColor,
+            }}
+          >
+            {tr('Unavailability.soumettre')}
           </button>
         </div>
 
