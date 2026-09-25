@@ -100,8 +100,10 @@ export function Messages() {
     <div>
       <PageHeader
         title={tr('Messages.messages')}
+        titleId="Messages.messages"
         count={data?.total ?? 0}
         subtitle={tr('Messages.messagerie.interne')}
+        subtitleId="Messages.messagerie.interne"
         actions={
           <>
             <RefreshButton onClick={reload} />

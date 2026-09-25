@@ -137,8 +137,10 @@ export function Projects() {
     <div>
       <PageHeader
         title={tr('Projects.projets')}
+        titleId="Projects.projets"
         count={(data ?? []).length}
         subtitle={tr('Projects.les.projets.par.client.et.leurs.conditions.commerciales')}
+        subtitleId="Projects.les.projets.par.client.et.leurs.conditions.commerciales"
         actions={
           <>
             <RefreshButton onClick={reload} />

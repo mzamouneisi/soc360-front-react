@@ -49,8 +49,10 @@ export function DemoSoc() {
     <div>
       <PageHeader
         title={tr('DemoSoc.societe.demo')}
+        titleId="DemoSoc.societe.demo"
         count={demoList.length}
         subtitle={tr('DemoSoc.creer.une.societe.de.demonstration.numerotee.prete.a.l.emplo')}
+        subtitleId="DemoSoc.creer.une.societe.de.demonstration.numerotee.prete.a.l.emplo"
         actions={<RefreshButton onClick={reload} />}
       />
 

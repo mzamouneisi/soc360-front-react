@@ -125,8 +125,10 @@ export function Support() {
     <div>
       <PageHeader
         title={tr('Support.support')}
+        titleId="Support.support"
         count={data?.total ?? 0}
         subtitle={tr('Support.tickets.d.assistance.et.demandes')}
+        subtitleId="Support.tickets.d.assistance.et.demandes"
         actions={
           <>
             <RefreshButton onClick={reload} />

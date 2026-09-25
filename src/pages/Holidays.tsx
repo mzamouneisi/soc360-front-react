@@ -124,7 +124,7 @@ export function Holidays() {
 
   return (
     <div>
-      <PageHeader title={tr('Holidays.jours.feries')} subtitle={tr('Holidays.definissez.les.jours.feries.specifiques.de.la.societe')} />
+      <PageHeader title={tr('Holidays.jours.feries')} titleId="Holidays.jours.feries" subtitle={tr('Holidays.definissez.les.jours.feries.specifiques.de.la.societe')} subtitleId="Holidays.definissez.les.jours.feries.specifiques.de.la.societe" />
 
       <Card className="max-w-3xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">

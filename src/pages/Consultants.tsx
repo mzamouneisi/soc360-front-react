@@ -366,8 +366,10 @@ export function Consultants() {
     <div>
       <PageHeader
         title={tr('Consultants.collaborateurs')}
+        titleId="Consultants.collaborateurs"
         count={data?.total ?? 0}
         subtitle={tr('Consultants.gerez.votre.equipe.de.consultants')}
+        subtitleId="Consultants.gerez.votre.equipe.de.consultants"
         actions={
           <>
             <RefreshButton onClick={reload} />

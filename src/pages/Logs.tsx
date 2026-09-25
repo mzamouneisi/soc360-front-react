@@ -47,7 +47,9 @@ export function Logs() {
     <div className="space-y-4">
       <PageHeader
         title={tr('Logs.logs.du.serveur')}
+        titleId="Logs.logs.du.serveur"
         subtitle={tr('Logs.dernieres.lignes.du.fichier.de.log.du.backend.administration')}
+        subtitleId="Logs.dernieres.lignes.du.fichier.de.log.du.backend.administration"
         actions={
           <RefreshButton onClick={reload} disabled={loading} />
         }

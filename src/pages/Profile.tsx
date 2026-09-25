@@ -154,7 +154,9 @@ export function Profile() {
     <div>
       <PageHeader
         title={tr('Profile.mon.profil')}
+        titleId="Profile.mon.profil"
         subtitle={tr('Profile.informations.personnelles.mot.de.passe.et.connexions')}
+        subtitleId="Profile.informations.personnelles.mot.de.passe.et.connexions"
         actions={
           <RefreshButton
             onClick={() => {

@@ -162,8 +162,10 @@ export function Suppliers() {
     <div>
       <PageHeader
         title={tr('Suppliers.fournisseurs')}
+        titleId="Suppliers.fournisseurs"
         count={(data ?? []).length}
         subtitle={tr('Suppliers.gerez.vos.fournisseurs.et.vos.contacts')}
+        subtitleId="Suppliers.gerez.vos.fournisseurs.et.vos.contacts"
         actions={
           <>
             <RefreshButton onClick={reload} />

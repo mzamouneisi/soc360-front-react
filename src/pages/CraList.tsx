@@ -232,6 +232,7 @@ export function CraList() {
     <div>
       <PageHeader
         title={tr('CraList.cra')}
+        titleId="CraList.cra"
         count={list.length}
         subtitle={
           isConsultant
@@ -239,6 +240,13 @@ export function CraList() {
             : isManager
               ? tr('CraList.cra.des.consultants.de.mon.equipe')
               : tr('CraList.comptes.rendus.d.activite.par.consultant.et.par.mois')
+        }
+        subtitleId={
+          isConsultant
+            ? 'CraList.mes.comptes.rendus.d.activite'
+            : isManager
+              ? 'CraList.cra.des.consultants.de.mon.equipe'
+              : 'CraList.comptes.rendus.d.activite.par.consultant.et.par.mois'
         }
         actions={
           <RefreshButton onClick={reload} />

@@ -274,8 +274,10 @@ export function Languages() {
     <div>
       <PageHeader
         title={tr('Languages.langues.et.traductions')}
+        titleId="Languages.langues.et.traductions"
         count={filteredEntries.length}
         subtitle={tr('Languages.table.des.chaines.traduites.administration')}
+        subtitleId="Languages.table.des.chaines.traduites.administration"
         actions={<RefreshButton onClick={() => load()} disabled={loading} />}
       />
 

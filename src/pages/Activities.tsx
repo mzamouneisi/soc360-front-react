@@ -216,8 +216,10 @@ export function Activities() {
     <div>
       <PageHeader
         title={tr('Activities.activites.tarifs')}
+        titleId="Activities.activites.tarifs"
         count={(data ?? []).length}
         subtitle={tr('Activities.prestations.facturables.utilisees.dans.les.cra')}
+        subtitleId="Activities.prestations.facturables.utilisees.dans.les.cra"
         actions={
           <>
             <RefreshButton onClick={reload} />

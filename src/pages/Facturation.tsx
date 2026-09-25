@@ -78,7 +78,9 @@ export function Facturation() {
     <div>
       <PageHeader
         title={tr('Facturation.facturation')}
+        titleId="Facturation.facturation"
         subtitle={tr('Facturation.abonnement.paiements.et.chiffre.d.affaires')}
+        subtitleId="Facturation.abonnement.paiements.et.chiffre.d.affaires"
         actions={
           <div className="flex items-center gap-2">
             <RefreshButton onClick={reload} />

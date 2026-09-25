@@ -142,8 +142,10 @@ export function IndispoList() {
     <div>
       <PageHeader
         title={tr('IndispoList.indispos')}
+        titleId="IndispoList.indispos"
         count={list.length}
         subtitle={tr('IndispoList.conges.du.consultant.par.mois')}
+        subtitleId="IndispoList.conges.du.consultant.par.mois"
         actions={
           <RefreshButton onClick={reload} />
         }

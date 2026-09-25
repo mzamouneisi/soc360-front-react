@@ -298,8 +298,10 @@ export function NoteFraisList() {
     <div>
       <PageHeader
         title={tr('NoteFraisList.notes.de.frais')}
+        titleId="NoteFraisList.notes.de.frais"
         count={(data ?? []).length}
         subtitle={tr('NoteFraisList.suivi.des.depenses.et.remboursements')}
+        subtitleId="NoteFraisList.suivi.des.depenses.et.remboursements"
         actions={
           <div className="flex items-center gap-2">
             <RefreshButton onClick={reload} />

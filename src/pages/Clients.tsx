@@ -160,8 +160,10 @@ export function Clients() {
     <div>
       <PageHeader
         title={tr('Clients.clients')}
+        titleId="Clients.clients"
         count={(data ?? []).length}
         subtitle={tr('Clients.gerez.vos.clients.et.vos.contacts')}
+        subtitleId="Clients.gerez.vos.clients.et.vos.contacts"
         actions={
           <>
             <RefreshButton onClick={reload} />

@@ -409,7 +409,7 @@ export function Settings() {
 
   return (
     <div>
-      <PageHeader title={t('settings.title')} subtitle={t('settings.subtitle')} />
+      <PageHeader title={t('settings.title')} titleId="settings.title" subtitle={t('settings.subtitle')} subtitleId="settings.subtitle" />
       <Card className="w-[90%] p-6">
         <h3 className="text-sm font-semibold text-gray-900" id="settings.language.title">{t('settings.language.title')}</h3>
         <p className="mt-1 text-sm text-gray-500">{t('settings.language.description')}</p>

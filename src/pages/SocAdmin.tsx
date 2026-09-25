@@ -222,6 +222,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
     <div>
       <PageHeader
         title={scope === 'mine' ? tr('SocAdmin.mes.societes') : tr('SocAdmin.toutes.les.societes')}
+        titleId={scope === 'mine' ? 'SocAdmin.mes.societes' : 'SocAdmin.toutes.les.societes'}
         count={socs?.length ?? 0}
         subtitle={
           scope === 'mine'
@@ -229,6 +230,13 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
               ? tr('SocAdmin.toutes.les.societes.admin')
               : tr('SocAdmin.societes.liees')
             : tr('SocAdmin.toutes.les.societes.app')
+        }
+        subtitleId={
+          scope === 'mine'
+            ? isAdmin
+              ? 'SocAdmin.toutes.les.societes.admin'
+              : 'SocAdmin.societes.liees'
+            : 'SocAdmin.toutes.les.societes.app'
         }
         actions={
           <>

@@ -247,8 +247,10 @@ export function Unavailability() {
     <div>
       <PageHeader
         title={tr('Unavailability.indisponibilites')}
+        titleId="Unavailability.indisponibilites"
         count={filtered.length}
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
+        subtitleId="Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie"
         actions={
           <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="new" onClick={openCreate} id="Unavailability.nouvelle.indisponibilite" />
         }

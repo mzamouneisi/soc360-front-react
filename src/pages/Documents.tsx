@@ -122,8 +122,10 @@ export function Documents() {
     <div>
       <PageHeader
         title={tr('Documents.documents')}
+        titleId="Documents.documents"
         count={(data ?? []).length}
         subtitle={tr('Documents.partage.et.archivage.des.documents.contrats.pieces.rh')}
+        subtitleId="Documents.partage.et.archivage.des.documents.contrats.pieces.rh"
         actions={
           <>
             <RefreshButton onClick={reload} />

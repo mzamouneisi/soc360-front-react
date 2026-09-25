@@ -23,19 +23,23 @@ export function Badge({
 
 export function PageHeader({
   title,
+  titleId,
   subtitle,
+  subtitleId,
   actions,
   count,
 }: {
   title: string
+  titleId?: string
   subtitle?: string
+  subtitleId?: string
   actions?: ReactNode
   count?: number
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 id={titleId} className="text-2xl font-bold text-gray-900">
           {title}
           {count !== undefined && (
             <span className="ml-2 align-middle text-lg font-semibold text-gray-400">
@@ -43,7 +47,7 @@ export function PageHeader({
             </span>
           )}
         </h2>
-        {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+        {subtitle && <p id={subtitleId} className="mt-1 text-sm text-gray-500">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>

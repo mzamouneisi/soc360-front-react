@@ -74,7 +74,9 @@ export function Missions() {
     <div>
       <PageHeader
         title={tr('Missions.missions')}
+        titleId="Missions.missions"
         subtitle={tr('Missions.vue.operationnelle.des.missions.en.cours.a.venir.et.terminee')}
+        subtitleId="Missions.vue.operationnelle.des.missions.en.cours.a.venir.et.terminee"
         actions={<RefreshButton onClick={reload} />}
       />
 

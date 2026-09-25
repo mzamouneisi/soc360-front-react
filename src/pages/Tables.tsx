@@ -260,8 +260,10 @@ export function Tables() {
     <div>
       <PageHeader
         title={selected || tr('Tables.base.de.donnees')}
+        titleId={selected ? undefined : 'Tables.base.de.donnees'}
         count={selected ? rows.length : undefined}
         subtitle={tr('Tables.gestion.des.tables.de.la.base.administration')}
+        subtitleId="Tables.gestion.des.tables.de.la.base.administration"
         actions={
           <RefreshButton onClick={() => loadTables()} disabled={loading} />
         }
