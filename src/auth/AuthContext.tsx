@@ -41,6 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.style.setProperty('--btn-cancel-text-color', user?.buttonCancelTextColor || '#374151')
     doc.style.setProperty('--btn-submit-color', user?.buttonSubmitColor || '#e0e7ff')
     doc.style.setProperty('--btn-submit-text-color', user?.buttonSubmitTextColor || '#1d48eb')
+    doc.style.setProperty('--btn-history-color', user?.buttonHistoryColor || '#e0e7ff')
+    doc.style.setProperty('--btn-history-text-color', user?.buttonHistoryTextColor || '#1d48eb')
     doc.style.setProperty('--app-bg-color', user?.backgroundColor || '#bae6fd')
   }, [
     user?.fontSize,
@@ -55,6 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.buttonCancelTextColor,
     user?.buttonSubmitColor,
     user?.buttonSubmitTextColor,
+    user?.buttonHistoryColor,
+    user?.buttonHistoryTextColor,
     user?.backgroundColor,
   ])
 

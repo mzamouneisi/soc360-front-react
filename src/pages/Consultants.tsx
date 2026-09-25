@@ -486,7 +486,7 @@ export function Consultants() {
                   return (
                     <div className="flex justify-end gap-1">
                       <IconButton icon="edit" label={tr('common.edit')} variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }} />
-                      <IconButton icon="history" label={tr('common.history')} variant="soft" onClick={(e) => { e.stopPropagation(); openHistory(c) }} />
+                      <IconButton icon="history" label={tr('common.history')} variant="history" onClick={(e) => { e.stopPropagation(); openHistory(c) }} />
                       {!isSelf && c.role !== 'ADMIN' && (
                         <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={(e) => { e.stopPropagation(); handleDelete(c) }} />
                       )}

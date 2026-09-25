@@ -514,7 +514,7 @@ export function Unavailability() {
                           <IconButton
                             icon="history"
                             label={tr('Unavailability.historique')}
-                            variant="primary"
+                            variant="history"
                             onClick={(e) => {
                               e.stopPropagation()
                               setHistoryFor(u)

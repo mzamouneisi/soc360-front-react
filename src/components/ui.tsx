@@ -212,12 +212,13 @@ export function InlineButton({
   children,
   style,
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' | 'soft' }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' }) {
   const variants = {
     neutral: 'border border-gray-300 hover:brightness-95',
     danger: 'border border-transparent text-white hover:brightness-95',
     primary: 'border border-transparent text-white hover:brightness-95',
     soft: 'border hover:brightness-95',
+    history: 'border hover:brightness-95',
   }
   const background =
     variant === 'primary'
@@ -234,7 +235,13 @@ export function InlineButton({
           borderColor: 'var(--btn-submit-color)',
           backgroundColor: 'var(--btn-submit-color)',
         }
-      : {}
+      : variant === 'history'
+        ? {
+            color: 'var(--btn-history-text-color)',
+            borderColor: 'var(--btn-history-color)',
+            backgroundColor: 'var(--btn-history-color)',
+          }
+        : {}
   return (
     <button
       className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
@@ -285,7 +292,7 @@ export function IconButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   icon: IconName
   label: string
-  variant?: 'neutral' | 'danger' | 'primary' | 'soft'
+  variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history'
   loading?: boolean
 }) {
   return (

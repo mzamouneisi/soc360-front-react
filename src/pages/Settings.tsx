@@ -101,6 +101,8 @@ export function Settings() {
   const [btnCancelTextColor, setBtnCancelTextColor] = useState<string>(user?.buttonCancelTextColor || '#374151')
   const [btnSubmitColor, setBtnSubmitColor] = useState<string>(user?.buttonSubmitColor || '#e0e7ff')
   const [btnSubmitTextColor, setBtnSubmitTextColor] = useState<string>(user?.buttonSubmitTextColor || '#1d48eb')
+  const [btnHistoryColor, setBtnHistoryColor] = useState<string>(user?.buttonHistoryColor || '#e0e7ff')
+  const [btnHistoryTextColor, setBtnHistoryTextColor] = useState<string>(user?.buttonHistoryTextColor || '#1d48eb')
   const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -225,6 +227,8 @@ export function Settings() {
     (u.buttonCancelTextColor || '#374151') !== btnCancelTextColor ||
     (u.buttonSubmitColor || '#e0e7ff') !== btnSubmitColor ||
     (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor ||
+    (u.buttonHistoryColor || '#e0e7ff') !== btnHistoryColor ||
+    (u.buttonHistoryTextColor || '#1d48eb') !== btnHistoryTextColor ||
     (u.backgroundColor || '#bae6fd') !== bgColor
 
   async function handleLanguageChange(value: string) {
@@ -266,7 +270,9 @@ export function Settings() {
           (u.buttonCancelColor || '#ffffff') !== btnCancelColor ||
           (u.buttonCancelTextColor || '#374151') !== btnCancelTextColor ||
           (u.buttonSubmitColor || '#e0e7ff') !== btnSubmitColor ||
-          (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor) {
+          (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor ||
+          (u.buttonHistoryColor || '#e0e7ff') !== btnHistoryColor ||
+          (u.buttonHistoryTextColor || '#1d48eb') !== btnHistoryTextColor) {
         await authApi.updateButtonSettings({
           buttonSmallWidth: btnSmallWidth,
           buttonLargeWidth: btnLargeWidth,
@@ -276,6 +282,8 @@ export function Settings() {
           buttonCancelTextColor: btnCancelTextColor,
           buttonSubmitColor: btnSubmitColor,
           buttonSubmitTextColor: btnSubmitTextColor,
+          buttonHistoryColor: btnHistoryColor,
+          buttonHistoryTextColor: btnHistoryTextColor,
         })
       }
       if ((u.backgroundColor || '#bae6fd') !== bgColor) {
@@ -666,6 +674,34 @@ export function Settings() {
               <span className="text-sm text-gray-500">{btnSubmitTextColor}</span>
             </div>
           </Field>
+          <Field label={t('settings.buttons.historyColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnHistoryColor}
+                onChange={(e) => {
+                  setBtnHistoryColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnHistoryColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.historyTextColor')}>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={btnHistoryTextColor}
+                onChange={(e) => {
+                  setBtnHistoryTextColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500">{btnHistoryTextColor}</span>
+            </div>
+          </Field>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
           <span className="text-sm text-gray-500">{t('settings.buttons.preview')} :</span>
@@ -712,6 +748,18 @@ export function Settings() {
             }}
           >
             {tr('Unavailability.soumettre')}
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition hover:brightness-95"
+            style={{
+              minWidth: `${btnLargeWidth}px`,
+              backgroundColor: btnHistoryColor,
+              color: btnHistoryTextColor,
+              borderColor: btnHistoryColor,
+            }}
+          >
+            {tr('common.history')}
           </button>
         </div>
 

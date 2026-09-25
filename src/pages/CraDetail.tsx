@@ -708,7 +708,7 @@ export function CraDetail({
             />
           )}
           <span className="text-sm text-gray-500">{cra.totalWorkedDays} {tr('CraDetail.j')}</span>
-          <IconButton icon="history" label={tr('CraDetail.historique')} onClick={openHistory} />
+          <IconButton icon="history" label={tr('CraDetail.historique')} variant="history" onClick={openHistory} />
           <InlineButton onClick={handleExportClientPdf}>{tr('CraDetail.export.pdf.client')}</InlineButton>
           <InlineButton onClick={handleExportCompanyPdf}>{tr('CraDetail.export.pdf.ma.societe')}</InlineButton>
         </div>

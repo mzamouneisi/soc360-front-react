@@ -100,6 +100,8 @@ export interface UserDto {
   buttonCancelTextColor: string
   buttonSubmitColor: string
   buttonSubmitTextColor: string
+  buttonHistoryColor: string
+  buttonHistoryTextColor: string
   backgroundColor: string
   manager: ManagerInfo | null
 }

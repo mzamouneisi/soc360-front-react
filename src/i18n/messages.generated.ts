@@ -984,6 +984,8 @@ export const EXTRACTED_FR: Record<string, string> = {
   "settings.buttons.cancelTextColor": "Couleur texte Annuler",
   "settings.buttons.submitColor": "Couleur bouton Soumettre",
   "settings.buttons.submitTextColor": "Couleur texte Soumettre",
+  "settings.buttons.historyColor": "Couleur bouton Historique",
+  "settings.buttons.historyTextColor": "Couleur texte Historique",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1972,6 +1974,8 @@ export const EXTRACTED_EN: Record<string, string> = {
   "settings.buttons.cancelTextColor": "Cancel text colour",
   "settings.buttons.submitColor": "Submit button colour",
   "settings.buttons.submitTextColor": "Submit text colour",
+  "settings.buttons.historyColor": "History button colour",
+  "settings.buttons.historyTextColor": "History text colour",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2960,4 +2964,6 @@ export const EXTRACTED_AR: Record<string, string> = {
   "settings.buttons.cancelTextColor": "لون نص الإلغاء",
   "settings.buttons.submitColor": "لون زر الإرسال",
   "settings.buttons.submitTextColor": "لون نص الإرسال",
+  "settings.buttons.historyColor": "لون زر السجل",
+  "settings.buttons.historyTextColor": "لون نص السجل",
 }

@@ -386,7 +386,7 @@ export function CraList() {
                           <IconButton
                             icon="history"
                             label={tr('CraList.historique')}
-                            variant="primary"
+                            variant="history"
                             onClick={() => setHistoryCra(cra)}
                           />
                           {editable(cra) && (
