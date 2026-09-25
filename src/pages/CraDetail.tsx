@@ -730,13 +730,13 @@ export function CraDetail({
 
       {managerCanAct && (cra.status === 'VALIDATED' || cra.status === 'VALREJ') && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} {tr('CraDetail.est')} {statusAdjective(cra.status, isIndispo)}.
+          {isIndispo ? tr('CraDetail.cette.indispo') : tr('CraDetail.ce.cra')} {tr('CraDetail.est')} {dt(statusAdjective(cra.status, isIndispo))}.
         </div>
       )}
 
       {!formEditable && !consultantAddsToValidated && !consultantEditsSemiValid && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} {tr('CraDetail.est')} {statusAdjective(cra.status, isIndispo)} {tr('CraDetail.et.n.est.plus.modifiable')}
+          {isIndispo ? tr('CraDetail.cette.indispo') : tr('CraDetail.ce.cra')} {tr('CraDetail.est')} {dt(statusAdjective(cra.status, isIndispo))} {tr('CraDetail.et.n.est.plus.modifiable')}
         </div>
       )}
 
@@ -748,7 +748,7 @@ export function CraDetail({
 
       {consultantEditsSemiValid && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {isIndispo ? 'Cette Indispo' : 'Ce CRA'} {tr('CraDetail.est')} {statusAdjective(cra.status, isIndispo)}{tr('CraDetail.vous.pouvez.modifier.les.evenements.non.valides.et.remplir.l')}
+          {isIndispo ? tr('CraDetail.cette.indispo') : tr('CraDetail.ce.cra')} {tr('CraDetail.est')} {dt(statusAdjective(cra.status, isIndispo))}{tr('CraDetail.vous.pouvez.modifier.les.evenements.non.valides.et.remplir.l')}
         </div>
       )}
 
@@ -1073,8 +1073,8 @@ export function CraDetail({
             disabled={submitting || saving || (isIndispo ? false : !craValid)}
             title={
               !isIndispo && !craValid
-                ? 'CRA incomplet : chaque jour travaillé doit totaliser 1 jour.'
-                : 'Soumettre pour validation'
+                ? tr('CraDetail.cra.incomplet.jours')
+                : tr('CraDetail.soumettre.pour.validation')
             }
           />
         )}
