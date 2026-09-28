@@ -45,6 +45,26 @@ const bundle: AdminBundle = {
   ],
 }
 
+function spyDownload() {
+  let captured: Blob | null = null
+  vi.spyOn(URL, 'createObjectURL').mockImplementation((obj: Blob | MediaSource) => {
+    captured = obj as Blob
+    return 'blob:test'
+  })
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  return () => captured
+}
+
+async function renderLoaded() {
+  userMock.value = { role: 'ADMIN', pageSize: 5 } as UserDto
+  adminBundleMock.mockResolvedValue(bundle)
+  const utils = render(<Languages />)
+  await screen.findByText('common.save')
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Exporter' })).toBeEnabled())
+  return utils
+}
+
 afterEach(() => {
   vi.restoreAllMocks()
   vi.clearAllMocks()
@@ -52,53 +72,63 @@ afterEach(() => {
 })
 
 describe('Languages', () => {
-  it('exporte les traductions en CSV (clé, langue de référence, langue à saisir)', async () => {
-    userMock.value = { role: 'ADMIN', pageSize: 5 } as UserDto
-    adminBundleMock.mockResolvedValue(bundle)
+  it('exporte les colonnes cochées en CSV', async () => {
+    const captured = spyDownload()
+    await renderLoaded()
 
-    let captured: Blob | null = null
-    vi.spyOn(URL, 'createObjectURL').mockImplementation((obj: Blob | MediaSource) => {
-      captured = obj as Blob
-      return 'blob:test'
-    })
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    fireEvent.click(screen.getByRole('button', { name: 'Exporter' }))
 
-    render(<Languages />)
-    await screen.findByText('common.save')
-
-    fireEvent.click(screen.getByText('Exporter CSV'))
-
-    await waitFor(() => expect(captured).not.toBeNull())
-    const csv = await captured!.text()
+    await waitFor(() => expect(captured()).not.toBeNull())
+    const csv = await captured()!.text()
     expect(csv).toContain('cle,fr,en')
     expect(csv).toContain('common.save,Enregistrer,Save')
     expect(csv).toContain('common.cancel,Annuler,Cancel')
   })
 
-  it('importe un CSV et met à jour la langue à saisir', async () => {
-    userMock.value = { role: 'ADMIN', pageSize: 5 } as UserDto
-    adminBundleMock.mockResolvedValue(bundle)
-    importAllMock.mockResolvedValue({ inserted: 1, updated: 1, skipped: 0 })
+  it('exporte en JSON quand le format JSON est sélectionné', async () => {
+    const captured = spyDownload()
+    await renderLoaded()
 
-    const { container } = render(<Languages />)
-    await screen.findByText('common.save')
+    fireEvent.click(screen.getByRole('radio', { name: 'JSON' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Exporter' }))
+
+    await waitFor(() => expect(captured()).not.toBeNull())
+    const payload = JSON.parse(await captured()!.text()) as {
+      languages: string[]
+      entries: { key: string; translations: Record<string, string> }[]
+    }
+    expect(payload.languages).toEqual(['fr', 'en'])
+    expect(payload.entries[0]).toEqual({
+      key: 'common.save',
+      translations: { fr: 'Enregistrer', en: 'Save' },
+    })
+  })
+
+  it('importe un CSV et met à jour les langues cochées', async () => {
+    const { container } = await renderLoaded()
+    importAllMock.mockResolvedValue({ inserted: 1, updated: 1, skipped: 0 })
 
     const csv = 'cle,fr,en\ncommon.save,Enregistrer,Save now\ncommon.new,Inconnu,Nouveau\n'
     const file = new File([csv], 'langues.csv', { type: 'text/csv' })
-    const input = Array.from(container.querySelectorAll('input[type="file"]')).find((element) =>
-      (element as HTMLInputElement).accept.includes('csv'),
-    ) as HTMLInputElement
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement
 
     fireEvent.change(input, { target: { files: [file] } })
 
     await waitFor(() =>
       expect(importAllMock).toHaveBeenCalledWith({
         entries: [
-          { key: 'common.save', translations: { en: 'Save now' } },
-          { key: 'common.new', translations: { en: 'Nouveau' } },
+          { key: 'common.save', translations: { fr: 'Enregistrer', en: 'Save now' } },
+          { key: 'common.new', translations: { fr: 'Inconnu', en: 'Nouveau' } },
         ],
       }),
     )
+  })
+
+  it('désactive l’export avec moins de deux langues cochées', async () => {
+    await renderLoaded()
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'en-English' }))
+
+    expect(screen.getByRole('button', { name: 'Exporter' })).toBeDisabled()
   })
 })
