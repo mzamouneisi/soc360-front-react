@@ -8,7 +8,7 @@ import type {
   TextareaHTMLAttributes,
 } from 'react'
 import { useI18n } from '../i18n'
-import { getFormatLocale } from '../lib/format'
+import { getFormatLocale, monthLabel } from '../lib/format'
 import { Icon, type IconName } from './icons'
 
 export function Spinner({ className = '' }: { className?: string }) {
@@ -198,6 +198,52 @@ export function Select({
     >
       {children}
     </select>
+  )
+}
+
+/**
+ * Sélecteur année-mois localisé (libellés de mois traduits via `monthLabel`).
+ * Contrairement à `<input type="month">`, l'affichage suit la langue de l'application.
+ */
+export function MonthSelect({
+  value,
+  onChange,
+  className = '',
+  title,
+  id,
+  allLabel,
+  years,
+}: {
+  value: string
+  onChange: (value: string) => void
+  className?: string
+  title?: string
+  id?: string
+  allLabel?: string
+  years?: number[]
+}) {
+  const current = new Date().getFullYear()
+  const list = years ?? [current - 1, current, current + 1]
+  return (
+    <Select
+      className={className}
+      title={title}
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {allLabel !== undefined && <option value="">{allLabel}</option>}
+      {list.flatMap((year) =>
+        Array.from({ length: 12 }, (_, month) => month + 1).map((month) => {
+          const yearMonth = `${year}-${String(month).padStart(2, '0')}`
+          return (
+            <option key={yearMonth} value={yearMonth}>
+              {monthLabel(month)} {year}
+            </option>
+          )
+        }),
+      )}
+    </Select>
   )
 }
 
