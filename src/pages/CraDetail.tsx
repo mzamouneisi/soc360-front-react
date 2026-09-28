@@ -412,7 +412,13 @@ export function CraDetail({
   }
 
   function removeAllEvents() {
-    setDays((prev) => prev.map((d) => ({ ...d, activities: [] })))
+    // Un consultant ne peut pas supprimer les événements validés : ils sont préservés.
+    setDays((prev) =>
+      prev.map((d) => ({
+        ...d,
+        activities: isConsultant ? d.activities.filter((a) => a.valid) : [],
+      })),
+    )
   }
 
   function buildSaveRequest(): SaveCraRequest {

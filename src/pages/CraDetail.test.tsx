@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { CraDetail } from './CraDetail'
+import { DialogHost } from '../components/dialog'
 import type { CraDto, UserDto } from '../api/types'
 
 const {
@@ -376,5 +377,113 @@ describe('CraDetail', () => {
 
     const selects = await screen.findAllByRole('combobox')
     await waitFor(() => expect((selects[0] as HTMLSelectElement).disabled).toBe(true))
+  })
+
+  it('un consultant ne peut pas supprimer les événements validés (supprimer tous)', async () => {
+    userMock.value = {
+      id: 10,
+      username: 'consultant',
+      email: 'consultant@soc.fr',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      phone: null,
+      role: 'CONSULTANT',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+      consultantId: 10,
+    } as UserDto
+
+    const draft = cra(true, 'DRAFT')
+    draft.days = draft.days.map((d, i) => ({
+      ...d,
+      dayType: 'WORKED',
+      activities:
+        i === 0
+          ? [
+              {
+                id: 101,
+                activityId: 5,
+                activityName: 'Congé payé',
+                activityColor: null,
+                hours: 0,
+                days: 1,
+                valid: true,
+                comment: null,
+              },
+            ]
+          : i === 1
+            ? [
+                {
+                  id: 102,
+                  activityId: 6,
+                  activityName: 'Développement',
+                  activityColor: null,
+                  hours: 0,
+                  days: 1,
+                  valid: false,
+                  comment: null,
+                },
+              ]
+            : [],
+    }))
+
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Congé payé',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: true,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+      {
+        id: 6,
+        name: 'Développement',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter initialEntries={['/cras/1']}>
+        <CraDetail id={1} />
+        <DialogHost />
+      </MemoryRouter>,
+    )
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(await screen.findByText('Congé payé')).toBeInTheDocument()
+    expect(screen.getByText('Développement')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer tous les événements' }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Supprimer' }))
+
+    await waitFor(() => expect(screen.queryByText('Développement')).not.toBeInTheDocument())
+    expect(screen.getByText('Congé payé')).toBeInTheDocument()
   })
 })
