@@ -67,6 +67,19 @@ export function monthShort(month: number): string {
   return monthsFor(false)[month - 1] ?? String(month)
 }
 
+/** Libellés courts des jours de la semaine (lundi → dimanche) dans la locale active. */
+export function weekdayShortLabels(): string[] {
+  const formatter = new Intl.DateTimeFormat(currentLocale, { weekday: 'short' })
+  const monday = new Date(2024, 0, 1)
+  const labels: string[] = []
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(monday)
+    day.setDate(monday.getDate() + i)
+    labels.push(formatter.format(day))
+  }
+  return labels
+}
+
 export function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined) return '—'
   return new Intl.NumberFormat(currentLocale, { numberingSystem: 'latn' }).format(value)

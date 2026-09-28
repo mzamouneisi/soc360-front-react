@@ -299,14 +299,16 @@ export function CraList() {
       {!loading && list.length === 0 && (
         <Card className="flex flex-col items-center justify-center py-14">
           <p className="text-sm font-medium text-gray-900">
-            {search.trim() ? 'Aucun CRA ne correspond au filtre' : 'Aucun CRA pour cette année'}
+            {search.trim()
+              ? tr('CraList.aucun.cra.ne.correspond.au.filtre')
+              : tr('CraList.aucun.cra.pour.cette.annee')}
           </p>
           <p className="mt-1 text-sm text-gray-500">
             {search.trim()
-              ? 'Modifiez votre recherche.'
+              ? tr('CraList.modifiez.votre.recherche')
               : isConsultant
-                ? 'Cliquez sur « Nouveau Cra » pour créer votre CRA.'
-                : 'Aucun CRA saisi.'}
+                ? tr('CraList.cliquez.sur.nouveau.cra')
+                : tr('CraList.aucun.cra.saisi')}
           </p>
         </Card>
       )}

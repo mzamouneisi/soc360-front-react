@@ -8,9 +8,7 @@ import { Button, Card, IconButton, InlineButton, RefreshButton } from '../compon
 import { ErrorBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import type { PublicHolidayDto, SocHolidayDto } from '../api/types'
-import { monthLabel } from '../lib/format'
-
-const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+import { monthLabel, weekdayShortLabels } from '../lib/format'
 
 function toDateString(d: Date): string {
   const y = d.getFullYear()
@@ -168,7 +166,7 @@ export function Holidays() {
         )}
 
         <div className="mt-4 grid grid-cols-7 gap-1">
-          {DAYS_FR.map((d) => (
+          {weekdayShortLabels().map((d) => (
             <div key={d} className="px-1 py-2 text-center text-xs font-semibold uppercase text-gray-500">
               {d}
             </div>

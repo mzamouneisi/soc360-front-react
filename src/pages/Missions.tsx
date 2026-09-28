@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthContext'
 import { projectsApi } from '../api/projects'
 import { crasApi } from '../api/cras'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { Card, RefreshButton } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { formatDate, formatMoney, monthLabel, monthShort } from '../lib/format'
@@ -35,6 +36,7 @@ const STATUS_META: Record<MissionStatus, { label: string; kind: string }> = {
 
 export function Missions() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
   const isAdmin = user?.role === 'ADMIN'
 
   const now = new Date()
@@ -169,7 +171,7 @@ export function Missions() {
                       {project.client?.name ?? 'Client inconnu'}
                     </p>
                   </div>
-                  <Badge kind={meta.kind}>{meta.label}</Badge>
+                  <Badge kind={meta.kind}>{dt(meta.label)}</Badge>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-3 border-t border-gray-100 pt-4 text-sm">
                   <div>

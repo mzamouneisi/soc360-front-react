@@ -268,7 +268,11 @@ export function FichePaie() {
       {!loading && (!yearData || yearData.length === 0) && (
         <EmptyState
           title={tr('FichePaie.aucune.fiche.de.paie')}
-          description={canEdit ? 'Ajoutez la première fiche de paie.' : 'Aucune fiche disponible.'}
+          description={
+            canEdit
+              ? tr('FichePaie.ajoutez.la.premiere.fiche.de.paie')
+              : tr('FichePaie.aucune.fiche.disponible')
+          }
         />
       )}
 

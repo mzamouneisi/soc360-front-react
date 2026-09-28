@@ -79,6 +79,8 @@ const emptyForm: FormState = {
   employee: true,
 }
 
+const PAYMENT_METHODS = ['Virement', 'Prélèvement', 'Chèque', 'Espèces']
+
 interface AddressSuggestion {
   id: string
   label: string
@@ -681,10 +683,19 @@ export function Consultants() {
             </Field>
           </div>
           <Field label={tr('Consultants.mode.paiement')} id="Consultants.mode.paiement">
-            <Input
+            <Select
               value={form.modePaiement}
               onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
-            />
+            >
+              {(form.modePaiement && !PAYMENT_METHODS.includes(form.modePaiement)
+                ? [...PAYMENT_METHODS, form.modePaiement]
+                : PAYMENT_METHODS
+              ).map((method) => (
+                <option key={method} value={method}>
+                  {dt(method)}
+                </option>
+              ))}
+            </Select>
           </Field>
           {form.employee && (
             <>

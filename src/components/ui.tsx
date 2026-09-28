@@ -8,6 +8,7 @@ import type {
   TextareaHTMLAttributes,
 } from 'react'
 import { useI18n } from '../i18n'
+import { getFormatLocale } from '../lib/format'
 import { Icon, type IconName } from './icons'
 
 export function Spinner({ className = '' }: { className?: string }) {
@@ -32,9 +33,13 @@ export function FullPageSpinner() {
 }
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
-  const { className = '', ...rest } = props
+  const { className = '', type, lang, ...rest } = props
+  // Les sélecteurs natifs de date/mois suivent l'attribut lang : localisation à la volée.
+  const locale = type === 'date' || type === 'month' ? getFormatLocale() : undefined
   return (
     <input
+      type={type}
+      lang={lang ?? locale}
       className={`w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 ${className}`}
       {...rest}
     />

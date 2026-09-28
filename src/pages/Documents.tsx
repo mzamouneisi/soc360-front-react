@@ -64,7 +64,7 @@ export function Documents() {
   async function handleUpload(e: FormEvent) {
     e.preventDefault()
     if (!file) {
-      setFormError('Sélectionnez un fichier')
+      setFormError(tr('Documents.selectionnez.un.fichier'))
       return
     }
     setSubmitting(true)
@@ -163,7 +163,7 @@ export function Documents() {
             columns={[
               {
                 key: 'name',
-                label: 'Document',
+                label: tr('Documents.document'),
                 render: (d) => (
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
@@ -180,22 +180,22 @@ export function Documents() {
               },
               {
                 key: 'category',
-                label: 'Catégorie',
+                label: tr('Documents.categorie'),
                 render: (d) => <Badge kind="info">{d.category}</Badge>,
               },
               {
                 key: 'description',
-                label: 'Description',
+                label: tr('Documents.description'),
                 render: (d) => <span className="text-gray-500">{d.description ?? '—'}</span>,
               },
               {
                 key: 'expires',
-                label: 'Expire le',
+                label: tr('Documents.expire.le'),
                 render: (d) => <span className="text-gray-500">{formatDate(d.expiresAt)}</span>,
               },
               {
                 key: 'uploaded',
-                label: 'Partagé par',
+                label: tr('Documents.partage.par'),
                 render: (d) => <span className="text-gray-500">{d.uploadedBy}</span>,
               },
               {
@@ -203,9 +203,9 @@ export function Documents() {
                 label: '',
                 render: (d) => (
                   <div className="flex justify-end gap-1">
-                    <InlineButton onClick={() => handleDownload(d)}>Télécharger</InlineButton>
+                    <InlineButton onClick={() => handleDownload(d)}>{tr('Documents.telecharger')}</InlineButton>
                     {canDelete && (
-                      <IconButton icon="delete" label="Supprimer" variant="danger" onClick={() => handleDelete(d)} />
+                      <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={() => handleDelete(d)} />
                     )}
                   </div>
                 ),
@@ -228,10 +228,10 @@ export function Documents() {
         title={tr('Documents.partager.un.document')}
         footer={
           <>
-            <IconButton icon="cancel" label="Annuler" onClick={() => setModalOpen(false)} />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
             <Button className="w-auto" onClick={handleUpload as never} disabled={submitting || !file}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
-              Partager
+              {tr('Documents.partager')}
             </Button>
           </>
         }
@@ -251,7 +251,7 @@ export function Documents() {
             />
             <button type="button" onClick={() => fileRef.current?.click()}>
               <p className="text-sm font-medium text-brand-600">
-                {file ? file.name : 'Choisir un fichier'}
+                {file ? file.name : tr('Documents.choisir.un.fichier')}
               </p>
               {!file && <p className="mt-1 text-xs text-gray-500">{tr('Documents.pdf.images.documents')}</p>}
             </button>

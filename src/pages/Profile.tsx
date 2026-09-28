@@ -57,11 +57,11 @@ export function Profile() {
     setChangeError(null)
     setChangeSuccess(false)
     if (newPassword.length < 8) {
-      setChangeError('Le nouveau mot de passe doit contenir au moins 8 caractères')
+      setChangeError(tr('Profile.le.nouveau.mot.de.passe.do.t.contenir.au.moins.8.caracteres'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setChangeError('Les mots de passe ne correspondent pas')
+      setChangeError(tr('Profile.les.mots.de.passe.ne.correspondent.pas'))
       return
     }
     setChanging(true)

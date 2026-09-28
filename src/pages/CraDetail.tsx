@@ -21,6 +21,7 @@ import {
   getFormatLocale,
   monthLabel,
   statusBadge,
+  weekdayShortLabels,
 } from '../lib/format'
 import type { CraDto, DayType, ActivityDto, SaveCraRequest } from '../api/types'
 import type { ReactNode } from 'react'
@@ -44,7 +45,6 @@ interface EditableDay {
 
 const DAY_TYPES: DayType[] = ['WORKED', 'WEEKEND', 'PUBLIC_HOLIDAY', 'LEAVE', 'SICK_LEAVE', 'OTHER']
 const DAY_VALUES = ['0.5', '1']
-const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
 function dayToEditable(day: CraDto['days'][number]): EditableDay {
   return {
@@ -812,7 +812,7 @@ export function CraDetail({
       {tab === 'calendar' ? (
         <Card className="overflow-hidden">
           <div className="grid grid-cols-7 gap-px bg-gray-200">
-            {WEEKDAY_LABELS.map((label) => (
+            {weekdayShortLabels().map((label) => (
               <div
                 key={label}
                 className="bg-gray-50 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-500"
