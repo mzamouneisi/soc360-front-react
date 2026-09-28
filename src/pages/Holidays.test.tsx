@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { Holidays } from './Holidays'
 import type { UserDto } from '../api/types'
@@ -86,5 +86,24 @@ describe('Holidays', () => {
     expect(
       await screen.findByText('Définissez les jours fériés spécifiques de la société'),
     ).toBeInTheDocument()
+  })
+
+  it("recharge les jours fériés nationaux lorsqu'on change d'année", async () => {
+    userMock.value = baseUser
+    listMock.mockResolvedValue([])
+    publicMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter>
+        <Holidays />
+      </MemoryRouter>,
+    )
+
+    await waitFor(() => expect(publicMock).toHaveBeenCalledWith('FR', year))
+
+    const next = screen.getByRole('button', { name: 'Suiv' })
+    for (let i = 0; i < 12; i++) fireEvent.click(next)
+
+    await waitFor(() => expect(publicMock).toHaveBeenCalledWith('FR', year + 1))
   })
 })
