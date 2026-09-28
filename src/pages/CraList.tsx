@@ -8,7 +8,8 @@ import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
-import { Button, Card, IconButton, InlineButton, Input, MonthSelect, RefreshButton, Select } from '../components/ui'
+import { Button, Card, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
+import { MonthPicker } from '../components/MonthPicker'
 import {
   CRA_STATUS_LABELS,
   formatDate,
@@ -275,14 +276,15 @@ export function CraList() {
             </div>
           )}
           <div className="max-w-[12rem] flex-1">
-            <MonthSelect
+            <MonthPicker
+              id="CraList.filtrer.par.mois"
               value={monthFilter}
               onChange={(ym) => {
                 setMonthFilter(ym)
                 const nextYear = ym ? Number(ym.slice(0, 4)) : NaN
                 if (nextYear) setYear(nextYear)
               }}
-              allLabel={tr('common.allMonths')}
+              placeholder={tr('common.allMonths')}
               title={tr('CraList.filtrer.par.mois')}
             />
           </div>
