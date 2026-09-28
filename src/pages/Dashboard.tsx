@@ -165,17 +165,26 @@ export function Dashboard() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {user.role === 'ADMIN' && (
-              <QuickLink to="/tables" title={tr('Dashboard.base.de.donnees')} description={tr('Dashboard.gerer.les.tables.et.relations.sql')} />
+              <>
+                <QuickLink to="/tables" title={tr('Dashboard.base.de.donnees')} description={tr('Dashboard.gerer.les.tables.et.relations.sql')} />
+                <QuickLink to="/logs" title={tr('Dashboard.logs.du.serveur')} description={tr('Dashboard.voir.les.dernieres.lignes.du.journal.serveur')} />
+                <QuickLink to="/langues" title={tr('Dashboard.langues')} description={tr('Dashboard.gerer.les.langues.et.les.traductions')} />
+              </>
             )}
-            {user.role === 'ADMIN' && (
-              <QuickLink to="/logs" title={tr('Dashboard.logs.du.serveur')} description={tr('Dashboard.voir.les.dernieres.lignes.du.journal.serveur')} />
+            {user.role === 'CONSULTANT' ? (
+              <>
+                <QuickLink to="/mes-activites" title={tr('nav.myActivities')} description={tr('Dashboard.mes.activites.description')} />
+                <QuickLink to="/cras" title={tr('nav.cra')} description={tr('Dashboard.cra.description')} />
+                <QuickLink to="/indisponibilites" title={tr('nav.unavailability')} description={tr('Dashboard.indisponibilites.description')} />
+                <QuickLink to="/notes-frais" title={tr('Dashboard.notes.de.frais')} description={tr('Dashboard.gerer.les.remboursements.et.depenses')} />
+              </>
+            ) : (
+              <>
+                <QuickLink to="/notes-frais" title={tr('Dashboard.notes.de.frais')} description={tr('Dashboard.gerer.les.remboursements.et.depenses')} />
+                <QuickLink to="/clients" title={tr('Dashboard.clients')} description={tr('Dashboard.gerer.le.portefeuille.clients')} />
+                <QuickLink to="/missions" title={tr('Dashboard.missions')} description={tr('Dashboard.suivre.les.missions.en.cours')} />
+              </>
             )}
-            {user.role === 'ADMIN' && (
-              <QuickLink to="/langues" title={tr('Dashboard.langues')} description={tr('Dashboard.gerer.les.langues.et.les.traductions')} />
-            )}
-            <QuickLink to="/notes-frais" title={tr('Dashboard.notes.de.frais')} description={tr('Dashboard.gerer.les.remboursements.et.depenses')} />
-            <QuickLink to="/clients" title={tr('Dashboard.clients')} description={tr('Dashboard.gerer.le.portefeuille.clients')} />
-            <QuickLink to="/missions" title={tr('Dashboard.missions')} description={tr('Dashboard.suivre.les.missions.en.cours')} />
           </div>
         </>
       )}

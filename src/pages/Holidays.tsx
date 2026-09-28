@@ -1,12 +1,13 @@
 import { tr } from '../i18n/translate'
 import { useEffect, useMemo, useState } from 'react'
 import { socHolidaysApi } from '../api/socHolidays'
+import { holidaysApi } from '../api/holidays'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { Button, Card, IconButton, InlineButton, RefreshButton } from '../components/ui'
 import { ErrorBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
-import type { SocHolidayDto } from '../api/types'
+import type { PublicHolidayDto, SocHolidayDto } from '../api/types'
 import { monthLabel } from '../lib/format'
 
 const DAYS_FR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
@@ -28,6 +29,7 @@ export function Holidays() {
     return new Date(now.getFullYear(), now.getMonth(), 1)
   })
   const [holidays, setHolidays] = useState<SocHolidayDto[]>([])
+  const [nationalHolidays, setNationalHolidays] = useState<PublicHolidayDto[]>([])
   const [error, setError] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [tick, setTick] = useState(0)
@@ -38,10 +40,14 @@ export function Holidays() {
   useEffect(() => {
     let cancelled = false
     setError(null)
-    socHolidaysApi
-      .list(year)
-      .then((data) => {
-        if (!cancelled) setHolidays(data)
+    Promise.all([
+      socHolidaysApi.list(year),
+      holidaysApi.findByCountryYear('FR', year).catch(() => [] as PublicHolidayDto[]),
+    ])
+      .then(([socData, publicData]) => {
+        if (cancelled) return
+        setHolidays(socData)
+        setNationalHolidays(publicData)
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
@@ -56,6 +62,12 @@ export function Holidays() {
     for (const h of holidays) map.set(h.date, h)
     return map
   }, [holidays])
+
+  const nationalByDate = useMemo(() => {
+    const map = new Map<string, PublicHolidayDto>()
+    for (const h of nationalHolidays) map.set(h.date, h)
+    return map
+  }, [nationalHolidays])
 
   const cells = useMemo(() => {
     const firstDay = new Date(year, month, 1)
@@ -124,7 +136,12 @@ export function Holidays() {
 
   return (
     <div>
-      <PageHeader title={tr('Holidays.jours.feries')} titleId="Holidays.jours.feries" subtitle={tr('Holidays.definissez.les.jours.feries.specifiques.de.la.societe')} subtitleId="Holidays.definissez.les.jours.feries.specifiques.de.la.societe" />
+      <PageHeader
+        title={tr('Holidays.jours.feries')}
+        titleId="Holidays.jours.feries"
+        subtitle={canEdit ? tr('Holidays.definissez.les.jours.feries.specifiques.de.la.societe') : undefined}
+        subtitleId={canEdit ? 'Holidays.definissez.les.jours.feries.specifiques.de.la.societe' : undefined}
+      />
 
       <Card className="max-w-3xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -162,22 +179,32 @@ export function Holidays() {
             }
             const key = toDateString(date)
             const holiday = byDate.get(key)
+            const national = nationalByDate.get(key)
             const isToday = key === toDateString(today)
+            const title = [holiday?.label, national?.label].filter(Boolean).join(' · ') || key
+            const colorClass = holiday
+              ? 'border-brand-300 bg-brand-50 text-brand-800'
+              : national
+                ? 'border-yellow-300 bg-yellow-50 text-yellow-800'
+                : 'border-gray-200 bg-white text-gray-700 hover:border-brand-300'
             return (
               <button
                 key={key}
                 onClick={() => toggleDay(date)}
                 disabled={!canEdit}
-                title={holiday ? holiday.label : key}
-                className={`min-h-16 rounded-lg border p-1 text-left text-sm transition ${
-                  holiday
-                    ? 'border-brand-300 bg-brand-50 text-brand-800'
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-brand-300'
-                } ${isToday ? 'ring-2 ring-brand-500' : ''} ${!canEdit ? 'cursor-default' : ''}`}
+                title={title}
+                className={`min-h-16 rounded-lg border p-1 text-left text-sm transition ${colorClass} ${
+                  isToday ? 'ring-2 ring-brand-500' : ''
+                } ${!canEdit ? 'cursor-default' : ''}`}
               >
-                <span className={`font-medium ${holiday ? 'text-brand-700' : ''}`}>{date.getDate()}</span>
+                <span className={`font-medium ${holiday ? 'text-brand-700' : national ? 'text-yellow-700' : ''}`}>
+                  {date.getDate()}
+                </span>
                 {holiday && (
                   <span className="block truncate text-xs text-brand-600">{holiday.label}</span>
+                )}
+                {national && (
+                  <span className="block truncate text-xs text-yellow-600">{national.label}</span>
                 )}
               </button>
             )
