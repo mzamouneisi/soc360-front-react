@@ -1,6 +1,7 @@
 import { tr } from '../i18n/translate'
 import type {
   ButtonHTMLAttributes,
+  ChangeEvent,
   CSSProperties,
   InputHTMLAttributes,
   ReactNode,
@@ -8,7 +9,8 @@ import type {
   TextareaHTMLAttributes,
 } from 'react'
 import { useI18n } from '../i18n'
-import { getFormatLocale, monthLabel } from '../lib/format'
+import { getFormatLocale } from '../lib/format'
+import { DateField } from './DateField'
 import { Icon, type IconName } from './icons'
 
 export function Spinner({ className = '' }: { className?: string }) {
@@ -34,8 +36,26 @@ export function FullPageSpinner() {
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   const { className = '', type, lang, ...rest } = props
-  // Les sélecteurs natifs de date/mois suivent l'attribut lang : localisation à la volée.
-  const locale = type === 'date' || type === 'month' ? getFormatLocale() : undefined
+  // Tous les champs date passent par le sélecteur localisé react-datepicker.
+  if (type === 'date') {
+    return (
+      <DateField
+        value={rest.value == null ? '' : String(rest.value)}
+        onChange={(value) =>
+          rest.onChange?.({ target: { value } } as unknown as ChangeEvent<HTMLInputElement>)
+        }
+        minDate={rest.min == null ? undefined : String(rest.min)}
+        maxDate={rest.max == null ? undefined : String(rest.max)}
+        id={rest.id}
+        title={rest.title}
+        placeholder={rest.placeholder}
+        className={className}
+        disabled={rest.disabled}
+      />
+    )
+  }
+  // Les sélecteurs natifs de mois suivent l'attribut lang : localisation à la volée.
+  const locale = type === 'month' ? getFormatLocale() : undefined
   return (
     <input
       type={type}
@@ -198,52 +218,6 @@ export function Select({
     >
       {children}
     </select>
-  )
-}
-
-/**
- * Sélecteur année-mois localisé (libellés de mois traduits via `monthLabel`).
- * Contrairement à `<input type="month">`, l'affichage suit la langue de l'application.
- */
-export function MonthSelect({
-  value,
-  onChange,
-  className = '',
-  title,
-  id,
-  allLabel,
-  years,
-}: {
-  value: string
-  onChange: (value: string) => void
-  className?: string
-  title?: string
-  id?: string
-  allLabel?: string
-  years?: number[]
-}) {
-  const current = new Date().getFullYear()
-  const list = years ?? [current - 1, current, current + 1]
-  return (
-    <Select
-      className={className}
-      title={title}
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      {allLabel !== undefined && <option value="">{allLabel}</option>}
-      {list.flatMap((year) =>
-        Array.from({ length: 12 }, (_, month) => month + 1).map((month) => {
-          const yearMonth = `${year}-${String(month).padStart(2, '0')}`
-          return (
-            <option key={yearMonth} value={yearMonth}>
-              {monthLabel(month)} {year}
-            </option>
-          )
-        }),
-      )}
-    </Select>
   )
 }
 

@@ -14,7 +14,8 @@ import { useAuth } from '../auth/AuthContext'
 import { usePagination } from '../lib/usePagination'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
-import { Alert, Card, Field, IconButton, InlineButton, Input, MonthSelect, Select, Textarea } from '../components/ui'
+import { Alert, Card, Field, IconButton, InlineButton, Input, Select, Textarea } from '../components/ui'
+import { MonthPicker } from '../components/MonthPicker'
 import {
   formatDate,
   formatDateTime,
@@ -273,10 +274,11 @@ export function Unavailability() {
           </div>
         )}
         <div className="max-w-[12rem] flex-1">
-          <MonthSelect
+          <MonthPicker
+            id="Unavailability.filtrer.par.mois"
             value={monthFilter}
             onChange={(value) => setMonthFilter(value)}
-            allLabel={tr('common.allMonths')}
+            placeholder={tr('common.allMonths')}
             title={tr('Unavailability.filtrer.par.mois')}
           />
         </div>
