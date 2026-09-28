@@ -39,6 +39,7 @@ interface EditableDay {
   workedHours: string
   comment: string
   activities: EditableActivity[]
+  unavailable: boolean
 }
 
 const DAY_TYPES: DayType[] = ['WORKED', 'WEEKEND', 'PUBLIC_HOLIDAY', 'LEAVE', 'SICK_LEAVE', 'OTHER']
@@ -58,6 +59,7 @@ function dayToEditable(day: CraDto['days'][number]): EditableDay {
       comment: a.comment ?? '',
       valid: a.valid ?? false,
     })),
+    unavailable: day.unavailable ?? false,
   }
 }
 
@@ -936,6 +938,8 @@ export function CraDetail({
                           <Select
                             className="w-36"
                             value={day.dayType}
+                            disabled={day.unavailable && isConsultant}
+                            title={day.unavailable ? tr('CraDetail.jour.indisponible') : undefined}
                             onChange={(e) =>
                               updateDay(i, {
                                 dayType: e.target.value as DayType,
@@ -1011,7 +1015,7 @@ export function CraDetail({
                               )}
                             </div>
                           ))}
-                          {canAddEvents && (
+                          {canAddEvents && !(day.unavailable && isConsultant) && (
                             <button
                               onClick={() => addActivity(i)}
                               disabled={total >= 1}

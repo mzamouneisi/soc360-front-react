@@ -329,4 +329,52 @@ describe('CraDetail', () => {
     expect(screen.queryByText('Information')).not.toBeInTheDocument()
     expect((screen.getAllByRole('combobox')[0] as HTMLSelectElement).value).toBe('7')
   })
+
+  it('rend non modifiable le jour couvert par une indisponibilité validée (consultant)', async () => {
+    userMock.value = {
+      id: 10,
+      username: 'consultant',
+      email: 'consultant@soc.fr',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      phone: null,
+      role: 'CONSULTANT',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+      consultantId: 10,
+    } as UserDto
+
+    const draft = cra(true, 'DRAFT')
+    draft.days[0] = {
+      ...draft.days[0],
+      dayType: 'LEAVE',
+      unavailable: true,
+      activities: [
+        {
+          id: 99,
+          activityId: 5,
+          activityName: 'Congé payé',
+          activityColor: null,
+          hours: 0,
+          days: 1,
+          valid: true,
+          comment: null,
+        },
+      ],
+    }
+
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Ligne' }))
+
+    const selects = await screen.findAllByRole('combobox')
+    await waitFor(() => expect((selects[0] as HTMLSelectElement).disabled).toBe(true))
+  })
 })

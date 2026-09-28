@@ -411,6 +411,7 @@ export interface CraDayDto {
   hours: number
   comment: string | null
   activities: CraDayActivityDto[]
+  unavailable?: boolean
 }
 
 export interface CraDto {
