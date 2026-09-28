@@ -1,6 +1,6 @@
 import { tr } from '../i18n/translate'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { i18nApi, type AdminBundle, type ExportPayload, type LanguageEntry } from '../api/i18n'
+import { i18nApi, type AdminBundle, type ExportPayload, type LanguageEntry, type TranslationEntryPayload } from '../api/i18n'
 import { ApiError } from '../api/client'
 import { useI18n } from '../i18n'
 import { languageLabel } from '../i18n/messages'
@@ -23,6 +23,64 @@ function downloadJson(data: unknown, filename: string) {
   URL.revokeObjectURL(url)
 }
 
+function downloadCsv(csv: string, filename: string) {
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+function csvCell(value: string | null | undefined): string {
+  const text = value ?? ''
+  if (/[",\r\n]/.test(text)) return '"' + text.replace(/"/g, '""') + '"'
+  return text
+}
+
+function parseCsv(text: string): string[][] {
+  const input = text.replace(/^\uFEFF/, '')
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let inQuotes = false
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i]
+    if (inQuotes) {
+      if (char === '"') {
+        if (input[i + 1] === '"') {
+          field += '"'
+          i++
+        } else {
+          inQuotes = false
+        }
+      } else {
+        field += char
+      }
+    } else if (char === '"') {
+      inQuotes = true
+    } else if (char === ',') {
+      row.push(field)
+      field = ''
+    } else if (char === '\n') {
+      row.push(field)
+      rows.push(row)
+      row = []
+      field = ''
+    } else if (char !== '\r') {
+      field += char
+    }
+  }
+  if (field.length > 0 || row.length > 0) {
+    row.push(field)
+    rows.push(row)
+  }
+  return rows.filter((cells) => cells.some((cell) => cell.trim() !== ''))
+}
+
 export function Languages() {
   const { refresh: refreshI18n } = useI18n()
   const { user } = useAuth()
@@ -39,6 +97,16 @@ export function Languages() {
   const [selectedCode, setSelectedCode] = useState('')
   const [autofilling, setAutofilling] = useState<string | null>(null)
   const [fillLanguage, setFillLanguage] = useState('')
+  const [csvReference, setCsvReference] = useState('fr')
+  const [csvTarget, setCsvTarget] = useState('')
+
+  const csvLanguages = bundle?.languages ?? []
+  const csvReferenceLang = csvLanguages.includes(csvReference)
+    ? csvReference
+    : (csvLanguages[0] ?? 'fr')
+  const csvTargetLang = csvLanguages.includes(csvTarget)
+    ? csvTarget
+    : (csvLanguages.find((language) => language !== csvReferenceLang) ?? csvReferenceLang)
   const [newKey, setNewKey] = useState('')
   const [newTranslations, setNewTranslations] = useState<Record<string, string>>({})
 
@@ -209,6 +277,65 @@ export function Languages() {
       downloadJson(payload, `soc360-langues-${new Date().toISOString().slice(0, 10)}.json`)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : tr('languages.errorExport'))
+    }
+  }
+
+  function exportCsv() {
+    setError(null)
+    setMessage(null)
+    try {
+      const entries = bundle?.entries ?? []
+      const lines = [`cle,${csvReferenceLang},${csvTargetLang}`]
+      for (const entry of entries) {
+        const row = drafts[entry.id] ?? translationsOf(entry)
+        lines.push(
+          [entry.key, row[csvReferenceLang] ?? '', row[csvTargetLang] ?? '']
+            .map(csvCell)
+            .join(','),
+        )
+      }
+      const stamp = new Date().toISOString().slice(0, 10)
+      downloadCsv(
+        lines.join('\r\n') + '\r\n',
+        `soc360-langues-${csvReferenceLang}-${csvTargetLang}-${stamp}.csv`,
+      )
+      setMessage(tr('Languages.csv.exporte'))
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : tr('languages.errorExport'))
+    }
+  }
+
+  async function importCsv(file: File) {
+    setError(null)
+    setMessage(null)
+    try {
+      const rows = parseCsv(await file.text())
+      if (rows.length === 0) throw new Error('empty')
+      const header = (rows[0][0] ?? '').trim().toLowerCase()
+      const start = ['cle', 'clé', 'key', 'msg_key'].includes(header) ? 1 : 0
+      const entries: TranslationEntryPayload[] = []
+      for (let i = start; i < rows.length; i++) {
+        const key = (rows[i][0] ?? '').trim()
+        const value = (rows[i][2] ?? '').trim()
+        if (!key || !value) continue
+        entries.push({ key, translations: { [csvTargetLang]: value } })
+      }
+      if (entries.length === 0) {
+        setError(tr('Languages.csv.invalide'))
+        return
+      }
+      const result = await i18nApi.importAll({ entries })
+      setMessage(
+        tr('languages.importResult', {
+          inserted: result.inserted,
+          updated: result.updated,
+          skipped: result.skipped,
+        }),
+      )
+      await load()
+      await refreshI18n()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : tr('Languages.csv.invalide'))
     }
   }
 
@@ -408,6 +535,55 @@ export function Languages() {
               }}
             />
           </label>
+        </div>
+
+        <div className="mt-6 border-t border-gray-100 pt-4">
+          <h4 className="text-sm font-semibold text-gray-900" id="Languages.export.import.csv">
+            {tr('Languages.export.import.csv')}
+          </h4>
+          <p className="mt-1 text-sm text-gray-500">{tr('Languages.csv.description')}</p>
+          <div className="mt-3 flex flex-wrap items-end gap-4">
+            <Field label={tr('Languages.langue.de.reference')} id="Languages.langue.de.reference">
+              <select
+                value={csvReferenceLang}
+                onChange={(e) => setCsvReference(e.target.value)}
+                className="w-56 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              >
+                {languages.map((language) => (
+                  <option key={language} value={language}>
+                    {language} — {languageLabel(language)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={tr('Languages.langue.a.saisir')} id="Languages.langue.a.saisir">
+              <select
+                value={csvTargetLang}
+                onChange={(e) => setCsvTarget(e.target.value)}
+                className="w-56 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              >
+                {languages.map((language) => (
+                  <option key={language} value={language}>
+                    {language} — {languageLabel(language)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <InlineButton onClick={exportCsv}>{tr('Languages.exporter.csv')}</InlineButton>
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+              {tr('Languages.importer.csv')}
+              <input
+                type="file"
+                accept="text/csv,.csv"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) void importCsv(file)
+                  e.target.value = ''
+                }}
+              />
+            </label>
+          </div>
         </div>
       </Card>
 
