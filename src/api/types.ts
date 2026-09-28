@@ -246,6 +246,14 @@ export interface ConsultantSummary {
   email: string
 }
 
+export interface CollaboratorSummary {
+  id: number
+  fullName: string
+  position: string | null
+  email: string | null
+  role: Role
+}
+
 export interface ManagerSummary {
   id: number
   fullName: string

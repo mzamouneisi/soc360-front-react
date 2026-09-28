@@ -1,6 +1,6 @@
 import { api } from './client'
 import type { PageResponse } from './types'
-import type { ConsultantDto, ConsultantRequest, ConsultantSummary, ManagerSummary, HistoConsultantDto } from './types'
+import type { CollaboratorSummary, ConsultantDto, ConsultantRequest, ConsultantSummary, ManagerSummary, HistoConsultantDto } from './types'
 
 export const consultantsApi = {
   findAll: (params: {
@@ -12,6 +12,8 @@ export const consultantsApi = {
   summaries: (socId: number) => api.get<ConsultantSummary[]>('/consultants/summaries', { socId }),
   managed: () => api.get<ConsultantSummary[]>('/consultants/managed'),
   filterList: () => api.get<ConsultantSummary[]>('/consultants/filter-list'),
+  collaborators: (socId?: number) =>
+    api.get<CollaboratorSummary[]>('/consultants/collaborators', { socId }),
   managers: (socId: number) => api.get<ManagerSummary[]>('/consultants/managers', { socId }),
   getById: (id: number) => api.get<ConsultantDto>(`/consultants/${id}`),
   create: (request: ConsultantRequest) => api.post<ConsultantDto>('/consultants', request),

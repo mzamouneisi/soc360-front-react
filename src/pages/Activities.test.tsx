@@ -6,18 +6,14 @@ import type { UserDto } from '../api/types'
 
 const {
   findAllMock,
-  managedMock,
-  summariesMock,
-  filterListMock,
+  collaboratorsMock,
   typesFindAllMock,
   projectsFindAllMock,
   socsFindAllMock,
   userMock,
 } = vi.hoisted(() => ({
   findAllMock: vi.fn(),
-  managedMock: vi.fn(),
-  summariesMock: vi.fn(),
-  filterListMock: vi.fn(),
+  collaboratorsMock: vi.fn(),
   typesFindAllMock: vi.fn(),
   projectsFindAllMock: vi.fn(),
   socsFindAllMock: vi.fn(),
@@ -54,7 +50,7 @@ vi.mock('../api/projects', () => ({
 }))
 
 vi.mock('../api/consultants', () => ({
-  consultantsApi: { managed: managedMock, summaries: summariesMock, filterList: filterListMock },
+  consultantsApi: { collaborators: collaboratorsMock },
 }))
 
 vi.mock('../api/socs', () => ({
@@ -77,7 +73,7 @@ const baseUser = {
 }
 
 beforeEach(() => {
-  filterListMock.mockResolvedValue([])
+  collaboratorsMock.mockResolvedValue([])
 })
 
 afterEach(() => {
@@ -118,11 +114,12 @@ async function openCreateModal() {
 }
 
 describe('Activities — ajout selon le rôle', () => {
-  it('un manager ne peut choisir que ses propres consultants (pas d’option Aucun)', async () => {
+  it('un manager ne peut choisir que ses propres collaborateurs (pas d’option Aucun)', async () => {
     userMock.value = { ...baseUser, role: 'MANAGER' } as UserDto
     findAllMock.mockResolvedValue([])
-    managedMock.mockResolvedValue([{ id: 50, fullName: 'Alice Martin', position: null, email: null }])
-    summariesMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue([
+      { id: 50, fullName: 'Alice Martin', position: null, email: null, role: 'CONSULTANT' },
+    ])
     typesFindAllMock.mockResolvedValue([])
     projectsFindAllMock.mockResolvedValue([])
     socsFindAllMock.mockResolvedValue([])
@@ -135,17 +132,18 @@ describe('Activities — ajout selon le rôle', () => {
 
     await openCreateModal()
 
-    expect(await screen.findByRole('option', { name: 'Alice Martin' })).toBeInTheDocument()
+    expect((await screen.findAllByRole('option', { name: 'Alice Martin' })).length).toBeGreaterThan(0)
     expect(screen.queryByRole('option', { name: 'Aucun' })).not.toBeInTheDocument()
-    expect(managedMock).toHaveBeenCalled()
-    expect(summariesMock).not.toHaveBeenCalled()
+    expect(collaboratorsMock).toHaveBeenCalledWith(5)
   })
 
-  it('un responsable_soc doit aussi choisir un consultant (pas d’option Aucun)', async () => {
+  it('un responsable_soc voit tous les collaborateurs (manager inclus, pas d’option Aucun)', async () => {
     userMock.value = { ...baseUser, role: 'RESPONSIBLE_SOC' } as UserDto
     findAllMock.mockResolvedValue([])
-    managedMock.mockResolvedValue([])
-    summariesMock.mockResolvedValue([{ id: 60, fullName: 'Bob Durand', position: null, email: null }])
+    collaboratorsMock.mockResolvedValue([
+      { id: 60, fullName: 'Bob Durand', position: null, email: null, role: 'MANAGER' },
+      { id: 1, fullName: 'U User', position: null, email: null, role: 'RESPONSIBLE_SOC' },
+    ])
     typesFindAllMock.mockResolvedValue([])
     projectsFindAllMock.mockResolvedValue([])
     socsFindAllMock.mockResolvedValue([])
@@ -158,17 +156,16 @@ describe('Activities — ajout selon le rôle', () => {
 
     await openCreateModal()
 
-    expect(await screen.findByRole('option', { name: 'Bob Durand' })).toBeInTheDocument()
+    expect((await screen.findAllByRole('option', { name: 'Bob Durand' })).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('option', { name: 'U User' }).length).toBeGreaterThan(0)
     expect(screen.queryByRole('option', { name: 'Aucun' })).not.toBeInTheDocument()
-    expect(summariesMock).toHaveBeenCalledWith(5)
-    expect(managedMock).not.toHaveBeenCalled()
+    expect(collaboratorsMock).toHaveBeenCalledWith(5)
   })
 
   it('un admin peut choisir Aucun (activité partagée)', async () => {
     userMock.value = { ...baseUser, role: 'ADMIN' } as UserDto
     findAllMock.mockResolvedValue([])
-    managedMock.mockResolvedValue([])
-    summariesMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue([])
     typesFindAllMock.mockResolvedValue([])
     projectsFindAllMock.mockResolvedValue([])
     socsFindAllMock.mockResolvedValue([])
@@ -182,21 +179,17 @@ describe('Activities — ajout selon le rôle', () => {
     await openCreateModal()
 
     expect(screen.getByRole('option', { name: 'Aucun' })).toBeInTheDocument()
-    expect(summariesMock).not.toHaveBeenCalled()
-    expect(managedMock).not.toHaveBeenCalled()
   })
 
-  it('filtre les activités par consultant et par type', async () => {
+  it('filtre les activités par collaborateur et par type', async () => {
     userMock.value = { ...baseUser, role: 'MANAGER' } as UserDto
     findAllMock.mockResolvedValue([
       activity(1, 'Mission A', 50, 1, 'Développement'),
       activity(2, 'Mission B', 51, 2, 'Réunion'),
     ])
-    managedMock.mockResolvedValue([])
-    summariesMock.mockResolvedValue([])
-    filterListMock.mockResolvedValue([
-      { id: 50, fullName: 'Alice Martin', position: null, email: null },
-      { id: 51, fullName: 'Bob Durand', position: null, email: null },
+    collaboratorsMock.mockResolvedValue([
+      { id: 50, fullName: 'Alice Martin', position: null, email: null, role: 'CONSULTANT' },
+      { id: 51, fullName: 'Bob Durand', position: null, email: null, role: 'CONSULTANT' },
     ])
     typesFindAllMock.mockResolvedValue([
       { id: 1, code: 'DEV', labelFr: 'Développement', color: null, active: true },
@@ -225,6 +218,6 @@ describe('Activities — ajout selon le rôle', () => {
 
     expect(screen.queryByText('Mission A')).not.toBeInTheDocument()
     expect(screen.getByText('Mission B')).toBeInTheDocument()
-    expect(filterListMock).toHaveBeenCalled()
+    expect(collaboratorsMock).toHaveBeenCalled()
   })
 })

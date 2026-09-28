@@ -14,7 +14,7 @@ import { Field, IconButton, InlineButton, Input, RefreshButton, Select } from '.
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { formatMoney } from '../lib/format'
-import type { ActivityDto, ActivityTypeDto, ProjectDto, ConsultantSummary, SocDto } from '../api/types'
+import type { ActivityDto, ActivityTypeDto, ProjectDto, SocDto } from '../api/types'
 
 interface FormState {
   name: string
@@ -84,22 +84,17 @@ export function Activities() {
     () => (effectiveSocId ? projectsApi.findAll({ socId: effectiveSocId }) : Promise.resolve([] as ProjectDto[])),
     [effectiveSocId],
   )
-  const { data: consultants } = useAsync(
-    () =>
-      isManager
-        ? consultantsApi.managed()
-        : effectiveSocId
-          ? consultantsApi.summaries(effectiveSocId)
-          : Promise.resolve([] as ConsultantSummary[]),
-    [effectiveSocId, isManager],
+  const { data: collaborators } = useAsync(
+    () => consultantsApi.collaborators(effectiveSocId ?? undefined),
+    [effectiveSocId],
   )
   const { data: socs } = useAsync(
     () => (isAdmin ? socsApi.findAll() : Promise.resolve([] as SocDto[])),
     [isAdmin],
   )
-  const { data: filterConsultants } = useAsync(
-    () => consultantsApi.filterList(),
-    [user?.role],
+  const { data: filterCollaborators } = useAsync(
+    () => consultantsApi.collaborators(effectiveSocId ?? undefined),
+    [effectiveSocId],
     { enabled: !!user && user.role !== 'CONSULTANT' },
   )
   const { data: filterTypes } = useAsync(
@@ -161,8 +156,8 @@ export function Activities() {
     if (needsConsultant && !form.consultantId) {
       setFormError(
         isManager
-          ? tr('Activities.selectionnez.un.de.vos.consultants')
-          : tr('Activities.selectionnez.un.consultant'),
+          ? tr('Activities.selectionnez.un.de.vos.collaborateurs')
+          : tr('Activities.selectionnez.un.collaborateur'),
       )
       return
     }
@@ -237,13 +232,13 @@ export function Activities() {
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <div className="w-56">
-          <Field label={tr('Activities.consultant')} id="Activities.consultant">
+          <Field label={tr('Activities.collaborateur')} id="Activities.collaborateur">
             <Select
               value={consultantFilter}
               onChange={(e) => setConsultantFilter(e.target.value)}
             >
-              <option value="">{tr('Activities.tous.les.consultants')}</option>
-              {(filterConsultants ?? []).map((c) => (
+              <option value="">{tr('Activities.tous.les.collaborateurs')}</option>
+              {(filterCollaborators ?? []).map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.fullName}
                 </option>
@@ -330,7 +325,7 @@ export function Activities() {
             },
             {
               key: 'consultant',
-              label: tr('Activities.consultant'),
+              label: tr('Activities.collaborateur'),
               render: (a) => (
                 <span className="text-gray-700">
                   {a.consultant
@@ -533,7 +528,7 @@ export function Activities() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={needsConsultant ? tr('Activities.consultant.obligatoire') : tr('Activities.consultant')}>
+            <Field label={needsConsultant ? tr('Activities.collaborateur.obligatoire') : tr('Activities.collaborateur')} id="Activities.collaborateur.form">
               <Select
                 value={form.consultantId}
                 onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
@@ -545,7 +540,7 @@ export function Activities() {
                 ) : (
                   <option value="">{tr('Activities.aucun')}</option>
                 )}
-                {(consultants ?? []).map((c) => (
+                {(collaborators ?? []).map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.fullName}
                   </option>
