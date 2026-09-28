@@ -4,7 +4,6 @@ import { activitiesApi } from '../api/activities'
 import { useAsync } from '../lib/useAsync'
 import { RefreshButton } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, PageHeader, Table } from '../components/data'
-import { formatMoney } from '../lib/format'
 import type { ActivityDto } from '../api/types'
 
 export function MyActivities() {
@@ -79,13 +78,6 @@ export function MyActivities() {
                   {a.startDate ? a.startDate : '—'}
                   {a.endDate ? ` → ${a.endDate}` : a.startDate ? ' →' : ''}
                 </span>
-              ),
-            },
-            {
-              key: 'price',
-              label: 'Tarif',
-              render: (a) => (
-                <span className="font-medium text-gray-900">{formatMoney(a.price, a.currency)}</span>
               ),
             },
             {

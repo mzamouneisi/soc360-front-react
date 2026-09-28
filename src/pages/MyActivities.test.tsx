@@ -111,6 +111,7 @@ describe('MyActivities', () => {
     expect(await screen.findByText('Mission A')).toBeInTheDocument()
     expect(screen.getByText('Week-end : Oui')).toBeInTheDocument()
     expect(screen.getByText('Jours fériés : Non')).toBeInTheDocument()
+    expect(screen.queryByText('Tarif')).not.toBeInTheDocument()
     expect(screen.queryByText('Partagée')).not.toBeInTheDocument()
     expect(screen.queryByText('Autre consultant')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument()
