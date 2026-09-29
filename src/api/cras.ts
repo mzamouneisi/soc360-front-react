@@ -1,5 +1,11 @@
 import { api } from './client'
-import type { CraDto, CraExchangeDto, CraHistoryDto, SaveCraRequest } from './types'
+import type {
+  CraDto,
+  CraExchangeDto,
+  CraHistoryDto,
+  DeclareAbsenceRequest,
+  SaveCraRequest,
+} from './types'
 
 export const crasApi = {
   getOrCreate: (consultantId: number, year: number, month: number, type = 'CRA') =>
@@ -19,6 +25,8 @@ export const crasApi = {
     api.get<CraDto[]>(`/cras/all/${year}`, { type }),
   save: (id: number, request: SaveCraRequest) =>
     api.put<CraDto>(`/cras/${id}/days`, request),
+  declareAbsence: (id: number, request: DeclareAbsenceRequest) =>
+    api.post<CraDto>(`/cras/${id}/absence`, request),
   submit: (id: number) => api.post<CraDto>(`/cras/${id}/submit`),
   convertToCra: (id: number) => api.post<CraDto>(`/cras/${id}/convert`),
   validate: (id: number) => api.post<CraDto>(`/cras/${id}/validate`),

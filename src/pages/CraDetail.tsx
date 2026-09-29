@@ -17,13 +17,20 @@ import { CraHistoryModal } from '../components/CraHistoryModal'
 import {
   CRA_STATUS_LABELS,
   DAY_TYPE_LABELS,
+  UNAVAILABILITY_TYPE_LABELS,
   formatNumber,
   getFormatLocale,
   monthLabel,
   statusBadge,
   weekdayShortLabels,
 } from '../lib/format'
-import type { CraDto, DayType, ActivityDto, SaveCraRequest } from '../api/types'
+import type {
+  CraDto,
+  DayType,
+  ActivityDto,
+  SaveCraRequest,
+  UnavailabilityType,
+} from '../api/types'
 import type { ReactNode } from 'react'
 
 interface EditableActivity {
@@ -208,6 +215,7 @@ export function CraDetail({
   const [cancelOpen, setCancelOpen] = useState(false)
   const [sendBackOpen, setSendBackOpen] = useState(false)
   const [restrictionDialog, setRestrictionDialog] = useState<string | null>(null)
+  const [absenceOpen, setAbsenceOpen] = useState(false)
 
   useEffect(() => {
     if (cra) setDays(cra.days.map(dayToEditable))
@@ -412,12 +420,21 @@ export function CraDetail({
   }
 
   function removeAllEvents() {
-    // Un consultant ne peut pas supprimer les événements validés : ils sont préservés.
+    // Les événements validés ne sont JAMAIS supprimés (quel que soit le rôle) : seuls les
+    // événements non validés sont retirés, ainsi que leur couleur. Un jour de congé dont
+    // l'événement est retiré reprend sa couleur d'origine (week-end ou jour travaillé ; les jours
+    // fériés sont recolorés automatiquement).
     setDays((prev) =>
-      prev.map((d) => ({
-        ...d,
-        activities: isConsultant ? d.activities.filter((a) => a.valid) : [],
-      })),
+      prev.map((d) => {
+        const activities = d.activities.filter((a) => a.valid)
+        const isLeaveColor = d.dayType === 'LEAVE' || d.dayType === 'SICK_LEAVE'
+        let dayType = d.dayType
+        if (activities.length === 0 && d.activities.length > 0 && isLeaveColor) {
+          const dow = new Date(d.date + 'T00:00:00').getDay()
+          dayType = dow === 0 || dow === 6 ? 'WEEKEND' : 'WORKED'
+        }
+        return { ...d, activities, dayType }
+      }),
     )
   }
 
@@ -492,6 +509,31 @@ export function CraDetail({
       setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  async function handleDeclareAbsence(request: {
+    type: UnavailabilityType
+    startDate: string
+    endDate: string
+    comment?: string | null
+  }): Promise<boolean> {
+    if (!cra) return false
+    setFormError(null)
+    // Enregistrer le CRA avant de déclarer l'absence (les modifications en cours sont persistées).
+    const saved = await doSave()
+    if (!saved) return false
+    setSaving(true)
+    try {
+      const updated = await crasApi.declareAbsence(cra.id, request)
+      setData(updated)
+      onChange?.()
+      return true
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+      return false
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -790,6 +832,11 @@ export function CraDetail({
             <InlineButton onClick={() => setFillRangeOpen(true)}>
               {tr('CraDetail.remplir.une.plage')}
             </InlineButton>
+            {isConsultant && !isIndispo && (
+              <Button className="w-auto" onClick={() => setAbsenceOpen(true)}>
+                {tr('CraDetail.declarer.une.absence')}
+              </Button>
+            )}
             <InlineButton
               variant="danger"
               onClick={handleDeleteAll}
@@ -1061,13 +1108,12 @@ export function CraDetail({
         </Card>
       )}
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         {canAddEvents && (
           <IconButton
             icon="save"
             label={tr('CraDetail.enregistrer')}
             variant="primary"
-            className="flex-1"
             onClick={handleSave}
             disabled={saving} loading={saving} id="CraDetail.enregistrer" />
         )}
@@ -1076,7 +1122,6 @@ export function CraDetail({
             icon="check"
             label={tr('CraDetail.soumettre')}
             variant="soft"
-            className="flex-1"
             onClick={handleSubmit}
             disabled={submitting || saving || (isIndispo ? false : !craValid)}
             title={
@@ -1087,28 +1132,29 @@ export function CraDetail({
         )}
         {managerCanAct && (
           <>
-            <span className="flex-1" title={!hasInactiveEvent ? 'aucun événement à valider' : undefined}>
+            <span title={!hasInactiveEvent ? 'aucun événement à valider' : undefined}>
               <IconButton
                 icon="check"
                 label={tr('CraDetail.valider.tout')}
                 variant="soft"
-                className="w-full"
                 onClick={handleValidate}
                 disabled={!hasInactiveEvent} id="CraDetail.valider.tout" />
             </span>
-            <span className="flex-1" title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
-              <Button
+            <span title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
+              <IconButton
+                icon="reject"
+                label={tr('CraDetail.invalider.tout')}
                 variant="danger"
-                className="w-full"
                 onClick={handleInvalidateAll}
                 disabled={!hasActiveEvent}
-              >
-                {tr('CraDetail.invalider.tout')}
-              </Button>
+              />
             </span>
-            <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={() => setSendBackOpen(true)}>
-              {tr('CraDetail.envoyer')}
-            </Button>
+            <IconButton
+              icon="send"
+              label={tr('CraDetail.envoyer')}
+              variant="primary"
+              onClick={() => setSendBackOpen(true)}
+            />
           </>
         )}
       </div>
@@ -1130,6 +1176,22 @@ export function CraDetail({
           ).padStart(2, '0')}`}
           onFill={handleFillRange}
           onClose={() => setFillRangeOpen(false)}
+        />
+      )}
+
+      {absenceOpen && (
+        <AbsenceModal
+          monthStart={`${cra.year}-${String(cra.month).padStart(2, '0')}-01`}
+          monthEnd={`${cra.year}-${String(cra.month).padStart(2, '0')}-${String(
+            new Date(cra.year, cra.month, 0).getDate(),
+          ).padStart(2, '0')}`}
+          submitting={saving}
+          onSubmit={async (request) => {
+            const ok = await handleDeclareAbsence(request)
+            if (ok) setAbsenceOpen(false)
+            return ok
+          }}
+          onClose={() => setAbsenceOpen(false)}
         />
       )}
 
@@ -1638,6 +1700,110 @@ function SendBackModal({
           placeholder={tr('CraDetail.commentaire.a.transmettre.au.consultant')}
         />
       </Field>
+    </Modal>
+  )
+}
+
+function AbsenceModal({
+  monthStart,
+  monthEnd,
+  submitting,
+  onSubmit,
+  onClose,
+}: {
+  monthStart: string
+  monthEnd: string
+  submitting?: boolean
+  onSubmit: (request: {
+    type: UnavailabilityType
+    startDate: string
+    endDate: string
+    comment?: string | null
+  }) => Promise<boolean>
+  onClose: () => void
+}) {
+  const [type, setType] = useState<UnavailabilityType>('CONGE_PAYE')
+  // Par défaut, une absence d'un seul jour (le premier du mois) : l'utilisateur choisit la date.
+  // Évite qu'un intervalle par défaut ne couvre tout le mois et n'efface les missions des autres
+  // jours.
+  const [start, setStart] = useState(monthStart)
+  const [end, setEnd] = useState(monthStart)
+  const [comment, setComment] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const TYPES: UnavailabilityType[] = [
+    'CONGE_PAYE',
+    'CONGE_RTT',
+    'CONGE_NON_PAYE',
+    'CONGE_MALADIE',
+    'CONGE_MATERNITE',
+  ]
+
+  async function submit() {
+    if (!start || !end) {
+      setError(tr('CraDetail.les.dates.sont.obligatoires'))
+      return
+    }
+    setError(null)
+    await onSubmit({ type, startDate: start, endDate: end, comment: comment.trim() || null })
+  }
+
+  return (
+    <Modal
+      open
+      title={tr('CraDetail.declarer.une.absence')}
+      onClose={onClose}
+      footer={
+        <>
+          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
+          <Button className="w-auto" onClick={() => void submit()} disabled={submitting}>
+            {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
+            {tr('CraDetail.declarer.une.absence')}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <p className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+          {tr('CraDetail.absence.info')}
+        </p>
+        <Field label={tr('Unavailability.type')} id="CraDetail.type.d.absence">
+          <Select value={type} onChange={(e) => setType(e.target.value as UnavailabilityType)}>
+            {TYPES.map((t) => (
+              <option key={t} value={t}>
+                {UNAVAILABILITY_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={tr('CraDetail.date.de.debut')} id="CraDetail.absence.date.de.debut">
+            <Input
+              type="date"
+              min={monthStart}
+              max={monthEnd}
+              value={start}
+              onChange={(e) => {
+                const value = e.target.value
+                setStart(value)
+                if (!end || end < value) setEnd(value)
+              }}
+            />
+          </Field>
+          <Field label={tr('CraDetail.date.de.fin')} id="CraDetail.absence.date.de.fin">
+            <Input
+              type="date"
+              min={start || monthStart}
+              max={monthEnd}
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+            />
+          </Field>
+        </div>
+        <Field label={tr('CraDetail.commentaire.2')} id="CraDetail.absence.commentaire">
+          <Textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
+        </Field>
+        {error && <ErrorBlock message={error} />}
+      </div>
     </Modal>
   )
 }

@@ -422,6 +422,14 @@ export interface CraDayDto {
   unavailable?: boolean
 }
 
+export interface LinkedUnavailabilityDto {
+  id: number
+  type: UnavailabilityType
+  startDate: string
+  endDate: string
+  status: UnavailabilityStatus
+}
+
 export interface CraDto {
   id: number
   consultantId: number
@@ -437,6 +445,14 @@ export interface CraDto {
   validatedAt: string | null
   comment: string | null
   days: CraDayDto[]
+  unavailabilities?: LinkedUnavailabilityDto[]
+}
+
+export interface DeclareAbsenceRequest {
+  type: UnavailabilityType
+  startDate: string
+  endDate: string
+  comment?: string | null
 }
 
 export interface CraExchangeDto {

@@ -150,6 +150,15 @@ const fr: Messages = {
   'settings.content': 'Contenu',
   'languages.searchRows': 'Rechercher une ligne',
   'languages.searchPlaceholder': 'clé ou valeur…',
+  'CraDetail.declarer.une.absence': 'Déclarer une absence',
+  'CraDetail.absences.declarees': 'Absences déclarées',
+  'CraDetail.absence.info':
+    "L'absence est soumise au manager en même temps que le CRA. Le CRA ne peut être validé qu'après validation de l'absence.",
+  'CraDetail.aucune.absence.declaree': 'Aucune absence déclarée.',
+  'CraDetail.valider.l.absence': "Valider l'absence",
+  'CraDetail.rejeter.l.absence': "Rejeter l'absence",
+  'CraDetail.le.type.d.absence.est.obligatoire': "Le type d'absence est obligatoire",
+  'CraDetail.les.dates.sont.obligatoires': 'Les dates de début et de fin sont obligatoires',
 }
 
 const en: Messages = {
@@ -274,11 +283,29 @@ const en: Messages = {
   'settings.content': 'Content',
   'languages.searchRows': 'Search a row',
   'languages.searchPlaceholder': 'key or value…',
+  'CraDetail.declarer.une.absence': 'Declare an absence',
+  'CraDetail.absences.declarees': 'Declared absences',
+  'CraDetail.absence.info':
+    'The absence is submitted to the manager together with the timesheet. The timesheet can only be approved after the absence is approved.',
+  'CraDetail.aucune.absence.declaree': 'No absence declared.',
+  'CraDetail.valider.l.absence': 'Approve the absence',
+  'CraDetail.rejeter.l.absence': 'Reject the absence',
+  'CraDetail.le.type.d.absence.est.obligatoire': 'The absence type is required',
+  'CraDetail.les.dates.sont.obligatoires': 'Start and end dates are required',
 }
 
 const ar: Messages = {
   'languages.searchRows': 'بحث عن صف',
   'languages.searchPlaceholder': 'مفتاح أو قيمة…',
+  'CraDetail.declarer.une.absence': 'الإعلان عن غياب',
+  'CraDetail.absences.declarees': 'الغيابات المعلنة',
+  'CraDetail.absence.info':
+    'يُرسل الغياب إلى المدير مع الجدول الزمني. لا يمكن اعتماد الجدول الزمني إلا بعد اعتماد الغياب.',
+  'CraDetail.aucune.absence.declaree': 'لا يوجد غياب معلن.',
+  'CraDetail.valider.l.absence': 'اعتماد الغياب',
+  'CraDetail.rejeter.l.absence': 'رفض الغياب',
+  'CraDetail.le.type.d.absence.est.obligatoire': 'نوع الغياب مطلوب',
+  'CraDetail.les.dates.sont.obligatoires': 'تاريخا البداية والنهاية مطلوبان',
 }
 
 export const MESSAGES: Record<string, Messages> = {
