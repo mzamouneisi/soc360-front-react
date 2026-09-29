@@ -309,7 +309,8 @@ export function CraDetail({
 
   const isIndispo = cra.type === 'CONGE'
   const isConsultant = user?.role === 'CONSULTANT'
-  const isAdminOrResp = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
+  const isAdmin = user?.role === 'ADMIN'
+  const isAdminOrResp = isAdmin || user?.role === 'RESPONSIBLE_SOC'
   const isManagerOfConsultant = user?.role === 'MANAGER' && cra.managerId === user.id
   const canValidate = isAdminOrResp || isManagerOfConsultant
 
@@ -832,7 +833,7 @@ export function CraDetail({
             <InlineButton onClick={() => setFillRangeOpen(true)}>
               {tr('CraDetail.remplir.une.plage')}
             </InlineButton>
-            {isConsultant && !isIndispo && (
+            {!isAdmin && !isIndispo && (
               <Button className="w-auto" onClick={() => setAbsenceOpen(true)}>
                 {tr('CraDetail.declarer.une.absence')}
               </Button>

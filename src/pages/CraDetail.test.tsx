@@ -681,4 +681,43 @@ describe('CraDetail', () => {
 
     await waitFor(() => expect(screen.queryAllByText('Développement')).toHaveLength(1))
   })
+
+  it('affiche « Déclarer une absence » pour un manager', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(true, 'DRAFT'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByRole('button', { name: 'Déclarer une absence' })).toBeInTheDocument()
+  })
+
+  it('masque « Déclarer une absence » pour un admin', async () => {
+    userMock.value = {
+      id: 3,
+      username: 'admin',
+      email: 'admin@soc.fr',
+      firstName: 'A',
+      lastName: 'Admin',
+      phone: null,
+      role: 'ADMIN',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+    } as UserDto
+    getByIdMock.mockResolvedValue(cra(true, 'DRAFT'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(
+      screen.queryByRole('button', { name: 'Déclarer une absence' }),
+    ).not.toBeInTheDocument()
+  })
 })
