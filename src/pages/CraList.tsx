@@ -385,7 +385,7 @@ export function CraList() {
                         {formatDate(cra.validatedAt)}
                       </td>
                       <td className="max-w-64 px-4 py-3 text-sm text-gray-600">
-                        {cra.comment ?? '—'}
+                        {dt(cra.comment) || '—'}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">

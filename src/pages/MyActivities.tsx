@@ -2,12 +2,14 @@ import { tr } from '../i18n/translate'
 import { useAuth } from '../auth/AuthContext'
 import { activitiesApi } from '../api/activities'
 import { useAsync } from '../lib/useAsync'
+import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { RefreshButton } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, PageHeader, Table } from '../components/data'
 import type { ActivityDto } from '../api/types'
 
 export function MyActivities() {
   const { user } = useAuth()
+  const dt = useDynamicTranslate()
 
   const { data, loading, error, reload } = useAsync(
     () =>
@@ -45,7 +47,7 @@ export function MyActivities() {
           columns={[
             {
               key: 'name',
-              label: 'Activité',
+              label: tr('Activities.activite'),
               render: (a) => (
                 <div>
                   <p className="font-medium text-gray-900">{a.name}</p>
@@ -55,12 +57,12 @@ export function MyActivities() {
             },
             {
               key: 'type',
-              label: 'Type',
+              label: tr('common.type'),
               render: (a) => <Badge kind="info">{a.type?.labelFr ?? '—'}</Badge>,
             },
             {
               key: 'project',
-              label: 'Projet',
+              label: tr('Projects.projet'),
               render: (a) => (
                 <div>
                   <p className="font-medium text-gray-900">{a.project?.name ?? '—'}</p>
@@ -72,7 +74,7 @@ export function MyActivities() {
             },
             {
               key: 'period',
-              label: 'Période',
+              label: tr('common.period'),
               render: (a) => (
                 <span className="text-gray-600">
                   {a.startDate ? a.startDate : '—'}
@@ -82,23 +84,25 @@ export function MyActivities() {
             },
             {
               key: 'allowed',
-              label: 'Week-end / Jours fériés',
+              label: tr('Activities.week.end.jours.feries'),
               render: (a) => (
                 <div className="flex flex-col gap-1">
                   <Badge kind={a.weekendAllowed ? 'success' : 'muted'}>
-                    Week-end : {a.weekendAllowed ? 'Oui' : 'Non'}
+                    {tr('Activities.week.end')} : {dt(a.weekendAllowed ? 'Oui' : 'Non')}
                   </Badge>
                   <Badge kind={a.holidayAllowed ? 'success' : 'muted'}>
-                    Jours fériés : {a.holidayAllowed ? 'Oui' : 'Non'}
+                    {tr('Activities.jours.feries')} : {dt(a.holidayAllowed ? 'Oui' : 'Non')}
                   </Badge>
                 </div>
               ),
             },
             {
               key: 'active',
-              label: 'Statut',
+              label: tr('common.status'),
               render: (a) => (
-                <Badge kind={a.active ? 'success' : 'muted'}>{a.active ? 'Active' : 'Inactive'}</Badge>
+                <Badge kind={a.active ? 'success' : 'muted'}>
+                  {dt(a.active ? 'Active' : 'Inactive')}
+                </Badge>
               ),
             },
           ]}

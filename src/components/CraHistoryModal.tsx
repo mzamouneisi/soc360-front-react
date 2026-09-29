@@ -76,7 +76,7 @@ export function CraHistoryModal({
                     {formatDateTime(h.dateModif)}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
-                  <td className="max-w-64 px-4 py-3 text-sm text-gray-600">{h.comment ?? '—'}</td>
+                  <td className="max-w-64 px-4 py-3 text-sm text-gray-600">{dt(h.comment) || '—'}</td>
                   <td className="px-4 py-3 text-sm text-gray-500">{statusLabel(h.statusBefore)}</td>
                   <td className="px-4 py-3 text-sm text-gray-900">{statusLabel(h.statusAfter)}</td>
                 </tr>
