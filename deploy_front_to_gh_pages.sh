@@ -13,24 +13,48 @@
 
 set -euo pipefail
 
-# Fonction pour trouver npm (essaie npm.cmd en priorité)
+# Vite 8 requiert Node.js 20.19+ ou 22.12+ : on privilégie l'installation nvm épinglée du
+# workspace (v22.12.0) puis le PATH.
+NODE_VERSION_MIN_PATH="/c/pgm/nvm/v22.12.0"
+
+# Fonction pour trouver npm
 find_npm() {
-  # Priorité à npm.cmd pour Windows/MobaXterm
+  # Installation nvm épinglée (Node 22.12+, compatible Vite 8)
+  for path in \
+    "/cygdrive/c/pgm/nvm/v22.12.0/npm.cmd" \
+    "/c/pgm/nvm/v22.12.0/npm.cmd" \
+    "/cygdrive/c/pgm/nvm/v22.12.0/npm" \
+    "/c/pgm/nvm/v22.12.0/npm"; do
+    if [ -f "$path" ] && [ -x "$path" ]; then
+      echo "$path"
+      return 0
+    fi
+  done
+  # Repli sur le PATH (Windows/MobaXterm)
   if command -v npm.cmd >/dev/null 2>&1; then
     echo "npm.cmd"
     return 0
   elif command -v npm >/dev/null 2>&1; then
     echo "npm"
     return 0
+  fi
+  return 1
+}
+
+# Vérifie qu'une version de Node satisfait l'exigence de Vite 8 (20.19+ ou 22.12+).
+node_supported() {
+  local v="${1#v}" major minor
+  [ -n "$v" ] || return 1
+  major="${v%%.*}"
+  minor="${v#*.}"; minor="${minor%%.*}"
+  case "$major" in ''|*[!0-9]*) return 1 ;; esac
+  case "$minor" in ''|*[!0-9]*) return 1 ;; esac
+  if [ "$major" -eq 20 ]; then
+    [ "$minor" -ge 19 ]
+  elif [ "$major" -eq 22 ]; then
+    [ "$minor" -ge 12 ]
   else
-    # Cherche dans les chemins Windows courants
-    for path in "/cygdrive/c/pgm/nvm/v22.0.0/npm.cmd" "/c/pgm/nvm/v22.0.0/npm.cmd" "/cygdrive/c/pgm/nvm/v22.0.0/npm" "/c/pgm/nvm/v22.0.0/npm"; do
-      if [ -f "$path" ] && [ -x "$path" ]; then
-        echo "$path"
-        return 0
-      fi
-    done
-    return 1
+    [ "$major" -ge 23 ]
   fi
 }
 
@@ -41,8 +65,23 @@ if [ -z "$NPM_CMD" ]; then
   exit 1
 fi
 
-# Log du chemin npm utilisé
+# Résoudre le binaire node associé (même dossier que npm) et contrôler sa version.
+NODE_DIR="$(dirname "$NPM_CMD")"
+if [ -x "$NODE_DIR/node" ]; then
+  NODE_BIN="$NODE_DIR/node"
+else
+  NODE_BIN="node"
+fi
+NODE_VERSION="$("$NODE_BIN" -v 2>/dev/null || true)"
+if ! node_supported "$NODE_VERSION"; then
+  echo "ERROR: Node.js ${NODE_VERSION:-introuvable} détecté, mais Vite 8 requiert Node 22.12+ (ou 20.19+)."
+  echo "       Utilisez l'installation du workspace : $NODE_VERSION_MIN_PATH (nvm use 22.12.0)."
+  exit 1
+fi
+
+# Log des chemins utilisés
 echo "npm utilisé : $NPM_CMD"
+echo "node utilisé : $NODE_BIN ($NODE_VERSION)"
 
 TARGET="${1:-dev}"
 

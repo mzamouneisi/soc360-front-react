@@ -126,7 +126,7 @@ export function MainLayout() {
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
-  const _LAST_COMMIT_ = '2026_09_29_15_30_24'
+  const _LAST_COMMIT_ = '2026_09_29_15_55_34'
 
   const sections: NavSection[] = [
     {
