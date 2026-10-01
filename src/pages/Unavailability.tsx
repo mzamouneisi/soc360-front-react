@@ -98,25 +98,29 @@ export function Unavailability() {
       })()
     : null
 
-  const filtered = data.filter((u) => {
-    if (monthBounds && (u.endDate < monthBounds.start || u.startDate > monthBounds.end)) {
-      return false
-    }
-    if (!search.trim()) return true
-    const q = search.trim().toLowerCase()
-    const type = (UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type).toLowerCase()
-    const status = (UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status).toLowerCase()
-    const consultant = (u.consultantName ?? '').toLowerCase()
-    const comment = (u.comment ?? '').toLowerCase()
-    return (
-      type.includes(q) ||
-      status.includes(q) ||
-      consultant.includes(q) ||
-      comment.includes(q) ||
-      u.startDate.includes(q) ||
-      u.endDate.includes(q)
-    )
-  })
+  const filtered = data
+    .filter((u) => {
+      if (monthBounds && (u.endDate < monthBounds.start || u.startDate > monthBounds.end)) {
+        return false
+      }
+      if (!search.trim()) return true
+      const q = search.trim().toLowerCase()
+      const type = (UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type).toLowerCase()
+      const status = (UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status).toLowerCase()
+      const consultant = (u.consultantName ?? '').toLowerCase()
+      const comment = (u.comment ?? '').toLowerCase()
+      return (
+        type.includes(q) ||
+        status.includes(q) ||
+        consultant.includes(q) ||
+        comment.includes(q) ||
+        u.startDate.includes(q) ||
+        u.endDate.includes(q)
+      )
+    })
+    // Tri par date de début décroissante, quelle que soit la source (le backend le fait déjà,
+    // mais on garantit l'ordre de façon déterministe à l'identique, id décroissant en secours).
+    .sort((a, b) => b.startDate.localeCompare(a.startDate) || b.id - a.id)
 
   const pageSize = user?.pageSize ?? 5
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
@@ -129,6 +133,8 @@ export function Unavailability() {
   const canDelete = (u: UnavailabilityDto) => u.status === 'DRAFT' || u.status === 'REJECTED'
   const canCancel = (u: UnavailabilityDto) => u.status === 'SUBMITTED'
   const canReview = (u: UnavailabilityDto) => !isConsultant && u.status === 'SUBMITTED'
+  // Le manager peut invalider une indisponibilité déjà validée (elle repasse en « Rejetée »).
+  const canInvalidate = (u: UnavailabilityDto) => !isConsultant && u.status === 'VALIDATED'
 
   function openCreate() {
     const today = new Date()
@@ -231,6 +237,12 @@ export function Unavailability() {
     const comment = await dialog.prompt(tr('Unavailability.motif.du.rejet.consultant'))
     if (comment === null) return
     return runAction(u, () => unavailabilityApi.reject(u.id, comment))
+  }
+
+  async function handleInvalidate(u: UnavailabilityDto) {
+    const comment = await dialog.prompt(tr('Unavailability.motif.de.l.invalidation'))
+    if (comment === null) return
+    return runAction(u, () => unavailabilityApi.invalidate(u.id, comment))
   }
 
   function handleDelete(u: UnavailabilityDto) {
@@ -498,6 +510,16 @@ export function Unavailability() {
                                   void handleReject(u)
                                 }} id="Unavailability.rejeter" />
                             </>
+                          )}
+                          {canInvalidate(u) && (
+                            <IconButton
+                              icon="reject"
+                              label={tr('Unavailability.invalider')}
+                              variant="danger"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                void handleInvalidate(u)
+                              }} id="Unavailability.invalider" />
                           )}
                           {canDelete(u) && (
                             <IconButton

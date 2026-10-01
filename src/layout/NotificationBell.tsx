@@ -1,6 +1,6 @@
 import { tr } from '../i18n/translate'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { notificationsApi } from '../api/notifications'
 import { useAuth } from '../auth/AuthContext'
 import { Badge } from '../components/data'
@@ -9,11 +9,14 @@ import { formatDateTime, statusBadge } from '../lib/format'
 export function NotificationBell() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const [unread, setUnread] = useState(0)
   const [items, setItems] = useState<import('../api/types').NotificationDto[]>([])
   const [loading, setLoading] = useState(false)
-  const [pollEnabled, setPollEnabled] = useState(false)
+  // Le rafraîchissement automatique est actif par défaut : le destinataire (manager) doit voir
+  // arriver les nouvelles notifications sans action manuelle.
+  const [pollEnabled, setPollEnabled] = useState(true)
   const [intervalSec, setIntervalSec] = useState('30')
   const ref = useRef<HTMLDivElement>(null)
 
@@ -39,7 +42,19 @@ export function NotificationBell() {
       cancelled = true
       clearInterval(timer)
     }
-  }, [user?.id, pollEnabled, intervalSec])
+  }, [user?.id, pollEnabled, intervalSec, location.pathname])
+
+  // Rafraîchit immédiatement le compteur lorsque la fenêtre reprend le focus (retour d'onglet).
+  useEffect(() => {
+    const onFocus = () => {
+      notificationsApi
+        .unreadCount()
+        .then((n) => setUnread(n))
+        .catch(() => {})
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [])
 
   useEffect(() => {
     function onClick(e: MouseEvent) {

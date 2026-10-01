@@ -159,6 +159,13 @@ const fr: Messages = {
   'CraDetail.rejeter.l.absence': "Rejeter l'absence",
   'CraDetail.le.type.d.absence.est.obligatoire': "Le type d'absence est obligatoire",
   'CraDetail.les.dates.sont.obligatoires': 'Les dates de début et de fin sont obligatoires',
+  'CraDetail.indispos.a.valider': 'Indisponibilités à valider',
+  'CraDetail.indispos.a.valider.info':
+    'Le CRA ne peut pas être validé tant que ces indisponibilités ne sont pas validées.',
+  'CraDetail.indispo.date.debut': 'Date de début',
+  'CraDetail.indispo.date.fin': 'Date de fin',
+  'CraDetail.ouvrir.l.indispo': "Ouvrir l'indispo",
+  'CraDetail.fermer': 'Fermer',
 }
 
 const en: Messages = {
@@ -292,6 +299,13 @@ const en: Messages = {
   'CraDetail.rejeter.l.absence': 'Reject the absence',
   'CraDetail.le.type.d.absence.est.obligatoire': 'The absence type is required',
   'CraDetail.les.dates.sont.obligatoires': 'Start and end dates are required',
+  'CraDetail.indispos.a.valider': 'Unavailabilities to approve',
+  'CraDetail.indispos.a.valider.info':
+    'The timesheet cannot be approved until these unavailabilities are approved.',
+  'CraDetail.indispo.date.debut': 'Start date',
+  'CraDetail.indispo.date.fin': 'End date',
+  'CraDetail.ouvrir.l.indispo': 'Open the unavailability',
+  'CraDetail.fermer': 'Close',
 }
 
 const ar: Messages = {
@@ -306,6 +320,13 @@ const ar: Messages = {
   'CraDetail.rejeter.l.absence': 'رفض الغياب',
   'CraDetail.le.type.d.absence.est.obligatoire': 'نوع الغياب مطلوب',
   'CraDetail.les.dates.sont.obligatoires': 'تاريخا البداية والنهاية مطلوبان',
+  'CraDetail.indispos.a.valider': 'الغيابات المطلوب اعتمادها',
+  'CraDetail.indispos.a.valider.info':
+    'لا يمكن اعتماد الجدول الزمني قبل اعتماد هذه الغيابات.',
+  'CraDetail.indispo.date.debut': 'تاريخ البداية',
+  'CraDetail.indispo.date.fin': 'تاريخ النهاية',
+  'CraDetail.ouvrir.l.indispo': 'فتح الغياب',
+  'CraDetail.fermer': 'إغلاق',
 }
 
 export const MESSAGES: Record<string, Messages> = {

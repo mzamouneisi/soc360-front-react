@@ -2,8 +2,14 @@ import { tr } from '../i18n/translate'
 import { useAsync } from '../lib/useAsync'
 import { crasApi } from '../api/cras'
 import type { CraDto, UnavailabilityDto } from '../api/types'
-import { monthLabel, UNAVAILABILITY_TYPE_LABELS } from '../lib/format'
+import {
+  monthLabel,
+  statusBadge,
+  UNAVAILABILITY_STATUS_LABELS,
+  UNAVAILABILITY_TYPE_LABELS,
+} from '../lib/format'
 import { Card } from '../components/ui'
+import { Badge } from '../components/data'
 
 const WEEKDAY_LABELS = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di']
 
@@ -228,7 +234,18 @@ export function UnavailabilityCalendar({
             {UNAVAILABILITY_TYPE_LABELS[selected.type] ?? selected.type} — {selected.startDate} →{' '}
             {selected.endDate} ({selected.durationDays} {tr('UnavailabilityCalendar.j')}
           </span>
+          <Badge kind={statusBadge(selected.status)}>
+            {UNAVAILABILITY_STATUS_LABELS[selected.status] ?? selected.status}
+          </Badge>
         </div>
+        {selected.comment && (
+          <p className="mt-1 text-xs text-gray-500">{selected.comment}</p>
+        )}
+        {selected.status === 'REJECTED' && selected.rejectedReason && (
+          <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <strong>{tr('common.rejectionReason')}</strong> {selected.rejectedReason}
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] text-gray-500">
           <span className="flex items-center gap-1">
             <span className="inline-block h-2.5 w-2.5 rounded-sm ring-2 ring-inset ring-blue-400 bg-sky-100" />

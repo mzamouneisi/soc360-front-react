@@ -13,6 +13,7 @@ const {
   cancelMock,
   validateMock,
   rejectMock,
+  invalidateMock,
   historyMock,
   deleteMock,
   summariesMock,
@@ -26,6 +27,7 @@ const {
   cancelMock: vi.fn(),
   validateMock: vi.fn(),
   rejectMock: vi.fn(),
+  invalidateMock: vi.fn(),
   historyMock: vi.fn(),
   deleteMock: vi.fn(),
   summariesMock: vi.fn(),
@@ -46,6 +48,7 @@ vi.mock('../api/unavailability', () => ({
     cancel: cancelMock,
     validate: validateMock,
     reject: rejectMock,
+    invalidate: invalidateMock,
     history: historyMock,
     delete: deleteMock,
   },
@@ -129,6 +132,28 @@ describe('Unavailability', () => {
     expect(await screen.findByText(/Calendrier/)).toBeInTheDocument()
   })
 
+  it('affiche les indisponibilités de la date de début la plus récente à la plus ancienne', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({ id: 1, consultantName: 'Alpha', startDate: '2026-09-01', endDate: '2026-09-01' }),
+      item({ id: 2, consultantName: 'Beta', startDate: '2026-11-01', endDate: '2026-11-02' }),
+      item({ id: 3, consultantName: 'Gamma', startDate: '2026-10-05', endDate: '2026-10-06' }),
+    ])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+
+    await screen.findByText('Beta')
+    const expected = ['Beta', 'Gamma', 'Alpha']
+    const nodes = expected.map((name) => screen.getByText(name))
+    for (let i = 1; i < nodes.length; i++) {
+      expect(
+        nodes[i - 1].compareDocumentPosition(nodes[i]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
+    }
+  })
+
   it('affiche la liste du consultant et le calendrier de l’intervalle sélectionné', async () => {
     userMock.value = baseUser
     listMock.mockResolvedValue([item()])
@@ -141,6 +166,23 @@ describe('Unavailability', () => {
     expect(await screen.findByText(/Calendrier de l'indisponibilité/)).toBeInTheDocument()
     expect(findByConsultantMock).toHaveBeenCalledWith(10, 2026, 'CONGE')
     expect(findByConsultantMock).toHaveBeenCalledWith(10, 2026, 'CRA')
+  })
+
+  it('affiche le motif de rejet lorsqu’on ouvre une indisponibilité rejetée', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({ status: 'REJECTED', rejectedReason: 'Motif de rejet indispo' }),
+    ])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByText('Alice Martin'))
+
+    expect(await screen.findByText(/Calendrier de l'indisponibilité/)).toBeInTheDocument()
+    // Le motif est présent dans la ligne ET dans le détail de l'objet ouvert.
+    expect(screen.getAllByText('Motif de rejet indispo').length).toBeGreaterThan(1)
   })
 
   it('soumet un brouillon (plusieurs soumissions possibles)', async () => {
@@ -202,6 +244,34 @@ describe('Unavailability', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmer' }))
 
     await waitFor(() => expect(rejectMock).toHaveBeenCalledWith(1, 'Période non couverte'))
+  })
+
+  it('permet au manager d’invalider une indisponibilité déjà validée', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ status: 'VALIDATED' })])
+    summariesMock.mockResolvedValue([])
+    invalidateMock.mockResolvedValue(item({ status: 'REJECTED' }))
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Invalider' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: 'Erreur de saisie' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Confirmer' }))
+
+    await waitFor(() => expect(invalidateMock).toHaveBeenCalledWith(1, 'Erreur de saisie'))
+  })
+
+  it('n’expose pas l’action Invalider à un consultant', async () => {
+    userMock.value = baseUser
+    listMock.mockResolvedValue([item({ status: 'VALIDATED' })])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    expect(await screen.findByText('Validée')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Invalider' })).not.toBeInTheDocument()
   })
 
   it('charge toutes les indisponibilités pour un admin (sans filtre société)', async () => {

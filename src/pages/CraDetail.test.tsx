@@ -12,6 +12,8 @@ const {
   invalidateRangeMock,
   historyMock,
   declareAbsenceMock,
+  absenceValidateMock,
+  absenceRejectMock,
   activitiesFindAllMock,
   holidaysFindByCountryYearMock,
   socHolidaysListMock,
@@ -23,6 +25,8 @@ const {
   invalidateRangeMock: vi.fn(),
   historyMock: vi.fn(),
   declareAbsenceMock: vi.fn(),
+  absenceValidateMock: vi.fn(),
+  absenceRejectMock: vi.fn(),
   activitiesFindAllMock: vi.fn(),
   holidaysFindByCountryYearMock: vi.fn(),
   socHolidaysListMock: vi.fn(),
@@ -53,8 +57,8 @@ vi.mock('../api/cras', () => ({
 
 vi.mock('../api/unavailability', () => ({
   unavailabilityApi: {
-    validate: vi.fn(),
-    reject: vi.fn(),
+    validate: absenceValidateMock,
+    reject: absenceRejectMock,
   },
 }))
 
@@ -497,6 +501,121 @@ describe('CraDetail', () => {
     expect(screen.getByText('Congé payé')).toBeInTheDocument()
   })
 
+  it('le propriétaire (consultant) conserve un congé validé sur un jour d’absence (supprimer tous)', async () => {
+    userMock.value = {
+      id: 10,
+      username: 'consultant',
+      email: 'consultant@soc.fr',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      phone: null,
+      role: 'CONSULTANT',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+      consultantId: 10,
+    } as UserDto
+
+    const draft = cra(true, 'DRAFT')
+    const leaveIndex = draft.days.findIndex((d) => d.dayType === 'WORKED')
+    draft.days = draft.days.map((d, i) => {
+      if (i === leaveIndex) {
+        return {
+          ...d,
+          dayType: 'LEAVE',
+          unavailable: true,
+          activities: [
+            {
+              id: 300,
+              activityId: 5,
+              activityName: 'Congé payé',
+              activityColor: null,
+              hours: 0,
+              days: 1,
+              valid: true,
+              comment: null,
+            },
+          ],
+        }
+      }
+      if (d.dayType === 'WORKED') {
+        return {
+          ...d,
+          activities: [
+            {
+              id: 301 + i,
+              activityId: 6,
+              activityName: 'Développement',
+              activityColor: null,
+              hours: 0,
+              days: 1,
+              valid: false,
+              comment: null,
+            },
+          ],
+        }
+      }
+      return { ...d, activities: [] }
+    })
+
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Congé payé',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: true,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+      {
+        id: 6,
+        name: 'Développement',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter initialEntries={['/cras/1']}>
+        <CraDetail id={1} />
+        <DialogHost />
+      </MemoryRouter>,
+    )
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(await screen.findByText('Congé payé')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer tous les événements' }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Supprimer' }))
+
+    await waitFor(() => expect(screen.queryByText('Développement')).not.toBeInTheDocument())
+    expect(screen.getByText('Congé payé')).toBeInTheDocument()
+  })
+
   it('un consultant peut déclarer une absence directement depuis son CRA', async () => {
     userMock.value = {
       id: 10,
@@ -719,5 +838,257 @@ describe('CraDetail', () => {
     expect(
       screen.queryByRole('button', { name: 'Déclarer une absence' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('affiche le commentaire de rejet lorsqu’on ouvre un CRA rejeté', async () => {
+    userMock.value = managerUser
+    const rejected = cra(true, 'REJECTED')
+    rejected.comment = 'Motif de rejet du CRA'
+    getByIdMock.mockResolvedValue(rejected)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByText('Motif de rejet du CRA')).toBeInTheDocument()
+  })
+
+  it('affiche "Aucune absence déclarée" quand le CRA n’a pas d’absence liée', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(true, 'SUBMITTED'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByText('Absences déclarées')).toBeInTheDocument()
+    expect(screen.getByText('Aucune absence déclarée.')).toBeInTheDocument()
+  })
+
+  it('le manager valide une absence liée depuis la page du CRA', async () => {
+    userMock.value = managerUser
+    const submitted = cra(true, 'SUBMITTED')
+    submitted.unavailabilities = [
+      { id: 77, type: 'CONGE_PAYE', startDate: '2026-08-03', endDate: '2026-08-05', status: 'SUBMITTED' },
+    ]
+    getByIdMock.mockResolvedValue(submitted)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter initialEntries={['/cras/1']}>
+        <CraDetail id={1} />
+        <DialogHost />
+      </MemoryRouter>,
+    )
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByText('2026-08-03 → 2026-08-05')).toBeInTheDocument()
+    expect(screen.getByText('Soumise')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: "Valider l'absence" }))
+    const prompt = await screen.findByRole('dialog')
+    fireEvent.change(within(prompt).getByRole('textbox'), { target: { value: 'OK' } })
+    fireEvent.click(within(prompt).getByRole('button', { name: 'Confirmer' }))
+
+    await waitFor(() => expect(absenceValidateMock).toHaveBeenCalledWith(77, 'OK'))
+    expect(getByIdMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('le manager rejette une absence liée avec un motif depuis la page du CRA', async () => {
+    userMock.value = managerUser
+    const submitted = cra(true, 'SUBMITTED')
+    submitted.unavailabilities = [
+      { id: 78, type: 'CONGE_MALADIE', startDate: '2026-08-10', endDate: '2026-08-10', status: 'SUBMITTED' },
+    ]
+    getByIdMock.mockResolvedValue(submitted)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter initialEntries={['/cras/1']}>
+        <CraDetail id={1} />
+        <DialogHost />
+      </MemoryRouter>,
+    )
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+
+    fireEvent.click(screen.getByRole('button', { name: "Rejeter l'absence" }))
+    const prompt = await screen.findByRole('dialog')
+    fireEvent.change(within(prompt).getByRole('textbox'), { target: { value: 'Certificat manquant' } })
+    fireEvent.click(within(prompt).getByRole('button', { name: 'Confirmer' }))
+
+    await waitFor(() =>
+      expect(absenceRejectMock).toHaveBeenCalledWith(78, 'Certificat manquant'),
+    )
+  })
+
+  it('un consultant ne voit pas les actions sur les absences liées', async () => {
+    userMock.value = {
+      id: 10,
+      username: 'consultant',
+      email: 'consultant@soc.fr',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      phone: null,
+      role: 'CONSULTANT',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+    } as UserDto
+    const submitted = cra(true, 'SUBMITTED')
+    submitted.unavailabilities = [
+      { id: 79, type: 'CONGE_PAYE', startDate: '2026-08-03', endDate: '2026-08-03', status: 'SUBMITTED' },
+    ]
+    getByIdMock.mockResolvedValue(submitted)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByText('Absences déclarées')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: "Valider l'absence" })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: "Rejeter l'absence" })).not.toBeInTheDocument()
+  })
+
+  it('ouvre une popup listant les indispos à valider au lieu de valider le CRA', async () => {
+    userMock.value = managerUser
+    const submitted = cra(false, 'SUBMITTED')
+    submitted.unavailabilities = [
+      { id: 77, type: 'CONGE_PAYE', startDate: '2026-08-03', endDate: '2026-08-05', status: 'SUBMITTED' },
+    ]
+    getByIdMock.mockResolvedValue(submitted)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const valider = screen.getByRole('button', { name: 'Valider tout' })
+    await waitFor(() => expect(valider).toBeEnabled())
+    fireEvent.click(valider)
+
+    const popup = await screen.findByRole('dialog')
+    expect(within(popup).getByText('Indisponibilités à valider')).toBeInTheDocument()
+    expect(within(popup).getByText('2026-08-03')).toBeInTheDocument()
+    expect(within(popup).getByText('2026-08-05')).toBeInTheDocument()
+    expect(within(popup).getByRole('link', { name: "Ouvrir l'indispo" })).toHaveAttribute(
+      'href',
+      '/indisponibilites?open=77',
+    )
+    // Aucune validation du CRA n'a été tentée.
+    expect(validateMock).not.toHaveBeenCalled()
+  })
+
+  /**
+ * Régression : l'absence rejetée restait affichée « Rejetée » après « Valider l'absence ».
+ * Le backend la resoumet à la nouvelle soumission du CRA et accepte la validation d'une
+ * absence rejetée : le panneau doit donc exposer l'action et recharger le CRA.
+ */
+it('le manager peut valider une absence liée déjà rejetée', async () => {
+    userMock.value = managerUser
+    const rejected = cra(false, 'SUBMITTED')
+    rejected.unavailabilities = [
+      { id: 91, type: 'CONGE_PAYE', startDate: '2026-08-03', endDate: '2026-08-05', status: 'REJECTED' },
+    ]
+    const validated = cra(false, 'SUBMITTED')
+    validated.unavailabilities = [
+      { id: 91, type: 'CONGE_PAYE', startDate: '2026-08-03', endDate: '2026-08-05', status: 'VALIDATED' },
+    ]
+    getByIdMock.mockResolvedValueOnce(rejected).mockResolvedValue(validated)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter initialEntries={['/cras/1']}>
+        <CraDetail id={1} />
+        <DialogHost />
+      </MemoryRouter>,
+    )
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByText('Rejetée')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: "Valider l'absence" }))
+    const prompt = await screen.findByRole('dialog')
+    fireEvent.click(within(prompt).getByRole('button', { name: 'Confirmer' }))
+
+    await waitFor(() => expect(absenceValidateMock).toHaveBeenCalledWith(91, ''))
+    await waitFor(() => expect(getByIdMock).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.getByText('Validée')).toBeInTheDocument())
+  })
+
+  it('ferme la popup des indispos à valider une fois toutes validées', async () => {
+    userMock.value = managerUser
+    const pending = cra(false, 'SUBMITTED')
+    pending.unavailabilities = [
+      { id: 92, type: 'CONGE_RTT', startDate: '2026-08-03', endDate: '2026-08-05', status: 'REJECTED' },
+    ]
+    const cleared = cra(false, 'SUBMITTED')
+    cleared.unavailabilities = [
+      { id: 92, type: 'CONGE_RTT', startDate: '2026-08-03', endDate: '2026-08-05', status: 'VALIDATED' },
+    ]
+    getByIdMock.mockResolvedValueOnce(pending).mockResolvedValue(cleared)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter initialEntries={['/cras/1']}>
+        <CraDetail id={1} />
+        <DialogHost />
+      </MemoryRouter>,
+    )
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const valider = screen.getByRole('button', { name: 'Valider tout' })
+    await waitFor(() => expect(valider).toBeEnabled())
+    fireEvent.click(valider)
+
+    const popup = await screen.findByRole('dialog')
+    fireEvent.click(within(popup).getByRole('button', { name: "Valider l'absence" }))
+    // La popup de saisie est ouverte en portal par-dessus la popup des indispos.
+    const [, prompt] = await screen.findAllByRole('dialog')
+    fireEvent.click(within(prompt).getByRole('button', { name: 'Confirmer' }))
+
+    await waitFor(() => expect(absenceValidateMock).toHaveBeenCalledWith(92, ''))
+    // Plus rien à valider : la popup se referme pour laisser valider le CRA.
+    await waitFor(() =>
+      expect(screen.queryByText('Indisponibilités à valider')).not.toBeInTheDocument(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Valider tout' }))
+    await waitFor(() => expect(validateMock).toHaveBeenCalledWith(1))
+  })
+
+  it('valide le CRA directement quand aucune indispo n’est en attente', async () => {
+    userMock.value = managerUser
+    const submitted = cra(false, 'SUBMITTED')
+    getByIdMock.mockResolvedValue(submitted)
+    saveMock.mockResolvedValue(submitted)
+    validateMock.mockResolvedValue(cra(true, 'VALIDATED'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const valider = screen.getByRole('button', { name: 'Valider tout' })
+    await waitFor(() => expect(valider).toBeEnabled())
+    fireEvent.click(valider)
+
+    await waitFor(() => expect(validateMock).toHaveBeenCalledWith(1))
+    expect(screen.queryByText('Indisponibilités à valider')).not.toBeInTheDocument()
   })
 })

@@ -1,11 +1,12 @@
 import { tr } from '../i18n/translate'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { crasApi } from '../api/cras'
 import { activitiesApi } from '../api/activities'
 import { holidaysApi } from '../api/holidays'
 import { socHolidaysApi } from '../api/socHolidays'
+import { unavailabilityApi } from '../api/unavailability'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
@@ -17,6 +18,7 @@ import { CraHistoryModal } from '../components/CraHistoryModal'
 import {
   CRA_STATUS_LABELS,
   DAY_TYPE_LABELS,
+  UNAVAILABILITY_STATUS_LABELS,
   UNAVAILABILITY_TYPE_LABELS,
   formatNumber,
   getFormatLocale,
@@ -28,6 +30,7 @@ import type {
   CraDto,
   DayType,
   ActivityDto,
+  LinkedUnavailabilityDto,
   SaveCraRequest,
   UnavailabilityType,
 } from '../api/types'
@@ -216,6 +219,8 @@ export function CraDetail({
   const [sendBackOpen, setSendBackOpen] = useState(false)
   const [restrictionDialog, setRestrictionDialog] = useState<string | null>(null)
   const [absenceOpen, setAbsenceOpen] = useState(false)
+  const [absenceBusy, setAbsenceBusy] = useState<number | null>(null)
+  const [pendingAbsencesOpen, setPendingAbsencesOpen] = useState(false)
 
   useEffect(() => {
     if (cra) setDays(cra.days.map(dayToEditable))
@@ -341,6 +346,15 @@ export function CraDetail({
       cra.status === 'CANCELLED' ||
       cra.status === 'REJECTED')
   const canCancel = isConsultant && isIndispo && (cra.status === 'VALIDATED' || cra.status === 'SUBMITTED' || cra.status === 'PENDING_SEND')
+
+  // Absences générées à partir de ce CRA : visibles par tous, traitables par le manager
+  // uniquement tant qu'elles ne sont pas validées (et le CRA est en attente de traitement).
+  const linkedAbsences = cra.unavailabilities ?? []
+  const pendingAbsences = linkedAbsences.filter((a) => a.status !== 'VALIDATED')
+  const linkedAbsencesPending = pendingAbsences.length > 0
+  function canValidateLinkedAbsence(absence: LinkedUnavailabilityDto): boolean {
+    return managerCanAct && absence.status !== 'VALIDATED'
+  }
 
   const hasInactiveEvent = days.some((d) => d.activities.some((a) => !a.valid))
   const hasActiveEvent = days.some((d) => d.activities.some((a) => a.valid))
@@ -513,6 +527,38 @@ export function CraDetail({
     }
   }
 
+  async function handleAbsenceValidate(absence: LinkedUnavailabilityDto) {
+    const comment = await dialog.prompt(tr('Unavailability.commentaire.validation'))
+    if (comment === null) return
+    setFormError(null)
+    setAbsenceBusy(absence.id)
+    try {
+      await unavailabilityApi.validate(absence.id, comment)
+      await reload()
+      onChange?.()
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setAbsenceBusy(null)
+    }
+  }
+
+  async function handleAbsenceReject(absence: LinkedUnavailabilityDto) {
+    const reason = await dialog.prompt(tr('Unavailability.motif.du.rejet.consultant'))
+    if (reason === null) return
+    setFormError(null)
+    setAbsenceBusy(absence.id)
+    try {
+      await unavailabilityApi.reject(absence.id, reason)
+      await reload()
+      onChange?.()
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setAbsenceBusy(null)
+    }
+  }
+
   async function handleDeclareAbsence(request: {
     type: UnavailabilityType
     startDate: string
@@ -541,6 +587,12 @@ export function CraDetail({
   async function handleValidate() {
     if (!cra) return
     setFormError(null)
+    // Le CRA ne peut pas être validé tant que les indispos liées ne le sont pas : on affiche
+    // d'abord la liste des indispos à valider plutôt que de laisser le backend refuser.
+    if (canValidate && linkedAbsencesPending) {
+      setPendingAbsencesOpen(true)
+      return
+    }
     try {
       if (formEditable) {
         const saved = await doSave()
@@ -856,6 +908,54 @@ export function CraDetail({
           {incompleteDays.length > 1 ? 'nt' : ''} {tr('CraDetail.pas.1.jour.le.cra.ne.peut.etre.envoye.que.lorsque.chaque.jou')}
         </div>
       )}
+
+      <Card>
+        <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold text-gray-900">
+            {tr('CraDetail.absences.declarees')}
+          </h3>
+          {linkedAbsencesPending && cra.status === 'SUBMITTED' && (
+            <p className="text-xs text-amber-700">{tr('CraDetail.absence.info')}</p>
+          )}
+        </div>
+        {linkedAbsences.length === 0 ? (
+          <p className="text-sm text-gray-500">{tr('CraDetail.aucune.absence.declaree')}</p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {linkedAbsences.map((absence) => (
+              <li key={absence.id} className="flex flex-wrap items-center gap-2 py-2">
+                <span className="text-xs font-medium text-gray-700">
+                  {absence.startDate}
+                  {absence.endDate !== absence.startDate && ` → ${absence.endDate}`}
+                </span>
+                <span className="text-sm text-gray-900">
+                  {tr(UNAVAILABILITY_TYPE_LABELS[absence.type] ?? absence.type)}
+                </span>
+                <Badge kind={statusBadge(absence.status)}>
+                  {tr(UNAVAILABILITY_STATUS_LABELS[absence.status] ?? absence.status)}
+                </Badge>
+                {canValidateLinkedAbsence(absence) && (
+                  <span className="ml-auto flex gap-1">
+                    <InlineButton
+                      disabled={absenceBusy === absence.id}
+                      onClick={() => handleAbsenceValidate(absence)}
+                    >
+                      {tr('CraDetail.valider.l.absence')}
+                    </InlineButton>
+                    <InlineButton
+                      variant="danger"
+                      disabled={absenceBusy === absence.id}
+                      onClick={() => handleAbsenceReject(absence)}
+                    >
+                      {tr('CraDetail.rejeter.l.absence')}
+                    </InlineButton>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       {tab === 'calendar' ? (
         <Card className="overflow-hidden">
@@ -1193,6 +1293,16 @@ export function CraDetail({
             return ok
           }}
           onClose={() => setAbsenceOpen(false)}
+        />
+      )}
+
+      {pendingAbsencesOpen && pendingAbsences.length > 0 && (
+        <PendingAbsencesModal
+          absences={pendingAbsences}
+          busy={absenceBusy}
+          onValidate={handleAbsenceValidate}
+          onReject={handleAbsenceReject}
+          onClose={() => setPendingAbsencesOpen(false)}
         />
       )}
 
@@ -1804,6 +1914,98 @@ function AbsenceModal({
           <Textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
         </Field>
         {error && <ErrorBlock message={error} />}
+      </div>
+    </Modal>
+  )
+}
+
+function PendingAbsencesModal({
+  absences,
+  busy,
+  onValidate,
+  onReject,
+  onClose,
+}: {
+  absences: LinkedUnavailabilityDto[]
+  busy: number | null
+  onValidate: (absence: LinkedUnavailabilityDto) => void
+  onReject: (absence: LinkedUnavailabilityDto) => void
+  onClose: () => void
+}) {
+  return (
+    <Modal
+      open
+      title={tr('CraDetail.indispos.a.valider')}
+      onClose={onClose}
+      size="lg"
+      footer={
+        <Button className="w-auto" onClick={onClose}>
+          {tr('CraDetail.fermer')}
+        </Button>
+      }
+    >
+      <p className="mb-3 text-sm text-gray-600">{tr('CraDetail.indispos.a.valider.info')}</p>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead style={{ backgroundColor: 'var(--table-header)' }}>
+            <tr>
+              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                {tr('CraDetail.indispo.date.debut')}
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                {tr('CraDetail.indispo.date.fin')}
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                {tr('Unavailability.type')}
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                {tr('Unavailability.statut')}
+              </th>
+              <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                {tr('CraList.actions')}
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {absences.map((absence) => (
+              <tr key={absence.id}>
+                <td className="px-3 py-2 text-sm text-gray-700">{absence.startDate}</td>
+                <td className="px-3 py-2 text-sm text-gray-700">{absence.endDate}</td>
+                <td className="px-3 py-2 text-sm text-gray-700">
+                  {tr(UNAVAILABILITY_TYPE_LABELS[absence.type] ?? absence.type)}
+                </td>
+                <td className="px-3 py-2">
+                  <Badge kind={statusBadge(absence.status)}>
+                    {tr(UNAVAILABILITY_STATUS_LABELS[absence.status] ?? absence.status)}
+                  </Badge>
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center justify-end gap-1">
+                    <Link
+                      to={`/indisponibilites?open=${absence.id}`}
+                      className="text-xs font-medium text-brand-600 underline hover:text-brand-700"
+                    >
+                      {tr('CraDetail.ouvrir.l.indispo')}
+                    </Link>
+                    <InlineButton
+                      disabled={busy === absence.id}
+                      onClick={() => onValidate(absence)}
+                    >
+                      {tr('CraDetail.valider.l.absence')}
+                    </InlineButton>
+                    <InlineButton
+                      variant="danger"
+                      disabled={busy === absence.id}
+                      onClick={() => onReject(absence)}
+                    >
+                      {tr('CraDetail.rejeter.l.absence')}
+                    </InlineButton>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Modal>
   )

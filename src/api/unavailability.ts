@@ -14,6 +14,8 @@ export const unavailabilityApi = {
     api.post<UnavailabilityDto>(`/unavailabilities/${id}/validate`, { comment }),
   reject: (id: number, comment: string) =>
     api.post<UnavailabilityDto>(`/unavailabilities/${id}/reject`, { comment }),
+  invalidate: (id: number, comment: string) =>
+    api.post<UnavailabilityDto>(`/unavailabilities/${id}/invalidate`, { comment }),
   history: (id: number) => api.get<UnavailabilityHistoryDto[]>(`/unavailabilities/${id}/history`),
   delete: (id: number) => api.delete<void>(`/unavailabilities/${id}`),
 }

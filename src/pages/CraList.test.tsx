@@ -201,6 +201,27 @@ describe('CraList', () => {
     expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
   })
 
+  it('affiche les CRA du mois le plus récent au plus ancien', async () => {
+    userMock.value = managerUser
+    findByManagerMock.mockResolvedValue([
+      cra({ id: 11, month: 1, consultantName: 'Alpha' }),
+      cra({ id: 12, month: 12, consultantName: 'Beta' }),
+      cra({ id: 13, month: 6, consultantName: 'Gamma' }),
+      cra({ id: 14, month: 3, consultantName: 'Delta' }),
+    ])
+
+    renderList()
+
+    await screen.findByText('Beta')
+    const expected = ['Beta', 'Gamma', 'Delta', 'Alpha']
+    const nodes = expected.map((name) => screen.getByText(name))
+    for (let i = 1; i < nodes.length; i++) {
+      expect(
+        nodes[i - 1].compareDocumentPosition(nodes[i]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
+    }
+  })
+
   it('valide un CRA soumis', async () => {
     userMock.value = managerUser
     findByManagerMock.mockResolvedValue([cra()])

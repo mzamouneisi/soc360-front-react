@@ -110,19 +110,23 @@ export function CraList() {
 
   if (!user) return null
 
-  const list = (data ?? []).filter((c) => {
-    if (monthFilter) {
-      const [filterYear, filterMonth] = monthFilter.split('-').map(Number)
-      if (c.year !== filterYear || c.month !== filterMonth) return false
-    }
-    if (consultantFilter != null && c.consultantId !== consultantFilter) return false
-    if (!search.trim()) return true
-    const q = search.trim().toLowerCase()
-    const yearMonth = `${c.year}-${String(c.month).padStart(2, '0')}`
-    const consultant = (c.consultantName ?? '').toLowerCase()
-    const status = (CRA_STATUS_LABELS[c.status] ?? c.status).toLowerCase()
-    return yearMonth.includes(q) || consultant.includes(q) || status.includes(q)
-  })
+  const list = (data ?? [])
+    .filter((c) => {
+      if (monthFilter) {
+        const [filterYear, filterMonth] = monthFilter.split('-').map(Number)
+        if (c.year !== filterYear || c.month !== filterMonth) return false
+      }
+      if (consultantFilter != null && c.consultantId !== consultantFilter) return false
+      if (!search.trim()) return true
+      const q = search.trim().toLowerCase()
+      const yearMonth = `${c.year}-${String(c.month).padStart(2, '0')}`
+      const consultant = (c.consultantName ?? '').toLowerCase()
+      const status = (CRA_STATUS_LABELS[c.status] ?? c.status).toLowerCase()
+      return yearMonth.includes(q) || consultant.includes(q) || status.includes(q)
+    })
+    // Les CRA sont toujours affichés du mois le plus récent au plus ancien, quel que soit
+    // l'ordre renvoyé par le backend (les CRA de l'équipe et les CRA personnels sont fusionnés).
+    .sort((a, b) => b.year - a.year || b.month - a.month || b.id - a.id)
   const totalPages = Math.max(1, Math.ceil(list.length / (user?.pageSize ?? 5)))
   const safePage = Math.min(page, totalPages - 1)
   const pageItems = list.slice(safePage * (user?.pageSize ?? 5), safePage * (user?.pageSize ?? 5) + (user?.pageSize ?? 5))
