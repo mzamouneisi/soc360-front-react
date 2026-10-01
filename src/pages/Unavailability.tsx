@@ -187,6 +187,10 @@ export function Unavailability() {
       setFormError('Sélectionnez un consultant.')
       return
     }
+    if (!formComment.trim()) {
+      setFormError(tr('Unavailability.commentaire.obligatoire'))
+      return
+    }
     setSaving(true)
     setFormError(null)
     try {
@@ -279,7 +283,7 @@ export function Unavailability() {
         subtitleId="Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie"
         actions={
           <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="new"
-            onClick={openCreate} disabled={isConsultant && !user?.hireDate}
+            onClick={openCreate}
             title={isConsultant && !user?.hireDate ? tr('hireDate.required') : undefined}
             id="Unavailability.nouvelle.indisponibilite" />
         }
@@ -358,7 +362,7 @@ export function Unavailability() {
               <Input type="date" value={formEnd} min={formHireDate ?? formStart}
                 onChange={(e) => setFormEnd(e.target.value)} />
             </Field>
-            <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
+            <Field label={`${tr('Unavailability.commentaire')} *`} id="Unavailability.commentaire">
               <Textarea
                 rows={1}
                 value={formComment}

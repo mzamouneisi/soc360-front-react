@@ -320,6 +320,7 @@ describe('Unavailability', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
     fireEvent.change(screen.getByTitle('Consultant'), { target: { value: '1' } })
+    fireEvent.change(screen.getByPlaceholderText(/Motif, remarques/), { target: { value: 'Congés' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
@@ -342,7 +343,7 @@ describe('Unavailability', () => {
 
   it('permet au manager de modifier une indisponibilité validée', async () => {
     userMock.value = managerUser
-    listMock.mockResolvedValue([item({ status: 'VALIDATED' })])
+    listMock.mockResolvedValue([item({ status: 'VALIDATED', comment: 'Déjà validée' })])
     summariesMock.mockResolvedValue([])
     updateMock.mockResolvedValue(item({ status: 'VALIDATED' }))
 
@@ -366,15 +367,31 @@ describe('Unavailability', () => {
     expect(screen.queryByRole('button', { name: 'Éditer' })).not.toBeInTheDocument()
   })
 
-  it('désactive la création d’indisponibilité sans date d’embauche (consultant)', async () => {
+  it('affiche le motif quand la création est impossible sans date d’embauche (consultant)', async () => {
     userMock.value = { ...baseUser, hireDate: null } as UserDto
     listMock.mockResolvedValue([])
     summariesMock.mockResolvedValue([])
 
     renderPage()
 
-    const button = await screen.findByRole('button', { name: 'Nouvelle indisponibilité' })
-    expect(button).toBeDisabled()
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    expect(
+      await screen.findByText(/Renseignez votre date d’embauche pour saisir un CRA/i),
+    ).toBeInTheDocument()
+  })
+
+  it('exige un commentaire pour créer une indisponibilité', async () => {
+    userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
+
+    expect(await screen.findByText('Le commentaire est obligatoire.')).toBeInTheDocument()
+    expect(createMock).not.toHaveBeenCalled()
   })
 
   it('garde le filtre visible même sans indisponibilité', async () => {

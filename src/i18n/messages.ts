@@ -173,6 +173,7 @@ const fr: Messages = {
   'Unavailability.status.SUBMITTED': 'Soumise',
   'Unavailability.status.VALIDATED': 'Validée',
   'Unavailability.status.REJECTED': 'Rejetée',
+  'Unavailability.commentaire.obligatoire': 'Le commentaire est obligatoire.',
   'hireDate.required':
     'Renseignez votre date d’embauche pour saisir un CRA ou une indisponibilité.',
   'hireDate.required.activities':
@@ -326,6 +327,7 @@ const en: Messages = {
   'Unavailability.status.SUBMITTED': 'Submitted',
   'Unavailability.status.VALIDATED': 'Approved',
   'Unavailability.status.REJECTED': 'Rejected',
+  'Unavailability.commentaire.obligatoire': 'The comment is required.',
   'hireDate.required':
     'Set your hire date to fill in a timesheet or an unavailability.',
   'hireDate.required.activities': 'Set your hire date to view your activities.',
@@ -358,6 +360,7 @@ const ar: Messages = {
   'Unavailability.status.SUBMITTED': 'مُقدَّمة',
   'Unavailability.status.VALIDATED': 'معتمدة',
   'Unavailability.status.REJECTED': 'مرفوضة',
+  'Unavailability.commentaire.obligatoire': 'التعليق مطلوب.',
   'hireDate.required': 'أدخل تاريخ التوظيف لملء الجدول الزمني أو الإجازة.',
   'hireDate.required.activities': 'أدخل تاريخ التوظيف لعرض أنشطتك.',
   'Unavailability.date.embauche': 'الفترة المحددة قبل تاريخ التوظيف.',
