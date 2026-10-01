@@ -18,7 +18,7 @@ import { CraHistoryModal } from '../components/CraHistoryModal'
 import {
   CRA_STATUS_LABELS,
   DAY_TYPE_LABELS,
-  UNAVAILABILITY_STATUS_LABELS,
+  UNAVAILABILITY_STATUS_KEYS,
   UNAVAILABILITY_TYPE_LABELS,
   formatNumber,
   getFormatLocale,
@@ -800,7 +800,9 @@ export function CraDetail({
             {onClose ? '← Fermer' : cra.type === 'CONGE' ? '← Retour aux Indispos' : '← Retour aux CRA'}
           </button>
           <h2 className="mt-1 text-2xl font-bold text-gray-900">
-            {cra.type === 'CONGE' ? 'Indispo de ' : 'CRA de '}{cra.consultantName ?? '—'}
+            {tr(cra.type === 'CONGE' ? 'CraDetail.titre.indispo' : 'CraDetail.titre.cra', {
+              name: cra.consultantName ?? '—',
+            })}
           </h2>
           <p className="text-sm text-gray-500">
             {monthLabel(cra.month)} {cra.year}
@@ -941,7 +943,7 @@ export function CraDetail({
                   {tr(UNAVAILABILITY_TYPE_LABELS[absence.type] ?? absence.type)}
                 </span>
                 <Badge kind={statusBadge(absence.status)}>
-                  {tr(UNAVAILABILITY_STATUS_LABELS[absence.status] ?? absence.status)}
+                  {tr(UNAVAILABILITY_STATUS_KEYS[absence.status] ?? absence.status)}
                 </Badge>
                 {canValidateLinkedAbsence(absence) && (
                   <span className="ml-auto flex gap-1">
@@ -1996,7 +1998,7 @@ function PendingAbsencesModal({
                 </td>
                 <td className="px-3 py-2">
                   <Badge kind={statusBadge(absence.status)}>
-                    {tr(UNAVAILABILITY_STATUS_LABELS[absence.status] ?? absence.status)}
+                    {tr(UNAVAILABILITY_STATUS_KEYS[absence.status] ?? absence.status)}
                   </Badge>
                 </td>
                 <td className="px-3 py-2">

@@ -45,6 +45,18 @@ describe('i18n messages', () => {
   it('expose les mêmes clés en français et en anglais', () => {
     expect(Object.keys(MESSAGES.en).sort()).toEqual(Object.keys(MESSAGES.fr).sort())
   })
+
+  it('traduit les statuts d’indisponibilité dans les 3 langues', () => {
+    for (const lang of ['fr', 'en', 'ar']) {
+      for (const status of ['DRAFT', 'SUBMITTED', 'VALIDATED', 'REJECTED']) {
+        const value = MESSAGES[lang][`Unavailability.status.${status}`]
+        expect(value, `${lang}/${status}`).toBeTruthy()
+        expect(value).not.toContain('Unavailability.status')
+      }
+    }
+    expect(MESSAGES.en['Unavailability.status.VALIDATED']).toBe('Approved')
+    expect(MESSAGES.fr['Unavailability.status.REJECTED']).toBe('Rejetée')
+  })
 })
 
 describe('I18nProvider', () => {

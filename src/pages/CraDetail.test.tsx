@@ -1071,6 +1071,18 @@ it('le manager peut valider une absence liée déjà rejetée', async () => {
     await waitFor(() => expect(validateMock).toHaveBeenCalledWith(1))
   })
 
+  it('internationalise le titre de la page CRA (« CRA de … »)', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(false, 'DRAFT'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    expect(await screen.findByText('CRA de Alice Martin')).toBeInTheDocument()
+  })
+
   it('grise les jours antérieurs à la date d’embauche avec une info-bulle', async () => {
     userMock.value = managerUser
     const draft = cra(false, 'DRAFT')

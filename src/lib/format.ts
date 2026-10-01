@@ -174,6 +174,14 @@ export const UNAVAILABILITY_STATUS_LABELS: Record<UnavailabilityStatus, string> 
   REJECTED: 'Rejetée',
 }
 
+/** Clés i18n des statuts d'indisponibilité (à passer à `tr`). */
+export const UNAVAILABILITY_STATUS_KEYS: Record<UnavailabilityStatus, string> = {
+  DRAFT: 'Unavailability.status.DRAFT',
+  SUBMITTED: 'Unavailability.status.SUBMITTED',
+  VALIDATED: 'Unavailability.status.VALIDATED',
+  REJECTED: 'Unavailability.status.REJECTED',
+}
+
 export const UNAVAILABILITY_TYPE_LABELS: Record<UnavailabilityType, string> = {
   CONGE_PAYE: 'Congé payé',
   CONGE_RTT: 'Congé RTT',
