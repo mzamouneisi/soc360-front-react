@@ -38,6 +38,7 @@ const consultantUser = {
   consultantId: 2,
   mustChangePassword: false,
   lastLoginAt: null,
+  hireDate: '2020-01-01',
 } as UserDto
 
 afterEach(() => {
@@ -117,5 +118,19 @@ describe('MyActivities', () => {
     expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Supprimer' })).not.toBeInTheDocument()
     expect(findAllMock).toHaveBeenCalledWith({ socId: 5, consultantId: 2 })
+  })
+
+  it('bloque la consultation des activités sans date d’embauche', async () => {
+    userMock.value = { ...consultantUser, hireDate: null } as UserDto
+    findAllMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter>
+        <MyActivities />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText(/date d’embauche pour consulter/i)).toBeInTheDocument()
+    expect(screen.queryByText('Mission A')).not.toBeInTheDocument()
   })
 })

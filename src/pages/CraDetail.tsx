@@ -104,6 +104,8 @@ function dayBackground(dayType: DayType | undefined): string {
       return 'bg-yellow-100'
     case 'PUBLIC_HOLIDAY':
       return 'bg-orange-100'
+    case 'BEFORE_HIRE':
+      return 'bg-gray-200'
     case 'WORKED':
     case undefined:
       return 'bg-white'
@@ -346,6 +348,13 @@ export function CraDetail({
       cra.status === 'CANCELLED' ||
       cra.status === 'REJECTED')
   const canCancel = isConsultant && isIndispo && (cra.status === 'VALIDATED' || cra.status === 'SUBMITTED' || cra.status === 'PENDING_SEND')
+
+  const monthStart = `${cra.year}-${String(cra.month).padStart(2, '0')}-01`
+  const monthEnd = `${cra.year}-${String(cra.month).padStart(2, '0')}-${String(
+    new Date(cra.year, cra.month, 0).getDate(),
+  ).padStart(2, '0')}`
+  // La saisie d'une absence ne peut pas commencer avant la date d'embauche du consultant (soc-72).
+  const absenceMin = cra.hireDate && cra.hireDate > monthStart ? cra.hireDate : monthStart
 
   // Absences générées à partir de ce CRA : visibles par tous, traitables par le manager
   // uniquement tant qu'elles ne sont pas validées (et le CRA est en attente de traitement).
@@ -979,6 +988,11 @@ export function CraDetail({
                 <div
                   key={date}
                   className={`min-h-28 p-1.5 ${dayBackground(day?.dayType)}`}
+                  title={
+                    day?.dayType === 'BEFORE_HIRE'
+                      ? tr('CraDetail.avant.embauche', { date: cra.hireDate ?? '' })
+                      : undefined
+                  }
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-gray-500">{dayNum}</span>
@@ -1088,7 +1102,14 @@ export function CraDetail({
                         })}
                       </td>
                       <td className="px-4 py-3">
-                        {formEditable ? (
+                        {day.dayType === 'BEFORE_HIRE' ? (
+                          <span
+                            className="text-sm text-gray-400"
+                            title={tr('CraDetail.avant.embauche', { date: cra.hireDate ?? '' })}
+                          >
+                            {DAY_TYPE_LABELS.BEFORE_HIRE}
+                          </span>
+                        ) : formEditable ? (
                           <Select
                             className="w-36"
                             value={day.dayType}
@@ -1169,7 +1190,8 @@ export function CraDetail({
                               )}
                             </div>
                           ))}
-                          {canAddEvents && !(day.unavailable && isConsultant) && (
+                          {canAddEvents && day.dayType !== 'BEFORE_HIRE'
+                            && !(day.unavailable && isConsultant) && (
                             <button
                               onClick={() => addActivity(i)}
                               disabled={total >= 1}
@@ -1282,10 +1304,8 @@ export function CraDetail({
 
       {absenceOpen && (
         <AbsenceModal
-          monthStart={`${cra.year}-${String(cra.month).padStart(2, '0')}-01`}
-          monthEnd={`${cra.year}-${String(cra.month).padStart(2, '0')}-${String(
-            new Date(cra.year, cra.month, 0).getDate(),
-          ).padStart(2, '0')}`}
+          monthStart={absenceMin}
+          monthEnd={monthEnd}
           submitting={saving}
           onSubmit={async (request) => {
             const ok = await handleDeclareAbsence(request)

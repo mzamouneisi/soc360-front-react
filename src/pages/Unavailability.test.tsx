@@ -366,6 +366,17 @@ describe('Unavailability', () => {
     expect(screen.queryByRole('button', { name: 'Éditer' })).not.toBeInTheDocument()
   })
 
+  it('désactive la création d’indisponibilité sans date d’embauche (consultant)', async () => {
+    userMock.value = { ...baseUser, hireDate: null } as UserDto
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    const button = await screen.findByRole('button', { name: 'Nouvelle indisponibilité' })
+    expect(button).toBeDisabled()
+  })
+
   it('garde le filtre visible même sans indisponibilité', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([])

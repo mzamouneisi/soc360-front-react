@@ -23,6 +23,21 @@ export function MyActivities() {
 
   if (!user) return null
 
+  // soc-72 : sans date d'embauche, le consultant ne peut pas consulter ses activités.
+  if (user.role === 'CONSULTANT' && !user.hireDate) {
+    return (
+      <div>
+        <PageHeader
+          title={tr('MyActivities.mes.activites')}
+          titleId="MyActivities.mes.activites"
+          subtitle={tr('MyActivities.activites.qui.vous.sont.affectees.lecture.seule')}
+          subtitleId="MyActivities.activites.qui.vous.sont.affectees.lecture.seule"
+        />
+        <ErrorBlock message={tr('hireDate.required.activities')} />
+      </div>
+    )
+  }
+
   const mine: ActivityDto[] = (data ?? []).filter((a) => a.consultant?.id === user.id)
 
   return (

@@ -166,6 +166,13 @@ const fr: Messages = {
   'CraDetail.indispo.date.fin': 'Date de fin',
   'CraDetail.ouvrir.l.indispo': "Ouvrir l'indispo",
   'CraDetail.fermer': 'Fermer',
+  'CraDetail.avant.embauche': 'Avant la date d’embauche ({date})',
+  'hireDate.required':
+    'Renseignez votre date d’embauche pour saisir un CRA ou une indisponibilité.',
+  'hireDate.required.activities':
+    'Renseignez votre date d’embauche pour consulter vos activités.',
+  'Unavailability.date.embauche':
+    'La période sélectionnée est antérieure à votre date d’embauche.',
 }
 
 const en: Messages = {
@@ -306,6 +313,11 @@ const en: Messages = {
   'CraDetail.indispo.date.fin': 'End date',
   'CraDetail.ouvrir.l.indispo': 'Open the unavailability',
   'CraDetail.fermer': 'Close',
+  'CraDetail.avant.embauche': 'Before hire date ({date})',
+  'hireDate.required':
+    'Set your hire date to fill in a timesheet or an unavailability.',
+  'hireDate.required.activities': 'Set your hire date to view your activities.',
+  'Unavailability.date.embauche': 'The selected period is before your hire date.',
 }
 
 const ar: Messages = {
@@ -327,6 +339,10 @@ const ar: Messages = {
   'CraDetail.indispo.date.fin': 'تاريخ النهاية',
   'CraDetail.ouvrir.l.indispo': 'فتح الغياب',
   'CraDetail.fermer': 'إغلاق',
+  'CraDetail.avant.embauche': 'قبل تاريخ التوظيف ({date})',
+  'hireDate.required': 'أدخل تاريخ التوظيف لملء الجدول الزمني أو الإجازة.',
+  'hireDate.required.activities': 'أدخل تاريخ التوظيف لعرض أنشطتك.',
+  'Unavailability.date.embauche': 'الفترة المحددة قبل تاريخ التوظيف.',
 }
 
 export const MESSAGES: Record<string, Messages> = {

@@ -1071,6 +1071,28 @@ it('le manager peut valider une absence liée déjà rejetée', async () => {
     await waitFor(() => expect(validateMock).toHaveBeenCalledWith(1))
   })
 
+  it('grise les jours antérieurs à la date d’embauche avec une info-bulle', async () => {
+    userMock.value = managerUser
+    const draft = cra(false, 'DRAFT')
+    draft.hireDate = '2026-08-15'
+    const beforeHireIndex = draft.days.findIndex((d) => d.dayType === 'WORKED')
+    draft.days = draft.days.map((d, i) =>
+      i === beforeHireIndex ? { ...d, dayType: 'BEFORE_HIRE', activities: [] } : d,
+    )
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(
+      await screen.findByTitle('Avant la date d’embauche (2026-08-15)'),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Avant embauche/)).toBeInTheDocument()
+  })
+
   it('valide le CRA directement quand aucune indispo n’est en attente', async () => {
     userMock.value = managerUser
     const submitted = cra(false, 'SUBMITTED')

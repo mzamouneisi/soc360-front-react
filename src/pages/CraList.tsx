@@ -108,7 +108,24 @@ export function CraList() {
     setPage(0)
   }, [year, month, search, consultantFilter, monthFilter])
 
+  // soc-72 : la navigation du consultant démarre à sa date d'embauche.
+  useEffect(() => {
+    if (!isConsultant || !user?.hireDate) return
+    const hy = Number(user.hireDate.slice(0, 4))
+    const hm = Number(user.hireDate.slice(5, 7))
+    if (year < hy || (year === hy && month < hm)) {
+      setYear(hy)
+      setMonth(hm)
+    }
+  }, [isConsultant, user?.hireDate, year, month])
+
   if (!user) return null
+
+  const hirePeriod = isConsultant && user.hireDate
+    ? { year: Number(user.hireDate.slice(0, 4)), month: Number(user.hireDate.slice(5, 7)) }
+    : null
+  const beforeHirePeriod = (y: number, m: number) =>
+    !!hirePeriod && (y < hirePeriod.year || (y === hirePeriod.year && m < hirePeriod.month))
 
   const list = (data ?? [])
     .filter((c) => {
@@ -134,18 +151,31 @@ export function CraList() {
   const editable = (c: CraDto) => c.status !== 'SUBMITTED' && c.status !== 'VALIDATED'
 
   function openPeriod(newYear: number, newMonth: number) {
-    const sameYear = newYear === year
-    setYear(newYear)
-    setMonth(newMonth)
+    // soc-72 : impossible de naviguer avant la date d'embauche (liste des mois / années).
+    let y = newYear
+    let m = newMonth
+    if (beforeHirePeriod(y, m) && hirePeriod) {
+      y = hirePeriod.year
+      m = hirePeriod.month
+    }
+    const sameYear = y === year
+    setYear(y)
+    setMonth(m)
     setOpenCraId(null)
     if (isConsultant && sameYear) {
-      const cra = (data ?? []).find((c) => c.month === newMonth)
+      const cra = (data ?? []).find((c) => c.month === m)
       if (cra) setOpenCraId(cra.id)
     }
   }
 
+  const allowedYears = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]
+    .filter((y) => !hirePeriod || y >= hirePeriod.year)
+  const allowedMonths = Array.from({ length: 12 }, (_, i) => i + 1)
+    .filter((m) => !hirePeriod || year > hirePeriod.year || m >= hirePeriod.month)
+
   function goPrev() {
     const p = shiftMonth(year, month, -1)
+    if (beforeHirePeriod(p.year, p.month)) return
     void openPeriod(p.year, p.month)
   }
 
@@ -220,6 +250,10 @@ export function CraList() {
 
   async function createCra(type: string) {
     if (!ownerId) return
+    if (isConsultant && !user.hireDate) {
+      void dialog.error(tr('hireDate.required'))
+      return
+    }
     try {
       const period = await findFreePeriod()
       const cra = await crasApi.getOrCreate(ownerId, period.year, period.month, type)
@@ -462,7 +496,7 @@ export function CraList() {
             value={month}
             onChange={(e) => void openPeriod(year, Number(e.target.value))}
           >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+            {allowedMonths.map((m) => (
               <option key={m} value={m}>
                 {monthLabel(m)}
               </option>
@@ -473,7 +507,7 @@ export function CraList() {
             value={year}
             onChange={(e) => void openPeriod(Number(e.target.value), month)}
           >
-            {[now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1].map((y) => (
+            {allowedYears.map((y) => (
               <option key={y} value={y}>
                 {y}
               </option>
@@ -481,7 +515,9 @@ export function CraList() {
           </Select>
         </label>
         <div className="flex items-center gap-1">
-          <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev} id="CraList.mois.precedent" />
+          <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev}
+            disabled={beforeHirePeriod(shiftMonth(year, month, -1).year, shiftMonth(year, month, -1).month)}
+            id="CraList.mois.precedent" />
           <InlineButton onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
             {tr('CraList.mois.courant')}
           </InlineButton>

@@ -136,7 +136,16 @@ export function Unavailability() {
   // Le manager peut invalider une indisponibilité déjà validée (elle repasse en « Rejetée »).
   const canInvalidate = (u: UnavailabilityDto) => !isConsultant && u.status === 'VALIDATED'
 
+  // Date d'embauche du consultant concerné par le formulaire (soi-même ou le collaborateur choisi).
+  const formHireDate = isConsultant
+    ? (user?.hireDate ?? null)
+    : (consultants.data?.find((c) => c.id === formConsultantId)?.hireDate ?? null)
+
   function openCreate() {
+    if (isConsultant && !user?.hireDate) {
+      void dialog.error(tr('hireDate.required'))
+      return
+    }
     const today = new Date()
     const end = new Date(today)
     end.setDate(end.getDate() + 7)
@@ -168,6 +177,10 @@ export function Unavailability() {
     }
     if (formStart > formEnd) {
       setFormError('La date de fin doit être postérieure ou égale à la date de début.')
+      return
+    }
+    if (formHireDate && formStart < formHireDate) {
+      setFormError(tr('Unavailability.date.embauche'))
       return
     }
     if (!isConsultant && editingId == null && formConsultantId == null) {
@@ -265,7 +278,10 @@ export function Unavailability() {
         subtitle={tr('Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie')}
         subtitleId="Unavailability.intervalles.d.indisponibilite.des.consultants.conges.maladie"
         actions={
-          <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="new" onClick={openCreate} id="Unavailability.nouvelle.indisponibilite" />
+          <IconButton icon="add" label={tr('Unavailability.nouvelle.indisponibilite')} variant="new"
+            onClick={openCreate} disabled={isConsultant && !user?.hireDate}
+            title={isConsultant && !user?.hireDate ? tr('hireDate.required') : undefined}
+            id="Unavailability.nouvelle.indisponibilite" />
         }
       />
 
@@ -335,10 +351,12 @@ export function Unavailability() {
               </Select>
             </Field>
             <Field label={tr('Unavailability.du')} id="Unavailability.du">
-              <Input type="date" value={formStart} onChange={(e) => setFormStart(e.target.value)} />
+              <Input type="date" value={formStart} min={formHireDate ?? undefined}
+                onChange={(e) => setFormStart(e.target.value)} />
             </Field>
             <Field label={tr('Unavailability.au')} id="Unavailability.au">
-              <Input type="date" value={formEnd} onChange={(e) => setFormEnd(e.target.value)} />
+              <Input type="date" value={formEnd} min={formHireDate ?? formStart}
+                onChange={(e) => setFormEnd(e.target.value)} />
             </Field>
             <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
               <Textarea

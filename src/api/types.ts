@@ -9,6 +9,7 @@ export type DayType =
   | 'LEAVE'
   | 'SICK_LEAVE'
   | 'OTHER'
+  | 'BEFORE_HIRE'
 
 export type NoteFraisStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED' | 'PAID'
 
@@ -84,6 +85,7 @@ export interface UserDto {
   socId: number | null
   socName: string | null
   consultantId: number | null
+  hireDate?: string | null
   mustChangePassword: boolean
   lastLoginAt: string | null
   fontSize: number
@@ -244,6 +246,7 @@ export interface ConsultantSummary {
   fullName: string
   position: string
   email: string
+  hireDate?: string | null
 }
 
 export interface CollaboratorSummary {
@@ -434,6 +437,7 @@ export interface CraDto {
   id: number
   consultantId: number
   consultantName: string | null
+  hireDate?: string | null
   managerId: number | null
   month: number
   year: number

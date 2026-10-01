@@ -189,6 +189,7 @@ export const DAY_TYPE_LABELS: Record<DayType, string> = {
   LEAVE: 'Congé',
   SICK_LEAVE: 'Maladie',
   OTHER: 'Autre',
+  BEFORE_HIRE: 'Avant embauche',
 }
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {

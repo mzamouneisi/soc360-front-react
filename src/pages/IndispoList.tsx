@@ -58,7 +58,24 @@ export function IndispoList() {
     setPage(0)
   }, [year, month, search])
 
+  // soc-72 : la navigation de l'indispo démarre à la date d'embauche du consultant.
+  useEffect(() => {
+    if (!isConsultant || !user?.hireDate) return
+    const hy = Number(user.hireDate.slice(0, 4))
+    const hm = Number(user.hireDate.slice(5, 7))
+    if (year < hy || (year === hy && month < hm)) {
+      setYear(hy)
+      setMonth(hm)
+    }
+  }, [isConsultant, user?.hireDate, year, month])
+
   if (!user) return null
+
+  const hirePeriod = isConsultant && user.hireDate
+    ? { year: Number(user.hireDate.slice(0, 4)), month: Number(user.hireDate.slice(5, 7)) }
+    : null
+  const beforeHirePeriod = (y: number, m: number) =>
+    !!hirePeriod && (y < hirePeriod.year || (y === hirePeriod.year && m < hirePeriod.month))
 
   const list = (data ?? []).filter((c) => {
     if (!search.trim()) return true
@@ -82,19 +99,32 @@ export function IndispoList() {
   const hasIndispoThisMonth = (data ?? []).some((c) => c.month === month)
 
   function openPeriod(newYear: number, newMonth: number) {
-    const sameYear = newYear === year
-    setYear(newYear)
-    setMonth(newMonth)
+    // soc-72 : impossible de naviguer avant la date d'embauche (liste des mois / années).
+    let y = newYear
+    let m = newMonth
+    if (beforeHirePeriod(y, m) && hirePeriod) {
+      y = hirePeriod.year
+      m = hirePeriod.month
+    }
+    const sameYear = y === year
+    setYear(y)
+    setMonth(m)
     setOpenId(null)
     setSelectedId(null)
     if (isConsultant && sameYear) {
-      const ind = (data ?? []).find((c) => c.month === newMonth)
+      const ind = (data ?? []).find((c) => c.month === m)
       if (ind) setOpenId(ind.id)
     }
   }
 
+  const allowedYears = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]
+    .filter((y) => !hirePeriod || y >= hirePeriod.year)
+  const allowedMonths = Array.from({ length: 12 }, (_, i) => i + 1)
+    .filter((m) => !hirePeriod || year > hirePeriod.year || m >= hirePeriod.month)
+
   function goPrev() {
     const p = shiftMonth(year, month, -1)
+    if (beforeHirePeriod(p.year, p.month)) return
     void openPeriod(p.year, p.month)
   }
 
@@ -130,6 +160,10 @@ export function IndispoList() {
 
   async function createIndispo() {
     if (!user?.consultantId) return
+    if (isConsultant && !user.hireDate) {
+      void dialog.error(tr('hireDate.required'))
+      return
+    }
     try {
       const ind = await crasApi.getOrCreate(user.consultantId, year, month, 'CONGE')
       setOpenId(ind.id)
@@ -314,7 +348,7 @@ export function IndispoList() {
             value={month}
             onChange={(e) => void openPeriod(year, Number(e.target.value))}
           >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+            {allowedMonths.map((m) => (
               <option key={m} value={m}>
                 {monthLabel(m)}
               </option>
@@ -325,7 +359,7 @@ export function IndispoList() {
             value={year}
             onChange={(e) => void openPeriod(Number(e.target.value), month)}
           >
-            {[now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1].map((y) => (
+            {allowedYears.map((y) => (
               <option key={y} value={y}>
                 {y}
               </option>
@@ -333,7 +367,8 @@ export function IndispoList() {
           </Select>
         </label>
         <div className="flex items-center gap-1">
-          <InlineButton onClick={goPrev} title={tr('IndispoList.mois.precedent')}>
+          <InlineButton onClick={goPrev} title={tr('IndispoList.mois.precedent')}
+            disabled={beforeHirePeriod(shiftMonth(year, month, -1).year, shiftMonth(year, month, -1).month)}>
             ◀
           </InlineButton>
           <InlineButton onClick={goToday} title={tr('IndispoList.revenir.au.mois.actuel')}>

@@ -108,6 +108,7 @@ const consultantUser = {
   socId: null,
   socName: null,
   consultantId: 10,
+  hireDate: '2020-01-01',
 } as UserDto
 
 const responsibleUser = {
@@ -291,6 +292,22 @@ describe('CraList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Nouveau Cra' }))
 
     await waitFor(() => expect(getOrCreateMock).toHaveBeenCalledWith(10, 2026, 8, 'CRA'))
+  })
+
+  it('n’autorise pas de période antérieure à la date d’embauche (listes mois/années)', async () => {
+    const y = new Date().getFullYear()
+    userMock.value = { ...consultantUser, hireDate: `${y}-08-15` } as UserDto
+    findByConsultantMock.mockResolvedValue([])
+
+    renderList()
+
+    expect(await screen.findByRole('option', { name: 'Août' })).toBeInTheDocument()
+    // Mois antérieurs à l'embauche absents de la liste.
+    expect(screen.queryByRole('option', { name: 'Juillet' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Janvier' })).not.toBeInTheDocument()
+    // Année précédente absente, année d'embauche présente.
+    expect(screen.queryByRole('option', { name: String(y - 1) })).not.toBeInTheDocument()
+    expect(screen.getByRole('option', { name: String(y) })).toBeInTheDocument()
   })
 
   it('affiche tous les CRA de l’année pour un consultant sans action de validation', async () => {
