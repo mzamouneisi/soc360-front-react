@@ -152,6 +152,7 @@ export function MainLayout() {
         { to: '/mes-activites', label: t('nav.myActivities'), icon: ICONS.activities, roles: ['CONSULTANT'] },
         { to: '/cras', label: t('nav.cra'), icon: ICONS.cra },
         { to: '/indisponibilites', label: t('nav.unavailability'), icon: ICONS.holiday },
+        { to: '/types-indisponibilites', label: t('nav.unavailabilityTypes'), icon: ICONS.holiday, roles: ['ADMIN', 'RESPONSIBLE_SOC'] },
         { to: '/notes-frais', label: t('nav.expenses'), icon: ICONS.expenses },
         { to: '/jours-feries', label: t('nav.holidays'), icon: ICONS.holiday },
       ],

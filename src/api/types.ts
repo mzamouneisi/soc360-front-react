@@ -602,6 +602,38 @@ export interface UnavailabilityHistoryDto {
   nbEventsAfter: number
 }
 
+export interface UnavailabilityTypeConfigDto {
+  id: number
+  socId: number | null
+  sortOrder: number
+  typeLabel: string
+  durationRule: string | null
+  countType: string | null
+  mainConditions: string | null
+  remuneration: string | null
+  cpAcquisition: string | null
+  legalProvision: string | null
+  syntecProvision: string | null
+  documentRequired: string | null
+}
+
+export interface UnavailabilityTypeConfigRow {
+  typeLabel: string
+  durationRule: string | null
+  countType: string | null
+  mainConditions: string | null
+  remuneration: string | null
+  cpAcquisition: string | null
+  legalProvision: string | null
+  syntecProvision: string | null
+  documentRequired: string | null
+}
+
+export interface SaveUnavailabilityTypesRequest {
+  socId: number | null
+  rows: UnavailabilityTypeConfigRow[]
+}
+
 export interface FichePaieDto {
   id: number
   period: string
