@@ -4,7 +4,12 @@ import { MemoryRouter } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { CraList } from './CraList'
 import { DialogHost } from '../components/dialog'
+import { setDynamicLanguage } from '../lib/dynamicTranslate'
 import type { CraDto, UserDto } from '../api/types'
+
+const { translateMock } = vi.hoisted(() => ({ translateMock: vi.fn() }))
+
+vi.mock('translate', () => ({ default: translateMock }))
 
 const {
   findByConsultantMock,
@@ -173,6 +178,7 @@ function stubFixedNow() {
 afterEach(() => {
   vi.unstubAllGlobals()
   vi.clearAllMocks()
+  setDynamicLanguage('fr')
   userMock.value = null as unknown as UserDto
 })
 
@@ -446,5 +452,63 @@ describe('CraList', () => {
 
     await waitFor(() => expect(historyMock).toHaveBeenCalledWith(2))
     expect(await screen.findByText('Soumission')).toBeInTheDocument()
+  })
+
+  it('affiche le commentaire du CRA sans traduction dynamique', async () => {
+    userMock.value = managerUser
+    findByManagerMock.mockResolvedValue([
+      cra({ status: 'REJECTED', comment: 'Heures incohérentes avec le planning' }),
+    ])
+    translateMock.mockImplementation(async (text: string) => `[${text}]`)
+    setDynamicLanguage('en')
+
+    renderList()
+
+    expect(
+      await screen.findByText('Heures incohérentes avec le planning'),
+    ).toBeInTheDocument()
+
+    await new Promise((resolve) => setTimeout(resolve, 150))
+
+    expect(screen.getByText('Heures incohérentes avec le planning')).toBeInTheDocument()
+    expect(
+      screen.queryByText('[Heures incohérentes avec le planning]'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('affiche le commentaire d’historique sans traduction dynamique', async () => {
+    userMock.value = managerUser
+    findByManagerMock.mockResolvedValue([
+      cra({ id: 2, consultantName: 'Bob Dupont', month: 7 }),
+    ])
+    historyMock.mockResolvedValue([
+      {
+        id: 1,
+        dateModif: '2026-07-01T10:00:00Z',
+        craId: 2,
+        modifierId: 10,
+        modifierName: 'Bob Dupont',
+        comment: 'Motif de rejet à conserver',
+        statusBefore: 'SUBMITTED',
+        statusAfter: 'REJECTED',
+      },
+    ])
+    translateMock.mockImplementation(async (text: string) => `[${text}]`)
+    setDynamicLanguage('en')
+
+    renderList()
+
+    await screen.findAllByText('Bob Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Historique' }))
+
+    await waitFor(() => expect(historyMock).toHaveBeenCalledWith(2))
+    expect(await screen.findByText('Motif de rejet à conserver')).toBeInTheDocument()
+
+    await new Promise((resolve) => setTimeout(resolve, 150))
+
+    expect(screen.getByText('Motif de rejet à conserver')).toBeInTheDocument()
+    expect(
+      screen.queryByText('[Motif de rejet à conserver]'),
+    ).not.toBeInTheDocument()
   })
 })
