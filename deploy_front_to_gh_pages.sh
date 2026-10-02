@@ -101,7 +101,7 @@ case "$TARGET" in
     PAGES_URL="https://mzamouneisi.github.io/soc360-front-react-prod/"
     BASE_EXPECTED="/soc360-front-react-prod/"
     ENV_FILE=".env.production-prod"
-    PROD_PAGES_REPO="${PROD_PAGES_REPO:-git@github.com:mzamouneisi/soc360-front-react-prod.git}"
+    PROD_PAGES_REPO="${PROD_PAGES_REPO:-git@github-pro:mzamouneisi/soc360-front-react-prod.git}"
     ;;
   *)
     echo "ERROR: Cible inconnue '$TARGET' (valeurs possibles : dev, prod)."
