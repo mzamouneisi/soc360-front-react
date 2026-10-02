@@ -85,7 +85,7 @@ export function UnavailabilityTypes() {
   const canEdit = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const workingSocId = selectedSocId ?? user?.socId ?? null
 
-  const { data, loading, error } = useAsync(
+  const { data, loading, error, reload } = useAsync(
     () =>
       workingSocId
         ? unavailabilityTypesApi.list(workingSocId)
@@ -160,7 +160,7 @@ export function UnavailabilityTypes() {
         subtitleId="UnavailabilityTypes.subtitle"
         actions={
           <>
-            <RefreshButton onClick={() => setRows((data ?? []).map(toForm))} />
+            <RefreshButton onClick={reload} />
             <IconButton
               icon="add"
               label={tr('UnavailabilityTypes.addRow')}
