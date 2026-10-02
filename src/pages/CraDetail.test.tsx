@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router-dom'
 import { CraDetail } from './CraDetail'
 import { DialogHost } from '../components/dialog'
+import { setTranslationState } from '../i18n/translate'
 import type { CraDto, UserDto } from '../api/types'
 
 const {
@@ -82,6 +83,7 @@ vi.mock('../api/socHolidays', () => ({
 
 afterEach(() => {
   vi.clearAllMocks()
+  setTranslationState('fr', {})
   userMock.value = null as unknown as UserDto
 })
 
@@ -1081,6 +1083,22 @@ it('le manager peut valider une absence liée déjà rejetée', async () => {
     renderDetail()
 
     expect(await screen.findByText('CRA de Alice Martin')).toBeInTheDocument()
+  })
+
+  it('traduit le comptage des jours des événements dans la langue sélectionnée', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(true, 'VALIDATED'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    setTranslationState('ar', {})
+
+    renderDetail()
+
+    // Le libellé « j » (jour) suit la langue : « ي » en arabe.
+    expect((await screen.findAllByText(/^1\s+ي$/)).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/^1\s+j$/)).not.toBeInTheDocument()
   })
 
   it('grise les jours antérieurs à la date d’embauche avec une info-bulle', async () => {

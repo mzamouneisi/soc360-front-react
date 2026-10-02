@@ -95,7 +95,8 @@ function allowedDaysFor(day: EditableDay, actIndex: number): string[] {
 }
 
 function formatDays(value: number): string {
-  return Number.isInteger(value) ? `${value} j` : `${formatNumber(value)} j`
+  const unit = tr('CraDetail.j')
+  return Number.isInteger(value) ? `${value} ${unit}` : `${formatNumber(value)} ${unit}`
 }
 
 function dayBackground(dayType: DayType | undefined): string {
