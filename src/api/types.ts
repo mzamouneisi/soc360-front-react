@@ -15,12 +15,11 @@ export type NoteFraisStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED' |
 
 export type UnavailabilityStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED'
 
-export type UnavailabilityType =
-  | 'CONGE_PAYE'
-  | 'CONGE_RTT'
-  | 'CONGE_NON_PAYE'
-  | 'CONGE_MALADIE'
-  | 'CONGE_MATERNITE'
+/**
+ * Libellé du type d'indisponibilité, issu de la table de paramètres de la société
+ * (« Types d'indisponibilités »). Les codes historiques (CONGE_PAYE, …) restent acceptés.
+ */
+export type UnavailabilityType = string
 
 export type PaymentMethod = 'CARD' | 'TRANSFER' | 'CHECK' | 'OTHER'
 

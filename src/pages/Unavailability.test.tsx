@@ -18,6 +18,7 @@ const {
   deleteMock,
   summariesMock,
   findByConsultantMock,
+  typesMock,
   userMock,
 } = vi.hoisted(() => ({
   listMock: vi.fn(),
@@ -32,11 +33,61 @@ const {
   deleteMock: vi.fn(),
   summariesMock: vi.fn(),
   findByConsultantMock: vi.fn(),
+  typesMock: vi.fn().mockResolvedValue([
+    {
+      id: 1,
+      socId: 5,
+      sortOrder: 0,
+      typeLabel: 'Congés payés',
+      durationRule: null,
+      countType: null,
+      mainConditions: null,
+      remuneration: null,
+      cpAcquisition: null,
+      legalProvision: null,
+      syntecProvision: null,
+      documentRequired: null,
+    },
+    {
+      id: 2,
+      socId: 5,
+      sortOrder: 1,
+      typeLabel: 'Maladie',
+      durationRule: null,
+      countType: null,
+      mainConditions: null,
+      remuneration: null,
+      cpAcquisition: null,
+      legalProvision: null,
+      syntecProvision: null,
+      documentRequired: null,
+    },
+  ]),
   userMock: { value: null as unknown as UserDto },
 }))
 
 vi.mock('../auth/AuthContext', () => ({
   useAuth: () => ({ user: userMock.value }),
+}))
+
+vi.mock('../soc/SocContext', () => ({
+  useSoc: () => ({
+    socs: [],
+    selectedSocId: 5,
+    selectedSoc: null,
+    favoriteSocId: null,
+    favoriteSoc: null,
+    loading: false,
+    refreshSocs: vi.fn(),
+    selectSoc: vi.fn(),
+    setFavoriteSoc: vi.fn(),
+    addSoc: vi.fn(),
+    canAddSoc: false,
+  }),
+}))
+
+vi.mock('../api/unavailabilityTypes', () => ({
+  unavailabilityTypesApi: { list: typesMock, save: vi.fn() },
 }))
 
 vi.mock('../api/unavailability', () => ({
@@ -325,6 +376,20 @@ describe('Unavailability', () => {
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
     expect(createMock.mock.calls[0][0].consultantId).toBe(1)
+  })
+
+  it('affiche le type issu des paramètres de la société et le propose au formulaire', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ type: 'Congés payés' })])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    expect(await screen.findByText('Congés payés')).toBeInTheDocument()
+    expect(typesMock).toHaveBeenCalledWith(5)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle indisponibilité' }))
+    expect(await screen.findByRole('option', { name: 'Maladie' })).toBeInTheDocument()
   })
 
   it('exige la sélection d’un consultant pour la création par un manager', async () => {

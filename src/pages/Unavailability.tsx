@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { unavailabilityApi } from '../api/unavailability'
+import { unavailabilityTypesApi } from '../api/unavailabilityTypes'
 import { consultantsApi } from '../api/consultants'
 import type {
   ConsultantSummary,
@@ -11,6 +12,7 @@ import type {
   UnavailabilityType,
 } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
+import { useSoc } from '../soc/SocContext'
 import { usePagination } from '../lib/usePagination'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
@@ -21,17 +23,16 @@ import {
   formatDateTime,
   statusBadge,
   UNAVAILABILITY_STATUS_LABELS,
-  UNAVAILABILITY_TYPE_LABELS,
+  unavailabilityTypeLabel,
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { UnavailabilityCalendar } from './UnavailabilityCalendar'
 
-const TYPES = Object.keys(UNAVAILABILITY_TYPE_LABELS) as UnavailabilityType[]
-
 export function Unavailability() {
   const { user } = useAuth()
   const dt = useDynamicTranslate()
+  const { selectedSocId } = useSoc()
   const [searchParams] = useSearchParams()
   const isConsultant = user?.role === 'CONSULTANT'
   const isAdmin = user?.role === 'ADMIN'
@@ -45,7 +46,7 @@ export function Unavailability() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formConsultantId, setFormConsultantId] = useState<number | null>(null)
-  const [formType, setFormType] = useState<UnavailabilityType>('CONGE_PAYE')
+  const [formType, setFormType] = useState<UnavailabilityType>('')
   const [formStart, setFormStart] = useState('')
   const [formEnd, setFormEnd] = useState('')
   const [formComment, setFormComment] = useState('')
@@ -71,6 +72,16 @@ export function Unavailability() {
         : consultantsApi.filterList(),
     [isConsultant],
   )
+
+  // La liste des types provient des paramètres de la société (« Types d'indisponibilités »).
+  const typesSocId = selectedSocId ?? user?.socId ?? null
+  const types = useAsync(
+    () => unavailabilityTypesApi.list(typesSocId),
+    [typesSocId],
+  )
+  const typeOptions = (types.data ?? [])
+    .map((t) => t.typeLabel)
+    .filter((label) => label != null && label.trim() !== '')
 
   useEffect(() => {
     setPage(0)
@@ -105,7 +116,7 @@ export function Unavailability() {
       }
       if (!search.trim()) return true
       const q = search.trim().toLowerCase()
-      const type = (UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type).toLowerCase()
+      const type = unavailabilityTypeLabel(u.type).toLowerCase()
       const status = (UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status).toLowerCase()
       const consultant = (u.consultantName ?? '').toLowerCase()
       const comment = (u.comment ?? '').toLowerCase()
@@ -151,7 +162,7 @@ export function Unavailability() {
     end.setDate(end.getDate() + 7)
     setEditingId(null)
     setFormConsultantId(consultantFilter)
-    setFormType('CONGE_PAYE')
+    setFormType(typeOptions[0] ?? '')
     setFormStart(today.toISOString().slice(0, 10))
     setFormEnd(end.toISOString().slice(0, 10))
     setFormComment('')
@@ -267,7 +278,7 @@ export function Unavailability() {
       u,
       () => unavailabilityApi.delete(u.id),
       tr('Unavailability.supprimer.cette.indisponibilite', {
-        type: dt(UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type),
+        type: unavailabilityTypeLabel(u.type),
       }),
       { danger: true, okLabel: tr('common.delete') },
     )
@@ -346,10 +357,14 @@ export function Unavailability() {
               </Field>
             )}
             <Field label={tr('Unavailability.type')} id="Unavailability.type">
-              <Select value={formType} onChange={(e) => setFormType(e.target.value as UnavailabilityType)}>
-                {TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {UNAVAILABILITY_TYPE_LABELS[t]}
+              <Select value={formType} onChange={(e) => setFormType(e.target.value)}>
+                {!formType && <option value="">{tr('Unavailability.choisir')}</option>}
+                {formType && !typeOptions.includes(formType) && (
+                  <option value={formType}>{unavailabilityTypeLabel(formType)}</option>
+                )}
+                {typeOptions.map((label) => (
+                  <option key={label} value={label}>
+                    {label}
                   </option>
                 ))}
               </Select>
@@ -462,7 +477,7 @@ export function Unavailability() {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{u.consultantName}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">
-                        {dt(UNAVAILABILITY_TYPE_LABELS[u.type] ?? u.type)}
+                        {unavailabilityTypeLabel(u.type)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                         {formatDate(u.startDate)}
@@ -627,7 +642,7 @@ function UnavailabilityHistoryModal({
           <div>
             <h3 className="text-sm font-semibold text-gray-900" id="Unavailability.historique.de.l.indisponibilite">{tr('Unavailability.historique.de.l.indisponibilite')} ({historyPage.total})</h3>
             <p className="text-xs text-gray-500">
-              {unavailability.consultantName} — {UNAVAILABILITY_TYPE_LABELS[unavailability.type]}{' '}
+              {unavailability.consultantName} — {unavailabilityTypeLabel(unavailability.type)}{' '}
               ({unavailability.startDate} → {unavailability.endDate})
             </p>
           </div>

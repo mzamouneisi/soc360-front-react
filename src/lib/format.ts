@@ -182,12 +182,19 @@ export const UNAVAILABILITY_STATUS_KEYS: Record<UnavailabilityStatus, string> = 
   REJECTED: 'Unavailability.status.REJECTED',
 }
 
-export const UNAVAILABILITY_TYPE_LABELS: Record<UnavailabilityType, string> = {
+/** Anciens codes enum encore présents sur des enregistrements historiques. */
+export const UNAVAILABILITY_TYPE_LABELS: Record<string, string> = {
   CONGE_PAYE: 'Congé payé',
   CONGE_RTT: 'Congé RTT',
   CONGE_NON_PAYE: 'Congé non payé',
   CONGE_MALADIE: 'Congé maladie',
   CONGE_MATERNITE: 'Congé maternité',
+}
+
+/** Libellé affichable d'un type d'indisponibilité (libellé de société ou code historique). */
+export function unavailabilityTypeLabel(type: UnavailabilityType | null | undefined): string {
+  if (!type) return '—'
+  return UNAVAILABILITY_TYPE_LABELS[type] ?? type
 }
 
 export const DAY_TYPE_LABELS: Record<DayType, string> = {
