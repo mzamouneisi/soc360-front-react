@@ -9,6 +9,7 @@ import {
   TICKET_PRIORITY_LABELS,
   TICKET_STATUS_LABELS,
   badgeClasses,
+  dayTypeLabel,
   formatDate,
   formatDateTime,
   formatMoney,
@@ -21,6 +22,7 @@ import {
   setFormatLocale,
   statusBadge,
 } from './format'
+import { setTranslationState } from '../i18n/translate'
 
 describe('monthLabel / monthShort', () => {
   it('renvoie le mois français pour un numéro valide', () => {
@@ -126,6 +128,16 @@ describe('libellés', () => {
     expect(SUBSCRIPTION_STATUS_LABELS.TRIAL).toBe('Essai')
     expect(TICKET_STATUS_LABELS.IN_PROGRESS).toBe('En cours')
     expect(TICKET_PRIORITY_LABELS.URGENT).toBe('Urgente')
+  })
+})
+
+describe('dayTypeLabel', () => {
+  afterEach(() => setTranslationState('fr', {}))
+
+  it('traduit le libellé « Avant embauche »', () => {
+    setTranslationState('en', {})
+    expect(dayTypeLabel('BEFORE_HIRE')).toBe('Before hire')
+    expect(dayTypeLabel('WORKED')).toBe('Work')
   })
 })
 

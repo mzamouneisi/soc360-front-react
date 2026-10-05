@@ -17,9 +17,9 @@ import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
 import {
   CRA_STATUS_LABELS,
-  DAY_TYPE_LABELS,
   UNAVAILABILITY_STATUS_KEYS,
   UNAVAILABILITY_TYPE_LABELS,
+  dayTypeLabel,
   formatNumber,
   getFormatLocale,
   monthLabel,
@@ -1042,7 +1042,7 @@ export function CraDetail({
                       <span className="block px-1 text-[11px] font-medium text-gray-400">
                         {day.dayType === 'PUBLIC_HOLIDAY' && holidays.has(date)
                           ? holidays.get(date)
-                          : DAY_TYPE_LABELS[day.dayType]}{' '}
+                          : dayTypeLabel(day.dayType)}{' '}
                         · {formatDays(dayTotal(day))}
                       </span>
                     )}
@@ -1113,7 +1113,7 @@ export function CraDetail({
                             className="text-sm text-gray-400"
                             title={tr('CraDetail.avant.embauche', { date: cra.hireDate ?? '' })}
                           >
-                            {DAY_TYPE_LABELS.BEFORE_HIRE}
+                            {dayTypeLabel('BEFORE_HIRE')}
                           </span>
                         ) : formEditable ? (
                           <Select
@@ -1131,12 +1131,12 @@ export function CraDetail({
                           >
                             {DAY_TYPES.map((t) => (
                               <option key={t} value={t}>
-                                {DAY_TYPE_LABELS[t]}
+                                {dayTypeLabel(t)}
                               </option>
                             ))}
                           </Select>
                         ) : (
-                          <span className="text-sm">{DAY_TYPE_LABELS[day.dayType]}</span>
+                          <span className="text-sm">{dayTypeLabel(day.dayType)}</span>
                         )}
                       </td>
                       <td className="px-4 py-3">

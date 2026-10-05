@@ -9,6 +9,7 @@ import type {
   UnavailabilityStatus,
   UnavailabilityType,
 } from '../api/types'
+import { tr } from '../i18n/translate'
 
 export const MONTHS_FR = [
   'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -207,6 +208,11 @@ export const DAY_TYPE_LABELS: Record<DayType, string> = {
   SICK_LEAVE: 'Maladie',
   OTHER: 'Autre',
   BEFORE_HIRE: 'Avant embauche',
+}
+
+/** Libellé traduit d'un type de jour (la valeur brute reste disponible via {@link DAY_TYPE_LABELS}). */
+export function dayTypeLabel(dayType: DayType): string {
+  return tr(`DayType.${dayType}`)
 }
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
