@@ -39,13 +39,13 @@ const {
       socId: 5,
       sortOrder: 0,
       typeLabel: 'Congés payés',
-      durationRule: null,
+      duration: null,
       countType: null,
       mainConditions: null,
       remuneration: null,
       cpAcquisition: null,
       legalProvision: null,
-      syntecProvision: null,
+      collectiveAgreementProvision: null,
       documentRequired: null,
     },
     {
@@ -53,13 +53,13 @@ const {
       socId: 5,
       sortOrder: 1,
       typeLabel: 'Maladie',
-      durationRule: null,
+      duration: null,
       countType: null,
       mainConditions: null,
       remuneration: null,
       cpAcquisition: null,
       legalProvision: null,
-      syntecProvision: null,
+      collectiveAgreementProvision: null,
       documentRequired: null,
     },
   ]),
@@ -263,6 +263,33 @@ describe('Unavailability', () => {
     await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(1))
   })
 
+  it('permet d’annuler une indisponibilité validée dont on est le collaborateur', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ status: 'VALIDATED', consultantId: 1 })])
+    summariesMock.mockResolvedValue([])
+    cancelMock.mockResolvedValue(item({ status: 'CANCELLED', consultantId: 1 }))
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Annuler l’indisponibilité' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler l’indisponibilité' }))
+
+    await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(1))
+  })
+
+  it('n’édite pas une indisponibilité validée dont on est le collaborateur', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ status: 'VALIDATED', consultantId: 1 })])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    expect(await screen.findByText('Validée')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Éditer' })).not.toBeInTheDocument()
+  })
+
   it('permet à un manager de valider avec un commentaire', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([item({ status: 'SUBMITTED' })])
@@ -325,6 +352,17 @@ describe('Unavailability', () => {
     expect(screen.queryByRole('button', { name: 'Invalider' })).not.toBeInTheDocument()
   })
 
+  it('n’expose pas l’action Invalider au collaborateur propriétaire', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ status: 'VALIDATED', consultantId: 1 })])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    expect(await screen.findByText('Validée')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Invalider' })).not.toBeInTheDocument()
+  })
+
   it('charge toutes les indisponibilités pour un admin (sans filtre société)', async () => {
     userMock.value = adminUser
     listMock.mockResolvedValue([item({ consultantName: 'Alice Martin' })])
@@ -370,7 +408,7 @@ describe('Unavailability', () => {
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
-    fireEvent.change(screen.getByTitle('Consultant'), { target: { value: '1' } })
+    fireEvent.change(screen.getByTitle('Collaborateur'), { target: { value: '1' } })
     fireEvent.change(screen.getByPlaceholderText(/Motif, remarques/), { target: { value: 'Congés' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
@@ -468,7 +506,7 @@ describe('Unavailability', () => {
 
     expect(await screen.findByText('Aucune indisponibilité')).toBeInTheDocument()
     expect(
-      screen.getByPlaceholderText('Filtrer par type, statut, consultant ou dates…'),
+      screen.getByPlaceholderText('Filtrer par type, statut, collaborateur ou dates…'),
     ).toBeInTheDocument()
   })
 
@@ -501,7 +539,7 @@ describe('Unavailability', () => {
     renderPage()
 
     await screen.findByText('Alice Martin')
-    fireEvent.change(screen.getByPlaceholderText('Filtrer par type, statut, consultant ou dates…'), {
+    fireEvent.change(screen.getByPlaceholderText('Filtrer par type, statut, collaborateur ou dates…'), {
       target: { value: 'médical' },
     })
 

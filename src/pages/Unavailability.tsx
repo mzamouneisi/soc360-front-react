@@ -138,14 +138,21 @@ export function Unavailability() {
   const safePage = Math.min(page, totalPages - 1)
   const pageItems = filtered.slice(safePage * pageSize, safePage * pageSize + pageSize)
 
+  // Le collaborateur concerné (quel que soit son rôle) ne peut plus modifier une indisponibilité
+  // validée : il peut seulement l'annuler.
+  const ownerId = user.consultantId ?? user.id ?? null
+  const isOwner = (u: UnavailabilityDto) => ownerId != null && u.consultantId === ownerId
   const canEdit = (u: UnavailabilityDto) =>
-    isConsultant ? u.status === 'DRAFT' || u.status === 'REJECTED' : true
+    isOwner(u) ? u.status === 'DRAFT' || u.status === 'REJECTED' : !isConsultant
   const canSubmit = (u: UnavailabilityDto) => u.status === 'DRAFT' || u.status === 'REJECTED'
   const canDelete = (u: UnavailabilityDto) => u.status === 'DRAFT' || u.status === 'REJECTED'
-  const canCancel = (u: UnavailabilityDto) => u.status === 'SUBMITTED'
+  const canCancel = (u: UnavailabilityDto) =>
+    isOwner(u) && (u.status === 'SUBMITTED' || u.status === 'VALIDATED')
   const canReview = (u: UnavailabilityDto) => !isConsultant && u.status === 'SUBMITTED'
-  // Le manager peut invalider une indisponibilité déjà validée (elle repasse en « Rejetée »).
-  const canInvalidate = (u: UnavailabilityDto) => !isConsultant && u.status === 'VALIDATED'
+  // Le manager peut invalider une indisponibilité déjà validée (elle repasse en « Rejetée »),
+  // mais le collaborateur ne peut pas invalider sa propre indisponibilité.
+  const canInvalidate = (u: UnavailabilityDto) =>
+    !isConsultant && !isOwner(u) && u.status === 'VALIDATED'
 
   // Date d'embauche du consultant concerné par le formulaire (soi-même ou le collaborateur choisi).
   const formHireDate = isConsultant
@@ -248,10 +255,16 @@ export function Unavailability() {
   }
 
   function handleCancel(u: UnavailabilityDto) {
+    const validated = u.status === 'VALIDATED'
     return runAction(
       u,
       () => unavailabilityApi.cancel(u.id),
-      tr('Unavailability.retour.au.brouillon'),
+      validated
+        ? tr('Unavailability.annuler.validated.confirm')
+        : tr('Unavailability.retour.au.brouillon'),
+      validated
+        ? { danger: true, okLabel: tr('Unavailability.annuler.l.indisponibilite') }
+        : undefined,
     )
   }
 
@@ -521,7 +534,9 @@ export function Unavailability() {
                           {canCancel(u) && (
                             <IconButton
                               icon="cancel"
-                              label={tr('Unavailability.annuler.la.soumission')}
+                              label={u.status === 'VALIDATED'
+                                ? tr('Unavailability.annuler.l.indisponibilite')
+                                : tr('Unavailability.annuler.la.soumission')}
                               variant="danger"
                               onClick={(e) => {
                                 e.stopPropagation()

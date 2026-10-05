@@ -321,18 +321,22 @@ export function CraDetail({
   const isAdminOrResp = isAdmin || user?.role === 'RESPONSIBLE_SOC'
   const isManagerOfConsultant = user?.role === 'MANAGER' && cra.managerId === user.id
   const canValidate = isAdminOrResp || isManagerOfConsultant
+  const ownerId = user?.consultantId ?? user?.id ?? null
+  const isOwner = ownerId != null && cra.consultantId === ownerId
 
   const editable = cra.status === 'DRAFT' || cra.status === 'REJECTED' || cra.status === 'CANCELLED'
+  // Le propriétaire (quel que soit son rôle) ne peut plus modifier un CRA/Indispo validé : il peut
+  // seulement l'annuler. Un manager/admin/responsable garde la main sur le CRA d'un collaborateur.
   const managerEditsValidated =
     canValidate &&
+    !isOwner &&
     (cra.status === 'SUBMITTED' ||
       cra.status === 'PENDING_SEND' ||
       cra.status === 'VALIDATED' ||
       cra.status === 'VALREJ')
-  const consultantAddsToValidated = isConsultant && isIndispo && cra.status === 'VALIDATED'
   const consultantEditsSemiValid = isConsultant && cra.status === 'VALREJ'
   const formEditable = editable || managerEditsValidated
-  const canAddEvents = formEditable || consultantAddsToValidated || consultantEditsSemiValid
+  const canAddEvents = formEditable || consultantEditsSemiValid
 
   // Le consultant ne peut pas modifier une activité validée (le manager peut).
   function canModifyActivity(act: EditableActivity): boolean {
@@ -348,7 +352,12 @@ export function CraDetail({
       cra.status === 'VALREJ' ||
       cra.status === 'CANCELLED' ||
       cra.status === 'REJECTED')
-  const canCancel = isConsultant && isIndispo && (cra.status === 'VALIDATED' || cra.status === 'SUBMITTED' || cra.status === 'PENDING_SEND')
+  // Le collaborateur concerné ne peut pas invalider son propre CRA/Indispo (même s'il est
+  // ADMIN/RESPONSIBLE_SOC) : l'invalidation relève de son manager.
+  const canInvalidate = managerCanAct && !isOwner
+  const canCancel =
+    isOwner &&
+    (cra.status === 'VALIDATED' || cra.status === 'SUBMITTED' || cra.status === 'PENDING_SEND')
 
   const monthStart = `${cra.year}-${String(cra.month).padStart(2, '0')}-01`
   const monthEnd = `${cra.year}-${String(cra.month).padStart(2, '0')}-${String(
@@ -848,15 +857,9 @@ export function CraDetail({
         </div>
       )}
 
-      {!formEditable && !consultantAddsToValidated && !consultantEditsSemiValid && (
+      {!formEditable && !consultantEditsSemiValid && (
         <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           {isIndispo ? tr('CraDetail.cette.indispo') : tr('CraDetail.ce.cra')} {tr('CraDetail.est')} {dt(statusAdjective(cra.status, isIndispo))} {tr('CraDetail.et.n.est.plus.modifiable')}
-        </div>
-      )}
-
-      {consultantAddsToValidated && (
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {tr('CraDetail.cette.indispo.est.validee.vous.pouvez.ajouter.de.nouveaux.ev')}
         </div>
       )}
 
@@ -1266,15 +1269,17 @@ export function CraDetail({
                 onClick={handleValidate}
                 disabled={!hasInactiveEvent} id="CraDetail.valider.tout" />
             </span>
-            <span title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
-              <IconButton
-                icon="reject"
-                label={tr('CraDetail.invalider.tout')}
-                variant="danger"
-                onClick={handleInvalidateAll}
-                disabled={!hasActiveEvent}
-              />
-            </span>
+            {canInvalidate && (
+              <span title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
+                <IconButton
+                  icon="reject"
+                  label={tr('CraDetail.invalider.tout')}
+                  variant="danger"
+                  onClick={handleInvalidateAll}
+                  disabled={!hasActiveEvent}
+                />
+              </span>
+            )}
             <IconButton
               icon="send"
               label={tr('CraDetail.envoyer')}
@@ -1344,6 +1349,7 @@ export function CraDetail({
           formEditable={formEditable}
           isConsultant={isConsultant}
           managerCanAct={managerCanAct}
+          isOwner={isOwner}
           activities={filteredActivities}
           onUpdateActivity={(actIndex, patch) => updateActivity(eventModal, actIndex, patch)}
           onAddActivity={() => addActivity(eventModal)}
@@ -1543,6 +1549,7 @@ function EventModal({
   formEditable,
   isConsultant,
   managerCanAct,
+  isOwner,
   activities,
   onUpdateActivity,
   onAddActivity,
@@ -1555,6 +1562,7 @@ function EventModal({
   formEditable: boolean
   isConsultant: boolean
   managerCanAct: boolean
+  isOwner: boolean
   activities: ActivityDto[]
   onUpdateActivity: (actIndex: number, patch: Partial<EditableActivity>) => void
   onAddActivity: () => void
@@ -1651,12 +1659,13 @@ function EventModal({
                     <input
                       type="checkbox"
                       checked={act.valid}
+                      disabled={isOwner && act.valid}
                       onChange={(e) =>
                         formEditable
                           ? onUpdateActivity(j, { valid: e.target.checked })
                           : onToggleValid(Number(act.id), e.target.checked)
                       }
-                      className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 disabled:cursor-not-allowed"
                     />
                     {tr('CraDetail.valid')}
                   </label>

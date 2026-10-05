@@ -114,6 +114,14 @@ const consultantUser = {
   socName: null,
   consultantId: 10,
   hireDate: '2020-01-01',
+  manager: {
+    id: 9,
+    fullName: 'Top Manager',
+    username: 'top',
+    email: 'top@soc.fr',
+    phone: null,
+    role: 'RESPONSIBLE_SOC',
+  },
 } as UserDto
 
 const responsibleUser = {
@@ -300,6 +308,17 @@ describe('CraList', () => {
     await waitFor(() => expect(getOrCreateMock).toHaveBeenCalledWith(10, 2026, 8, 'CRA'))
   })
 
+  it('n’autorise pas un consultant sans manager à établir un CRA', async () => {
+    userMock.value = { ...consultantUser, manager: null } as UserDto
+    findByConsultantMock.mockResolvedValue([])
+    stubFixedNow()
+
+    renderList()
+
+    expect(await screen.findByText('Aucun CRA pour cette année')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Nouveau Cra' })).not.toBeInTheDocument()
+  })
+
   it('n’autorise pas de période antérieure à la date d’embauche (listes mois/années)', async () => {
     const y = new Date().getFullYear()
     userMock.value = { ...consultantUser, hireDate: `${y}-08-15` } as UserDto
@@ -421,7 +440,7 @@ describe('CraList', () => {
     expect(screen.getByRole('option', { name: 'Alice Martin' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Bob Dupont' })).toBeInTheDocument()
 
-    fireEvent.change(screen.getByTitle('Consultants'), { target: { value: '11' } })
+    fireEvent.change(screen.getByTitle('Collaborateurs'), { target: { value: '11' } })
 
     await waitFor(() => expect(screen.getAllByText('Alice Martin')).toHaveLength(1))
     expect(screen.getAllByText('Bob Dupont').length).toBeGreaterThan(0)

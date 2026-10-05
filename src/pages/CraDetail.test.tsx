@@ -395,6 +395,58 @@ describe('CraDetail', () => {
     await waitFor(() => expect((selects[0] as HTMLSelectElement).disabled).toBe(true))
   })
 
+  it('un CRA validé reste annulable par son propriétaire', async () => {
+    userMock.value = {
+      id: 10,
+      username: 'consultant',
+      email: 'consultant@soc.fr',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      phone: null,
+      role: 'CONSULTANT',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+      consultantId: 10,
+    } as UserDto
+
+    getByIdMock.mockResolvedValue(cra(true, 'VALIDATED'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByRole('button', { name: 'Annuler' })).toBeInTheDocument()
+  })
+
+  it('un propriétaire ne peut pas invalider son propre CRA', async () => {
+    userMock.value = {
+      id: 10,
+      username: 'responsable',
+      email: 'responsable@soc.fr',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      phone: null,
+      role: 'RESPONSIBLE_SOC',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+      consultantId: null,
+    } as UserDto
+
+    getByIdMock.mockResolvedValue(cra(true, 'VALIDATED'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.queryByRole('button', { name: 'Invalider tout' })).not.toBeInTheDocument()
+  })
+
   it('un consultant ne peut pas supprimer les événements validés (supprimer tous)', async () => {
     userMock.value = {
       id: 10,

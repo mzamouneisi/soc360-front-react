@@ -172,6 +172,7 @@ export const UNAVAILABILITY_STATUS_LABELS: Record<UnavailabilityStatus, string> 
   SUBMITTED: 'Soumise',
   VALIDATED: 'Validée',
   REJECTED: 'Rejetée',
+  CANCELLED: 'Annulée',
 }
 
 /** Clés i18n des statuts d'indisponibilité (à passer à `tr`). */
@@ -180,6 +181,7 @@ export const UNAVAILABILITY_STATUS_KEYS: Record<UnavailabilityStatus, string> = 
   SUBMITTED: 'Unavailability.status.SUBMITTED',
   VALIDATED: 'Unavailability.status.VALIDATED',
   REJECTED: 'Unavailability.status.REJECTED',
+  CANCELLED: 'Unavailability.status.CANCELLED',
 }
 
 /** Anciens codes enum encore présents sur des enregistrements historiques. */

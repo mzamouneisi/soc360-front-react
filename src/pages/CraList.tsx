@@ -44,6 +44,10 @@ export function CraList() {
   const isAdmin = user?.role === 'ADMIN'
   // Peut avoir ses propres CRA : tout utilisateur rattaché à un manager (consultant, manager…).
   const canOwnCra = isConsultant || user?.manager != null
+  // Établir (créer/saisir) son CRA exige un manager : c'est lui qui validera le CRA.
+  const canCreateCra =
+    user?.manager != null &&
+    (isConsultant || isManager || user?.role === 'RESPONSIBLE_SOC')
   const ownerId = user?.consultantId ?? user?.id
   const canValidate = (c: CraDto) =>
     user?.role === 'ADMIN' ||
@@ -525,7 +529,7 @@ export function CraList() {
         </div>
       </Card>
 
-      {canOwnCra && ownerId && (
+      {canCreateCra && ownerId && (
         <div className="mt-4 flex items-center justify-center gap-3">
           <Button className="w-auto" onClick={() => createCra('CRA')}>
             {tr('CraList.nouveau.cra')}

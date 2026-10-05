@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { UnavailabilityTypes } from './UnavailabilityTypes'
 import { DialogHost } from '../components/dialog'
@@ -57,6 +57,7 @@ const responsibleUser = {
   consultantId: null,
   mustChangePassword: false,
   lastLoginAt: null,
+  pageSize: 5,
 } as UserDto
 
 const managerUser = { ...responsibleUser, id: 2, role: 'MANAGER' } as UserDto
@@ -67,14 +68,14 @@ function row(overrides: Partial<UnavailabilityTypeConfigDto> = {}): Unavailabili
     socId: 5,
     sortOrder: 0,
     typeLabel: 'Congés payés',
-    durationRule: '25 jours ouvrés/an',
+    duration: 25,
     countType: 'Ouvrés',
     mainConditions: 'Acquisition selon le temps de travail',
-    remuneration: '✅ Payé',
-    cpAcquisition: '✅ Oui',
-    legalProvision: '✅',
-    syntecProvision: '✅ Modalités Syntec',
-    documentRequired: null,
+    remuneration: true,
+    cpAcquisition: true,
+    legalProvision: true,
+    collectiveAgreementProvision: 'Modalités conventionnelles',
+    documentRequired: false,
     ...overrides,
   }
 }
@@ -95,73 +96,145 @@ afterEach(() => {
 })
 
 describe('UnavailabilityTypes', () => {
-  it('affiche le tableau de la société et enregistre les modifications', async () => {
+  it('affiche la liste des types avec les actions par ligne', async () => {
     userMock.value = responsibleUser
     listMock.mockResolvedValue([
       row(),
-      row({ id: 2, sortOrder: 1, typeLabel: 'RTT', durationRule: null }),
-    ])
-    saveMock.mockResolvedValue([
-      row({ typeLabel: 'Congés payés modifié' }),
-      row({ id: 2, sortOrder: 1, typeLabel: 'RTT' }),
+      row({ id: 2, sortOrder: 1, typeLabel: 'RTT', duration: null }),
     ])
 
     renderPage()
 
-    const inputs = await screen.findAllByRole('textbox')
-    expect(inputs).toHaveLength(18)
-    fireEvent.change(inputs[0], { target: { value: 'Congés payés modifié' } })
+    expect(await screen.findByText('Congés payés')).toBeInTheDocument()
+    expect(screen.getByText('25 j')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Modifier' })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: 'Supprimer la ligne' })).toHaveLength(2)
+  })
 
+  it('édite une ligne puis enregistre', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue([row()])
+    saveMock.mockResolvedValue([row({ typeLabel: 'Congés payés modifié' })])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifier' }))
+    fireEvent.change(screen.getByLabelText('Type indispo'), {
+      target: { value: 'Congés payés modifié' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
 
     await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(1))
     const [socId, payload] = saveMock.mock.calls[0]
     expect(socId).toBe(5)
     expect(payload[0].typeLabel).toBe('Congés payés modifié')
-    expect(payload[1].typeLabel).toBe('RTT')
+    expect(payload[0].duration).toBe(25)
   })
 
-  it('ajoute une ligne vide au tableau', async () => {
+  it('ajoute une nouvelle ligne', async () => {
     userMock.value = responsibleUser
     listMock.mockResolvedValue([row()])
+    saveMock.mockResolvedValue([row(), row({ id: 3, typeLabel: 'Nouveau' })])
 
     renderPage()
 
-    await screen.findAllByRole('textbox')
-    fireEvent.click(screen.getByRole('button', { name: 'Ajouter une ligne' }))
+    await screen.findByText('Congés payés')
+    fireEvent.click(screen.getByRole('button', { name: 'Nouveau type' }))
+    fireEvent.change(screen.getByLabelText('Type indispo'), { target: { value: 'Nouveau' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
 
-    await waitFor(() => expect(screen.getAllByRole('textbox')).toHaveLength(18))
+    await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(1))
+    const [, payload] = saveMock.mock.calls[0]
+    expect(payload).toHaveLength(2)
+    expect(payload[1].typeLabel).toBe('Nouveau')
   })
 
-  it('supprime une ligne du tableau', async () => {
+  it('supprime une ligne après confirmation', async () => {
     userMock.value = responsibleUser
     listMock.mockResolvedValue([
       row(),
       row({ id: 2, sortOrder: 1, typeLabel: 'RTT' }),
     ])
+    saveMock.mockResolvedValue([row({ id: 2, sortOrder: 1, typeLabel: 'RTT' })])
 
     renderPage()
 
-    await screen.findAllByRole('textbox')
-    fireEvent.click(screen.getAllByRole('button', { name: 'Supprimer la ligne' })[0])
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Supprimer la ligne' }))[0])
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Supprimer' }))
 
-    await waitFor(() => expect(screen.getAllByRole('textbox')).toHaveLength(9))
+    await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(1))
+    const [, payload] = saveMock.mock.calls[0]
+    expect(payload).toHaveLength(1)
+    expect(payload[0].typeLabel).toBe('RTT')
   })
 
-  it('refuse d’enregistrer une ligne sans type', async () => {
+  it('refuse d’enregistrer un type vide', async () => {
     userMock.value = responsibleUser
     listMock.mockResolvedValue([row()])
 
     renderPage()
 
-    await screen.findAllByRole('textbox')
-    fireEvent.click(screen.getByRole('button', { name: 'Ajouter une ligne' }))
+    await screen.findByText('Congés payés')
+    fireEvent.click(screen.getByRole('button', { name: 'Nouveau type' }))
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
 
     expect(
       await screen.findByText('Le type d’indisponibilité est obligatoire.'),
     ).toBeInTheDocument()
     expect(saveMock).not.toHaveBeenCalled()
+  })
+
+  it('propose d’enregistrer à la fermeture si des modifications ont changé', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue([row()])
+    saveMock.mockResolvedValue([row({ typeLabel: 'Modifié' })])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifier' }))
+    fireEvent.change(screen.getByLabelText('Type indispo'), { target: { value: 'Modifié' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(1))
+    const [, payload] = saveMock.mock.calls[0]
+    expect(payload[0].typeLabel).toBe('Modifié')
+  })
+
+  it('affiche les libellés de colonnes renommés', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue([row()])
+
+    renderPage()
+
+    await screen.findByText('Congés payés')
+    expect(screen.getByText('Durée')).toBeInTheDocument()
+    expect(screen.getByText('Prévu par la convention collective')).toBeInTheDocument()
+    expect(screen.queryByText('Durée / règle')).not.toBeInTheDocument()
+    expect(screen.queryByText('Prévu par Syntec')).not.toBeInTheDocument()
+  })
+
+  it('pagine la liste selon le paramètre de lignes par page', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue(
+      Array.from({ length: 6 }, (_, i) =>
+        row({ id: i + 1, sortOrder: i, typeLabel: `Type ${i + 1}` }),
+      ),
+    )
+
+    renderPage()
+
+    expect(await screen.findByText('Type 1')).toBeInTheDocument()
+    expect(screen.queryByText('Type 6')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Modifier' })).toHaveLength(5)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Suivant' }))
+
+    expect(await screen.findByText('Type 6')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Modifier' })).toHaveLength(1)
   })
 
   it('n’affiche pas la page pour un rôle non autorisé', async () => {

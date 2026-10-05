@@ -173,6 +173,10 @@ const fr: Messages = {
   'Unavailability.status.SUBMITTED': 'Soumise',
   'Unavailability.status.VALIDATED': 'Validée',
   'Unavailability.status.REJECTED': 'Rejetée',
+  'Unavailability.status.CANCELLED': 'Annulée',
+  'Unavailability.annuler.l.indisponibilite': 'Annuler l’indisponibilité',
+  'Unavailability.annuler.validated.confirm':
+    'Annuler cette indisponibilité validée ? Elle ne sera plus prise en compte.',
   'Unavailability.commentaire.obligatoire': 'Le commentaire est obligatoire.',
   'hireDate.required':
     'Renseignez votre date d’embauche pour saisir un CRA ou une indisponibilité.',
@@ -185,13 +189,13 @@ const fr: Messages = {
   'UnavailabilityTypes.subtitle':
     'Paramètres de votre société pour le calcul des soldes de congés et de RTT.',
   'UnavailabilityTypes.col.type': 'Type indispo',
-  'UnavailabilityTypes.col.duration': 'Durée / règle',
+  'UnavailabilityTypes.col.duration': 'Durée',
   'UnavailabilityTypes.col.count': 'Type Décompte',
   'UnavailabilityTypes.col.conditions': 'Conditions principales',
   'UnavailabilityTypes.col.remuneration': 'Rémunération',
   'UnavailabilityTypes.col.cp': 'Acquisition des jours de CP durant le congé',
   'UnavailabilityTypes.col.legal': 'Prévu par la loi',
-  'UnavailabilityTypes.col.syntec': 'Prévu par Syntec',
+  'UnavailabilityTypes.col.syntec': 'Prévu par la convention collective',
   'UnavailabilityTypes.col.document': 'Nécessite un document',
   'UnavailabilityTypes.addRow': 'Ajouter une ligne',
   'UnavailabilityTypes.save': 'Enregistrer',
@@ -200,6 +204,12 @@ const fr: Messages = {
   'UnavailabilityTypes.typeRequired': 'Le type d’indisponibilité est obligatoire.',
   'UnavailabilityTypes.noSoc': 'Aucune société associée à ce compte.',
   'UnavailabilityTypes.empty': 'Aucun type d’indisponibilité.',
+  'UnavailabilityTypes.new': 'Nouveau type',
+  'UnavailabilityTypes.form.new': 'Nouveau type d’indisponibilité',
+  'UnavailabilityTypes.form.edit': 'Modifier le type d’indisponibilité',
+  'UnavailabilityTypes.confirmDelete': 'Supprimer le type « {type} » ?',
+  'UnavailabilityTypes.confirmSave':
+    'Des modifications n’ont pas été enregistrées. Voulez-vous les enregistrer ?',
 }
 
 const en: Messages = {
@@ -347,6 +357,10 @@ const en: Messages = {
   'Unavailability.status.SUBMITTED': 'Submitted',
   'Unavailability.status.VALIDATED': 'Approved',
   'Unavailability.status.REJECTED': 'Rejected',
+  'Unavailability.status.CANCELLED': 'Cancelled',
+  'Unavailability.annuler.l.indisponibilite': 'Cancel the unavailability',
+  'Unavailability.annuler.validated.confirm':
+    'Cancel this approved unavailability? It will no longer be taken into account.',
   'Unavailability.commentaire.obligatoire': 'The comment is required.',
   'hireDate.required':
     'Set your hire date to fill in a timesheet or an unavailability.',
@@ -357,13 +371,13 @@ const en: Messages = {
   'UnavailabilityTypes.subtitle':
     'Your company parameters for computing leave and RTT balances.',
   'UnavailabilityTypes.col.type': 'Time-off type',
-  'UnavailabilityTypes.col.duration': 'Duration / rule',
+  'UnavailabilityTypes.col.duration': 'Duration',
   'UnavailabilityTypes.col.count': 'Counting type',
   'UnavailabilityTypes.col.conditions': 'Main conditions',
   'UnavailabilityTypes.col.remuneration': 'Pay',
   'UnavailabilityTypes.col.cp': 'Paid-leave accrual during the absence',
   'UnavailabilityTypes.col.legal': 'Provided by law',
-  'UnavailabilityTypes.col.syntec': 'Provided by Syntec',
+  'UnavailabilityTypes.col.syntec': 'Provided by the collective agreement',
   'UnavailabilityTypes.col.document': 'Requires a document',
   'UnavailabilityTypes.addRow': 'Add a row',
   'UnavailabilityTypes.save': 'Save',
@@ -372,6 +386,11 @@ const en: Messages = {
   'UnavailabilityTypes.typeRequired': 'The time-off type is required.',
   'UnavailabilityTypes.noSoc': 'No company associated with this account.',
   'UnavailabilityTypes.empty': 'No time-off type.',
+  'UnavailabilityTypes.new': 'New type',
+  'UnavailabilityTypes.form.new': 'New time-off type',
+  'UnavailabilityTypes.form.edit': 'Edit time-off type',
+  'UnavailabilityTypes.confirmDelete': 'Delete the type "{type}"?',
+  'UnavailabilityTypes.confirmSave': 'There are unsaved changes. Do you want to save them?',
 }
 
 const ar: Messages = {
@@ -400,6 +419,10 @@ const ar: Messages = {
   'Unavailability.status.SUBMITTED': 'مُقدَّمة',
   'Unavailability.status.VALIDATED': 'معتمدة',
   'Unavailability.status.REJECTED': 'مرفوضة',
+  'Unavailability.status.CANCELLED': 'ملغاة',
+  'Unavailability.annuler.l.indisponibilite': 'إلغاء الإجازة',
+  'Unavailability.annuler.validated.confirm':
+    'هل تريد إلغاء هذه الإجازة المعتمدة؟ لن تؤخذ في الحسبان بعد الآن.',
   'Unavailability.commentaire.obligatoire': 'التعليق مطلوب.',
   'hireDate.required': 'أدخل تاريخ التوظيف لملء الجدول الزمني أو الإجازة.',
   'hireDate.required.activities': 'أدخل تاريخ التوظيف لعرض أنشطتك.',
@@ -408,13 +431,13 @@ const ar: Messages = {
   'UnavailabilityTypes.title': 'أنواع الإجازات',
   'UnavailabilityTypes.subtitle': 'معايير شركتك لحساب أرصدة الإجازات و RTT.',
   'UnavailabilityTypes.col.type': 'نوع الإجازة',
-  'UnavailabilityTypes.col.duration': 'المدة / القاعدة',
+  'UnavailabilityTypes.col.duration': 'المدة',
   'UnavailabilityTypes.col.count': 'نوع الاحتساب',
   'UnavailabilityTypes.col.conditions': 'الشروط الرئيسية',
   'UnavailabilityTypes.col.remuneration': 'الأجر',
   'UnavailabilityTypes.col.cp': 'اكتساب أيام الإجازات مدفوعة الأجر خلال الغياب',
   'UnavailabilityTypes.col.legal': 'منصوص عليه قانونًا',
-  'UnavailabilityTypes.col.syntec': 'منصوص عليه في Syntec',
+  'UnavailabilityTypes.col.syntec': 'منصوص عليه في الاتفاقية الجماعية',
   'UnavailabilityTypes.col.document': 'يتطلب مستندًا',
   'UnavailabilityTypes.addRow': 'إضافة صف',
   'UnavailabilityTypes.save': 'حفظ',
@@ -423,6 +446,11 @@ const ar: Messages = {
   'UnavailabilityTypes.typeRequired': 'نوع الإجازة مطلوب.',
   'UnavailabilityTypes.noSoc': 'لا توجد شركة مرتبطة بهذا الحساب.',
   'UnavailabilityTypes.empty': 'لا يوجد نوع إجازة.',
+  'UnavailabilityTypes.new': 'نوع جديد',
+  'UnavailabilityTypes.form.new': 'نوع إجازة جديد',
+  'UnavailabilityTypes.form.edit': 'تعديل نوع الإجازة',
+  'UnavailabilityTypes.confirmDelete': 'حذف النوع « {type} »؟',
+  'UnavailabilityTypes.confirmSave': 'هناك تغييرات غير محفوظة. هل تريد حفظها؟',
 }
 
 export const MESSAGES: Record<string, Messages> = {

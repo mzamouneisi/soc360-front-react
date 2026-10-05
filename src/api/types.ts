@@ -13,7 +13,7 @@ export type DayType =
 
 export type NoteFraisStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED' | 'PAID'
 
-export type UnavailabilityStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED'
+export type UnavailabilityStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECTED' | 'CANCELLED'
 
 /**
  * Libellé du type d'indisponibilité, issu de la table de paramètres de la société
@@ -606,26 +606,26 @@ export interface UnavailabilityTypeConfigDto {
   socId: number | null
   sortOrder: number
   typeLabel: string
-  durationRule: string | null
+  duration: number | null
   countType: string | null
   mainConditions: string | null
-  remuneration: string | null
-  cpAcquisition: string | null
-  legalProvision: string | null
-  syntecProvision: string | null
-  documentRequired: string | null
+  remuneration: boolean | null
+  cpAcquisition: boolean | null
+  legalProvision: boolean | null
+  collectiveAgreementProvision: string | null
+  documentRequired: boolean | null
 }
 
 export interface UnavailabilityTypeConfigRow {
   typeLabel: string
-  durationRule: string | null
+  duration: number | null
   countType: string | null
   mainConditions: string | null
-  remuneration: string | null
-  cpAcquisition: string | null
-  legalProvision: string | null
-  syntecProvision: string | null
-  documentRequired: string | null
+  remuneration: boolean | null
+  cpAcquisition: boolean | null
+  legalProvision: boolean | null
+  collectiveAgreementProvision: string | null
+  documentRequired: boolean | null
 }
 
 export interface SaveUnavailabilityTypesRequest {
