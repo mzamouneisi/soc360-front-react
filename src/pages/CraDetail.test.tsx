@@ -886,6 +886,63 @@ describe('CraDetail', () => {
     await waitFor(() => expect(screen.queryAllByText(/Congé ·/)).toHaveLength(0))
   })
 
+  it('un manager propriétaire ne peut pas supprimer un congé validé', async () => {
+    userMock.value = managerUser
+    const ownCra = { ...cra(true, 'DRAFT'), consultantId: managerUser.id, managerId: 2 }
+    const workDay = ownCra.days.findIndex((d) => d.dayType === 'WORKED')
+    ownCra.days = ownCra.days.map((d, i) =>
+      i === workDay
+        ? {
+            ...d,
+            dayType: 'LEAVE',
+            activities: [
+              {
+                id: 901,
+                activityId: 5,
+                activityName: 'Congé payé',
+                activityColor: null,
+                hours: 0,
+                days: 1,
+                valid: true,
+                comment: null,
+              },
+            ],
+          }
+        : d,
+    )
+    getByIdMock.mockResolvedValue(ownCra)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Congé payé',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: true,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Ligne' }))
+
+    // L'activité validée reste en lecture seule pour son propriétaire (même manager).
+    expect(screen.queryByLabelText("Supprimer l'événement")).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Congé payé/).length).toBeGreaterThan(0)
+  })
+
   it('un manager ne supprime pas les événements validés (supprimer tous)', async () => {
     userMock.value = managerUser
     const draft = cra(true, 'DRAFT')
