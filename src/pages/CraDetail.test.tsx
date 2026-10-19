@@ -868,6 +868,30 @@ describe('CraDetail', () => {
     expect(screen.getByRole('button', { name: 'Déclarer une absence' })).toBeInTheDocument()
   })
 
+  it('un manager peut déclarer une absence dans son propre CRA', async () => {
+    userMock.value = managerUser
+    const ownCra = { ...cra(true, 'DRAFT'), consultantId: managerUser.id, managerId: 2 }
+    getByIdMock.mockResolvedValue(ownCra)
+    saveMock.mockResolvedValue(ownCra)
+    declareAbsenceMock.mockResolvedValue(ownCra)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Déclarer une absence' }))
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'Déclarer une absence' }).pop() as HTMLElement,
+    )
+
+    await waitFor(() => expect(declareAbsenceMock).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ type: 'CONGE_PAYE' }),
+    ))
+  })
+
   it('masque « Déclarer une absence » pour un admin', async () => {
     userMock.value = {
       id: 3,
