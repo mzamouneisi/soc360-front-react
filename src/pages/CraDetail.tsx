@@ -445,11 +445,19 @@ export function CraDetail({
 
   function removeActivity(dayIndex: number, actIndex: number) {
     setDays((prev) =>
-      prev.map((d, i) =>
-        i === dayIndex
-          ? { ...d, activities: d.activities.filter((_, j) => j !== actIndex) }
-          : d,
-      ),
+      prev.map((d, i) => {
+        if (i !== dayIndex) return d
+        const activities = d.activities.filter((_, j) => j !== actIndex)
+        // Supprimer le dernier événement d'un jour de congé doit rendre le jour vide : sinon il
+        // reste coloré « Congé · 0 j ». Même règle que « Supprimer tous les événements ».
+        const isLeaveColor = d.dayType === 'LEAVE' || d.dayType === 'SICK_LEAVE'
+        let dayType = d.dayType
+        if (activities.length === 0 && isLeaveColor) {
+          const dow = new Date(d.date + 'T00:00:00').getDay()
+          dayType = dow === 0 || dow === 6 ? 'WEEKEND' : 'WORKED'
+        }
+        return { ...d, activities, dayType }
+      }),
     )
   }
 
