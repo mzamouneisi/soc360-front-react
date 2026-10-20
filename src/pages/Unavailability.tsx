@@ -382,6 +382,22 @@ export function Unavailability() {
     )
   }
 
+  // Une seule demi-journée par jour : le bouton (+) se désactive quand tous les jours de
+  // l'intervalle ont déjà leur demi-journée (cas particulier : date de début = date de fin).
+  const intervalDays = (() => {
+    if (!formStart || !formEnd || formStart > formEnd) return 0
+    const start = new Date(formStart + 'T00:00:00Z').getTime()
+    const end = new Date(formEnd + 'T00:00:00Z').getTime()
+    return Math.round((end - start) / 86400000) + 1
+  })()
+  const usedHalfDayDays = new Set(formHalfDays.map((h) => h.date).filter(Boolean)).size
+  const canAddHalfDay = intervalDays > 0 && usedHalfDayDays < intervalDays
+  const addHalfDayTitle = canAddHalfDay
+    ? 'Préciser les jours ayant juste une demi-journée dans cet intervalle'
+    : intervalDays === 1
+      ? 'Une seule demi-journée est possible quand la date de début et de fin sont identiques.'
+      : 'Une demi-journée a déjà été précisée pour chaque jour de l’intervalle.'
+
   return (
     <div>
       <PageHeader
@@ -498,7 +514,8 @@ export function Unavailability() {
                   icon="add"
                   label="Ajouter une demi-journée"
                   variant="new"
-                  title="Préciser les jours ayant juste une demi-journée dans cet intervalle"
+                  title={addHalfDayTitle}
+                  disabled={!canAddHalfDay}
                   onClick={addHalfDay}
                 />
               </div>

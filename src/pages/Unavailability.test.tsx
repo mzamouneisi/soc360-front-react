@@ -482,6 +482,31 @@ describe('Unavailability', () => {
     ])
   })
 
+  it('désactive le bouton + quand l’unique jour de l’intervalle a déjà une demi-journée', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({
+        startDate: '2026-09-01',
+        endDate: '2026-09-01',
+        comment: 'Motif',
+        halfDays: [{ date: '2026-09-01', halfDay: 'AM' }],
+      }),
+    ])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Éditer' }))
+
+    const addHalfDay = screen.getByRole('button', { name: 'Ajouter une demi-journée' })
+    expect(addHalfDay).toBeDisabled()
+    expect(addHalfDay).toHaveAttribute(
+      'title',
+      'Une seule demi-journée est possible quand la date de début et de fin sont identiques.',
+    )
+  })
+
   it('affiche le type issu des paramètres de la société et le propose au formulaire', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([item({ type: 'Congés payés' })])
