@@ -655,7 +655,10 @@ describe('CraDetail', () => {
 
     expect(screen.queryByRole('columnheader', { name: 'Type' })).not.toBeInTheDocument()
     await waitFor(() => {
-      expect(document.querySelectorAll('tbody tr.bg-yellow-50').length).toBeGreaterThan(0)
+      const highlighted = Array.from(document.querySelectorAll('tbody tr')).filter((row) =>
+        row.getAttribute('style')?.includes('background-color'),
+      )
+      expect(highlighted.length).toBeGreaterThan(0)
     })
   })
 

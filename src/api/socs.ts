@@ -41,6 +41,8 @@ export const socsApi = {
   createDemo: () => api.post<DemoSocDto>('/socs/demo'),
   update: (id: number, request: Partial<SocDto>) =>
     api.put<SocDto>(`/socs/${id}`, request),
+  updateCraColors: (id: number, colors: { leaveDayColor: string; weekendColor: string }) =>
+    api.put<SocDto>(`/socs/${id}/cra-colors`, colors),
   remove: (id: number) => api.delete<void>(`/socs/${id}`),
   removeWithDependencies: (id: number) => api.delete<void>(`/socs/${id}/all`),
   dependencies: (id: number) => api.get<SocDependency[]>(`/socs/${id}/dependencies`),

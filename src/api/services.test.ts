@@ -307,6 +307,7 @@ describe('services API', () => {
     socsApi.removeWithDependencies(1)
     socsApi.dependencies(1)
     socsApi.removeDependency(1, 'project', 2)
+    socsApi.updateCraColors(1, { leaveDayColor: '#fef9c3', weekendColor: '#fefce8' })
 
     expect(api.get).toHaveBeenNthCalledWith(1, '/socs')
     expect(api.get).toHaveBeenNthCalledWith(2, '/socs/1')
@@ -317,6 +318,10 @@ describe('services API', () => {
     expect(api.delete).toHaveBeenNthCalledWith(2, '/socs/1/all')
     expect(api.get).toHaveBeenNthCalledWith(3, '/socs/1/dependencies')
     expect(api.delete).toHaveBeenNthCalledWith(3, '/socs/1/dependencies/project/2')
+    expect(api.put).toHaveBeenNthCalledWith(2, '/socs/1/cra-colors', {
+      leaveDayColor: '#fef9c3',
+      weekendColor: '#fefce8',
+    })
   })
 
   it('suppliersApi couvre CRUD', () => {

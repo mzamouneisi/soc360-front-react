@@ -153,6 +153,17 @@ function dayBackground(dayType: DayType | undefined, weekend = false): string {
   }
 }
 
+function dayColorStyle(
+  dayType: DayType | undefined,
+  weekend: boolean,
+  leaveColor: string,
+  weekendColor: string,
+): { backgroundColor: string } | undefined {
+  if (dayType === 'LEAVE') return { backgroundColor: leaveColor }
+  if (dayType === 'PUBLIC_HOLIDAY' || dayType === 'BEFORE_HIRE') return undefined
+  return weekend ? { backgroundColor: weekendColor } : undefined
+}
+
 function activityDayRestriction(
   dayType: DayType,
   activity?: ActivityDto | null,
@@ -898,6 +909,8 @@ export function CraDetail({
       weekendColumns.add((new Date(day.date + 'T00:00:00').getDay() + 6) % 7)
     }
   }
+  const leaveColor = cra.leaveDayColor || '#fef9c3'
+  const weekendColor = cra.weekendColor || '#fefce8'
   const daysInMonth = new Date(cra.year, cra.month, 0).getDate()
   const cells: ReactNode[] = []
   for (let i = 0; i < startOffset; i++) cells.push(null)
@@ -1083,8 +1096,9 @@ export function CraDetail({
               <div
                 key={label}
                 className={`px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 ${
-                  weekendColumns.has(index) ? 'bg-yellow-50' : 'bg-gray-50'
+                  weekendColumns.has(index) ? '' : 'bg-gray-50'
                 }`}
+                style={weekendColumns.has(index) ? { backgroundColor: weekendColor } : undefined}
               >
                 {label}
               </div>
@@ -1094,7 +1108,8 @@ export function CraDetail({
                 return (
                   <div
                     key={`empty-${i}`}
-                    className={weekendColumns.has(i % 7) ? 'bg-yellow-50' : 'bg-white'}
+                    className={weekendColumns.has(i % 7) ? '' : 'bg-white'}
+                    style={weekendColumns.has(i % 7) ? { backgroundColor: weekendColor } : undefined}
                   />
                 )
               }
@@ -1105,6 +1120,7 @@ export function CraDetail({
                 <div
                   key={date}
                   className={`min-h-28 p-1.5 ${dayBackground(day?.dayType, isWeekendDay(day))}`}
+                  style={dayColorStyle(day?.dayType, isWeekendDay(day), leaveColor, weekendColor)}
                   title={
                     day?.dayType === 'BEFORE_HIRE'
                       ? tr('CraDetail.avant.embauche', { date: cra.hireDate ?? '' })
@@ -1210,7 +1226,8 @@ export function CraDetail({
                   return (
                     <tr
                       key={day.date}
-                      className={`align-top ${isWeekendDay(day) ? 'bg-yellow-50' : ''}`}
+                      className="align-top"
+                      style={isWeekendDay(day) ? { backgroundColor: weekendColor } : undefined}
                     >
                       <td className="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
                         {i + 1}

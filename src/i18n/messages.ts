@@ -130,6 +130,11 @@ const fr: Messages = {
     'Personnalisez la couleur d’en-tête et la bordure des tableaux de l’application.',
   'settings.colors.header': 'Couleur d’en-tête',
   'settings.colors.border': 'Couleur de bordure',
+  'settings.craColors.title': 'Couleurs des jours CRA',
+  'settings.craColors.description':
+    'Couleurs des jours de congé et de week-end dans le CRA de la société sélectionnée.',
+  'settings.craColors.leave': 'Couleur jour de congé',
+  'settings.craColors.weekend': 'Couleur week-end',
   'settings.buttons.title': 'Boutons',
   'settings.buttons.description':
     'Personnalisez la largeur et les couleurs des boutons de l’application.',
@@ -321,6 +326,11 @@ const en: Messages = {
     'Customize the header colour and the border of the application tables.',
   'settings.colors.header': 'Header colour',
   'settings.colors.border': 'Border colour',
+  'settings.craColors.title': 'CRA day colours',
+  'settings.craColors.description':
+    'Leave day and weekend colours in the selected company CRA.',
+  'settings.craColors.leave': 'Leave day colour',
+  'settings.craColors.weekend': 'Weekend colour',
   'settings.buttons.title': 'Buttons',
   'settings.buttons.description':
     'Customize the width and colours of the application buttons.',
@@ -408,6 +418,10 @@ const en: Messages = {
 }
 
 const ar: Messages = {
+  'settings.craColors.title': 'ألوان أيام CRA',
+  'settings.craColors.description': 'ألوان أيام الإجازة ونهاية الأسبوع في CRA الشركة المحددة.',
+  'settings.craColors.leave': 'لون يوم الإجازة',
+  'settings.craColors.weekend': 'لون نهاية الأسبوع',
   'languages.searchRows': 'بحث عن صف',
   'languages.searchPlaceholder': 'مفتاح أو قيمة…',
   'CraDetail.declarer.une.absence': 'الإعلان عن غياب',

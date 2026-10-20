@@ -2,6 +2,8 @@ import { tr } from '../i18n/translate'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
+import { socsApi } from '../api/socs'
+import { useSoc } from '../soc/SocContext'
 import { emailTemplatesApi, type EmailTemplateView } from '../api/emailTemplates'
 import { i18nApi, type TranslatedEntry } from '../api/i18n'
 import { ApiError } from '../api/client'
@@ -12,6 +14,9 @@ import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
+
+const CRA_LEAVE_COLOR_DEFAULT = '#fef9c3'
+const CRA_WEEKEND_COLOR_DEFAULT = '#fefce8'
 
 const THEMES: { id: string; color: string }[] = [
   { id: 'ocean', color: '#3367f6' },
@@ -87,6 +92,7 @@ function scheduleScrollToRetrad(): void {
 
 export function Settings() {
   const { user, refreshMe } = useAuth()
+  const { selectedSocId } = useSoc()
   const { t, preference, languages, setLanguage, language, refresh } = useI18n()
   const [size, setSize] = useState<number>(user?.fontSize ?? 14)
   const [theme, setTheme] = useState<string>(user?.theme || 'ocean')
@@ -108,6 +114,10 @@ export function Settings() {
   const [btnNewColor, setBtnNewColor] = useState<string>(user?.buttonNewColor || '#0ea5e9')
   const [btnNewTextColor, setBtnNewTextColor] = useState<string>(user?.buttonNewTextColor || '#ffffff')
   const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
+  const [leaveDayColor, setLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
+  const [weekendColor, setWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
+  const [savedLeaveDayColor, setSavedLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
+  const [savedWeekendColor, setSavedWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -116,6 +126,29 @@ export function Settings() {
   const [languageError, setLanguageError] = useState<string | null>(null)
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
+  const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
+
+  useEffect(() => {
+    if (!selectedSocId || !canEditCraColors) {
+      return
+    }
+    let cancelled = false
+    socsApi
+      .getById(selectedSocId)
+      .then(({ soc }) => {
+        if (cancelled) return
+        const leave = soc.leaveDayColor || CRA_LEAVE_COLOR_DEFAULT
+        const weekend = soc.weekendColor || CRA_WEEKEND_COLOR_DEFAULT
+        setLeaveDayColor(leave)
+        setWeekendColor(weekend)
+        setSavedLeaveDayColor(leave)
+        setSavedWeekendColor(weekend)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [selectedSocId, canEditCraColors])
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateView[]>([])
   const [templateKey, setTemplateKey] = useState('')
   const [templateSubject, setTemplateSubject] = useState('')
@@ -237,7 +270,9 @@ export function Settings() {
     (u.buttonOkTextColor || '#ffffff') !== btnOkTextColor ||
     (u.buttonNewColor || '#0ea5e9') !== btnNewColor ||
     (u.buttonNewTextColor || '#ffffff') !== btnNewTextColor ||
-    (u.backgroundColor || '#bae6fd') !== bgColor
+    (u.backgroundColor || '#bae6fd') !== bgColor ||
+    (canEditCraColors && selectedSocId != null &&
+      (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor))
 
   async function handleLanguageChange(value: string) {
     setLanguageSaving(true)
@@ -304,6 +339,12 @@ export function Settings() {
       }
       if ((u.backgroundColor || '#bae6fd') !== bgColor) {
         await authApi.updateBackgroundColor(bgColor)
+      }
+      if (canEditCraColors && selectedSocId != null &&
+          (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor)) {
+        await socsApi.updateCraColors(selectedSocId, { leaveDayColor, weekendColor })
+        setSavedLeaveDayColor(leaveDayColor)
+        setSavedWeekendColor(weekendColor)
       }
       await refreshMe()
       setSaved(true)
@@ -661,6 +702,45 @@ export function Settings() {
             </tbody>
           </table>
         </div>
+
+        {canEditCraColors && selectedSocId != null && (
+          <>
+            <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.craColors.title">
+              {t('settings.craColors.title')}
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">{t('settings.craColors.description')}</p>
+            <div className="mt-4 flex flex-wrap items-end gap-6">
+              <Field label={t('settings.craColors.leave')} id="settings.craColors.leave">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={leaveDayColor}
+                    onChange={(e) => {
+                      setLeaveDayColor(e.target.value)
+                      setSaved(false)
+                    }}
+                    className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+                  />
+                  <span className="text-sm text-gray-500">{leaveDayColor}</span>
+                </div>
+              </Field>
+              <Field label={t('settings.craColors.weekend')} id="settings.craColors.weekend">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={weekendColor}
+                    onChange={(e) => {
+                      setWeekendColor(e.target.value)
+                      setSaved(false)
+                    }}
+                    className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+                  />
+                  <span className="text-sm text-gray-500">{weekendColor}</span>
+                </div>
+              </Field>
+            </div>
+          </>
+        )}
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.buttons.title">{t('settings.buttons.title')}</h3>
         <p className="mt-1 text-sm text-gray-500">{t('settings.buttons.description')}</p>
