@@ -483,6 +483,156 @@ describe('CraDetail', () => {
     expect(screen.getAllByRole('combobox')).toHaveLength(activityRowsBefore)
   })
 
+  it('force la seconde demi-journée sur le créneau encore libre', async () => {
+    userMock.value = managerUser
+    const draft = cra(true, 'DRAFT')
+    const workDay = draft.days.findIndex((d) => d.dayType === 'WORKED')
+    draft.days = draft.days.map((d, i) =>
+      i === workDay
+        ? {
+            ...d,
+            activities: [
+              {
+                id: 500,
+                activityId: 5,
+                activityName: 'Développement',
+                activityColor: null,
+                hours: 0,
+                days: 0.5,
+                halfDay: 'AM',
+                valid: false,
+                comment: null,
+              },
+            ],
+          }
+        : d,
+    )
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Développement',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: true,
+        holidayAllowed: true,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const addButtons = await screen.findAllByRole('button', { name: 'Ajouter un événement' })
+    fireEvent.click(addButtons[2])
+    fireEvent.click(await screen.findByRole('button', { name: '+ Ajouter un événement' }))
+
+    const mornings = screen.getAllByRole('radio', { name: 'Matin' })
+    const afternoons = screen.getAllByRole('radio', { name: 'Après-midi' })
+    expect(mornings).toHaveLength(2)
+    expect(afternoons).toHaveLength(2)
+    // Premier événement : matin ; le second bascule automatiquement l'après-midi.
+    expect(mornings[0]).toBeChecked()
+    expect(afternoons[0]).toBeDisabled()
+    expect(afternoons[1]).toBeChecked()
+    expect(mornings[1]).toBeDisabled()
+  })
+
+  it('affiche le matin au-dessus de l’après-midi dans la cellule du calendrier', async () => {
+    userMock.value = managerUser
+    const draft = cra(true, 'DRAFT')
+    const workDay = draft.days.findIndex((d) => d.dayType === 'WORKED')
+    draft.days = draft.days.map((d, i) =>
+      i === workDay
+        ? {
+            ...d,
+            activities: [
+              {
+                id: 501,
+                activityId: 6,
+                activityName: 'Activité après-midi',
+                activityColor: null,
+                hours: 0,
+                days: 0.5,
+                halfDay: 'PM',
+                valid: false,
+                comment: null,
+              },
+              {
+                id: 502,
+                activityId: 5,
+                activityName: 'Activité matin',
+                activityColor: null,
+                hours: 0,
+                days: 0.5,
+                halfDay: 'AM',
+                valid: false,
+                comment: null,
+              },
+            ],
+          }
+        : d,
+    )
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Activité matin',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: true,
+        holidayAllowed: true,
+      },
+      {
+        id: 6,
+        name: 'Activité après-midi',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: true,
+        holidayAllowed: true,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const afternoon = await screen.findByRole('button', { name: /Activité après-midi/ })
+    const cellGroup = afternoon.parentElement as HTMLElement
+    const morning = within(cellGroup).getByRole('button', { name: /Activité matin/ })
+    // 4 = Node.DOCUMENT_POSITION_FOLLOWING : le matin précède l'après-midi dans le DOM.
+    expect(morning.compareDocumentPosition(afternoon) & 4).toBe(4)
+  })
+
   it('rend non modifiable le jour couvert par une indisponibilité validée (consultant)', async () => {
     userMock.value = {
       id: 10,

@@ -97,6 +97,35 @@ function allowedDaysFor(day: EditableDay, actIndex: number): string[] {
   return allowed
 }
 
+function halfDayOrder(halfDay: HalfDay | null | undefined): number {
+  if (halfDay === 'AM') return 0
+  if (halfDay === 'PM') return 2
+  return 1
+}
+
+/**
+ * Demi-journées encore libres pour un événement de 0,5 j : si un autre événement du jour occupe
+ * déjà le matin, le second doit être l'après-midi (et inversement).
+ */
+function allowedHalfDaysFor(day: EditableDay, actIndex: number): HalfDay[] {
+  const used = new Set(
+    day.activities
+      .filter((a, i) => i !== actIndex && Number(a.days) === 0.5 && a.halfDay)
+      .map((a) => a.halfDay as HalfDay),
+  )
+  return (['AM', 'PM'] as HalfDay[]).filter((h) => !used.has(h))
+}
+
+function defaultHalfDayFor(day: EditableDay): HalfDay | null {
+  const used = new Set(
+    day.activities
+      .filter((a) => Number(a.days) === 0.5 && a.halfDay)
+      .map((a) => a.halfDay as HalfDay),
+  )
+  const allowed = (['AM', 'PM'] as HalfDay[]).filter((h) => !used.has(h))
+  return allowed.length === 1 ? allowed[0] : null
+}
+
 function formatDays(value: number): string {
   const unit = tr('CraDetail.j')
   return Number.isInteger(value) ? `${value} ${unit}` : `${formatNumber(value)} ${unit}`
@@ -155,12 +184,14 @@ function ActivityChip({
   color,
   name,
   days,
+  halfDay,
   valid,
   onClick,
 }: {
   color?: string | null
   name: string
   days: number
+  halfDay?: HalfDay | null
   valid?: boolean
   onClick?: () => void
 }) {
@@ -174,6 +205,11 @@ function ActivityChip({
         className="h-2 w-2 shrink-0 rounded-full"
         style={{ backgroundColor: color ?? '#9ca3af' }}
       />
+      {halfDay && (
+        <span className="shrink-0 text-[10px] font-normal uppercase text-gray-400">
+          {halfDay === 'AM' ? 'matin' : 'après-midi'}
+        </span>
+      )}
       <span className="truncate">{name}</span>
       <span className="ml-auto shrink-0 text-gray-400">{tr('CraDetail.')}{days}</span>
       {valid && <span className="shrink-0 text-green-600">✓</span>}
@@ -413,8 +449,25 @@ export function CraDetail({
         setFormError('Le total du jour ne peut pas dépasser 1 jour.')
         return
       }
-      // La demi-journée (matin / après-midi) n'est pertinente que pour 0,5 jour.
-      nextPatch = patch.days === '0.5' ? patch : { ...patch, halfDay: null }
+      if (patch.days === '0.5' && day) {
+        // Une seule demi-journée par créneau : si l'autre événement occupe déjà le matin,
+        // celui-ci bascule automatiquement l'après-midi (et inversement).
+        const allowed = allowedHalfDaysFor(day, actIndex)
+        const desired = patch.halfDay !== undefined ? patch.halfDay : act?.halfDay ?? null
+        const halfDay = desired && allowed.includes(desired)
+          ? desired
+          : allowed.length === 1 ? allowed[0] : null
+        nextPatch = { ...patch, halfDay }
+      } else {
+        // La demi-journée (matin / après-midi) n'est pertinente que pour 0,5 jour.
+        nextPatch = { ...patch, halfDay: null }
+      }
+    } else if (patch.halfDay !== undefined && patch.halfDay !== null) {
+      const day = days[dayIndex]
+      if (day && !allowedHalfDaysFor(day, actIndex).includes(patch.halfDay)) {
+        setFormError('Cette demi-journée est déjà utilisée par un autre événement du jour.')
+        return
+      }
     }
     setDays((prev) =>
       prev.map((d, i) =>
@@ -436,6 +489,7 @@ export function CraDetail({
     }
     const remaining = 1 - dayTotal(day)
     const defaultDays = remaining >= 1 ? '1' : '0.5'
+    const halfDay = defaultDays === '0.5' ? defaultHalfDayFor(day) : null
     setDays((prev) =>
       prev.map((d, i) =>
         i === dayIndex
@@ -447,7 +501,7 @@ export function CraDetail({
                   id: `new-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                   activityId: '',
                   days: defaultDays,
-                  halfDay: null,
+                  halfDay,
                   comment: '',
                   valid: false,
                 },
@@ -1044,24 +1098,28 @@ export function CraDetail({
                   </div>
                   <div className="mt-1 space-y-1">
                     {day?.activities
-                      .filter((act) => act.activityId)
-                      .map((act, j) => {
-                      const info = activityMap.get(act.activityId)
-                      return (
-                        <ActivityChip
-                          key={j}
-                          color={info?.type?.color}
-                          name={info?.name ?? 'Activité inconnue'}
-                          days={Number(act.days) || 0}
-                          valid={act.valid}
-                          onClick={
-                            canAddEvents && canModifyActivity(act) && dayIndex >= 0
-                              ? () => setEventModal(dayIndex)
-                              : undefined
-                          }
-                        />
-                      )
-                    })}
+                      .map((act, index) => ({ act, index }))
+                      .filter(({ act }) => act.activityId)
+                      // Le matin reste en haut de la cellule, l'après-midi en bas.
+                      .sort((a, b) => halfDayOrder(a.act.halfDay) - halfDayOrder(b.act.halfDay))
+                      .map(({ act, index }) => {
+                        const info = activityMap.get(act.activityId)
+                        return (
+                          <ActivityChip
+                            key={index}
+                            color={info?.type?.color}
+                            name={info?.name ?? 'Activité inconnue'}
+                            days={Number(act.days) || 0}
+                            halfDay={act.halfDay}
+                            valid={act.valid}
+                            onClick={
+                              canAddEvents && canModifyActivity(act) && dayIndex >= 0
+                                ? () => setEventModal(dayIndex)
+                                : undefined
+                            }
+                          />
+                        )
+                      })}
                     {day && day.dayType !== 'WORKED' && (
                       <span className="block px-1 text-[11px] font-medium text-gray-400">
                         {day.dayType === 'PUBLIC_HOLIDAY' && holidays.has(date)
@@ -1663,6 +1721,7 @@ function EventModal({
         <div className="space-y-2">
           {day.activities.map((act, j) => {
             const info = activities.find((a) => String(a.id) === act.activityId)
+            const allowedHalfDays = allowedHalfDaysFor(day, j)
             return (
               <div
                 key={j}
@@ -1708,8 +1767,9 @@ function EventModal({
                             type="radio"
                             name={`half-day-${j}`}
                             checked={act.halfDay === 'AM'}
+                            disabled={!allowedHalfDays.includes('AM')}
                             onChange={() => onUpdateActivity(j, { halfDay: 'AM' })}
-                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
                           />
                           Matin
                         </label>
@@ -1718,8 +1778,9 @@ function EventModal({
                             type="radio"
                             name={`half-day-${j}`}
                             checked={act.halfDay === 'PM'}
+                            disabled={!allowedHalfDays.includes('PM')}
                             onChange={() => onUpdateActivity(j, { halfDay: 'PM' })}
-                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
                           />
                           Après-midi
                         </label>
