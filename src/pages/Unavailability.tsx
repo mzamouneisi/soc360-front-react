@@ -438,51 +438,59 @@ export function Unavailability() {
             {editingId != null ? tr('Unavailability.modifier.l.indisponibilite') : tr('Unavailability.nouvelle.indisponibilite')}
           </h3>
           <div className="space-y-3">
-            <div className={`grid gap-3 ${!isConsultant ? 'sm:grid-cols-2' : ''}`}>
+            <div className="flex flex-wrap items-start gap-3">
               {!isConsultant && (
-                <Field label={tr('Unavailability.consultant')} id="Unavailability.consultant">
-                  <Select
-                    value={formConsultantId ?? ''}
-                    onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
-                    title={tr('Unavailability.consultant')}
-                  >
-                    <option value="">{tr('Unavailability.choisir')}</option>
-                    {consultants.data?.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.fullName}
+                <div className="w-56 max-w-full">
+                  <Field label={tr('Unavailability.consultant')} id="Unavailability.consultant">
+                    <Select
+                      value={formConsultantId ?? ''}
+                      onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
+                      title={tr('Unavailability.consultant')}
+                    >
+                      <option value="">{tr('Unavailability.choisir')}</option>
+                      {consultants.data?.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.fullName}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                </div>
+              )}
+              <div className="w-56 max-w-full">
+                <Field label={tr('Unavailability.type')} id="Unavailability.type">
+                  <Select value={formType} onChange={(e) => setFormType(e.target.value)}>
+                    {!formType && <option value="">{tr('Unavailability.choisir')}</option>}
+                    {formType && !typeOptions.includes(formType) && (
+                      <option value={formType}>{unavailabilityTypeLabel(formType)}</option>
+                    )}
+                    {typeOptions.map((label) => (
+                      <option key={label} value={label}>
+                        {label}
                       </option>
                     ))}
                   </Select>
                 </Field>
-              )}
-              <Field label={tr('Unavailability.type')} id="Unavailability.type">
-                <Select value={formType} onChange={(e) => setFormType(e.target.value)}>
-                  {!formType && <option value="">{tr('Unavailability.choisir')}</option>}
-                  {formType && !typeOptions.includes(formType) && (
-                    <option value={formType}>{unavailabilityTypeLabel(formType)}</option>
-                  )}
-                  {typeOptions.map((label) => (
-                    <option key={label} value={label}>
-                      {label}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
+              </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label={tr('Unavailability.du')} id="Unavailability.du">
-                <Input type="date" value={formStart} min={formHireDate ?? undefined}
-                  onChange={(e) => setFormStart(e.target.value)} />
-              </Field>
-              <Field label={tr('Unavailability.au')} id="Unavailability.au">
-                <Input type="date" value={formEnd} min={formHireDate ?? formStart}
-                  onChange={(e) => setFormEnd(e.target.value)} />
-              </Field>
+            <div className="flex flex-wrap items-start gap-3">
+              <div className="w-44 max-w-full">
+                <Field label={tr('Unavailability.du')} id="Unavailability.du">
+                  <Input type="date" value={formStart} min={formHireDate ?? undefined}
+                    onChange={(e) => setFormStart(e.target.value)} />
+                </Field>
+              </div>
+              <div className="w-44 max-w-full">
+                <Field label={tr('Unavailability.au')} id="Unavailability.au">
+                  <Input type="date" value={formEnd} min={formHireDate ?? formStart}
+                    onChange={(e) => setFormEnd(e.target.value)} />
+                </Field>
+              </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
                 <p className="text-sm font-medium text-gray-700">
                   Jours en demi-journée
                 </p>
