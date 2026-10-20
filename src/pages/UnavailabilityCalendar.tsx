@@ -1,7 +1,7 @@
 import { tr } from '../i18n/translate'
 import { useAsync } from '../lib/useAsync'
 import { crasApi } from '../api/cras'
-import type { CraDto, UnavailabilityDto } from '../api/types'
+import type { CraDto, HalfDay, UnavailabilityDto } from '../api/types'
 import {
   monthLabel,
   statusBadge,
@@ -95,6 +95,8 @@ function MonthGrid({
   otherDays,
   congeDays,
   missionDays,
+  selectedHalfDays,
+  otherHalfDays,
 }: {
   year: number
   month: number
@@ -102,6 +104,8 @@ function MonthGrid({
   otherDays: Set<string>
   congeDays: Set<string>
   missionDays: Set<string>
+  selectedHalfDays: Map<string, HalfDay>
+  otherHalfDays: Map<string, HalfDay>
 }) {
   const firstDay = new Date(year, month - 1, 1)
   const startOffset = (firstDay.getDay() + 6) % 7
@@ -128,6 +132,9 @@ function MonthGrid({
           const isOther = otherDays.has(key)
           const isConge = congeDays.has(key)
           const isMission = missionDays.has(key)
+          const selectedHalfDay = selectedHalfDays.get(key)
+          const otherHalfDay = otherHalfDays.get(key)
+          const halfDay = selectedHalfDay ?? otherHalfDay
           const dow = new Date(year, month - 1, day).getDay()
           const isWeekend = dow === 0 || dow === 6
 
@@ -135,11 +142,19 @@ function MonthGrid({
           let border = ''
           let text = 'text-gray-700'
           if (isSelected) {
-            bg = 'bg-sky-100'
+            bg = selectedHalfDay === 'AM'
+              ? 'bg-gradient-to-b from-sky-300 to-sky-50'
+              : selectedHalfDay === 'PM'
+                ? 'bg-gradient-to-b from-sky-50 to-sky-300'
+                : 'bg-sky-100'
             border = 'ring-2 ring-inset ring-blue-400'
             text = 'text-blue-700 font-semibold'
           } else if (isOther) {
-            bg = 'bg-indigo-50'
+            bg = otherHalfDay === 'AM'
+              ? 'bg-gradient-to-b from-indigo-200 to-indigo-50'
+              : otherHalfDay === 'PM'
+                ? 'bg-gradient-to-b from-indigo-50 to-indigo-200'
+                : 'bg-indigo-50'
             border = 'ring-1 ring-inset ring-indigo-300'
             text = 'text-indigo-700'
           } else if (isConge) {
@@ -155,8 +170,16 @@ function MonthGrid({
             <div
               key={key}
               className={`relative flex flex-col items-center rounded-sm p-0.5 text-[11px] leading-none ${bg} ${border}`}
+              title={halfDay ? (halfDay === 'AM' ? 'Matin' : 'Après-midi') : undefined}
             >
               <span className={text}>{day}</span>
+              {halfDay && (
+                <span className={`mt-0.5 text-[8px] font-semibold leading-none ${
+                  selectedHalfDay ? 'text-blue-700' : 'text-indigo-700'
+                }`}>
+                  {halfDay === 'AM' ? 'matin' : 'aprèm'}
+                </span>
+              )}
               {isMission && !isSelected && !isOther && !isConge && (
                 <span className="mt-0.5 h-1 w-1 rounded-full bg-green-500" />
               )}
@@ -202,11 +225,16 @@ export function UnavailabilityCalendar({
   )
 
   const selectedDays = daysBetween(selected.startDate, selected.endDate)
+  const selectedHalfDays = new Map<string, HalfDay>(
+    (selected.halfDays ?? []).map((h) => [h.date, h.halfDay]),
+  )
 
   const otherDays = new Set<string>()
+  const otherHalfDays = new Map<string, HalfDay>()
   for (const u of unavailabilities) {
     if (u.id === selected.id || u.consultantId !== selected.consultantId) continue
     for (const d of daysBetween(u.startDate, u.endDate)) otherDays.add(d)
+    for (const h of u.halfDays ?? []) otherHalfDays.set(h.date, h.halfDay)
   }
 
   const congeDays = new Set<string>()
@@ -263,6 +291,10 @@ export function UnavailabilityCalendar({
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
             {tr('UnavailabilityCalendar.mission')}
           </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2.5 w-2.5 rounded-sm bg-gradient-to-b from-sky-300 to-sky-50 ring-1 ring-inset ring-blue-300" />
+            Demi-journée (matin en haut, après-midi en bas)
+          </span>
         </div>
       </div>
 
@@ -279,6 +311,8 @@ export function UnavailabilityCalendar({
             otherDays={otherDays}
             congeDays={congeDays}
             missionDays={missionDays}
+            selectedHalfDays={selectedHalfDays}
+            otherHalfDays={otherHalfDays}
           />
         ))}
       </div>

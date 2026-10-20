@@ -8,6 +8,7 @@ import { consultantsApi } from '../api/consultants'
 import type {
   ConsultantSummary,
   UnavailabilityDto,
+  UnavailabilityHalfDayRequest,
   UnavailabilityHistoryDto,
   UnavailabilityType,
 } from '../api/types'
@@ -50,6 +51,7 @@ export function Unavailability() {
   const [formStart, setFormStart] = useState('')
   const [formEnd, setFormEnd] = useState('')
   const [formComment, setFormComment] = useState('')
+  const [formHalfDays, setFormHalfDays] = useState<UnavailabilityHalfDayRequest[]>([])
   const [formError, setFormError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [historyFor, setHistoryFor] = useState<UnavailabilityDto | null>(null)
@@ -95,6 +97,44 @@ export function Unavailability() {
 
   const data = list.data ?? []
   const selected = useMemo(() => data.find((u) => u.id === selectedId) ?? null, [list.data, selectedId])
+
+  // Aperçu calendrier pendant la saisie : il met en évidence l'indisponibilité en cours
+  // (même non enregistrée) avec ses demi-journées, et affiche les autres indispos, congés et
+  // activités du consultant.
+  const previewUnavailability = useMemo<UnavailabilityDto | null>(() => {
+    if (!showForm || !formStart || !formEnd || formStart > formEnd) return null
+    const consultantId = isConsultant
+      ? (user?.consultantId ?? user?.id ?? null)
+      : formConsultantId
+    if (!consultantId) return null
+    const existing = editingId != null ? data.find((u) => u.id === editingId) : null
+    const start = new Date(formStart + 'T00:00:00')
+    const end = new Date(formEnd + 'T00:00:00')
+    const durationDays = Math.round((end.getTime() - start.getTime()) / 86400000) + 1
+    return {
+      id: editingId ?? -1,
+      consultantId,
+      consultantName:
+        existing?.consultantName ??
+        (isConsultant
+          ? `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim()
+          : (consultants.data?.find((c) => c.id === consultantId)?.fullName ?? '')),
+      socId: existing?.socId ?? user?.socId ?? 0,
+      type: formType,
+      startDate: formStart,
+      endDate: formEnd,
+      status: existing?.status ?? 'DRAFT',
+      comment: formComment.trim() || null,
+      rejectedReason: existing?.rejectedReason ?? null,
+      submittedAt: existing?.submittedAt ?? null,
+      validatedAt: existing?.validatedAt ?? null,
+      durationDays,
+      halfDays: formHalfDays,
+    }
+  }, [
+    showForm, formStart, formEnd, isConsultant, user, formConsultantId, editingId,
+    data, consultants.data, formType, formComment, formHalfDays,
+  ])
 
   if (!user) return null
 
@@ -173,6 +213,7 @@ export function Unavailability() {
     setFormStart(today.toISOString().slice(0, 10))
     setFormEnd(end.toISOString().slice(0, 10))
     setFormComment('')
+    setFormHalfDays([])
     setFormError(null)
     setShowForm(true)
   }
@@ -184,8 +225,39 @@ export function Unavailability() {
     setFormStart(u.startDate)
     setFormEnd(u.endDate)
     setFormComment(u.comment ?? '')
+    setFormHalfDays((u.halfDays ?? []).map((h) => ({ date: h.date, halfDay: h.halfDay })))
     setFormError(null)
     setShowForm(true)
+  }
+
+  function nextDate(value: string): string {
+    const date = new Date(value + 'T00:00:00')
+    date.setDate(date.getDate() + 1)
+    return date.toISOString().slice(0, 10)
+  }
+
+  function addHalfDay() {
+    if (!formStart || !formEnd || formStart > formEnd) {
+      setFormError('Renseignez d’abord les dates de début et de fin.')
+      return
+    }
+    const used = new Set(formHalfDays.map((h) => h.date))
+    let date = formStart
+    while (used.has(date) && date <= formEnd) date = nextDate(date)
+    if (date > formEnd) {
+      setFormError('Tous les jours de l’intervalle ont déjà une demi-journée précisée.')
+      return
+    }
+    setFormHalfDays((prev) => [...prev, { date, halfDay: 'AM' }])
+    setFormError(null)
+  }
+
+  function updateHalfDay(index: number, patch: Partial<UnavailabilityHalfDayRequest>) {
+    setFormHalfDays((prev) => prev.map((h, i) => (i === index ? { ...h, ...patch } : h)))
+  }
+
+  function removeHalfDay(index: number) {
+    setFormHalfDays((prev) => prev.filter((_, i) => i !== index))
   }
 
   async function handleSave() {
@@ -209,6 +281,18 @@ export function Unavailability() {
       setFormError(tr('Unavailability.commentaire.obligatoire'))
       return
     }
+    const halfDayDates = new Set<string>()
+    for (const halfDay of formHalfDays) {
+      if (!halfDay.date || halfDay.date < formStart || halfDay.date > formEnd) {
+        setFormError('Chaque demi-journée doit être datée dans l’intervalle de l’indisponibilité.')
+        return
+      }
+      if (halfDayDates.has(halfDay.date)) {
+        setFormError('Une seule demi-journée par jour est autorisée.')
+        return
+      }
+      halfDayDates.add(halfDay.date)
+    }
     setSaving(true)
     setFormError(null)
     try {
@@ -219,6 +303,7 @@ export function Unavailability() {
         startDate: formStart,
         endDate: formEnd,
         comment: formComment.trim() || null,
+        halfDays: formHalfDays,
       }
       if (editingId != null) {
         await unavailabilityApi.update(editingId, request)
@@ -399,6 +484,70 @@ export function Unavailability() {
               />
             </Field>
           </div>
+
+          <div className="mt-3 rounded-lg border border-gray-200 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-medium text-gray-700">
+                Jours en demi-journée
+              </p>
+              <InlineButton onClick={addHalfDay}>
+                Préciser les jours ayant juste une demi-journée dans cet intervalle
+              </InlineButton>
+            </div>
+            {formHalfDays.length === 0 ? (
+              <p className="mt-2 text-xs text-gray-500">
+                Aucun jour en demi-journée : l’indisponibilité couvre des journées complètes.
+              </p>
+            ) : (
+              <div className="mt-2 space-y-2">
+                {formHalfDays.map((halfDay, index) => (
+                  <div key={index} className="flex flex-wrap items-center gap-2">
+                    <Input
+                      type="date"
+                      value={halfDay.date}
+                      min={formStart || undefined}
+                      max={formEnd || undefined}
+                      onChange={(e) => updateHalfDay(index, { date: e.target.value })}
+                      className="w-40"
+                    />
+                    <label className="flex items-center gap-1 text-sm text-gray-600">
+                      <input
+                        type="radio"
+                        name={`unavailability-half-day-${index}`}
+                        checked={halfDay.halfDay === 'AM'}
+                        onChange={() => updateHalfDay(index, { halfDay: 'AM' })}
+                        className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                      />
+                      Matin
+                    </label>
+                    <label className="flex items-center gap-1 text-sm text-gray-600">
+                      <input
+                        type="radio"
+                        name={`unavailability-half-day-${index}`}
+                        checked={halfDay.halfDay === 'PM'}
+                        onChange={() => updateHalfDay(index, { halfDay: 'PM' })}
+                        className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                      />
+                      Après-midi
+                    </label>
+                    <IconButton
+                      icon="delete"
+                      label="Supprimer la demi-journée"
+                      variant="danger"
+                      onClick={() => removeHalfDay(index)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {previewUnavailability && (
+            <div className="mt-4">
+              <UnavailabilityCalendar selected={previewUnavailability} unavailabilities={data} />
+            </div>
+          )}
+
           {formError && (
             <div className="mt-3">
               <Alert variant="error">{formError}</Alert>

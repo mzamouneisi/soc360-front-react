@@ -569,6 +569,11 @@ export interface HrDocumentDto {
   createdAt: string
 }
 
+export interface UnavailabilityHalfDayDto {
+  date: string
+  halfDay: HalfDay
+}
+
 export interface UnavailabilityDto {
   id: number
   consultantId: number
@@ -583,6 +588,12 @@ export interface UnavailabilityDto {
   submittedAt: string | null
   validatedAt: string | null
   durationDays: number
+  halfDays?: UnavailabilityHalfDayDto[]
+}
+
+export interface UnavailabilityHalfDayRequest {
+  date: string
+  halfDay: HalfDay
 }
 
 export interface UnavailabilityRequest {
@@ -592,6 +603,7 @@ export interface UnavailabilityRequest {
   startDate: string
   endDate: string
   comment?: string | null
+  halfDays?: UnavailabilityHalfDayRequest[]
 }
 
 export interface UnavailabilityHistoryDto {

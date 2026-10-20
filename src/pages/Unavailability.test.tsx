@@ -416,6 +416,76 @@ describe('Unavailability', () => {
     expect(createMock.mock.calls[0][0].consultantId).toBe(1)
   })
 
+  it('ajoute une demi-journée dans l’intervalle et l’envoie avec l’indisponibilité', async () => {
+    userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
+    listMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+    createMock.mockResolvedValue(item())
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    expect(await screen.findByText(/Calendrier de l'indisponibilité/)).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Préciser les jours ayant juste une demi-journée/,
+      }),
+    )
+    expect(screen.getByRole('radio', { name: 'Matin' })).toBeChecked()
+    fireEvent.click(screen.getByRole('radio', { name: 'Après-midi' }))
+    expect(screen.getByRole('radio', { name: 'Après-midi' })).toBeChecked()
+
+    fireEvent.change(screen.getByPlaceholderText(/Motif, remarques/), {
+      target: { value: 'Congés' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
+
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+    const request = createMock.mock.calls[0][0]
+    expect(request.halfDays).toHaveLength(1)
+    expect(request.halfDays[0]).toMatchObject({ halfDay: 'PM' })
+    expect(request.halfDays[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('recharge les demi-journées à l’édition et les affiche dans le calendrier', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({
+        comment: 'Motif',
+        halfDays: [
+          { date: '2026-09-03', halfDay: 'AM' },
+          { date: '2026-09-04', halfDay: 'PM' },
+        ],
+      }),
+    ])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+    updateMock.mockResolvedValue(item())
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Éditer' }))
+
+    const mornings = screen.getAllByRole('radio', { name: 'Matin' })
+    const afternoons = screen.getAllByRole('radio', { name: 'Après-midi' })
+    expect(mornings).toHaveLength(2)
+    expect(afternoons).toHaveLength(2)
+    expect(mornings[0]).toBeChecked()
+    expect(afternoons[1]).toBeChecked()
+    // L'aperçu du calendrier marque les deux demi-journées de l'indisponibilité courante.
+    expect(await screen.findAllByText('matin')).toHaveLength(1)
+    expect(screen.getAllByText('aprèm')).toHaveLength(1)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => expect(updateMock).toHaveBeenCalled())
+    expect(updateMock.mock.calls[0][1].halfDays).toEqual([
+      { date: '2026-09-03', halfDay: 'AM' },
+      { date: '2026-09-04', halfDay: 'PM' },
+    ])
+  })
+
   it('affiche le type issu des paramètres de la société et le propose au formulaire', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([item({ type: 'Congés payés' })])
