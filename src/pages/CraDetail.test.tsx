@@ -639,55 +639,7 @@ describe('CraDetail', () => {
     expect(morning.compareDocumentPosition(afternoon) & 4).toBe(4)
   })
 
-  it('rend non modifiable le jour couvert par une indisponibilité validée (consultant)', async () => {
-    userMock.value = {
-      id: 10,
-      username: 'consultant',
-      email: 'consultant@soc.fr',
-      firstName: 'Alice',
-      lastName: 'Martin',
-      phone: null,
-      role: 'CONSULTANT',
-      active: true,
-      socId: 5,
-      socName: 'SOC Test',
-      consultantId: 10,
-    } as UserDto
-
-    const draft = cra(true, 'DRAFT')
-    draft.days[0] = {
-      ...draft.days[0],
-      dayType: 'LEAVE',
-      unavailable: true,
-      activities: [
-        {
-          id: 99,
-          activityId: 5,
-          activityName: 'Congé payé',
-          activityColor: null,
-          hours: 0,
-          days: 1,
-          valid: true,
-          comment: null,
-        },
-      ],
-    }
-
-    getByIdMock.mockResolvedValue(draft)
-    activitiesFindAllMock.mockResolvedValue([])
-    holidaysFindByCountryYearMock.mockResolvedValue([])
-    socHolidaysListMock.mockResolvedValue([])
-
-    renderDetail()
-
-    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
-    fireEvent.click(screen.getByRole('button', { name: 'Ligne' }))
-
-    const selects = await screen.findAllByRole('combobox')
-    await waitFor(() => expect((selects[0] as HTMLSelectElement).disabled).toBe(true))
-  })
-
-  it('rend non modifiable le type des jours de week-end (ligne)', async () => {
+  it('colore les lignes de week-end et supprime la colonne Type (ligne)', async () => {
     userMock.value = managerUser
     const draft = cra(false, 'DRAFT')
 
@@ -701,12 +653,27 @@ describe('CraDetail', () => {
     await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
     fireEvent.click(screen.getByRole('button', { name: 'Ligne' }))
 
-    const weekendSelects = await screen.findAllByDisplayValue('Week-end')
-    expect(weekendSelects.length).toBeGreaterThan(0)
-    for (const select of weekendSelects) {
-      expect((select as HTMLSelectElement).disabled).toBe(true)
-      expect((select as HTMLSelectElement).title).toContain('week-end')
-    }
+    expect(screen.queryByRole('columnheader', { name: 'Type' })).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(document.querySelectorAll('tbody tr.bg-yellow-50').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('colore les colonnes de week-end en jaune très clair (calendrier)', async () => {
+    userMock.value = managerUser
+    const draft = cra(false, 'DRAFT')
+
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    await waitFor(() => {
+      expect(document.querySelectorAll('.bg-yellow-50').length).toBeGreaterThanOrEqual(2)
+    })
   })
 
   it('un CRA validé reste annulable par son propriétaire', async () => {
