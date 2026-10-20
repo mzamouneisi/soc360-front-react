@@ -444,6 +444,33 @@ describe('Unavailability', () => {
     expect(request.halfDays[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 
+  it('ajoute plusieurs demi-journées sur un intervalle de plusieurs jours', async () => {
+    userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
+    listMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+    createMock.mockResolvedValue(item())
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    const addHalfDay = screen.getByRole('button', { name: 'Ajouter une demi-journée' })
+    fireEvent.click(addHalfDay)
+    fireEvent.click(addHalfDay)
+
+    expect(screen.getAllByRole('radio', { name: 'Matin' })).toHaveLength(2)
+
+    fireEvent.change(screen.getByPlaceholderText(/Motif, remarques/), {
+      target: { value: 'Congés' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
+
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+    const request = createMock.mock.calls[0][0]
+    expect(request.halfDays).toHaveLength(2)
+    const dates = request.halfDays.map((h: { date: string }) => h.date)
+    expect(new Set(dates).size).toBe(2)
+  })
+
   it('recharge les demi-journées à l’édition et les affiche dans le calendrier', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([

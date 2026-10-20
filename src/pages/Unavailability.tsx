@@ -231,8 +231,10 @@ export function Unavailability() {
   }
 
   function nextDate(value: string): string {
-    const date = new Date(value + 'T00:00:00')
-    date.setDate(date.getDate() + 1)
+    // Calcul en UTC : `new Date('yyyy-mm-ddT00:00:00')` + toISOString() peut renvoyer la veille
+    // dans les fuseaux positifs (Europe/Paris), ce qui bloquait l'ajout de la 2e demi-journée.
+    const [year, month, day] = value.split('-').map(Number)
+    const date = new Date(Date.UTC(year, month - 1, day + 1))
     return date.toISOString().slice(0, 10)
   }
 
