@@ -402,6 +402,8 @@ export interface ActivityRequest {
   holidayAllowed?: boolean
 }
 
+export type HalfDay = 'AM' | 'PM'
+
 export interface CraDayActivityDto {
   id: number
   activityId: number
@@ -410,6 +412,7 @@ export interface CraDayActivityDto {
   hours: number
   days: number
   valid: boolean
+  halfDay?: HalfDay | null
   comment: string | null
 }
 
@@ -482,6 +485,7 @@ export interface CraDayActivityRequest {
   hours?: number | null
   days?: number | null
   valid?: boolean | null
+  halfDay?: HalfDay | null
   comment?: string | null
 }
 

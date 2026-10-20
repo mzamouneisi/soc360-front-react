@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { CraDetail } from './CraDetail'
 import { DialogHost } from '../components/dialog'
 import { setTranslationState } from '../i18n/translate'
-import type { CraDto, UserDto } from '../api/types'
+import type { CraDto, SaveCraRequest, UserDto } from '../api/types'
 
 const {
   getByIdMock,
@@ -345,6 +345,142 @@ describe('CraDetail', () => {
 
     expect(screen.queryByText('Information')).not.toBeInTheDocument()
     expect((screen.getAllByRole('combobox')[0] as HTMLSelectElement).value).toBe('7')
+  })
+
+  it('ajoute les congés à la liste de choix seulement si la case est cochée', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(true, 'DRAFT'))
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Développement',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: true,
+        holidayAllowed: true,
+      },
+      {
+        id: 6,
+        name: 'Congé payé',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: true,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const addButtons = await screen.findAllByRole('button', { name: 'Ajouter un événement' })
+    // Premier jour ouvré (les deux premiers boutons correspondent au week-end).
+    fireEvent.click(addButtons[2])
+
+    const activitySelect = (await screen.findAllByRole('combobox'))[0] as HTMLSelectElement
+    expect(within(activitySelect).queryByRole('option', { name: 'Congé payé' })).not.toBeInTheDocument()
+
+    const leaveToggle = screen.getByRole('checkbox', { name: 'Inclure les congés' })
+    expect(leaveToggle).not.toBeChecked()
+    fireEvent.click(leaveToggle)
+
+    expect(await within(activitySelect).findByRole('option', { name: 'Congé payé' })).toBeInTheDocument()
+
+    fireEvent.click(leaveToggle)
+    expect(within(activitySelect).queryByRole('option', { name: 'Congé payé' })).not.toBeInTheDocument()
+  })
+
+  it('propose matin / après-midi pour un événement de 0,5 jour et enregistre la demi-journée', async () => {
+    userMock.value = managerUser
+    const draft = cra(true, 'DRAFT')
+    getByIdMock.mockResolvedValue(draft)
+    saveMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([
+      {
+        id: 5,
+        name: 'Développement',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        type: null,
+        project: null,
+        consultant: null,
+        soc: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: true,
+        holidayAllowed: true,
+      },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const addButtons = await screen.findAllByRole('button', { name: 'Ajouter un événement' })
+    // Premier jour ouvré du mois (les deux premiers boutons correspondent au week-end).
+    fireEvent.click(addButtons[2])
+
+    expect(screen.queryByRole('radio', { name: 'Matin' })).not.toBeInTheDocument()
+
+    const daySelect = (await screen.findAllByRole('combobox'))[1] as HTMLSelectElement
+    fireEvent.change(daySelect, { target: { value: '0.5' } })
+
+    const morning = await screen.findByRole('radio', { name: 'Matin' })
+    const afternoon = screen.getByRole('radio', { name: 'Après-midi' })
+    fireEvent.click(afternoon)
+
+    expect(morning).not.toBeChecked()
+    expect(afternoon).toBeChecked()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => expect(saveMock).toHaveBeenCalledWith(1, expect.anything()))
+    const request = saveMock.mock.calls[0][1] as SaveCraRequest
+    const monday = request.days.find((d) => d.date === '2026-08-03')
+    expect(monday?.activities?.[0]).toMatchObject({ days: 0.5, halfDay: 'PM' })
+  })
+
+  it('interdit d’ajouter un autre événement quand le jour totalise déjà 1 jour', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(true, 'DRAFT'))
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    const addButtons = await screen.findAllByRole('button', { name: 'Ajouter un événement' })
+    fireEvent.click(addButtons[2])
+
+    const activityRowsBefore = screen.getAllByRole('combobox').length
+    const addEvent = screen.getByRole('button', { name: '+ Ajouter un événement' })
+    expect(addEvent).toBeDisabled()
+    fireEvent.click(addEvent)
+    expect(screen.getAllByRole('combobox')).toHaveLength(activityRowsBefore)
   })
 
   it('rend non modifiable le jour couvert par une indisponibilité validée (consultant)', async () => {
