@@ -437,44 +437,111 @@ export function Unavailability() {
           <h3 className="mb-3 text-sm font-semibold text-gray-900">
             {editingId != null ? tr('Unavailability.modifier.l.indisponibilite') : tr('Unavailability.nouvelle.indisponibilite')}
           </h3>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {!isConsultant && (
-              <Field label={tr('Unavailability.consultant')} id="Unavailability.consultant">
-                <Select
-                  value={formConsultantId ?? ''}
-                  onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
-                  title={tr('Unavailability.consultant')}
-                >
-                  <option value="">{tr('Unavailability.choisir')}</option>
-                  {consultants.data?.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.fullName}
+          <div className="space-y-3">
+            <div className={`grid gap-3 ${!isConsultant ? 'sm:grid-cols-2' : ''}`}>
+              {!isConsultant && (
+                <Field label={tr('Unavailability.consultant')} id="Unavailability.consultant">
+                  <Select
+                    value={formConsultantId ?? ''}
+                    onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
+                    title={tr('Unavailability.consultant')}
+                  >
+                    <option value="">{tr('Unavailability.choisir')}</option>
+                    {consultants.data?.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.fullName}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
+              <Field label={tr('Unavailability.type')} id="Unavailability.type">
+                <Select value={formType} onChange={(e) => setFormType(e.target.value)}>
+                  {!formType && <option value="">{tr('Unavailability.choisir')}</option>}
+                  {formType && !typeOptions.includes(formType) && (
+                    <option value={formType}>{unavailabilityTypeLabel(formType)}</option>
+                  )}
+                  {typeOptions.map((label) => (
+                    <option key={label} value={label}>
+                      {label}
                     </option>
                   ))}
                 </Select>
               </Field>
-            )}
-            <Field label={tr('Unavailability.type')} id="Unavailability.type">
-              <Select value={formType} onChange={(e) => setFormType(e.target.value)}>
-                {!formType && <option value="">{tr('Unavailability.choisir')}</option>}
-                {formType && !typeOptions.includes(formType) && (
-                  <option value={formType}>{unavailabilityTypeLabel(formType)}</option>
-                )}
-                {typeOptions.map((label) => (
-                  <option key={label} value={label}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label={tr('Unavailability.du')} id="Unavailability.du">
-              <Input type="date" value={formStart} min={formHireDate ?? undefined}
-                onChange={(e) => setFormStart(e.target.value)} />
-            </Field>
-            <Field label={tr('Unavailability.au')} id="Unavailability.au">
-              <Input type="date" value={formEnd} min={formHireDate ?? formStart}
-                onChange={(e) => setFormEnd(e.target.value)} />
-            </Field>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label={tr('Unavailability.du')} id="Unavailability.du">
+                <Input type="date" value={formStart} min={formHireDate ?? undefined}
+                  onChange={(e) => setFormStart(e.target.value)} />
+              </Field>
+              <Field label={tr('Unavailability.au')} id="Unavailability.au">
+                <Input type="date" value={formEnd} min={formHireDate ?? formStart}
+                  onChange={(e) => setFormEnd(e.target.value)} />
+              </Field>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-gray-700">
+                  Jours en demi-journée
+                </p>
+                <IconButton
+                  icon="add"
+                  label="Ajouter une demi-journée"
+                  variant="new"
+                  title="Préciser les jours ayant juste une demi-journée dans cet intervalle"
+                  onClick={addHalfDay}
+                />
+              </div>
+              {formHalfDays.length === 0 ? (
+                <p className="mt-1 text-xs text-gray-500">
+                  Aucun jour en demi-journée : l’indisponibilité couvre des journées complètes.
+                </p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  {formHalfDays.map((halfDay, index) => (
+                    <div key={index} className="flex flex-wrap items-center gap-2">
+                      <Input
+                        type="date"
+                        value={halfDay.date}
+                        min={formStart || undefined}
+                        max={formEnd || undefined}
+                        onChange={(e) => updateHalfDay(index, { date: e.target.value })}
+                        className="w-40"
+                      />
+                      <label className="flex items-center gap-1 text-sm text-gray-600">
+                        <input
+                          type="radio"
+                          name={`unavailability-half-day-${index}`}
+                          checked={halfDay.halfDay === 'AM'}
+                          onChange={() => updateHalfDay(index, { halfDay: 'AM' })}
+                          className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                        />
+                        Matin
+                      </label>
+                      <label className="flex items-center gap-1 text-sm text-gray-600">
+                        <input
+                          type="radio"
+                          name={`unavailability-half-day-${index}`}
+                          checked={halfDay.halfDay === 'PM'}
+                          onChange={() => updateHalfDay(index, { halfDay: 'PM' })}
+                          className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
+                        />
+                        Après-midi
+                      </label>
+                      <IconButton
+                        icon="delete"
+                        label="Supprimer la demi-journée"
+                        variant="danger"
+                        onClick={() => removeHalfDay(index)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Field label={`${tr('Unavailability.commentaire')} *`} id="Unavailability.commentaire">
               <Textarea
                 rows={1}
@@ -483,63 +550,6 @@ export function Unavailability() {
                 placeholder={tr('Unavailability.motif.remarques')}
               />
             </Field>
-          </div>
-
-          <div className="mt-3 rounded-lg border border-gray-200 p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-medium text-gray-700">
-                Jours en demi-journée
-              </p>
-              <InlineButton onClick={addHalfDay}>
-                Préciser les jours ayant juste une demi-journée dans cet intervalle
-              </InlineButton>
-            </div>
-            {formHalfDays.length === 0 ? (
-              <p className="mt-2 text-xs text-gray-500">
-                Aucun jour en demi-journée : l’indisponibilité couvre des journées complètes.
-              </p>
-            ) : (
-              <div className="mt-2 space-y-2">
-                {formHalfDays.map((halfDay, index) => (
-                  <div key={index} className="flex flex-wrap items-center gap-2">
-                    <Input
-                      type="date"
-                      value={halfDay.date}
-                      min={formStart || undefined}
-                      max={formEnd || undefined}
-                      onChange={(e) => updateHalfDay(index, { date: e.target.value })}
-                      className="w-40"
-                    />
-                    <label className="flex items-center gap-1 text-sm text-gray-600">
-                      <input
-                        type="radio"
-                        name={`unavailability-half-day-${index}`}
-                        checked={halfDay.halfDay === 'AM'}
-                        onChange={() => updateHalfDay(index, { halfDay: 'AM' })}
-                        className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
-                      />
-                      Matin
-                    </label>
-                    <label className="flex items-center gap-1 text-sm text-gray-600">
-                      <input
-                        type="radio"
-                        name={`unavailability-half-day-${index}`}
-                        checked={halfDay.halfDay === 'PM'}
-                        onChange={() => updateHalfDay(index, { halfDay: 'PM' })}
-                        className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
-                      />
-                      Après-midi
-                    </label>
-                    <IconButton
-                      icon="delete"
-                      label="Supprimer la demi-journée"
-                      variant="danger"
-                      onClick={() => removeHalfDay(index)}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {previewUnavailability && (

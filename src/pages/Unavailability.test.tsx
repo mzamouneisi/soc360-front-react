@@ -427,11 +427,7 @@ describe('Unavailability', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
     expect(await screen.findByText(/Calendrier de l'indisponibilité/)).toBeInTheDocument()
 
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /Préciser les jours ayant juste une demi-journée/,
-      }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter une demi-journée' }))
     expect(screen.getByRole('radio', { name: 'Matin' })).toBeChecked()
     fireEvent.click(screen.getByRole('radio', { name: 'Après-midi' }))
     expect(screen.getByRole('radio', { name: 'Après-midi' })).toBeChecked()
