@@ -53,6 +53,7 @@ interface EditableDay {
   comment: string
   activities: EditableActivity[]
   unavailable: boolean
+  weekend?: boolean
 }
 
 const DAY_TYPES: DayType[] = ['WORKED', 'WEEKEND', 'PUBLIC_HOLIDAY', 'LEAVE', 'SICK_LEAVE', 'OTHER']
@@ -73,6 +74,7 @@ function dayToEditable(day: CraDto['days'][number]): EditableDay {
       valid: a.valid ?? false,
     })),
     unavailable: day.unavailable ?? false,
+    weekend: day.weekend ?? false,
   }
 }
 
@@ -538,8 +540,7 @@ export function CraDetail({
         const isLeaveColor = d.dayType === 'LEAVE' || d.dayType === 'SICK_LEAVE'
         let dayType = d.dayType
         if (activities.length === 0 && isLeaveColor) {
-          const dow = new Date(d.date + 'T00:00:00').getDay()
-          dayType = dow === 0 || dow === 6 ? 'WEEKEND' : 'WORKED'
+          dayType = d.weekend ? 'WEEKEND' : 'WORKED'
         }
         return { ...d, activities, dayType }
       }),
@@ -557,8 +558,7 @@ export function CraDetail({
         const isLeaveColor = d.dayType === 'LEAVE' || d.dayType === 'SICK_LEAVE'
         let dayType = d.dayType
         if (activities.length === 0 && d.activities.length > 0 && isLeaveColor) {
-          const dow = new Date(d.date + 'T00:00:00').getDay()
-          dayType = dow === 0 || dow === 6 ? 'WEEKEND' : 'WORKED'
+          dayType = d.weekend ? 'WEEKEND' : 'WORKED'
         }
         return { ...d, activities, dayType }
       }),
@@ -1217,8 +1217,16 @@ export function CraDetail({
                           <Select
                             className="w-36"
                             value={day.dayType}
-                            disabled={day.unavailable && isConsultant}
-                            title={day.unavailable ? tr('CraDetail.jour.indisponible') : undefined}
+                            disabled={
+                              (day.unavailable && isConsultant) || day.dayType === 'WEEKEND'
+                            }
+                            title={
+                              day.unavailable
+                                ? tr('CraDetail.jour.indisponible')
+                                : day.dayType === 'WEEKEND'
+                                  ? tr('CraDetail.jour.weekend.non.modifiable')
+                                  : undefined
+                            }
                             onChange={(e) =>
                               updateDay(i, {
                                 dayType: e.target.value as DayType,

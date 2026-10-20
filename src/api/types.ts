@@ -425,6 +425,7 @@ export interface CraDayDto {
   comment: string | null
   activities: CraDayActivityDto[]
   unavailable?: boolean
+  weekend?: boolean
 }
 
 export interface LinkedUnavailabilityDto {

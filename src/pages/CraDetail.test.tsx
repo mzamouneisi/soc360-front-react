@@ -94,6 +94,7 @@ function buildDays(valid: boolean): CraDto['days'] {
       id: i + 1,
       date: `2026-08-${String(i + 1).padStart(2, '0')}`,
       dayType: isWeekend ? 'WEEKEND' : 'WORKED',
+      weekend: isWeekend,
       workedHours: isWeekend ? 0 : 7.5,
       hours: 1,
       comment: null,
@@ -684,6 +685,28 @@ describe('CraDetail', () => {
 
     const selects = await screen.findAllByRole('combobox')
     await waitFor(() => expect((selects[0] as HTMLSelectElement).disabled).toBe(true))
+  })
+
+  it('rend non modifiable le type des jours de week-end (ligne)', async () => {
+    userMock.value = managerUser
+    const draft = cra(false, 'DRAFT')
+
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Ligne' }))
+
+    const weekendSelects = await screen.findAllByDisplayValue('Week-end')
+    expect(weekendSelects.length).toBeGreaterThan(0)
+    for (const select of weekendSelects) {
+      expect((select as HTMLSelectElement).disabled).toBe(true)
+      expect((select as HTMLSelectElement).title).toContain('week-end')
+    }
   })
 
   it('un CRA validé reste annulable par son propriétaire', async () => {
