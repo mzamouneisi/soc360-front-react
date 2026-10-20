@@ -440,6 +440,7 @@ export function CraDetail({
       }
     }
     let nextPatch = patch
+    let swap: { index: number; halfDay: HalfDay } | null = null
     if (patch.days !== undefined) {
       const day = days[dayIndex]
       const act = day?.activities[actIndex]
@@ -464,17 +465,32 @@ export function CraDetail({
       }
     } else if (patch.halfDay !== undefined && patch.halfDay !== null) {
       const day = days[dayIndex]
-      if (day && !allowedHalfDaysFor(day, actIndex).includes(patch.halfDay)) {
-        setFormError('Cette demi-journée est déjà utilisée par un autre événement du jour.')
-        return
+      const act = day?.activities[actIndex]
+      const conflictIndex = day
+        ? day.activities.findIndex(
+            (a, i) => i !== actIndex && Number(a.days) === 0.5 && a.halfDay === patch.halfDay,
+          )
+        : -1
+      if (conflictIndex >= 0 && day) {
+        // Échanger les deux demi-journées : si je passe le premier événement l'après-midi,
+        // l'autre événement (qui occupait l'après-midi) prend le créneau libéré (le matin).
+        const freed = act?.halfDay ?? (patch.halfDay === 'AM' ? 'PM' : 'AM')
+        swap = { index: conflictIndex, halfDay: freed }
       }
     }
+    const swapTarget = swap
     setDays((prev) =>
       prev.map((d, i) =>
         i === dayIndex
           ? {
               ...d,
-              activities: d.activities.map((a, j) => (j === actIndex ? { ...a, ...nextPatch } : a)),
+              activities: d.activities.map((a, j) => {
+                if (j === actIndex) return { ...a, ...nextPatch }
+                if (swapTarget && j === swapTarget.index) {
+                  return { ...a, halfDay: swapTarget.halfDay }
+                }
+                return a
+              }),
             }
           : d,
       ),
@@ -1721,7 +1737,6 @@ function EventModal({
         <div className="space-y-2">
           {day.activities.map((act, j) => {
             const info = activities.find((a) => String(a.id) === act.activityId)
-            const allowedHalfDays = allowedHalfDaysFor(day, j)
             return (
               <div
                 key={j}
@@ -1767,9 +1782,8 @@ function EventModal({
                             type="radio"
                             name={`half-day-${j}`}
                             checked={act.halfDay === 'AM'}
-                            disabled={!allowedHalfDays.includes('AM')}
                             onChange={() => onUpdateActivity(j, { halfDay: 'AM' })}
-                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
                           />
                           Matin
                         </label>
@@ -1778,9 +1792,8 @@ function EventModal({
                             type="radio"
                             name={`half-day-${j}`}
                             checked={act.halfDay === 'PM'}
-                            disabled={!allowedHalfDays.includes('PM')}
                             onChange={() => onUpdateActivity(j, { halfDay: 'PM' })}
-                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-500"
                           />
                           Après-midi
                         </label>

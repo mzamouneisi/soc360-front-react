@@ -543,9 +543,14 @@ describe('CraDetail', () => {
     expect(afternoons).toHaveLength(2)
     // Premier événement : matin ; le second bascule automatiquement l'après-midi.
     expect(mornings[0]).toBeChecked()
-    expect(afternoons[0]).toBeDisabled()
+    expect(afternoons[0]).toBeEnabled()
     expect(afternoons[1]).toBeChecked()
-    expect(mornings[1]).toBeDisabled()
+    expect(mornings[1]).toBeEnabled()
+
+    // Si je change le second en matin, le premier bascule l'après-midi (échange).
+    fireEvent.click(mornings[1])
+    expect(mornings[1]).toBeChecked()
+    expect(afternoons[0]).toBeChecked()
   })
 
   it('affiche le matin au-dessus de l’après-midi dans la cellule du calendrier', async () => {
