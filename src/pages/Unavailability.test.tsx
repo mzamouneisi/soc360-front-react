@@ -601,18 +601,19 @@ describe('Unavailability', () => {
     ).toBeInTheDocument()
   })
 
-  it('exige un commentaire pour créer une indisponibilité', async () => {
+  it('permet de créer une indisponibilité sans commentaire', async () => {
     userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
     listMock.mockResolvedValue([])
     summariesMock.mockResolvedValue([])
+    createMock.mockResolvedValue(item())
 
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
-    expect(await screen.findByText('Le commentaire est obligatoire.')).toBeInTheDocument()
-    expect(createMock).not.toHaveBeenCalled()
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+    expect(createMock.mock.calls[0][0].comment).toBeNull()
   })
 
   it('garde le filtre visible même sans indisponibilité', async () => {

@@ -279,10 +279,6 @@ export function Unavailability() {
       setFormError('Sélectionnez un consultant.')
       return
     }
-    if (!formComment.trim()) {
-      setFormError(tr('Unavailability.commentaire.obligatoire'))
-      return
-    }
     const halfDayDates = new Set<string>()
     for (const halfDay of formHalfDays) {
       if (!halfDay.date || halfDay.date < formStart || halfDay.date > formEnd) {
@@ -569,7 +565,7 @@ export function Unavailability() {
               )}
             </div>
 
-            <Field label={`${tr('Unavailability.commentaire')} *`} id="Unavailability.commentaire">
+            <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
               <Textarea
                 rows={1}
                 value={formComment}
