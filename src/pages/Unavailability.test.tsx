@@ -587,6 +587,8 @@ describe('Unavailability', () => {
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
     expect(createMock.mock.calls[0][0].comment).toBeNull()
+    expect(createMock.mock.calls[0][0].firstDay).toBe('ALL')
+    expect(createMock.mock.calls[0][0].lastDay).toBe('ALL')
   })
 
   it('garde le filtre visible même sans indisponibilité', async () => {
