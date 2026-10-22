@@ -222,7 +222,8 @@ export function UnavailabilityTypes() {
     {
       key: 'duration',
       label: tr('UnavailabilityTypes.col.duration'),
-      render: (r: UnavailabilityTypeConfigDto) => String(r.durationValue),
+      render: (r: UnavailabilityTypeConfigDto) =>
+        r.durationValue == null ? '' : String(r.durationValue),
     },
     {
       key: 'durationUnit',

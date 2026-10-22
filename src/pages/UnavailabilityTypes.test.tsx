@@ -130,7 +130,11 @@ describe('UnavailabilityTypes', () => {
   it('affiche une cellule vide pour les valeurs nulles', async () => {
     userMock.value = responsibleUser
     listMock.mockResolvedValue([
-      row({ remuneration: null, mainCondition: null }),
+      row({
+        remuneration: null,
+        mainCondition: null,
+        durationValue: null as unknown as number,
+      }),
     ])
 
     renderPage()
@@ -140,6 +144,7 @@ describe('UnavailabilityTypes', () => {
     expect(rowElement).not.toBeNull()
     expect(within(rowElement as HTMLElement).queryByText('—')).not.toBeInTheDocument()
     expect(rowElement?.textContent).not.toContain('—')
+    expect(rowElement?.textContent).not.toContain('null')
   })
 
   it('crée un type via la popup avec les valeurs par défaut ALL et ACTIVE', async () => {
