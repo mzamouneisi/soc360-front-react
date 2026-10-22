@@ -622,36 +622,41 @@ export interface UnavailabilityHistoryDto {
   nbEventsAfter: number
 }
 
+export type DurationUnit = 'DAYS' | 'MONTHS' | 'YEARS'
+
+export type CountType = 'OUVRE' | 'OUVRABLE' | 'CALENDAIRE' | 'MOIS' | 'ANNEE'
+
+export type UnavailabilityTypeStatus = 'ACTIVE' | 'DISABLED'
+
 export interface UnavailabilityTypeConfigDto {
   id: number
   socId: number | null
   sortOrder: number
-  typeLabel: string
-  duration: number | null
-  countType: string | null
-  mainConditions: string | null
+  name: string
+  durationValue: number
+  durationUnit: DurationUnit
+  countType: CountType
   remuneration: boolean | null
-  cpAcquisition: boolean | null
-  legalProvision: boolean | null
-  collectiveAgreementProvision: string | null
-  documentRequired: boolean | null
+  paidLeaveAccrual: boolean
+  providedByLaw: boolean
+  providedByCollectiveAgreement: boolean
+  documentRequired: boolean
+  mainCondition: string | null
+  status: UnavailabilityTypeStatus
 }
 
-export interface UnavailabilityTypeConfigRow {
-  typeLabel: string
-  duration: number | null
-  countType: string | null
-  mainConditions: string | null
+export interface UnavailabilityTypeConfigRequest {
+  socId?: number | null
+  name: string
+  durationValue: number | null
+  durationUnit: DurationUnit | ''
+  countType: CountType | ''
   remuneration: boolean | null
-  cpAcquisition: boolean | null
-  legalProvision: boolean | null
-  collectiveAgreementProvision: string | null
+  paidLeaveAccrual: boolean | null
+  providedByLaw: boolean | null
+  providedByCollectiveAgreement: boolean | null
   documentRequired: boolean | null
-}
-
-export interface SaveUnavailabilityTypesRequest {
-  socId: number | null
-  rows: UnavailabilityTypeConfigRow[]
+  mainCondition: string | null
 }
 
 export interface FichePaieDto {

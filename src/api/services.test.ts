@@ -394,14 +394,35 @@ describe('services API', () => {
     expect(api.delete).toHaveBeenCalledWith('/unavailabilities/2')
   })
 
-  it('unavailabilityTypesApi couvre liste et sauvegarde', () => {
+  it('unavailabilityTypesApi couvre liste, création, modification et désactivation', () => {
+    const request = {
+      socId: 1,
+      name: 'Télétravail',
+      durationValue: 2.5,
+      durationUnit: 'DAYS' as const,
+      countType: 'OUVRE' as const,
+      remuneration: null,
+      paidLeaveAccrual: true,
+      providedByLaw: true,
+      providedByCollectiveAgreement: true,
+      documentRequired: false,
+      mainCondition: null,
+    }
     unavailabilityTypesApi.list(1)
     unavailabilityTypesApi.list(null)
-    unavailabilityTypesApi.save(1, [])
+    unavailabilityTypesApi.active(1)
+    unavailabilityTypesApi.create(request)
+    unavailabilityTypesApi.update(2, request)
+    unavailabilityTypesApi.disable(2)
+    unavailabilityTypesApi.remove(2)
 
     expect(api.get).toHaveBeenNthCalledWith(1, '/unavailability-types', { socId: 1 })
     expect(api.get).toHaveBeenNthCalledWith(2, '/unavailability-types', { socId: undefined })
-    expect(api.put).toHaveBeenCalledWith('/unavailability-types', { socId: 1, rows: [] })
+    expect(api.get).toHaveBeenNthCalledWith(3, '/unavailability-types/active', { socId: 1 })
+    expect(api.post).toHaveBeenNthCalledWith(1, '/unavailability-types', request)
+    expect(api.put).toHaveBeenCalledWith('/unavailability-types/2', request)
+    expect(api.post).toHaveBeenNthCalledWith(2, '/unavailability-types/2/disable')
+    expect(api.delete).toHaveBeenCalledWith('/unavailability-types/2')
   })
 
   it('usersApi couvre CRUD', () => {

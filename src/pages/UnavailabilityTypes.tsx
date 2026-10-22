@@ -6,106 +6,102 @@ import { ApiError } from '../api/client'
 import { unavailabilityTypesApi } from '../api/unavailabilityTypes'
 import { useAsync } from '../lib/useAsync'
 import { useSoc } from '../soc/SocContext'
-import { Card, Field, IconButton, Input, RefreshButton } from '../components/ui'
-import { EmptyState, ErrorBlock, LoadingBlock, PageHeader, Table } from '../components/data'
+import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { dialog } from '../components/dialog'
-import type { UnavailabilityTypeConfigDto, UnavailabilityTypeConfigRow } from '../api/types'
+import type {
+  CountType,
+  DurationUnit,
+  UnavailabilityTypeConfigDto,
+  UnavailabilityTypeConfigRequest,
+  UnavailabilityTypeStatus,
+} from '../api/types'
 
-interface RowForm {
-  key: string
-  typeLabel: string
-  duration: string
-  countType: string
-  mainConditions: string
-  remuneration: boolean
-  cpAcquisition: boolean
-  legalProvision: boolean
-  collectiveAgreementProvision: string
-  documentRequired: boolean
+const DURATION_UNITS: DurationUnit[] = ['DAYS', 'MONTHS', 'YEARS']
+const COUNT_TYPES: CountType[] = ['OUVRE', 'OUVRABLE', 'CALENDAIRE', 'MOIS', 'ANNEE']
+
+interface FormState {
+  name: string
+  durationValue: string
+  durationUnit: DurationUnit
+  countType: CountType
+  remuneration: '' | 'true' | 'false'
+  paidLeaveAccrual: 'true' | 'false'
+  providedByLaw: 'true' | 'false'
+  providedByCollectiveAgreement: 'true' | 'false'
+  documentRequired: 'true' | 'false'
+  mainCondition: string
 }
 
-interface EditingState {
-  original: RowForm | null
-}
-
-let rowCounter = 0
-
-function newKey(): string {
-  rowCounter += 1
-  return `row-${rowCounter}`
-}
-
-function emptyRow(): RowForm {
+function emptyForm(): FormState {
   return {
-    key: newKey(),
-    typeLabel: '',
-    duration: '',
-    countType: '',
-    mainConditions: '',
-    remuneration: false,
-    cpAcquisition: false,
-    legalProvision: false,
-    collectiveAgreementProvision: '',
-    documentRequired: false,
+    name: '',
+    durationValue: '',
+    durationUnit: 'DAYS',
+    countType: 'OUVRE',
+    remuneration: '',
+    paidLeaveAccrual: 'true',
+    providedByLaw: 'true',
+    providedByCollectiveAgreement: 'true',
+    documentRequired: 'false',
+    mainCondition: '',
   }
 }
 
-function toForm(dto: UnavailabilityTypeConfigDto): RowForm {
+function toForm(dto: UnavailabilityTypeConfigDto): FormState {
   return {
-    key: newKey(),
-    typeLabel: dto.typeLabel ?? '',
-    duration: dto.duration == null ? '' : String(dto.duration),
-    countType: dto.countType ?? '',
-    mainConditions: dto.mainConditions ?? '',
-    remuneration: dto.remuneration ?? false,
-    cpAcquisition: dto.cpAcquisition ?? false,
-    legalProvision: dto.legalProvision ?? false,
-    collectiveAgreementProvision: dto.collectiveAgreementProvision ?? '',
-    documentRequired: dto.documentRequired ?? false,
+    name: dto.name ?? '',
+    durationValue: dto.durationValue == null ? '' : String(dto.durationValue),
+    durationUnit: dto.durationUnit ?? 'DAYS',
+    countType: dto.countType ?? 'OUVRE',
+    remuneration:
+      dto.remuneration == null ? '' : dto.remuneration ? 'true' : 'false',
+    paidLeaveAccrual: dto.paidLeaveAccrual ? 'true' : 'false',
+    providedByLaw: dto.providedByLaw ? 'true' : 'false',
+    providedByCollectiveAgreement: dto.providedByCollectiveAgreement ? 'true' : 'false',
+    documentRequired: dto.documentRequired ? 'true' : 'false',
+    mainCondition: dto.mainCondition ?? '',
   }
 }
 
-function parseDuration(value: string): number | null {
-  const trimmed = value.trim()
-  if (trimmed === '') return null
-  const parsed = Number(trimmed)
-  return Number.isFinite(parsed) ? Math.trunc(parsed) : null
+function booleanValue(value: '' | 'true' | 'false'): boolean | null {
+  if (value === '') return null
+  return value === 'true'
 }
 
-function toRequest(row: RowForm): UnavailabilityTypeConfigRow {
-  const text = (value: string) => {
-    const trimmed = value.trim()
-    return trimmed === '' ? null : trimmed
-  }
+function requiredBoolean(value: 'true' | 'false'): boolean | null {
+  if (value !== 'true' && value !== 'false') return null
+  return value === 'true'
+}
+
+function toRequest(form: FormState, socId: number | null): UnavailabilityTypeConfigRequest {
+  const duration = Number(form.durationValue.replace(',', '.'))
   return {
-    typeLabel: row.typeLabel.trim(),
-    duration: parseDuration(row.duration),
-    countType: text(row.countType),
-    mainConditions: text(row.mainConditions),
-    remuneration: row.remuneration,
-    cpAcquisition: row.cpAcquisition,
-    legalProvision: row.legalProvision,
-    collectiveAgreementProvision: text(row.collectiveAgreementProvision),
-    documentRequired: row.documentRequired,
+    socId,
+    name: form.name.trim(),
+    durationValue: Number.isFinite(duration) ? duration : null,
+    durationUnit: form.durationUnit,
+    countType: form.countType,
+    remuneration: booleanValue(form.remuneration),
+    paidLeaveAccrual: requiredBoolean(form.paidLeaveAccrual),
+    providedByLaw: requiredBoolean(form.providedByLaw),
+    providedByCollectiveAgreement: requiredBoolean(form.providedByCollectiveAgreement),
+    documentRequired: requiredBoolean(form.documentRequired),
+    mainCondition: form.mainCondition.trim() || null,
   }
 }
 
-function sameRow(a: RowForm, b: RowForm): boolean {
-  return (
-    a.typeLabel === b.typeLabel &&
-    a.duration === b.duration &&
-    a.countType === b.countType &&
-    a.mainConditions === b.mainConditions &&
-    a.remuneration === b.remuneration &&
-    a.cpAcquisition === b.cpAcquisition &&
-    a.legalProvision === b.legalProvision &&
-    a.collectiveAgreementProvision === b.collectiveAgreementProvision &&
-    a.documentRequired === b.documentRequired
-  )
-}
-
-function yesNo(value: boolean): string {
+function yesNo(value: boolean | null): string {
+  if (value == null) return '—'
   return value ? tr('common.yes') : tr('common.no')
+}
+
+function unitLabel(unit: DurationUnit): string {
+  return tr(`UnavailabilityTypes.unit.${unit}`)
+}
+
+function countTypeLabel(countType: CountType): string {
+  return tr(`UnavailabilityTypes.countType.${countType}`)
 }
 
 export function UnavailabilityTypes() {
@@ -122,143 +118,180 @@ export function UnavailabilityTypes() {
     [workingSocId],
   )
 
-  const [rows, setRows] = useState<RowForm[]>([])
-  const [editing, setEditing] = useState<EditingState | null>(null)
-  const [form, setForm] = useState<RowForm>(emptyRow())
+  const [rows, setRows] = useState<UnavailabilityTypeConfigDto[]>([])
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [form, setForm] = useState<FormState>(emptyForm())
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
-    setRows((data ?? []).map(toForm))
-    setEditing(null)
-    setFormError(null)
+    setRows(data ?? [])
   }, [data])
 
   if (!user) return null
   if (!canEdit) return <Navigate to="/" replace />
 
-  const isNew = editing != null && editing.original == null
-  const isDirty = editing != null && editing.original != null && !sameRow(form, editing.original)
-
-  function setField<K extends keyof RowForm>(key: K, value: RowForm[K]) {
+  function setField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   function openCreate() {
-    const row = emptyRow()
-    setForm(row)
-    setEditing({ original: null })
+    setEditingId(null)
+    setForm(emptyForm())
     setFormError(null)
+    setFormOpen(true)
   }
 
-  function openEdit(row: RowForm) {
-    setForm({ ...row })
-    setEditing({ original: row })
+  function openEdit(dto: UnavailabilityTypeConfigDto) {
+    setEditingId(dto.id)
+    setForm(toForm(dto))
     setFormError(null)
+    setFormOpen(true)
   }
 
-  async function persist(nextRows: RowForm[], closeAfter: boolean) {
+  async function handleSave() {
     if (!workingSocId) {
       setFormError(tr('UnavailabilityTypes.noSoc'))
+      return
+    }
+    if (form.name.trim() === '') {
+      setFormError(tr('UnavailabilityTypes.typeRequired'))
+      return
+    }
+    const duration = Number(form.durationValue.replace(',', '.'))
+    if (!Number.isFinite(duration) || duration <= 0) {
+      setFormError(tr('UnavailabilityTypes.durationInvalid'))
       return
     }
     setSaving(true)
     setFormError(null)
     try {
-      const saved = await unavailabilityTypesApi.save(workingSocId, nextRows.map(toRequest))
-      setRows(saved.map(toForm))
-      if (closeAfter) {
-        setEditing(null)
-        setFormError(null)
+      const request = toRequest(form, workingSocId)
+      if (editingId != null) {
+        await unavailabilityTypesApi.update(editingId, request)
+      } else {
+        await unavailabilityTypesApi.create(request)
       }
-      return true
+      setFormOpen(false)
+      reload()
+      void dialog.success(tr('UnavailabilityTypes.saved'))
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
-      return false
     } finally {
       setSaving(false)
     }
   }
 
-  async function handleSave() {
-    if (!editing) return
-    if (form.typeLabel.trim() === '') {
-      setFormError(tr('UnavailabilityTypes.typeRequired'))
+  async function handleDisable(row: UnavailabilityTypeConfigDto) {
+    if (!(await dialog.confirm(tr('UnavailabilityTypes.confirmDisable'), {
+      variant: 'warning',
+      okLabel: tr('UnavailabilityTypes.disable'),
+    }))) {
       return
     }
-    const nextRows = editing.original == null
-      ? [...rows, form]
-      : rows.map((row) => (row.key === editing.original!.key ? form : row))
-    const ok = await persist(nextRows, true)
-    if (ok) void dialog.success(tr('UnavailabilityTypes.saved'))
-  }
-
-  async function handleClose() {
-    if (isDirty) {
-      const save = await dialog.confirm(tr('UnavailabilityTypes.confirmSave'), {
-        variant: 'question',
-        okLabel: tr('common.save'),
-      })
-      if (save) {
-        await handleSave()
-        return
-      }
+    try {
+      await unavailabilityTypesApi.disable(row.id)
+      reload()
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
-    setEditing(null)
-    setFormError(null)
   }
 
-  async function handleDelete(row: RowForm) {
-    if (!workingSocId) return
-    if (
-      !(await dialog.confirm(tr('UnavailabilityTypes.confirmDelete', { type: row.typeLabel }), {
-        variant: 'warning',
-        danger: true,
-        okLabel: tr('common.delete'),
-      }))
-    ) {
+  async function handleDelete(row: UnavailabilityTypeConfigDto) {
+    if (!(await dialog.confirm(tr('UnavailabilityTypes.confirmDelete', { type: row.name }), {
+      variant: 'warning',
+      danger: true,
+      okLabel: tr('common.delete'),
+    }))) {
       return
     }
-    const nextRows = rows.filter((r) => r.key !== row.key)
-    await persist(nextRows, false)
-    if (editing?.original?.key === row.key) {
-      setEditing(null)
+    try {
+      await unavailabilityTypesApi.remove(row.id)
+      reload()
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
+
+  const statusBadge = (status: UnavailabilityTypeStatus) =>
+    status === 'ACTIVE' ? 'success' : 'muted'
 
   const columns = [
-    { key: 'typeLabel', label: tr('UnavailabilityTypes.col.type'), render: (r: RowForm) => r.typeLabel },
+    { key: 'name', label: tr('UnavailabilityTypes.col.type'), render: (r: UnavailabilityTypeConfigDto) => r.name },
     {
       key: 'duration',
       label: tr('UnavailabilityTypes.col.duration'),
-      render: (r: RowForm) => (r.duration.trim() === '' ? '—' : `${r.duration} j`),
+      render: (r: UnavailabilityTypeConfigDto) => String(r.durationValue),
     },
-    { key: 'countType', label: tr('UnavailabilityTypes.col.count'), render: (r: RowForm) => r.countType || '—' },
     {
-      key: 'mainConditions',
+      key: 'durationUnit',
+      label: tr('UnavailabilityTypes.col.durationUnit'),
+      render: (r: UnavailabilityTypeConfigDto) => unitLabel(r.durationUnit),
+    },
+    {
+      key: 'countType',
+      label: tr('UnavailabilityTypes.col.count'),
+      render: (r: UnavailabilityTypeConfigDto) => countTypeLabel(r.countType),
+    },
+    {
+      key: 'mainCondition',
       label: tr('UnavailabilityTypes.col.conditions'),
-      render: (r: RowForm) => r.mainConditions || '—',
+      render: (r: UnavailabilityTypeConfigDto) => r.mainCondition || '—',
     },
-    { key: 'remuneration', label: tr('UnavailabilityTypes.col.remuneration'), render: (r: RowForm) => yesNo(r.remuneration) },
-    { key: 'cpAcquisition', label: tr('UnavailabilityTypes.col.cp'), render: (r: RowForm) => yesNo(r.cpAcquisition) },
-    { key: 'legalProvision', label: tr('UnavailabilityTypes.col.legal'), render: (r: RowForm) => yesNo(r.legalProvision) },
     {
-      key: 'collectiveAgreementProvision',
-      label: tr('UnavailabilityTypes.col.syntec'),
-      render: (r: RowForm) => r.collectiveAgreementProvision || '—',
+      key: 'remuneration',
+      label: tr('UnavailabilityTypes.col.remuneration'),
+      render: (r: UnavailabilityTypeConfigDto) => yesNo(r.remuneration),
     },
-    { key: 'documentRequired', label: tr('UnavailabilityTypes.col.document'), render: (r: RowForm) => yesNo(r.documentRequired) },
+    {
+      key: 'paidLeaveAccrual',
+      label: tr('UnavailabilityTypes.col.cp'),
+      render: (r: UnavailabilityTypeConfigDto) => yesNo(r.paidLeaveAccrual),
+    },
+    {
+      key: 'providedByLaw',
+      label: tr('UnavailabilityTypes.col.legal'),
+      render: (r: UnavailabilityTypeConfigDto) => yesNo(r.providedByLaw),
+    },
+    {
+      key: 'providedByCollectiveAgreement',
+      label: tr('UnavailabilityTypes.col.syntec'),
+      render: (r: UnavailabilityTypeConfigDto) => yesNo(r.providedByCollectiveAgreement),
+    },
+    {
+      key: 'documentRequired',
+      label: tr('UnavailabilityTypes.col.document'),
+      render: (r: UnavailabilityTypeConfigDto) => yesNo(r.documentRequired),
+    },
+    {
+      key: 'status',
+      label: tr('UnavailabilityTypes.col.status'),
+      render: (r: UnavailabilityTypeConfigDto) => (
+        <Badge kind={statusBadge(r.status)}>
+          {tr(`UnavailabilityTypes.status.${r.status}`)}
+        </Badge>
+      ),
+    },
     {
       key: 'actions',
       label: '',
-      render: (r: RowForm) => (
+      render: (r: UnavailabilityTypeConfigDto) => (
         <div className="flex justify-end gap-1">
           <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(r)} id="common.edit" />
+          {r.status === 'ACTIVE' && (
+            <IconButton
+              icon="cancel"
+              label={tr('UnavailabilityTypes.disable')}
+              variant="danger"
+              onClick={() => void handleDisable(r)}
+            />
+          )}
           <IconButton
             icon="delete"
             label={tr('UnavailabilityTypes.deleteRow')}
             variant="danger"
-            onClick={() => handleDelete(r)}
+            onClick={() => void handleDelete(r)}
           />
         </div>
       ),
@@ -293,122 +326,142 @@ export function UnavailabilityTypes() {
       {!loading && !error && (
         <Table
           paginate
-          rowKey={(r) => r.key}
+          rowKey={(r) => String(r.id)}
           rows={rows}
           columns={columns}
           empty={<EmptyState title={tr('UnavailabilityTypes.empty')} />}
         />
       )}
 
-      {editing && (
-        <Card className="mt-6 p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">
-            {isNew ? tr('UnavailabilityTypes.form.new') : tr('UnavailabilityTypes.form.edit')}
-          </h3>
-          {formError && (
-            <div className="mb-4">
-              <ErrorBlock message={formError} />
-            </div>
-          )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('UnavailabilityTypes.col.type')} id="UnavailabilityTypes.form.type">
-              <Input
-                aria-label={tr('UnavailabilityTypes.col.type')}
-                value={form.typeLabel}
-                onChange={(e) => setField('typeLabel', e.target.value)}
-              />
-            </Field>
+      <Modal
+        open={formOpen}
+        title={editingId == null
+          ? tr('UnavailabilityTypes.form.new')
+          : tr('UnavailabilityTypes.form.edit')}
+        onClose={() => setFormOpen(false)}
+        size="lg"
+        footer={
+          <>
+            <Button variant="neutral" onClick={() => setFormOpen(false)} disabled={saving}>
+              {tr('common.cancel')}
+            </Button>
+            <Button variant="primary" onClick={() => void handleSave()} disabled={saving}>
+              {tr('UnavailabilityTypes.save')}
+            </Button>
+          </>
+        }
+      >
+        {formError && (
+          <div className="mb-4">
+            <ErrorBlock message={formError} />
+          </div>
+        )}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label={tr('UnavailabilityTypes.col.type')} id="UnavailabilityTypes.form.type">
+            <Input
+              aria-label={tr('UnavailabilityTypes.col.type')}
+              value={form.name}
+              onChange={(e) => setField('name', e.target.value)}
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
             <Field label={tr('UnavailabilityTypes.col.duration')} id="UnavailabilityTypes.form.duration">
               <Input
                 type="number"
+                min="0.01"
+                step="0.5"
                 aria-label={tr('UnavailabilityTypes.col.duration')}
-                value={form.duration}
-                onChange={(e) => setField('duration', e.target.value)}
+                value={form.durationValue}
+                onChange={(e) => setField('durationValue', e.target.value)}
               />
             </Field>
-            <Field label={tr('UnavailabilityTypes.col.count')} id="UnavailabilityTypes.form.count">
-              <Input
-                aria-label={tr('UnavailabilityTypes.col.count')}
-                value={form.countType}
-                onChange={(e) => setField('countType', e.target.value)}
-              />
+            <Field label={tr('UnavailabilityTypes.col.durationUnit')} id="UnavailabilityTypes.form.durationUnit">
+              <Select
+                aria-label={tr('UnavailabilityTypes.col.durationUnit')}
+                value={form.durationUnit}
+                onChange={(e) => setField('durationUnit', e.target.value as DurationUnit)}
+              >
+                {DURATION_UNITS.map((unit) => (
+                  <option key={unit} value={unit}>{unitLabel(unit)}</option>
+                ))}
+              </Select>
             </Field>
-            <Field label={tr('UnavailabilityTypes.col.conditions')} id="UnavailabilityTypes.form.conditions">
-              <Input
-                aria-label={tr('UnavailabilityTypes.col.conditions')}
-                value={form.mainConditions}
-                onChange={(e) => setField('mainConditions', e.target.value)}
-              />
-            </Field>
-            <Field
-              label={tr('UnavailabilityTypes.col.syntec')}
-              id="UnavailabilityTypes.form.collectiveAgreement"
+          </div>
+          <Field label={tr('UnavailabilityTypes.col.count')} id="UnavailabilityTypes.form.count">
+            <Select
+              aria-label={tr('UnavailabilityTypes.col.count')}
+              value={form.countType}
+              onChange={(e) => setField('countType', e.target.value as CountType)}
             >
-              <Input
-                aria-label={tr('UnavailabilityTypes.col.syntec')}
-                value={form.collectiveAgreementProvision}
-                onChange={(e) => setField('collectiveAgreementProvision', e.target.value)}
+              {COUNT_TYPES.map((type) => (
+                <option key={type} value={type}>{countTypeLabel(type)}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={tr('UnavailabilityTypes.col.remuneration')} id="UnavailabilityTypes.form.remuneration">
+            <Select
+              aria-label={tr('UnavailabilityTypes.col.remuneration')}
+              value={form.remuneration}
+              onChange={(e) => setField('remuneration', e.target.value as FormState['remuneration'])}
+            >
+              <option value="">{tr('UnavailabilityTypes.value.notProvided')}</option>
+              <option value="true">{tr('common.yes')}</option>
+              <option value="false">{tr('common.no')}</option>
+            </Select>
+          </Field>
+          <Field label={tr('UnavailabilityTypes.col.cp')} id="UnavailabilityTypes.form.cp">
+            <Select
+              aria-label={tr('UnavailabilityTypes.col.cp')}
+              value={form.paidLeaveAccrual}
+              onChange={(e) => setField('paidLeaveAccrual', e.target.value as 'true' | 'false')}
+            >
+              <option value="true">{tr('common.yes')}</option>
+              <option value="false">{tr('common.no')}</option>
+            </Select>
+          </Field>
+          <Field label={tr('UnavailabilityTypes.col.legal')} id="UnavailabilityTypes.form.legal">
+            <Select
+              aria-label={tr('UnavailabilityTypes.col.legal')}
+              value={form.providedByLaw}
+              onChange={(e) => setField('providedByLaw', e.target.value as 'true' | 'false')}
+            >
+              <option value="true">{tr('common.yes')}</option>
+              <option value="false">{tr('common.no')}</option>
+            </Select>
+          </Field>
+          <Field label={tr('UnavailabilityTypes.col.syntec')} id="UnavailabilityTypes.form.collective">
+            <Select
+              aria-label={tr('UnavailabilityTypes.col.syntec')}
+              value={form.providedByCollectiveAgreement}
+              onChange={(e) =>
+                setField('providedByCollectiveAgreement', e.target.value as 'true' | 'false')}
+            >
+              <option value="true">{tr('common.yes')}</option>
+              <option value="false">{tr('common.no')}</option>
+            </Select>
+          </Field>
+          <Field label={tr('UnavailabilityTypes.col.document')} id="UnavailabilityTypes.form.document">
+            <Select
+              aria-label={tr('UnavailabilityTypes.col.document')}
+              value={form.documentRequired}
+              onChange={(e) => setField('documentRequired', e.target.value as 'true' | 'false')}
+            >
+              <option value="true">{tr('common.yes')}</option>
+              <option value="false">{tr('common.no')}</option>
+            </Select>
+          </Field>
+          <div className="sm:col-span-2">
+            <Field label={tr('UnavailabilityTypes.col.conditions')} id="UnavailabilityTypes.form.conditions">
+              <Textarea
+                aria-label={tr('UnavailabilityTypes.col.conditions')}
+                rows={3}
+                value={form.mainCondition}
+                onChange={(e) => setField('mainCondition', e.target.value)}
               />
             </Field>
-            <div className="grid grid-cols-2 gap-4">
-              <Field label={tr('UnavailabilityTypes.col.remuneration')} id="UnavailabilityTypes.form.remuneration">
-                <input
-                  type="checkbox"
-                  aria-label={tr('UnavailabilityTypes.col.remuneration')}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                  checked={form.remuneration}
-                  onChange={(e) => setField('remuneration', e.target.checked)}
-                />
-              </Field>
-              <Field label={tr('UnavailabilityTypes.col.cp')} id="UnavailabilityTypes.form.cp">
-                <input
-                  type="checkbox"
-                  aria-label={tr('UnavailabilityTypes.col.cp')}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                  checked={form.cpAcquisition}
-                  onChange={(e) => setField('cpAcquisition', e.target.checked)}
-                />
-              </Field>
-              <Field label={tr('UnavailabilityTypes.col.legal')} id="UnavailabilityTypes.form.legal">
-                <input
-                  type="checkbox"
-                  aria-label={tr('UnavailabilityTypes.col.legal')}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                  checked={form.legalProvision}
-                  onChange={(e) => setField('legalProvision', e.target.checked)}
-                />
-              </Field>
-              <Field label={tr('UnavailabilityTypes.col.document')} id="UnavailabilityTypes.form.document">
-                <input
-                  type="checkbox"
-                  aria-label={tr('UnavailabilityTypes.col.document')}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                  checked={form.documentRequired}
-                  onChange={(e) => setField('documentRequired', e.target.checked)}
-                />
-              </Field>
-            </div>
           </div>
-          <div className="mt-6 flex items-center justify-end gap-2">
-            <IconButton
-              icon="close"
-              label={tr('common.close')}
-              onClick={handleClose}
-              disabled={saving}
-              id="UnavailabilityTypes.close"
-            />
-            <IconButton
-              icon="save"
-              label={tr('UnavailabilityTypes.save')}
-              variant="primary"
-              onClick={handleSave}
-              loading={saving}
-              disabled={saving}
-              id="UnavailabilityTypes.save"
-            />
-          </div>
-        </Card>
-      )}
+        </div>
+      </Modal>
     </div>
   )
 }

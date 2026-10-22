@@ -90,11 +90,11 @@ export function Unavailability() {
   // La liste des types provient des paramètres de la société (« Types d'indisponibilités »).
   const typesSocId = selectedSocId ?? user?.socId ?? null
   const types = useAsync(
-    () => unavailabilityTypesApi.list(typesSocId),
+    () => unavailabilityTypesApi.active(typesSocId),
     [typesSocId],
   )
   const typeOptions = (types.data ?? [])
-    .map((t) => t.typeLabel)
+    .map((t) => t.name)
     .filter((label) => label != null && label.trim() !== '')
 
   useEffect(() => {
