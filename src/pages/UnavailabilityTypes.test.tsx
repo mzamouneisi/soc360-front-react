@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { UnavailabilityTypes } from './UnavailabilityTypes'
 import { DialogHost } from '../components/dialog'
@@ -125,6 +125,21 @@ describe('UnavailabilityTypes', () => {
     expect(screen.getByText('25')).toBeInTheDocument()
     expect(screen.getAllByText('Jours').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Ouvré').length).toBeGreaterThan(0)
+  })
+
+  it('affiche une cellule vide pour les valeurs nulles', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue([
+      row({ remuneration: null, mainCondition: null }),
+    ])
+
+    renderPage()
+
+    const nameCell = await screen.findByText('Congés payés')
+    const rowElement = nameCell.closest('tr')
+    expect(rowElement).not.toBeNull()
+    expect(within(rowElement as HTMLElement).queryByText('—')).not.toBeInTheDocument()
+    expect(rowElement?.textContent).not.toContain('—')
   })
 
   it('crée un type via la popup avec les valeurs par défaut ALL et ACTIVE', async () => {

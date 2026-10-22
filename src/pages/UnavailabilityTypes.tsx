@@ -92,7 +92,7 @@ function toRequest(form: FormState, socId: number | null): UnavailabilityTypeCon
 }
 
 function yesNo(value: boolean | null): string {
-  if (value == null) return '—'
+  if (value == null) return ''
   return value ? tr('common.yes') : tr('common.no')
 }
 
@@ -237,7 +237,7 @@ export function UnavailabilityTypes() {
     {
       key: 'mainCondition',
       label: tr('UnavailabilityTypes.col.conditions'),
-      render: (r: UnavailabilityTypeConfigDto) => r.mainCondition || '—',
+      render: (r: UnavailabilityTypeConfigDto) => r.mainCondition ?? '',
     },
     {
       key: 'remuneration',
