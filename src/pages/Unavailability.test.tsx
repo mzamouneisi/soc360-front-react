@@ -148,6 +148,8 @@ const item = (overrides: Partial<UnavailabilityDto> = {}): UnavailabilityDto => 
   submittedAt: null,
   validatedAt: null,
   durationDays: 10,
+  firstDay: 'ALL',
+  lastDay: 'ALL',
   ...overrides,
 })
 
@@ -416,7 +418,7 @@ describe('Unavailability', () => {
     expect(createMock.mock.calls[0][0].consultantId).toBe(1)
   })
 
-  it('ajoute une demi-journée dans l’intervalle et l’envoie avec l’indisponibilité', async () => {
+  it('envoie une demi-journée pour une indisponibilité d’un seul jour', async () => {
     userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
     listMock.mockResolvedValue([])
     findByConsultantMock.mockResolvedValue([])
@@ -425,26 +427,24 @@ describe('Unavailability', () => {
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
-    expect(await screen.findByText(/Calendrier de l'indisponibilité/)).toBeInTheDocument()
+    const startInput = document.querySelector('#Unavailability\\.du')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    const endInput = document.querySelector('#Unavailability\\.au')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    fireEvent.change(endInput, { target: { value: startInput.value } })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ajouter une demi-journée' }))
-    expect(screen.getByRole('radio', { name: 'Matin' })).toBeChecked()
-    fireEvent.click(screen.getByRole('radio', { name: 'Après-midi' }))
-    expect(screen.getByRole('radio', { name: 'Après-midi' })).toBeChecked()
-
-    fireEvent.change(screen.getByPlaceholderText(/Motif, remarques/), {
-      target: { value: 'Congés' },
-    })
+    const dayPart = (await screen.findByText('Demi-journée')).parentElement
+      ?.querySelector('select') as HTMLSelectElement
+    fireEvent.change(dayPart, { target: { value: 'PM' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
     const request = createMock.mock.calls[0][0]
-    expect(request.halfDays).toHaveLength(1)
-    expect(request.halfDays[0]).toMatchObject({ halfDay: 'PM' })
-    expect(request.halfDays[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(request.firstDay).toBe('PM')
+    expect(request.lastDay).toBe('PM')
   })
 
-  it('ajoute plusieurs demi-journées sur un intervalle de plusieurs jours', async () => {
+  it('envoie un après-midi au début et un matin à la fin sur plusieurs jours', async () => {
     userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
     listMock.mockResolvedValue([])
     findByConsultantMock.mockResolvedValue([])
@@ -453,22 +453,18 @@ describe('Unavailability', () => {
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
-    const addHalfDay = screen.getByRole('button', { name: 'Ajouter une demi-journée' })
-    fireEvent.click(addHalfDay)
-    fireEvent.click(addHalfDay)
-
-    expect(screen.getAllByRole('radio', { name: 'Matin' })).toHaveLength(2)
-
-    fireEvent.change(screen.getByPlaceholderText(/Motif, remarques/), {
-      target: { value: 'Congés' },
-    })
+    const startPart = screen.getByText('Début').parentElement
+      ?.querySelector('select') as HTMLSelectElement
+    const endPart = screen.getByText('Fin').parentElement
+      ?.querySelector('select') as HTMLSelectElement
+    fireEvent.change(startPart, { target: { value: 'PM' } })
+    fireEvent.change(endPart, { target: { value: 'AM' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
     const request = createMock.mock.calls[0][0]
-    expect(request.halfDays).toHaveLength(2)
-    const dates = request.halfDays.map((h: { date: string }) => h.date)
-    expect(new Set(dates).size).toBe(2)
+    expect(request.firstDay).toBe('PM')
+    expect(request.lastDay).toBe('AM')
   })
 
   it('recharge les demi-journées à l’édition et les affiche dans le calendrier', async () => {
@@ -476,9 +472,13 @@ describe('Unavailability', () => {
     listMock.mockResolvedValue([
       item({
         comment: 'Motif',
+        startDate: '2026-09-03',
+        endDate: '2026-09-04',
+        firstDay: 'PM',
+        lastDay: 'AM',
         halfDays: [
-          { date: '2026-09-03', halfDay: 'AM' },
-          { date: '2026-09-04', halfDay: 'PM' },
+          { date: '2026-09-03', halfDay: 'PM' },
+          { date: '2026-09-04', halfDay: 'AM' },
         ],
       }),
     ])
@@ -490,48 +490,21 @@ describe('Unavailability', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Éditer' }))
 
-    const mornings = screen.getAllByRole('radio', { name: 'Matin' })
-    const afternoons = screen.getAllByRole('radio', { name: 'Après-midi' })
-    expect(mornings).toHaveLength(2)
-    expect(afternoons).toHaveLength(2)
-    expect(mornings[0]).toBeChecked()
-    expect(afternoons[1]).toBeChecked()
+    const startPart = screen.getByText('Début').parentElement
+      ?.querySelector('select') as HTMLSelectElement
+    const endPart = screen.getByText('Fin').parentElement
+      ?.querySelector('select') as HTMLSelectElement
+    expect(startPart.value).toBe('PM')
+    expect(endPart.value).toBe('AM')
     // L'aperçu du calendrier marque les deux demi-journées de l'indisponibilité courante.
-    expect(await screen.findAllByText('matin')).toHaveLength(1)
-    expect(screen.getAllByText('aprèm')).toHaveLength(1)
+    expect(await screen.findAllByText('aprèm')).toHaveLength(1)
+    expect(screen.getAllByText('matin')).toHaveLength(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
 
     await waitFor(() => expect(updateMock).toHaveBeenCalled())
-    expect(updateMock.mock.calls[0][1].halfDays).toEqual([
-      { date: '2026-09-03', halfDay: 'AM' },
-      { date: '2026-09-04', halfDay: 'PM' },
-    ])
-  })
-
-  it('désactive le bouton + quand l’unique jour de l’intervalle a déjà une demi-journée', async () => {
-    userMock.value = managerUser
-    listMock.mockResolvedValue([
-      item({
-        startDate: '2026-09-01',
-        endDate: '2026-09-01',
-        comment: 'Motif',
-        halfDays: [{ date: '2026-09-01', halfDay: 'AM' }],
-      }),
-    ])
-    summariesMock.mockResolvedValue([])
-    findByConsultantMock.mockResolvedValue([])
-
-    renderPage()
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Éditer' }))
-
-    const addHalfDay = screen.getByRole('button', { name: 'Ajouter une demi-journée' })
-    expect(addHalfDay).toBeDisabled()
-    expect(addHalfDay).toHaveAttribute(
-      'title',
-      'Une seule demi-journée est possible quand la date de début et de fin sont identiques.',
-    )
+    expect(updateMock.mock.calls[0][1].firstDay).toBe('PM')
+    expect(updateMock.mock.calls[0][1].lastDay).toBe('AM')
   })
 
   it('affiche le type issu des paramètres de la société et le propose au formulaire', async () => {

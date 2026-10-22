@@ -406,6 +406,8 @@ export interface ActivityRequest {
 
 export type HalfDay = 'AM' | 'PM'
 
+export type DayPart = 'ALL' | 'AM' | 'PM'
+
 export interface CraDayActivityDto {
   id: number
   activityId: number
@@ -593,12 +595,9 @@ export interface UnavailabilityDto {
   submittedAt: string | null
   validatedAt: string | null
   durationDays: number
+  firstDay: DayPart
+  lastDay: DayPart
   halfDays?: UnavailabilityHalfDayDto[]
-}
-
-export interface UnavailabilityHalfDayRequest {
-  date: string
-  halfDay: HalfDay
 }
 
 export interface UnavailabilityRequest {
@@ -608,7 +607,8 @@ export interface UnavailabilityRequest {
   startDate: string
   endDate: string
   comment?: string | null
-  halfDays?: UnavailabilityHalfDayRequest[]
+  firstDay: DayPart
+  lastDay: DayPart
 }
 
 export interface UnavailabilityHistoryDto {
