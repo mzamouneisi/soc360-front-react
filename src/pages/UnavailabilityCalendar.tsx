@@ -1,7 +1,7 @@
 import { tr } from '../i18n/translate'
 import { useAsync } from '../lib/useAsync'
 import { crasApi } from '../api/cras'
-import type { CraDto, HalfDay, UnavailabilityDto } from '../api/types'
+import type { CountType, CraDto, HalfDay, UnavailabilityDto } from '../api/types'
 import {
   monthLabel,
   statusBadge,
@@ -64,12 +64,20 @@ function monthWindow(startDate: string, endDate: string): YearMonth[] {
   return months
 }
 
-function daysBetween(startDate: string, endDate: string): Set<string> {
+function isCountedDate(key: string, countType: CountType): boolean {
+  const dow = new Date(key + 'T00:00:00Z').getUTCDay()
+  if (countType === 'OUVRE') return dow !== 0 && dow !== 6
+  if (countType === 'OUVRABLE') return dow !== 0
+  return true
+}
+
+function daysBetween(startDate: string, endDate: string, countType: CountType): Set<string> {
   const set = new Set<string>()
   let { y, m, d } = parseDate(startDate)
   const end = parseDate(endDate)
   while (y < end.y || (y === end.y && (m < end.m || (m === end.m && d <= end.d)))) {
-    set.add(dateKey(y, m, d))
+    const key = dateKey(y, m, d)
+    if (isCountedDate(key, countType)) set.add(key)
     const next = addDays(y, m, d, 1)
     y = next.y
     m = next.m
@@ -224,17 +232,23 @@ export function UnavailabilityCalendar({
     [selected.id, selected.consultantId, startYear, endYear],
   )
 
-  const selectedDays = daysBetween(selected.startDate, selected.endDate)
+  const selectedCountType = selected.countType ?? 'CALENDAIRE'
+  const selectedDays = daysBetween(selected.startDate, selected.endDate, selectedCountType)
   const selectedHalfDays = new Map<string, HalfDay>(
-    (selected.halfDays ?? []).map((h) => [h.date, h.halfDay]),
+    (selected.halfDays ?? [])
+      .filter((h) => isCountedDate(h.date, selectedCountType))
+      .map((h) => [h.date, h.halfDay]),
   )
 
   const otherDays = new Set<string>()
   const otherHalfDays = new Map<string, HalfDay>()
   for (const u of unavailabilities) {
     if (u.id === selected.id || u.consultantId !== selected.consultantId) continue
-    for (const d of daysBetween(u.startDate, u.endDate)) otherDays.add(d)
-    for (const h of u.halfDays ?? []) otherHalfDays.set(h.date, h.halfDay)
+    const countType = u.countType ?? 'CALENDAIRE'
+    for (const d of daysBetween(u.startDate, u.endDate, countType)) otherDays.add(d)
+    for (const h of u.halfDays ?? []) {
+      if (isCountedDate(h.date, countType)) otherHalfDays.set(h.date, h.halfDay)
+    }
   }
 
   const congeDays = new Set<string>()

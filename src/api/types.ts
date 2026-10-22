@@ -597,6 +597,7 @@ export interface UnavailabilityDto {
   durationDays: number
   firstDay: DayPart
   lastDay: DayPart
+  countType: CountType
   halfDays?: UnavailabilityHalfDayDto[]
 }
 

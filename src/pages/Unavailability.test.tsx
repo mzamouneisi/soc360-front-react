@@ -161,6 +161,7 @@ const item = (overrides: Partial<UnavailabilityDto> = {}): UnavailabilityDto => 
   durationDays: 10,
   firstDay: 'ALL',
   lastDay: 'ALL',
+  countType: 'CALENDAIRE',
   ...overrides,
 })
 
@@ -427,6 +428,27 @@ describe('Unavailability', () => {
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
     expect(createMock.mock.calls[0][0].consultantId).toBe(1)
+  })
+
+  it('calcule la durée selon le type de décompte (ouvré = hors week-end)', async () => {
+    userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
+    listMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    await waitFor(() =>
+      expect(document.querySelector('#Unavailability\\.du')).not.toBeNull(),
+    )
+    const startInput = document.querySelector('#Unavailability\\.du')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    const endInput = document.querySelector('#Unavailability\\.au')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    fireEvent.change(startInput, { target: { value: '2026-09-04' } })
+    fireEvent.change(endInput, { target: { value: '2026-09-07' } })
+
+    expect(await screen.findByText('Durée : 2 j')).toBeInTheDocument()
   })
 
   it('envoie une demi-journée pour une indisponibilité d’un seul jour', async () => {

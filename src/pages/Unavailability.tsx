@@ -7,6 +7,7 @@ import { unavailabilityTypesApi } from '../api/unavailabilityTypes'
 import { consultantsApi } from '../api/consultants'
 import type {
   ConsultantSummary,
+  CountType,
   DayPart,
   UnavailabilityDto,
   UnavailabilityHistoryDto,
@@ -30,14 +31,33 @@ import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { UnavailabilityCalendar } from './UnavailabilityCalendar'
 
-function durationFor(start: string, end: string, firstDay: DayPart, lastDay: DayPart): number {
+function isCountedDate(date: string, countType: CountType): boolean {
+  const dow = new Date(date + 'T00:00:00Z').getUTCDay()
+  if (countType === 'OUVRE') return dow !== 0 && dow !== 6
+  if (countType === 'OUVRABLE') return dow !== 0
+  return true
+}
+
+function durationFor(
+  start: string,
+  end: string,
+  firstDay: DayPart,
+  lastDay: DayPart,
+  countType: CountType,
+): number {
   if (!start || !end || start > end) return 0
+  let days = 0
+  const cursor = new Date(start + 'T00:00:00Z')
+  const last = new Date(end + 'T00:00:00Z')
+  while (cursor <= last) {
+    const value = cursor.toISOString().slice(0, 10)
+    if (isCountedDate(value, countType)) days += 1
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  }
+  if (days === 0) return 0
   if (start === end) return firstDay === 'ALL' ? 1 : 0.5
-  const startMs = new Date(start + 'T00:00:00Z').getTime()
-  const endMs = new Date(end + 'T00:00:00Z').getTime()
-  let days = Math.round((endMs - startMs) / 86400000) + 1
-  if (firstDay === 'PM') days -= 0.5
-  if (lastDay === 'AM') days -= 0.5
+  if (firstDay === 'PM' && isCountedDate(start, countType)) days -= 0.5
+  if (lastDay === 'AM' && isCountedDate(end, countType)) days -= 0.5
   return days
 }
 
@@ -96,6 +116,8 @@ export function Unavailability() {
   const typeOptions = (types.data ?? [])
     .map((t) => t.name)
     .filter((label) => label != null && label.trim() !== '')
+  const formCountType: CountType =
+    (types.data ?? []).find((t) => t.name === formType)?.countType ?? 'CALENDAIRE'
 
   useEffect(() => {
     setPage(0)
@@ -120,15 +142,22 @@ export function Unavailability() {
       : formConsultantId
     if (!consultantId) return null
     const existing = editingId != null ? data.find((u) => u.id === editingId) : null
-    const durationDays = durationFor(formStart, formEnd, formFirstDay, formLastDay)
+    const durationDays = durationFor(
+      formStart, formEnd, formFirstDay, formLastDay, formCountType,
+    )
     const halfDays: UnavailabilityDto['halfDays'] = []
     if (formStart === formEnd) {
-      if (formFirstDay === 'AM' || formFirstDay === 'PM') {
+      if ((formFirstDay === 'AM' || formFirstDay === 'PM') &&
+          isCountedDate(formStart, formCountType)) {
         halfDays.push({ date: formStart, halfDay: formFirstDay })
       }
     } else {
-      if (formFirstDay === 'PM') halfDays.push({ date: formStart, halfDay: 'PM' })
-      if (formLastDay === 'AM') halfDays.push({ date: formEnd, halfDay: 'AM' })
+      if (formFirstDay === 'PM' && isCountedDate(formStart, formCountType)) {
+        halfDays.push({ date: formStart, halfDay: 'PM' })
+      }
+      if (formLastDay === 'AM' && isCountedDate(formEnd, formCountType)) {
+        halfDays.push({ date: formEnd, halfDay: 'AM' })
+      }
     }
     return {
       id: editingId ?? -1,
@@ -150,11 +179,13 @@ export function Unavailability() {
       durationDays,
       firstDay: formFirstDay,
       lastDay: formLastDay,
+      countType: formCountType,
       halfDays,
     }
   }, [
     showForm, formStart, formEnd, isConsultant, user, formConsultantId, editingId,
     data, consultants.data, formType, formComment, formFirstDay, formLastDay,
+    formCountType,
   ])
 
   if (!user) return null
@@ -526,7 +557,7 @@ export function Unavailability() {
                 </>
               )}
               <p className="pb-2 text-sm text-gray-500">
-                Durée : {durationFor(formStart, formEnd, formFirstDay, formLastDay)} j
+                Durée : {durationFor(formStart, formEnd, formFirstDay, formLastDay, formCountType)} j
               </p>
             </div>
 
