@@ -38,5 +38,6 @@ export const documentsApi = {
   share: (id: number, userIds: number[]) =>
     api.post<void>(`/documents/${id}/share`, userIds),
   download: (id: number, name: string) => api.download(`/documents/${id}/download`, name),
+  previewUrl: (id: number) => api.blobUrl(`/documents/${id}/download`),
   delete: (id: number) => api.delete<void>(`/documents/${id}`),
 }

@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { documentsApi } from '../api/documents'
 import { consultantsApi } from '../api/consultants'
@@ -9,6 +9,7 @@ import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Se
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { DOCUMENT_CATEGORIES, formatDate, formatSize } from '../lib/format'
+import { DocumentPreview } from '../components/DocumentPreview'
 import type { HrDocumentDto } from '../api/types'
 
 export function Documents() {
@@ -45,6 +46,17 @@ export function Documents() {
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!file) {
+      setFilePreviewUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(file)
+    setFilePreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [file])
 
   if (!user) return null
 
@@ -256,6 +268,9 @@ export function Documents() {
               {!file && <p className="mt-1 text-xs text-gray-500">{tr('Documents.pdf.images.documents')}</p>}
             </button>
           </div>
+          {file && filePreviewUrl && (
+            <DocumentPreview url={filePreviewUrl} name={file.name} />
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Documents.categorie')} id="Documents.categorie">
               <Select value={category} onChange={(e) => setCategory(e.target.value)}>

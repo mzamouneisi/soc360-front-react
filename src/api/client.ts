@@ -208,6 +208,14 @@ async function doDownload(path: string, fallbackName: string): Promise<void> {
   URL.revokeObjectURL(url)
 }
 
+async function blobUrl(path: string): Promise<string> {
+  const response = await fetch(`${API_BASE_URL}/api${path}`, { headers: authHeaders() })
+  if (!response.ok) {
+    throw await parseError(response)
+  }
+  return URL.createObjectURL(await response.blob())
+}
+
 export const api = {
   get: <T>(path: string, params?: Record<string, string | number | boolean | null | undefined>) =>
     request<T>(path + buildQuery(params)),
@@ -235,4 +243,5 @@ export const api = {
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
   upload: <T>(path: string, formData: FormData) => upload<T>(path, formData),
   download: (path: string, fallbackName: string) => download(path, fallbackName),
+  blobUrl: (path: string) => blobUrl(path),
 }

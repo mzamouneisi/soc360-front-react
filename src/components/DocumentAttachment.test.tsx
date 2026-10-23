@@ -11,6 +11,7 @@ vi.mock('../api/documents', () => ({
   documentsApi: {
     upload: uploadMock,
     download: downloadMock,
+    previewUrl: vi.fn().mockResolvedValue('blob:preview'),
   },
 }))
 
@@ -76,7 +77,7 @@ describe('DocumentAttachment', () => {
     expect(downloadMock).toHaveBeenCalledWith(42, 'justificatif.pdf')
   })
 
-  it('affiche le nom du document associé et permet de le retirer', () => {
+  it('affiche le nom du document associé et permet de le retirer', async () => {
     const onChange = vi.fn()
     render(
       <DocumentAttachment
@@ -86,6 +87,7 @@ describe('DocumentAttachment', () => {
     )
 
     expect(screen.getByText('justificatif.pdf')).toBeInTheDocument()
+    expect(await screen.findByTitle('Aperçu du document PDF')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Retirer le document' }))
     expect(onChange).toHaveBeenCalledWith(null)
   })

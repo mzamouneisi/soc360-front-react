@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { tr } from '../i18n/translate'
 import { documentsApi } from '../api/documents'
 import { ApiError } from '../api/client'
 import { Button, Field, IconButton, Input, Textarea } from './ui'
 import { Modal } from './data'
+import { DocumentPreview } from './DocumentPreview'
+import { isImageFile } from '../lib/ocr'
 import { dialog } from './dialog'
 
 export interface AttachedDocument {
@@ -52,6 +54,46 @@ export function DocumentAttachment({
   const [comment, setComment] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [existingPreviewUrl, setExistingPreviewUrl] = useState<string | null>(null)
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!value) {
+      setExistingPreviewUrl(null)
+      return
+    }
+    const previewable = isImageFile(value.name) || /\.pdf$/i.test(value.name)
+    if (!previewable) {
+      setExistingPreviewUrl(null)
+      return
+    }
+    let cancelled = false
+    let objectUrl: string | null = null
+    void documentsApi
+      .previewUrl(value.id)
+      .then((url) => {
+        objectUrl = url
+        if (!cancelled) setExistingPreviewUrl(url)
+      })
+      .catch(() => {
+        if (!cancelled) setExistingPreviewUrl(null)
+      })
+    return () => {
+      cancelled = true
+      setExistingPreviewUrl(null)
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [value?.id, value?.name])
+
+  useEffect(() => {
+    if (!file) {
+      setFilePreviewUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(file)
+    setFilePreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [file])
 
   function openPopup() {
     setFile(null)
@@ -127,6 +169,9 @@ export function DocumentAttachment({
           <span className="text-sm text-gray-400">{tr('document.attachment.none')}</span>
         )}
       </div>
+      {value && existingPreviewUrl && (
+        <DocumentPreview url={existingPreviewUrl} name={value.name} className="mt-2" />
+      )}
 
       <Modal
         open={open}
@@ -154,6 +199,9 @@ export function DocumentAttachment({
               }}
             />
           </Field>
+          {file && filePreviewUrl && (
+            <DocumentPreview url={filePreviewUrl} name={file.name} />
+          )}
           <Field label={tr('document.attachment.comment')} id="document.attachment.comment">
             <Textarea
               rows={3}
