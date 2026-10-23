@@ -438,6 +438,9 @@ export interface LinkedUnavailabilityDto {
   startDate: string
   endDate: string
   status: UnavailabilityStatus
+  documentId?: number | null
+  documentName?: string | null
+  documentComment?: string | null
 }
 
 export interface CraDto {

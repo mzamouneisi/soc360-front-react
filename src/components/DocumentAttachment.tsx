@@ -4,11 +4,34 @@ import { documentsApi } from '../api/documents'
 import { ApiError } from '../api/client'
 import { Button, Field, IconButton, Input, Textarea } from './ui'
 import { Modal } from './data'
+import { dialog } from './dialog'
 
 export interface AttachedDocument {
   id: number
   name: string
   comment: string | null
+}
+
+export function DocumentView({ value }: { value: AttachedDocument | null | undefined }) {
+  if (!value) return null
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+      <span className="text-sm font-medium text-gray-700">{tr('document.attachment.label')}</span>
+      <span className="text-sm text-gray-700">{value.name}</span>
+      {value.comment && <span className="text-xs text-gray-500">— {value.comment}</span>}
+      <IconButton
+        icon="download"
+        label={tr('document.attachment.view')}
+        onClick={() => {
+          void documentsApi.download(value.id, value.name).catch((err) => {
+            void dialog.error(
+              err instanceof ApiError ? err.message : tr('document.attachment.downloadError'),
+            )
+          })
+        }}
+      />
+    </div>
+  )
 }
 
 export function DocumentAttachment({
@@ -81,6 +104,17 @@ export function DocumentAttachment({
             {value.comment && (
               <span className="text-xs text-gray-500">— {value.comment}</span>
             )}
+            <IconButton
+              icon="download"
+              label={tr('document.attachment.view')}
+              onClick={() => {
+                void documentsApi.download(value.id, value.name).catch((err) => {
+                  void dialog.error(
+                    err instanceof ApiError ? err.message : tr('document.attachment.downloadError'),
+                  )
+                })
+              }}
+            />
             <IconButton
               icon="delete"
               label={tr('document.attachment.remove')}

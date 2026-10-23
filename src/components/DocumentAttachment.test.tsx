@@ -2,11 +2,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { DocumentAttachment } from './DocumentAttachment'
 
-const { uploadMock } = vi.hoisted(() => ({ uploadMock: vi.fn() }))
+const { uploadMock, downloadMock } = vi.hoisted(() => ({
+  uploadMock: vi.fn(),
+  downloadMock: vi.fn(),
+}))
 
 vi.mock('../api/documents', () => ({
   documentsApi: {
     upload: uploadMock,
+    download: downloadMock,
   },
 }))
 
@@ -56,6 +60,20 @@ describe('DocumentAttachment', () => {
       name: 'justificatif.pdf',
       comment: 'Arrêt de travail',
     })
+  })
+
+  it('permet de visualiser le document associé', () => {
+    downloadMock.mockResolvedValue(undefined)
+    render(
+      <DocumentAttachment
+        value={{ id: 42, name: 'justificatif.pdf', comment: null }}
+        onChange={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Voir le document' }))
+
+    expect(downloadMock).toHaveBeenCalledWith(42, 'justificatif.pdf')
   })
 
   it('affiche le nom du document associé et permet de le retirer', () => {
