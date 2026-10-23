@@ -11,6 +11,7 @@
     "build": "tsc -b && vite build",
     "build:pages": "tsc -b && vite build --outDir docs",
     "build:pages:prod": "tsc -b && vite build --mode production-prod --outDir dist-prod",
+    "build:swa": "tsc -b && vite build --mode production-azure --outDir dist-azure",
     "lint": "oxlint",
     "test": "vitest run",
     "test:watch": "vitest",

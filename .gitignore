@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-prod
+dist-azure
 dist-ssr
 *.local
 
