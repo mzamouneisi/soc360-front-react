@@ -466,6 +466,8 @@ export interface DeclareAbsenceRequest {
   startDate: string
   endDate: string
   comment?: string | null
+  documentId?: number | null
+  documentComment?: string | null
 }
 
 export interface CraExchangeDto {
@@ -598,6 +600,9 @@ export interface UnavailabilityDto {
   firstDay: DayPart
   lastDay: DayPart
   countType: CountType
+  documentId?: number | null
+  documentName?: string | null
+  documentComment?: string | null
   halfDays?: UnavailabilityHalfDayDto[]
 }
 
@@ -610,6 +615,8 @@ export interface UnavailabilityRequest {
   comment?: string | null
   firstDay: DayPart
   lastDay: DayPart
+  documentId?: number | null
+  documentComment?: string | null
 }
 
 export interface UnavailabilityHistoryDto {

@@ -30,6 +30,7 @@ import {
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { UnavailabilityCalendar } from './UnavailabilityCalendar'
+import { DocumentAttachment, type AttachedDocument } from '../components/DocumentAttachment'
 
 function isCountedDate(date: string, countType: CountType): boolean {
   const dow = new Date(date + 'T00:00:00Z').getUTCDay()
@@ -84,6 +85,7 @@ export function Unavailability() {
   const [formComment, setFormComment] = useState('')
   const [formFirstDay, setFormFirstDay] = useState<DayPart>('ALL')
   const [formLastDay, setFormLastDay] = useState<DayPart>('ALL')
+  const [formDocument, setFormDocument] = useState<AttachedDocument | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [historyFor, setHistoryFor] = useState<UnavailabilityDto | null>(null)
@@ -267,6 +269,7 @@ export function Unavailability() {
     setFormComment('')
     setFormFirstDay('ALL')
     setFormLastDay('ALL')
+    setFormDocument(null)
     setFormError(null)
     setShowForm(true)
   }
@@ -280,6 +283,9 @@ export function Unavailability() {
     setFormComment(u.comment ?? '')
     setFormFirstDay(u.firstDay ?? 'ALL')
     setFormLastDay(u.lastDay ?? 'ALL')
+    setFormDocument(u.documentId != null && u.documentName
+      ? { id: u.documentId, name: u.documentName, comment: u.documentComment ?? null }
+      : null)
     setFormError(null)
     setShowForm(true)
   }
@@ -315,6 +321,11 @@ export function Unavailability() {
       setFormError('Sélectionnez un consultant.')
       return
     }
+    const selectedType = (types.data ?? []).find((t) => t.name === formType)
+    if (selectedType?.documentRequired && !formDocument) {
+      setFormError(tr('document.required'))
+      return
+    }
     setSaving(true)
     setFormError(null)
     try {
@@ -327,6 +338,8 @@ export function Unavailability() {
         comment: formComment.trim() || null,
         firstDay: formFirstDay,
         lastDay: formLastDay,
+        documentId: formDocument?.id ?? null,
+        documentComment: formDocument?.comment ?? null,
       }
       if (editingId != null) {
         await unavailabilityApi.update(editingId, request)
@@ -560,6 +573,15 @@ export function Unavailability() {
                 Durée : {durationFor(formStart, formEnd, formFirstDay, formLastDay, formCountType)} j
               </p>
             </div>
+
+            <Field label={tr('document.attachment.add')} id="Unavailability.document">
+              <DocumentAttachment
+                value={formDocument}
+                onChange={setFormDocument}
+                socId={typesSocId}
+                consultantId={isConsultant ? (user?.consultantId ?? user?.id ?? null) : formConsultantId}
+              />
+            </Field>
 
             <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
               <Textarea

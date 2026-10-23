@@ -15,6 +15,7 @@ import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Se
 import { Badge, ErrorBlock, LoadingBlock, Modal, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
+import { DocumentAttachment, type AttachedDocument } from '../components/DocumentAttachment'
 import {
   CRA_STATUS_LABELS,
   UNAVAILABILITY_STATUS_KEYS,
@@ -692,6 +693,8 @@ export function CraDetail({
     startDate: string
     endDate: string
     comment?: string | null
+    documentId?: number | null
+    documentComment?: string | null
   }): Promise<boolean> {
     if (!cra) return false
     setFormError(null)
@@ -2031,6 +2034,8 @@ function AbsenceModal({
     startDate: string
     endDate: string
     comment?: string | null
+    documentId?: number | null
+    documentComment?: string | null
   }) => Promise<boolean>
   onClose: () => void
 }) {
@@ -2041,6 +2046,7 @@ function AbsenceModal({
   const [start, setStart] = useState(monthStart)
   const [end, setEnd] = useState(monthStart)
   const [comment, setComment] = useState('')
+  const [document, setDocument] = useState<AttachedDocument | null>(null)
   const [error, setError] = useState<string | null>(null)
   const TYPES: UnavailabilityType[] = [
     'CONGE_PAYE',
@@ -2056,7 +2062,14 @@ function AbsenceModal({
       return
     }
     setError(null)
-    await onSubmit({ type, startDate: start, endDate: end, comment: comment.trim() || null })
+    await onSubmit({
+      type,
+      startDate: start,
+      endDate: end,
+      comment: comment.trim() || null,
+      documentId: document?.id ?? null,
+      documentComment: document?.comment ?? null,
+    })
   }
 
   return (
@@ -2113,6 +2126,9 @@ function AbsenceModal({
         </div>
         <Field label={tr('CraDetail.commentaire.2')} id="CraDetail.absence.commentaire">
           <Textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
+        </Field>
+        <Field label={tr('document.attachment.add')} id="CraDetail.absence.document">
+          <DocumentAttachment value={document} onChange={setDocument} />
         </Field>
         {error && <ErrorBlock message={error} />}
       </div>
