@@ -29,6 +29,8 @@ export function languageLabel(language: string): string {
 type Messages = Record<string, string>
 
 const fr: Messages = {
+  'Consultants.email.obligatoire': 'L’email est obligatoire.',
+  'Consultants.email.invalide': 'Saisissez un email valide.',
   'common.loading': 'Chargement…',
   'common.refresh': 'Actualiser',
   'common.reload': 'Recharger',
@@ -242,6 +244,8 @@ const fr: Messages = {
 }
 
 const en: Messages = {
+  'Consultants.email.obligatoire': 'Email is required.',
+  'Consultants.email.invalide': 'Enter a valid email address.',
   'common.loading': 'Loading…',
   'common.refresh': 'Refresh',
   'common.reload': 'Reload',
@@ -452,6 +456,8 @@ const en: Messages = {
 }
 
 const ar: Messages = {
+  'Consultants.email.obligatoire': 'البريد الإلكتروني مطلوب.',
+  'Consultants.email.invalide': 'أدخل بريدًا إلكترونيًا صالحًا.',
   'settings.craColors.title': 'ألوان أيام CRA',
   'settings.craColors.description': 'ألوان أيام الإجازة ونهاية الأسبوع في CRA الشركة المحددة.',
   'settings.craColors.leave': 'لون يوم الإجازة',

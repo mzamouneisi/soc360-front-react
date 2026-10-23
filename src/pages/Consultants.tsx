@@ -86,6 +86,8 @@ interface AddressSuggestion {
   label: string
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Administrateur',
   CONSULTANT: 'Consultant',
@@ -266,6 +268,17 @@ export function Consultants() {
     if (!isAdmin && !form.socId.trim()) {
       setFormError(tr('Consultants.selectionner.societe'))
       return
+    }
+    if (editing) {
+      const email = form.email.trim()
+      if (!email) {
+        setFormError(tr('Consultants.email.obligatoire'))
+        return
+      }
+      if (!EMAIL_PATTERN.test(email)) {
+        setFormError(tr('Consultants.email.invalide'))
+        return
+      }
     }
     const creatingPerson = !editing && (form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC')
     if (creatingPerson && (!form.username.trim() || !form.email.trim() || !form.password.trim())) {
