@@ -160,6 +160,10 @@ if [ ! -f "$OUT_DIR/index.html" ]; then
   exit 1
 fi
 
+# Désactive le traitement Jekyll de GitHub Pages : le dossier est un site statique Vite.
+# Sans ce fichier, Pages lance Jekyll et peut échouer sur le dossier docs/.
+touch "$OUT_DIR/.nojekyll"
+
 BASE_OK="$(grep -o 'src="[^"]*"\|href="[^"]*"' "$OUT_DIR/index.html" | grep -c "$BASE_EXPECTED" || true)"
 if [ "$BASE_OK" -lt 1 ]; then
   log "ERROR: Le build n'utilise pas la base '$BASE_EXPECTED'. Verifier $ENV_FILE."
