@@ -114,11 +114,12 @@ async function openCreateModal() {
 }
 
 describe('Activities — ajout selon le rôle', () => {
-  it('un manager ne peut choisir que ses propres collaborateurs (pas d’option Aucun)', async () => {
+  it('un manager voit les collaborateurs de tous rôles (pas d’option Aucun)', async () => {
     userMock.value = { ...baseUser, role: 'MANAGER' } as UserDto
     findAllMock.mockResolvedValue([])
     collaboratorsMock.mockResolvedValue([
       { id: 50, fullName: 'Alice Martin', position: null, email: null, role: 'CONSULTANT' },
+      { id: 60, fullName: 'Bob Durand', position: null, email: null, role: 'MANAGER' },
     ])
     typesFindAllMock.mockResolvedValue([])
     projectsFindAllMock.mockResolvedValue([])
@@ -133,6 +134,7 @@ describe('Activities — ajout selon le rôle', () => {
     await openCreateModal()
 
     expect((await screen.findAllByRole('option', { name: 'Alice Martin' })).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('option', { name: 'Bob Durand' }).length).toBeGreaterThan(0)
     expect(screen.queryByRole('option', { name: 'Aucun' })).not.toBeInTheDocument()
     expect(collaboratorsMock).toHaveBeenCalledWith(5)
   })
