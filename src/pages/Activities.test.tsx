@@ -114,7 +114,7 @@ async function openCreateModal() {
 }
 
 describe('Activities — ajout selon le rôle', () => {
-  it('un manager voit les collaborateurs de tous rôles (pas d’option Aucun)', async () => {
+  it('un manager voit ses consultants et lui-même (pas d’option Aucun)', async () => {
     userMock.value = { ...baseUser, role: 'MANAGER' } as UserDto
     findAllMock.mockResolvedValue([])
     collaboratorsMock.mockResolvedValue([
