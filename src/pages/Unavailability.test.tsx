@@ -19,6 +19,7 @@ const {
   summariesMock,
   findByConsultantMock,
   typesMock,
+  documentsDeleteMock,
   userMock,
 } = vi.hoisted(() => ({
   listMock: vi.fn(),
@@ -33,6 +34,7 @@ const {
   deleteMock: vi.fn(),
   summariesMock: vi.fn(),
   findByConsultantMock: vi.fn(),
+  documentsDeleteMock: vi.fn(),
   typesMock: vi.fn().mockResolvedValue([
     {
       id: 1,
@@ -98,6 +100,15 @@ vi.mock('../api/unavailabilityTypes', () => ({
     update: vi.fn(),
     disable: vi.fn(),
     remove: vi.fn(),
+  },
+}))
+
+vi.mock('../api/documents', () => ({
+  documentsApi: {
+    upload: vi.fn(),
+    delete: documentsDeleteMock,
+    download: vi.fn(),
+    previewUrl: vi.fn().mockResolvedValue('blob:preview'),
   },
 }))
 
@@ -633,6 +644,32 @@ describe('Unavailability', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
     expect(await screen.findByRole('button', { name: 'Ajouter un document' })).toBeEnabled()
+  })
+
+  it('supprime de la base le document retiré d’une indispo existante', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({
+        id: 1,
+        documentId: 55,
+        documentName: 'justificatif.pdf',
+        documentComment: 'Arrêt',
+      }),
+    ])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+    updateMock.mockResolvedValue(item())
+    documentsDeleteMock.mockResolvedValue(undefined)
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Éditer' }))
+    expect(await screen.findByText('justificatif.pdf')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer le document' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => expect(updateMock).toHaveBeenCalled())
+    await waitFor(() => expect(documentsDeleteMock).toHaveBeenCalledWith(55))
   })
 
   it('garde le filtre visible même sans indisponibilité', async () => {

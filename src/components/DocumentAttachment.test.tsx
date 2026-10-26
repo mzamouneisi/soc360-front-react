@@ -2,15 +2,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { DocumentAttachment } from './DocumentAttachment'
 
-const { uploadMock, downloadMock } = vi.hoisted(() => ({
+const { uploadMock, downloadMock, deleteMock } = vi.hoisted(() => ({
   uploadMock: vi.fn(),
   downloadMock: vi.fn(),
+  deleteMock: vi.fn(),
 }))
 
 vi.mock('../api/documents', () => ({
   documentsApi: {
     upload: uploadMock,
     download: downloadMock,
+    delete: deleteMock,
     previewUrl: vi.fn().mockResolvedValue('blob:preview'),
   },
 }))
@@ -65,7 +67,24 @@ describe('DocumentAttachment', () => {
       id: 42,
       name: 'justificatif.pdf',
       comment: 'Arrêt de travail',
+      temporary: true,
     })
+  })
+
+  it('supprime du serveur un document temporaire retiré', async () => {
+    deleteMock.mockResolvedValue(undefined)
+    const onChange = vi.fn()
+    render(
+      <DocumentAttachment
+        value={{ id: 43, name: 'erreur.pdf', comment: null, temporary: true }}
+        onChange={onChange}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer le document' }))
+
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(43))
+    expect(onChange).toHaveBeenCalledWith(null)
   })
 
   it('permet de visualiser le document associé', () => {
@@ -96,5 +115,6 @@ describe('DocumentAttachment', () => {
     expect(screen.getByRole('button', { name: 'Ajouter un document' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Retirer le document' }))
     expect(onChange).toHaveBeenCalledWith(null)
+    expect(deleteMock).not.toHaveBeenCalled()
   })
 })

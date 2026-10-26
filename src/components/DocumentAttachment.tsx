@@ -12,6 +12,8 @@ export interface AttachedDocument {
   id: number
   name: string
   comment: string | null
+  /** Document téléversé dans cette session et pas encore enregistré sur la demande. */
+  temporary?: boolean
 }
 
 export function DocumentView({ value }: { value: AttachedDocument | null | undefined }) {
@@ -121,6 +123,7 @@ export function DocumentAttachment({
         id: uploaded.id,
         name: uploaded.name,
         comment: comment.trim() || null,
+        temporary: true,
       })
       setOpen(false)
     } catch (err) {
@@ -128,6 +131,18 @@ export function DocumentAttachment({
     } finally {
       setSaving(false)
     }
+  }
+
+  async function removeDocument() {
+    if (!value) return
+    if (value.temporary) {
+      try {
+        await documentsApi.delete(value.id)
+      } catch {
+        // Le document peut déjà avoir été supprimé : on détache quand même la demande.
+      }
+    }
+    onChange(null)
   }
 
   return (
@@ -161,7 +176,7 @@ export function DocumentAttachment({
               icon="delete"
               label={tr('document.attachment.remove')}
               variant="danger"
-              onClick={() => onChange(null)}
+              onClick={() => void removeDocument()}
               disabled={disabled}
             />
           </>

@@ -8,6 +8,7 @@ import { holidaysApi } from '../api/holidays'
 import { socHolidaysApi } from '../api/socHolidays'
 import { unavailabilityApi } from '../api/unavailability'
 import { ApiError } from '../api/client'
+import { documentsApi } from '../api/documents'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
@@ -2088,14 +2089,26 @@ function AbsenceModal({
     if (message) setError(message)
   }
 
+  async function handleCancel() {
+    if (document?.temporary) {
+      try {
+        await documentsApi.delete(document.id)
+      } catch {
+        // Document déjà supprimé : on ferme quand même la popup.
+      }
+    }
+    setDocument(null)
+    onClose()
+  }
+
   return (
     <Modal
       open
       title={tr('CraDetail.declarer.une.absence')}
-      onClose={onClose}
+      onClose={() => void handleCancel()}
       footer={
         <>
-          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
+          <IconButton icon="cancel" label="Annuler" onClick={() => void handleCancel()} />
           <Button className="w-auto" onClick={() => void submit()} disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('CraDetail.declarer.une.absence')}

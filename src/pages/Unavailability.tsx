@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { unavailabilityApi } from '../api/unavailability'
 import { unavailabilityTypesApi } from '../api/unavailabilityTypes'
+import { documentsApi } from '../api/documents'
 import { consultantsApi } from '../api/consultants'
 import type {
   ConsultantSummary,
@@ -86,6 +87,7 @@ export function Unavailability() {
   const [formFirstDay, setFormFirstDay] = useState<DayPart>('ALL')
   const [formLastDay, setFormLastDay] = useState<DayPart>('ALL')
   const [formDocument, setFormDocument] = useState<AttachedDocument | null>(null)
+  const [removedDocumentIds, setRemovedDocumentIds] = useState<number[]>([])
   const [formError, setFormError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [historyFor, setHistoryFor] = useState<UnavailabilityDto | null>(null)
@@ -270,6 +272,7 @@ export function Unavailability() {
     setFormFirstDay('ALL')
     setFormLastDay('ALL')
     setFormDocument(null)
+    setRemovedDocumentIds([])
     setFormError(null)
     setShowForm(true)
   }
@@ -286,6 +289,7 @@ export function Unavailability() {
     setFormDocument(u.documentId != null && u.documentName
       ? { id: u.documentId, name: u.documentName, comment: u.documentComment ?? null }
       : null)
+    setRemovedDocumentIds([])
     setFormError(null)
     setShowForm(true)
   }
@@ -302,6 +306,20 @@ export function Unavailability() {
       if (formFirstDay === 'AM') setFormFirstDay('ALL')
       if (formLastDay === 'PM') setFormLastDay('ALL')
     }
+  }
+
+  async function closeForm() {
+    if (formDocument?.temporary) {
+      try {
+        await documentsApi.delete(formDocument.id)
+      } catch {
+        // Document déjà supprimé : on ferme quand même le formulaire.
+      }
+    }
+    setFormDocument(null)
+    setRemovedDocumentIds([])
+    setShowForm(false)
+    setFormError(null)
   }
 
   async function handleSave() {
@@ -346,6 +364,15 @@ export function Unavailability() {
       } else {
         await unavailabilityApi.create(request)
       }
+      for (const documentId of removedDocumentIds) {
+        try {
+          await documentsApi.delete(documentId)
+        } catch {
+          // Document déjà supprimé : l'indisponibilité est bien détachée.
+        }
+      }
+      setRemovedDocumentIds([])
+      setFormDocument(null)
       setShowForm(false)
       list.reload()
     } catch (err) {
@@ -577,7 +604,12 @@ export function Unavailability() {
             <Field label={tr('document.attachment.add')} id="Unavailability.document">
               <DocumentAttachment
                 value={formDocument}
-                onChange={setFormDocument}
+                onChange={(document) => {
+                  if (!document && formDocument && !formDocument.temporary) {
+                    setRemovedDocumentIds((prev) => [...prev, formDocument.id])
+                  }
+                  setFormDocument(document)
+                }}
                 socId={typesSocId}
                 consultantId={isConsultant ? (user?.consultantId ?? user?.id ?? null) : formConsultantId}
               />
@@ -608,7 +640,7 @@ export function Unavailability() {
             <IconButton
               icon="cancel"
               label={tr('Unavailability.annuler')}
-              onClick={() => setShowForm(false)}
+              onClick={() => void closeForm()}
               disabled={saving} id="Unavailability.annuler" />
             <IconButton
               icon={editingId != null ? 'save' : 'add'}
