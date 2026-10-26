@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { unavailabilityApi } from '../api/unavailability'
@@ -255,6 +255,15 @@ export function Unavailability() {
     ? (user?.hireDate ?? null)
     : (consultants.data?.find((c) => c.id === formConsultantId)?.hireDate ?? null)
 
+  function handleRowClick(u: UnavailabilityDto) {
+    setSelectedId(u.id)
+    if (canEdit(u)) {
+      openEdit(u)
+    } else {
+      setShowForm(false)
+    }
+  }
+
   function openCreate() {
     if (isConsultant && !user?.hireDate) {
       void dialog.error(tr('hireDate.required'))
@@ -278,6 +287,7 @@ export function Unavailability() {
   }
 
   function openEdit(u: UnavailabilityDto) {
+    setSelectedId(u.id)
     setEditingId(u.id)
     setFormConsultantId(u.consultantId)
     setFormType(u.type)
@@ -495,6 +505,215 @@ export function Unavailability() {
         </div>
       </div>
 
+      {list.error && <ErrorBlock message={list.error} />}
+      {list.loading && <LoadingBlock />}
+
+      {!list.loading && filtered.length === 0 && (
+        <Card className="flex flex-col items-center justify-center py-14">
+          <p className="text-sm font-medium text-gray-900">
+            {search.trim() ? tr('Unavailability.aucune.indisponibilite.filtre') : tr('Unavailability.aucune.indisponibilite')}
+          </p>
+          <p className="mt-1 text-sm text-gray-500">
+            {search.trim()
+              ? tr('Unavailability.modifiez.votre.recherche')
+              : tr('Unavailability.cliquez.sur.nouvelle.indisponibilite')}
+          </p>
+        </Card>
+      )}
+
+      {!list.loading && filtered.length > 0 && (
+        <>
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead style={{ backgroundColor: 'var(--table-header)' }}>
+                  <tr>
+                    <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                      #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.consultant')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.type')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.du')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.au')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.duree')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.statut')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.commentaire')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                      {tr('Unavailability.actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {pageItems.map((u, i) => (
+                    <Fragment key={u.id}>
+                    <tr
+                      onClick={() => handleRowClick(u)}
+                      className={`align-top cursor-pointer ${
+                        u.id === selectedId
+                          ? '[&>td]:border-y-2 [&>td]:border-blue-400 [&>td:first-child]:border-l-2 [&>td:last-child]:border-r-2 [&>td]:bg-blue-50'
+                          : 'even:bg-gray-50'
+                      }`}
+                    >
+                      <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                        {safePage * pageSize + i + 1}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{u.consultantName}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {unavailabilityTypeLabel(u.type)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                        {formatDate(u.startDate)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                        {formatDate(u.endDate)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{u.durationDays} {tr('Unavailability.j')}</td>
+                      <td className="px-4 py-3">
+                        <Badge kind={statusBadge(u.status)}>
+                          {dt(UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status)}
+                        </Badge>
+                        {u.rejectedReason && (
+                          <p className="mt-1 max-w-40 text-xs text-red-600" title={u.rejectedReason}>
+                            {u.rejectedReason}
+                          </p>
+                        )}
+                      </td>
+                      <td className="max-w-48 px-4 py-3 text-sm text-gray-600">{u.comment ?? '—'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {canEdit(u) && (
+                            <IconButton
+                              icon="edit"
+                              label={tr('Unavailability.editer')}
+                              variant="primary"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                openEdit(u)
+                              }} id="Unavailability.editer" />
+                          )}
+                          {canSubmit(u) && (
+                            <IconButton
+                              icon="check"
+                              label={tr('Unavailability.soumettre')}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                void handleSubmit(u)
+                              }} id="Unavailability.soumettre" />
+                          )}
+                          {canCancel(u) && (
+                            <IconButton
+                              icon="cancel"
+                              label={u.status === 'VALIDATED'
+                                ? tr('Unavailability.annuler.l.indisponibilite')
+                                : tr('Unavailability.annuler.la.soumission')}
+                              variant="danger"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                void handleCancel(u)
+                              }} id="Unavailability.annuler.la.soumission" />
+                          )}
+                          {canReview(u) && (
+                            <>
+                              <IconButton
+                                icon="check"
+                                label={tr('Unavailability.valider')}
+                                variant="soft"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  void handleValidate(u)
+                                }} id="Unavailability.valider" />
+                              <IconButton
+                                icon="reject"
+                                label={tr('Unavailability.rejeter')}
+                                variant="danger"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  void handleReject(u)
+                                }} id="Unavailability.rejeter" />
+                            </>
+                          )}
+                          {canInvalidate(u) && (
+                            <IconButton
+                              icon="reject"
+                              label={tr('Unavailability.invalider')}
+                              variant="danger"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                void handleInvalidate(u)
+                              }} id="Unavailability.invalider" />
+                          )}
+                          {canDelete(u) && (
+                            <IconButton
+                              icon="delete"
+                              label={tr('Unavailability.supprimer')}
+                              variant="danger"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                void handleDelete(u)
+                              }} id="Unavailability.supprimer" />
+                          )}
+                          <IconButton
+                            icon="history"
+                            label={tr('Unavailability.historique')}
+                            variant="history"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setHistoryFor(u)
+                            }} id="Unavailability.historique" />
+                        </div>
+                      </td>
+                    </tr>
+                    {u.id === selectedId && u.documentId != null && u.documentName && (
+                      <tr className="bg-blue-50/40">
+                        <td colSpan={9} className="px-4 py-3">
+                          <DocumentView
+                            value={{
+                              id: u.documentId,
+                              name: u.documentName,
+                              comment: u.documentComment ?? null,
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <InlineButton disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
+                {tr('Unavailability.precedent')}
+              </InlineButton>
+              <span className="text-sm text-gray-500">
+                {tr('Unavailability.page')} {safePage + 1} / {totalPages}
+              </span>
+              <InlineButton disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)}>
+                {tr('Unavailability.suivant')}
+              </InlineButton>
+            </div>
+          )}
+
+        </>
+      )}
+
       {showForm && (
         <Card className="mb-4 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">
@@ -625,7 +844,7 @@ export function Unavailability() {
             </Field>
           </div>
 
-          {previewUnavailability && (
+          {editingId == null && previewUnavailability && (
             <div className="mt-4">
               <UnavailabilityCalendar selected={previewUnavailability} unavailabilities={data} />
             </div>
@@ -654,215 +873,11 @@ export function Unavailability() {
         </Card>
       )}
 
-      {list.error && <ErrorBlock message={list.error} />}
-      {list.loading && <LoadingBlock />}
-
-      {!list.loading && filtered.length === 0 && (
-        <Card className="flex flex-col items-center justify-center py-14">
-          <p className="text-sm font-medium text-gray-900">
-            {search.trim() ? tr('Unavailability.aucune.indisponibilite.filtre') : tr('Unavailability.aucune.indisponibilite')}
-          </p>
-          <p className="mt-1 text-sm text-gray-500">
-            {search.trim()
-              ? tr('Unavailability.modifiez.votre.recherche')
-              : tr('Unavailability.cliquez.sur.nouvelle.indisponibilite')}
-          </p>
-        </Card>
+      {selected && (
+        <div className="mt-4">
+          <UnavailabilityCalendar selected={selected} unavailabilities={data} />
+        </div>
       )}
-
-      {!list.loading && filtered.length > 0 && (
-        <>
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead style={{ backgroundColor: 'var(--table-header)' }}>
-                  <tr>
-                    <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                      #
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.consultant')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.type')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.du')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.au')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.duree')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.statut')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.commentaire')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
-                      {tr('Unavailability.actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 bg-white">
-                  {pageItems.map((u, i) => (
-                    <tr
-                      key={u.id}
-                      onClick={() => setSelectedId(u.id)}
-                      className={`align-top cursor-pointer ${
-                        u.id === selectedId
-                          ? '[&>td]:border-y-2 [&>td]:border-blue-400 [&>td:first-child]:border-l-2 [&>td:last-child]:border-r-2 [&>td]:bg-blue-50'
-                          : 'even:bg-gray-50'
-                      }`}
-                    >
-                      <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
-                        {safePage * pageSize + i + 1}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{u.consultantName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {unavailabilityTypeLabel(u.type)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                        {formatDate(u.startDate)}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                        {formatDate(u.endDate)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{u.durationDays} {tr('Unavailability.j')}</td>
-                      <td className="px-4 py-3">
-                        <Badge kind={statusBadge(u.status)}>
-                          {dt(UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status)}
-                        </Badge>
-                        {u.rejectedReason && (
-                          <p className="mt-1 max-w-40 text-xs text-red-600" title={u.rejectedReason}>
-                            {u.rejectedReason}
-                          </p>
-                        )}
-                      </td>
-                      <td className="max-w-48 px-4 py-3 text-sm text-gray-600">{u.comment ?? '—'}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          {canEdit(u) && (
-                            <IconButton
-                              icon="edit"
-                              label={tr('Unavailability.editer')}
-                              variant="primary"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                openEdit(u)
-                              }} id="Unavailability.editer" />
-                          )}
-                          {canSubmit(u) && (
-                            <IconButton
-                              icon="check"
-                              label={tr('Unavailability.soumettre')}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                void handleSubmit(u)
-                              }} id="Unavailability.soumettre" />
-                          )}
-                          {canCancel(u) && (
-                            <IconButton
-                              icon="cancel"
-                              label={u.status === 'VALIDATED'
-                                ? tr('Unavailability.annuler.l.indisponibilite')
-                                : tr('Unavailability.annuler.la.soumission')}
-                              variant="danger"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                void handleCancel(u)
-                              }} id="Unavailability.annuler.la.soumission" />
-                          )}
-                          {canReview(u) && (
-                            <>
-                              <IconButton
-                                icon="check"
-                                label={tr('Unavailability.valider')}
-                                variant="soft"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  void handleValidate(u)
-                                }} id="Unavailability.valider" />
-                              <IconButton
-                                icon="reject"
-                                label={tr('Unavailability.rejeter')}
-                                variant="danger"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  void handleReject(u)
-                                }} id="Unavailability.rejeter" />
-                            </>
-                          )}
-                          {canInvalidate(u) && (
-                            <IconButton
-                              icon="reject"
-                              label={tr('Unavailability.invalider')}
-                              variant="danger"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                void handleInvalidate(u)
-                              }} id="Unavailability.invalider" />
-                          )}
-                          {canDelete(u) && (
-                            <IconButton
-                              icon="delete"
-                              label={tr('Unavailability.supprimer')}
-                              variant="danger"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                void handleDelete(u)
-                              }} id="Unavailability.supprimer" />
-                          )}
-                          <IconButton
-                            icon="history"
-                            label={tr('Unavailability.historique')}
-                            variant="history"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setHistoryFor(u)
-                            }} id="Unavailability.historique" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <InlineButton disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
-                {tr('Unavailability.precedent')}
-              </InlineButton>
-              <span className="text-sm text-gray-500">
-                {tr('Unavailability.page')} {safePage + 1} / {totalPages}
-              </span>
-              <InlineButton disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)}>
-                {tr('Unavailability.suivant')}
-              </InlineButton>
-            </div>
-          )}
-
-          {selected && (
-            <div className="mt-4 space-y-4">
-              {selected.documentId != null && selected.documentName && (
-                <DocumentView
-                  value={{
-                    id: selected.documentId,
-                    name: selected.documentName,
-                    comment: selected.documentComment ?? null,
-                  }}
-                />
-              )}
-              <UnavailabilityCalendar selected={selected} unavailabilities={data} />
-            </div>
-          )}
-        </>
-      )}
-
       {historyFor && (
         <UnavailabilityHistoryModal
           unavailability={historyFor}

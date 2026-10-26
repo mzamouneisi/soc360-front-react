@@ -244,6 +244,22 @@ describe('Unavailability', () => {
     expect(findByConsultantMock).toHaveBeenCalledWith(10, 2026, 'CRA')
   })
 
+  it('ouvre le formulaire d’édition en cliquant sur une ligne', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ status: 'DRAFT' })])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByText('Alice Martin'))
+
+    expect(
+      await screen.findByText('Modifier l’indisponibilité'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeInTheDocument()
+  })
+
   it('affiche le document joint quand on clique sur une indisponibilité', async () => {
     userMock.value = baseUser
     listMock.mockResolvedValue([
@@ -255,9 +271,9 @@ describe('Unavailability', () => {
 
     fireEvent.click(await screen.findByText('Alice Martin'))
 
-    expect(await screen.findByText('justificatif.pdf')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Voir le document' })).toBeInTheDocument()
-    expect(screen.getByText(/Arrêt/)).toBeInTheDocument()
+    expect((await screen.findAllByText('justificatif.pdf')).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('button', { name: 'Voir le document' }).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Arrêt/).length).toBeGreaterThan(0)
   })
 
   it('affiche le motif de rejet lorsqu’on ouvre une indisponibilité rejetée', async () => {
@@ -680,7 +696,7 @@ describe('Unavailability', () => {
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Éditer' }))
-    expect(await screen.findByText('justificatif.pdf')).toBeInTheDocument()
+    expect((await screen.findAllByText('justificatif.pdf')).length).toBeGreaterThan(0)
     fireEvent.click(screen.getByRole('button', { name: 'Retirer le document' }))
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
 
