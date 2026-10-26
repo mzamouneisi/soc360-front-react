@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { unavailabilityApi } from '../api/unavailability'
@@ -31,7 +31,7 @@ import {
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { UnavailabilityCalendar } from './UnavailabilityCalendar'
-import { DocumentAttachment, DocumentView, type AttachedDocument } from '../components/DocumentAttachment'
+import { DocumentAttachment, type AttachedDocument } from '../components/DocumentAttachment'
 
 function isCountedDate(date: string, countType: CountType): boolean {
   const dow = new Date(date + 'T00:00:00Z').getUTCDay()
@@ -559,8 +559,8 @@ export function Unavailability() {
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
                   {pageItems.map((u, i) => (
-                    <Fragment key={u.id}>
                     <tr
+                      key={u.id}
                       onClick={() => handleRowClick(u)}
                       className={`align-top cursor-pointer ${
                         u.id === selectedId
@@ -677,20 +677,6 @@ export function Unavailability() {
                         </div>
                       </td>
                     </tr>
-                    {u.id === selectedId && u.documentId != null && u.documentName && (
-                      <tr className="bg-blue-50/40">
-                        <td colSpan={9} className="px-4 py-3">
-                          <DocumentView
-                            value={{
-                              id: u.documentId,
-                              name: u.documentName,
-                              comment: u.documentComment ?? null,
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    )}
-                    </Fragment>
                   ))}
                 </tbody>
               </table>
@@ -719,7 +705,8 @@ export function Unavailability() {
           <h3 className="mb-3 text-sm font-semibold text-gray-900">
             {editingId != null ? tr('Unavailability.modifier.l.indisponibilite') : tr('Unavailability.nouvelle.indisponibilite')}
           </h3>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="space-y-3 lg:col-span-2">
             <div className="flex flex-wrap items-start gap-3">
               {!isConsultant && (
                 <div className="w-56 max-w-full">
@@ -820,20 +807,6 @@ export function Unavailability() {
               </p>
             </div>
 
-            <Field label={tr('document.attachment.add')} id="Unavailability.document">
-              <DocumentAttachment
-                value={formDocument}
-                onChange={(document) => {
-                  if (!document && formDocument && !formDocument.temporary) {
-                    setRemovedDocumentIds((prev) => [...prev, formDocument.id])
-                  }
-                  setFormDocument(document)
-                }}
-                socId={typesSocId}
-                consultantId={isConsultant ? (user?.consultantId ?? user?.id ?? null) : formConsultantId}
-              />
-            </Field>
-
             <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
               <Textarea
                 rows={1}
@@ -842,6 +815,23 @@ export function Unavailability() {
                 placeholder={tr('Unavailability.motif.remarques')}
               />
             </Field>
+            </div>
+
+            <div className="lg:col-span-1">
+              <Field label={tr('document.attachment.add')} id="Unavailability.document">
+                <DocumentAttachment
+                  value={formDocument}
+                  onChange={(document) => {
+                    if (!document && formDocument && !formDocument.temporary) {
+                      setRemovedDocumentIds((prev) => [...prev, formDocument.id])
+                    }
+                    setFormDocument(document)
+                  }}
+                  socId={typesSocId}
+                  consultantId={isConsultant ? (user?.consultantId ?? user?.id ?? null) : formConsultantId}
+                />
+              </Field>
+            </div>
           </div>
 
           {editingId == null && previewUnavailability && (
