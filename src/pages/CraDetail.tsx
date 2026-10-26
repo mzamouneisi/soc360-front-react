@@ -1417,6 +1417,7 @@ export function CraDetail({
         <AbsenceModal
           monthStart={absenceMin}
           monthEnd={monthEnd}
+          consultantId={cra.consultantId}
           submitting={saving}
           onSubmit={async (request) => {
             const error = await handleDeclareAbsence(request)
@@ -2038,12 +2039,14 @@ function SendBackModal({
 function AbsenceModal({
   monthStart,
   monthEnd,
+  consultantId,
   submitting,
   onSubmit,
   onClose,
 }: {
   monthStart: string
   monthEnd: string
+  consultantId?: number | null
   submitting?: boolean
   onSubmit: (request: {
     type: UnavailabilityType
@@ -2157,7 +2160,11 @@ function AbsenceModal({
           <Textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
         </Field>
         <Field label={tr('document.attachment.add')} id="CraDetail.absence.document">
-          <DocumentAttachment value={document} onChange={setDocument} />
+          <DocumentAttachment
+            value={document}
+            onChange={setDocument}
+            consultantId={consultantId}
+          />
         </Field>
         {error && <ErrorBlock message={error} />}
       </div>
