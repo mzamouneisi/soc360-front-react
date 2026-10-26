@@ -31,7 +31,7 @@ import {
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { UnavailabilityCalendar } from './UnavailabilityCalendar'
-import { DocumentAttachment, type AttachedDocument } from '../components/DocumentAttachment'
+import { DocumentAttachment, DocumentView, type AttachedDocument } from '../components/DocumentAttachment'
 
 function isCountedDate(date: string, countType: CountType): boolean {
   const dow = new Date(date + 'T00:00:00Z').getUTCDay()
@@ -847,7 +847,16 @@ export function Unavailability() {
           )}
 
           {selected && (
-            <div className="mt-4">
+            <div className="mt-4 space-y-4">
+              {selected.documentId != null && selected.documentName && (
+                <DocumentView
+                  value={{
+                    id: selected.documentId,
+                    name: selected.documentName,
+                    comment: selected.documentComment ?? null,
+                  }}
+                />
+              )}
               <UnavailabilityCalendar selected={selected} unavailabilities={data} />
             </div>
           )}

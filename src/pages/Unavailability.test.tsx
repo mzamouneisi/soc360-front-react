@@ -244,6 +244,22 @@ describe('Unavailability', () => {
     expect(findByConsultantMock).toHaveBeenCalledWith(10, 2026, 'CRA')
   })
 
+  it('affiche le document joint quand on clique sur une indisponibilité', async () => {
+    userMock.value = baseUser
+    listMock.mockResolvedValue([
+      item({ documentId: 55, documentName: 'justificatif.pdf', documentComment: 'Arrêt' }),
+    ])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByText('Alice Martin'))
+
+    expect(await screen.findByText('justificatif.pdf')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Voir le document' })).toBeInTheDocument()
+    expect(screen.getByText(/Arrêt/)).toBeInTheDocument()
+  })
+
   it('affiche le motif de rejet lorsqu’on ouvre une indisponibilité rejetée', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([
