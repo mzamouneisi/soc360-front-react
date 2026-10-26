@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { CraDetail } from './CraDetail'
+import { ApiError } from '../api/client'
 import { DialogHost } from '../components/dialog'
 import { setTranslationState } from '../i18n/translate'
 import type { CraDto, SaveCraRequest, UserDto } from '../api/types'
@@ -1009,6 +1010,45 @@ describe('CraDetail', () => {
         startDate: '2026-08-01',
         endDate: '2026-08-01',
       }),
+    )
+  })
+
+  it('affiche dans la popup l’erreur de document obligatoire pour une absence', async () => {
+    userMock.value = {
+      id: 10,
+      username: 'consultant',
+      email: 'consultant@soc.fr',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      phone: null,
+      role: 'CONSULTANT',
+      active: true,
+      socId: 5,
+      socName: 'SOC Test',
+      consultantId: 10,
+    } as UserDto
+
+    const draft = cra(true, 'DRAFT')
+    getByIdMock.mockResolvedValue(draft)
+    saveMock.mockResolvedValue(draft)
+    declareAbsenceMock.mockRejectedValue(
+      new ApiError(400, "Un document justificatif est obligatoire pour ce type d'indisponibilité"),
+    )
+    activitiesFindAllMock.mockResolvedValue([])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Déclarer une absence' }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Déclarer une absence' }),
+    )
+
+    await waitFor(() =>
+      expect(within(dialog).getByText(/document justificatif est obligatoire/i)).toBeInTheDocument(),
     )
   })
 

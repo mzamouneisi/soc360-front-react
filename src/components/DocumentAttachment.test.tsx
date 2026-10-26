@@ -48,8 +48,13 @@ describe('DocumentAttachment', () => {
     render(<DocumentAttachment value={null} onChange={onChange} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Ajouter un document' }))
+    const fileInput = screen.getByLabelText('Fichier')
+    expect(fileInput).toHaveAttribute(
+      'accept',
+      '.jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf',
+    )
     const file = new File(['contenu'], 'justificatif.pdf', { type: 'application/pdf' })
-    fireEvent.change(screen.getByLabelText('Fichier'), { target: { files: [file] } })
+    fireEvent.change(fileInput, { target: { files: [file] } })
     fireEvent.change(screen.getByLabelText('Commentaire (facultatif)'), {
       target: { value: 'Arrêt de travail' },
     })
@@ -88,6 +93,7 @@ describe('DocumentAttachment', () => {
 
     expect(screen.getByText('justificatif.pdf')).toBeInTheDocument()
     expect(await screen.findByTitle('Aperçu du document PDF')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ajouter un document' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Retirer le document' }))
     expect(onChange).toHaveBeenCalledWith(null)
   })

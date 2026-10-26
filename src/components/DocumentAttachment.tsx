@@ -138,7 +138,7 @@ export function DocumentAttachment({
           label={tr('document.attachment.add')}
           variant="new"
           onClick={openPopup}
-          disabled={disabled}
+          disabled={disabled || value != null}
         />
         {value ? (
           <>
@@ -192,6 +192,7 @@ export function DocumentAttachment({
           <Field label={tr('document.attachment.file')} id="document.attachment.file">
             <Input
               type="file"
+              accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
               aria-label={tr('document.attachment.file')}
               onChange={(e) => {
                 setFile(e.target.files?.[0] ?? null)

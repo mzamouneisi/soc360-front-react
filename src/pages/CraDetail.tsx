@@ -695,21 +695,20 @@ export function CraDetail({
     comment?: string | null
     documentId?: number | null
     documentComment?: string | null
-  }): Promise<boolean> {
-    if (!cra) return false
+  }): Promise<string | null> {
+    if (!cra) return tr('common.unexpectedError')
     setFormError(null)
     // Enregistrer le CRA avant de déclarer l'absence (les modifications en cours sont persistées).
     const saved = await doSave()
-    if (!saved) return false
+    if (!saved) return tr('common.unexpectedError')
     setSaving(true)
     try {
       const updated = await crasApi.declareAbsence(cra.id, request)
       setData(updated)
       onChange?.()
-      return true
+      return null
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
-      return false
+      return err instanceof ApiError ? err.message : tr('common.unexpectedError')
     } finally {
       setSaving(false)
     }
@@ -1419,9 +1418,9 @@ export function CraDetail({
           monthEnd={monthEnd}
           submitting={saving}
           onSubmit={async (request) => {
-            const ok = await handleDeclareAbsence(request)
-            if (ok) setAbsenceOpen(false)
-            return ok
+            const error = await handleDeclareAbsence(request)
+            if (!error) setAbsenceOpen(false)
+            return error
           }}
           onClose={() => setAbsenceOpen(false)}
         />
@@ -2052,7 +2051,7 @@ function AbsenceModal({
     comment?: string | null
     documentId?: number | null
     documentComment?: string | null
-  }) => Promise<boolean>
+  }) => Promise<string | null>
   onClose: () => void
 }) {
   const [type, setType] = useState<UnavailabilityType>('CONGE_PAYE')
@@ -2078,7 +2077,7 @@ function AbsenceModal({
       return
     }
     setError(null)
-    await onSubmit({
+    const message = await onSubmit({
       type,
       startDate: start,
       endDate: end,
@@ -2086,6 +2085,7 @@ function AbsenceModal({
       documentId: document?.id ?? null,
       documentComment: document?.comment ?? null,
     })
+    if (message) setError(message)
   }
 
   return (
