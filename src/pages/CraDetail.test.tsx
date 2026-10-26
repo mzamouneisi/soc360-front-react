@@ -1343,6 +1343,9 @@ describe('CraDetail', () => {
 
     await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
     fireEvent.click(screen.getByRole('button', { name: 'Déclarer une absence' }))
+    expect(
+      await screen.findByRole('button', { name: 'Ajouter un document' }),
+    ).toBeInTheDocument()
     fireEvent.click(
       screen.getAllByRole('button', { name: 'Déclarer une absence' }).pop() as HTMLElement,
     )

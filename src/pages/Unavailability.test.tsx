@@ -624,6 +624,17 @@ describe('Unavailability', () => {
     expect(createMock.mock.calls[0][0].lastDay).toBe('ALL')
   })
 
+  it('propose à un manager d’ajouter un document dans sa saisie d’indisponibilité', async () => {
+    userMock.value = { ...managerUser, hireDate: '2020-01-01' } as UserDto
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([{ id: 10, fullName: 'Alice Martin', socId: 5 }])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    expect(await screen.findByRole('button', { name: 'Ajouter un document' })).toBeEnabled()
+  })
+
   it('garde le filtre visible même sans indisponibilité', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([])
