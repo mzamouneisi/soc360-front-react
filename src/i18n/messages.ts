@@ -207,6 +207,8 @@ const fr: Messages = {
   'Unavailability.annuler.validated.confirm':
     'Annuler cette indisponibilité validée ? Elle ne sera plus prise en compte.',
   'Unavailability.commentaire.obligatoire': 'Le commentaire est obligatoire.',
+  'Unavailability.debut.jour.non.compte': 'La date de début doit être un jour compté pour ce type d’indisponibilité.',
+  'Unavailability.fin.jour.non.compte': 'La date de fin doit être un jour compté pour ce type d’indisponibilité.',
   'hireDate.required':
     'Renseignez votre date d’embauche pour saisir un CRA ou une indisponibilité.',
   'hireDate.required.activities':
@@ -437,6 +439,8 @@ const en: Messages = {
   'Unavailability.annuler.validated.confirm':
     'Cancel this approved unavailability? It will no longer be taken into account.',
   'Unavailability.commentaire.obligatoire': 'The comment is required.',
+  'Unavailability.debut.jour.non.compte': 'The start date must be a counted day for this time-off type.',
+  'Unavailability.fin.jour.non.compte': 'The end date must be a counted day for this time-off type.',
   'hireDate.required':
     'Set your hire date to fill in a timesheet or an unavailability.',
   'hireDate.required.activities': 'Set your hire date to view your activities.',
@@ -544,6 +548,8 @@ const ar: Messages = {
   'Unavailability.annuler.validated.confirm':
     'هل تريد إلغاء هذه الإجازة المعتمدة؟ لن تؤخذ في الحسبان بعد الآن.',
   'Unavailability.commentaire.obligatoire': 'التعليق مطلوب.',
+  'Unavailability.debut.jour.non.compte': 'يجب أن يكون تاريخ البداية يومًا محتسبًا لهذا النوع.',
+  'Unavailability.fin.jour.non.compte': 'يجب أن يكون تاريخ النهاية يومًا محتسبًا لهذا النوع.',
   'hireDate.required': 'أدخل تاريخ التوظيف لملء الجدول الزمني أو الإجازة.',
   'hireDate.required.activities': 'أدخل تاريخ التوظيف لعرض أنشطتك.',
   'Unavailability.date.embauche': 'الفترة المحددة قبل تاريخ التوظيف.',

@@ -597,6 +597,58 @@ describe('Unavailability', () => {
     expect(updateMock.mock.calls[0][1].lastDay).toBe('AM')
   })
 
+  it('refuse une date de début non comptée pour un type ouvré', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([{ id: 1, fullName: 'Alice Martin', socId: 5 }])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    fireEvent.change(screen.getByTitle('Collaborateur'), { target: { value: '1' } })
+    await waitFor(() =>
+      expect(document.querySelector('#Unavailability\\.du')).not.toBeNull(),
+    )
+    const startInput = document.querySelector('#Unavailability\\.du')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    const endInput = document.querySelector('#Unavailability\\.au')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    fireEvent.change(startInput, { target: { value: '2026-09-05' } })
+    fireEvent.change(endInput, { target: { value: '2026-09-07' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
+
+    expect(
+      await screen.findByText(/date de début doit être un jour compté/i),
+    ).toBeInTheDocument()
+    expect(createMock).not.toHaveBeenCalled()
+  })
+
+  it('autorise un intervalle ouvré contenant un week-end', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([{ id: 1, fullName: 'Alice Martin', socId: 5 }])
+    findByConsultantMock.mockResolvedValue([])
+    createMock.mockResolvedValue(item())
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    fireEvent.change(screen.getByTitle('Collaborateur'), { target: { value: '1' } })
+    await waitFor(() =>
+      expect(document.querySelector('#Unavailability\\.du')).not.toBeNull(),
+    )
+    const startInput = document.querySelector('#Unavailability\\.du')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    const endInput = document.querySelector('#Unavailability\\.au')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    fireEvent.change(startInput, { target: { value: '2026-09-04' } })
+    fireEvent.change(endInput, { target: { value: '2026-09-07' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
+
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+  })
+
   it('affiche le type issu des paramètres de la société et le propose au formulaire', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([item({ type: 'Congés payés' })])

@@ -354,6 +354,15 @@ export function Unavailability() {
       setFormError(tr('document.required'))
       return
     }
+    const countType = selectedType?.countType ?? 'CALENDAIRE'
+    if (!isCountedDate(formStart, countType)) {
+      setFormError(tr('Unavailability.debut.jour.non.compte'))
+      return
+    }
+    if (!isCountedDate(formEnd, countType)) {
+      setFormError(tr('Unavailability.fin.jour.non.compte'))
+      return
+    }
     setSaving(true)
     setFormError(null)
     try {
