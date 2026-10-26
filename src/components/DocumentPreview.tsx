@@ -23,7 +23,7 @@ export function DocumentPreview({
         <img
           src={url}
           alt={tr('document.preview.image')}
-          className="max-h-72 w-full object-contain bg-gray-50"
+          className="max-h-72 w-full object-contain object-left bg-gray-50"
         />
       ) : (
         <iframe

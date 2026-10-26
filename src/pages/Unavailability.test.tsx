@@ -244,6 +244,20 @@ describe('Unavailability', () => {
     expect(findByConsultantMock).toHaveBeenCalledWith(10, 2026, 'CRA')
   })
 
+  it('limite la largeur du commentaire à la somme Collaborateur + Type', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    const textarea = screen.getByPlaceholderText(/Motif, remarques/)
+    const wrapper = textarea.parentElement?.parentElement as HTMLElement
+
+    expect(wrapper.style.maxWidth).toBe('28.75rem')
+  })
+
   it('ouvre le formulaire d’édition en cliquant sur une ligne', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([item({ status: 'DRAFT' })])

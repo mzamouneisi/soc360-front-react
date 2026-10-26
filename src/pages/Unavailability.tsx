@@ -705,8 +705,8 @@ export function Unavailability() {
           <h3 className="mb-3 text-sm font-semibold text-gray-900">
             {editingId != null ? tr('Unavailability.modifier.l.indisponibilite') : tr('Unavailability.nouvelle.indisponibilite')}
           </h3>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div className="space-y-3 lg:col-span-2">
+          <div className="flex flex-wrap items-start gap-[30px]">
+            <div className="w-full max-w-[28.75rem] space-y-3">
             <div className="flex flex-wrap items-start gap-3">
               {!isConsultant && (
                 <div className="w-56 max-w-full">
@@ -807,17 +807,19 @@ export function Unavailability() {
               </p>
             </div>
 
-            <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
-              <Textarea
-                rows={1}
-                value={formComment}
-                onChange={(e) => setFormComment(e.target.value)}
-                placeholder={tr('Unavailability.motif.remarques')}
-              />
-            </Field>
+            <div style={{ maxWidth: isConsultant ? '14rem' : '28.75rem' }}>
+              <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
+                <Textarea
+                  rows={1}
+                  value={formComment}
+                  onChange={(e) => setFormComment(e.target.value)}
+                  placeholder={tr('Unavailability.motif.remarques')}
+                />
+              </Field>
+            </div>
             </div>
 
-            <div className="lg:col-span-1">
+            <div className="min-w-0 flex-1">
               <Field label={tr('document.attachment.add')} id="Unavailability.document">
                 <DocumentAttachment
                   value={formDocument}
