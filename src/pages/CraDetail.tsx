@@ -441,7 +441,8 @@ export function CraDetail({
   const pendingAbsences = linkedAbsences.filter((a) => a.status !== 'VALIDATED')
   const linkedAbsencesPending = pendingAbsences.length > 0
   function canValidateLinkedAbsence(absence: LinkedUnavailabilityDto): boolean {
-    return managerCanAct && absence.status !== 'VALIDATED'
+    // Un manager ne traite pas ses propres absences : son manager (ou un admin/responsable) le fait.
+    return managerCanAct && !isOwner && absence.status !== 'VALIDATED'
   }
 
   const hasInactiveEvent = days.some((d) => d.activities.some((a) => !a.valid))

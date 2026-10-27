@@ -244,7 +244,10 @@ export function Unavailability() {
   const canDelete = (u: UnavailabilityDto) => u.status === 'DRAFT' || u.status === 'REJECTED'
   const canCancel = (u: UnavailabilityDto) =>
     isOwner(u) && (u.status === 'SUBMITTED' || u.status === 'VALIDATED')
-  const canReview = (u: UnavailabilityDto) => !isConsultant && u.status === 'SUBMITTED'
+  // Un manager ne peut pas valider/rejeter ses propres indisponibilités : c'est son manager
+  // (ou un admin/responsable société) qui doit le faire.
+  const canReview = (u: UnavailabilityDto) =>
+    !isConsultant && !isOwner(u) && u.status === 'SUBMITTED'
   // Le manager peut invalider une indisponibilité déjà validée (elle repasse en « Rejetée »),
   // mais le collaborateur ne peut pas invalider sa propre indisponibilité.
   const canInvalidate = (u: UnavailabilityDto) =>

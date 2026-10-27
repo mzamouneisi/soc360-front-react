@@ -395,6 +395,18 @@ describe('Unavailability', () => {
     await waitFor(() => expect(rejectMock).toHaveBeenCalledWith(1, 'Période non couverte'))
   })
 
+  it('n’expose pas les actions Valider/Rejeter au manager propriétaire', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ status: 'SUBMITTED', consultantId: managerUser.id })])
+    summariesMock.mockResolvedValue([])
+
+    renderPage()
+
+    expect(await screen.findByText('Soumise')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Valider' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Rejeter' })).not.toBeInTheDocument()
+  })
+
   it('permet au manager d’invalider une indisponibilité déjà validée', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([item({ status: 'VALIDATED' })])
