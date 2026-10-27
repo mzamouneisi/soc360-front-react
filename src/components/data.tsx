@@ -45,7 +45,10 @@ export function PageHeader({
         <h2 id={titleId} className="text-2xl font-bold text-gray-900">
           {title}
           {count !== undefined && (
-            <span className="ml-2 align-middle text-lg font-semibold text-gray-400">
+            <span
+              id={titleId ? `${titleId}.count` : undefined}
+              className="ml-2 align-middle text-lg font-semibold text-gray-400"
+            >
               ({count})
             </span>
           )}
@@ -59,22 +62,29 @@ export function PageHeader({
 
 export function EmptyState({
   title,
+  titleId,
   description,
+  descriptionId,
   action,
 }: {
   title: string
+  titleId?: string
   description?: string
+  descriptionId?: string
   action?: ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white px-6 py-14 text-center">
+    <div
+      id={titleId ? `${titleId}.empty` : undefined}
+      className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white px-6 py-14 text-center"
+    >
       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
         <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-5 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
         </svg>
       </div>
-      <p className="text-sm font-semibold text-gray-900">{title}</p>
-      {description && <p className="mt-1 max-w-sm text-sm text-gray-500">{description}</p>}
+      <p id={titleId} className="text-sm font-semibold text-gray-900">{title}</p>
+      {description && <p id={descriptionId} className="mt-1 max-w-sm text-sm text-gray-500">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   )
@@ -88,9 +98,12 @@ export function LoadingBlock() {
   )
 }
 
-export function ErrorBlock({ message }: { message: string }) {
+export function ErrorBlock({ message, id = 'common.error' }: { message: string; id?: string }) {
   return (
-    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+    <div
+      id={id}
+      className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+    >
       {message}
     </div>
   )
@@ -139,7 +152,10 @@ export function Table<T>({
         <table className="min-w-full divide-y divide-gray-200">
           <thead style={{ backgroundColor: 'var(--table-header)' }}>
             <tr>
-              <th className="w-12 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+              <th
+                id="table.header.index"
+                className="w-12 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400"
+              >
                 #
               </th>
               {columns.map((col) => (
@@ -157,14 +173,22 @@ export function Table<T>({
             {visibleRows.map((row, rowIndex) => (
               <tr
                 key={rowKey(row)}
+                id={`table.row.${rowKey(row)}`}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={`even:bg-gray-50 ${onRowClick ? 'cursor-pointer transition hover:bg-gray-100' : ''}`}
               >
-                <td className="w-12 px-3 py-3 text-right text-sm tabular-nums text-gray-400">
+                <td
+                  id={`table.row.${rowKey(row)}.index`}
+                  className="w-12 px-3 py-3 text-right text-sm tabular-nums text-gray-400"
+                >
                   {firstIndex + rowIndex + 1}
                 </td>
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3 text-sm text-gray-700">
+                  <td
+                    key={col.key}
+                    id={`table.row.${rowKey(row)}.${col.key}`}
+                    className="px-4 py-3 text-sm text-gray-700"
+                  >
                     {col.render(row)}
                   </td>
                 ))}
@@ -196,22 +220,24 @@ export function Pagination({
   return (
     <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
       {total !== undefined && (
-        <span>
+        <span id="pagination.total">
           {total} {total > 1 ? t('common.items') : t('common.item')}
         </span>
       )}
       <div className="flex items-center gap-1">
         <button
+          id="common.previous"
           className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           disabled={page <= 0}
           onClick={() => onChange(page - 1)}
         >
           {t('common.previous')}
         </button>
-        <span className="px-3">
+        <span id="pagination.page" className="px-3">
           {t('common.page')} {page + 1} / {totalPages}
         </span>
         <button
+          id="common.next"
           className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           disabled={page >= totalPages - 1}
           onClick={() => onChange(page + 1)}
@@ -226,6 +252,7 @@ export function Pagination({
 export function Modal({
   open,
   title,
+  titleId = 'modal.title',
   onClose,
   children,
   footer,
@@ -233,6 +260,7 @@ export function Modal({
 }: {
   open: boolean
   title: string
+  titleId?: string
   onClose: () => void
   children: ReactNode
   footer?: ReactNode
@@ -266,8 +294,9 @@ export function Modal({
         aria-modal="true"
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 id={titleId} className="text-lg font-semibold text-gray-900">{title}</h3>
           <button
+            id="common.close"
             onClick={onClose}
             className="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
             aria-label={t('common.close')}

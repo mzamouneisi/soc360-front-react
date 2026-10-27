@@ -41,22 +41,23 @@ export function Login() {
       </div>
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
+          <div id="Login.e" className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-xl font-extrabold text-white">
             {tr('Login.e')}
           </div>
           <h1 className="text-2xl font-bold text-gray-900" id="Login.soc360">{tr('Login.soc360')}</h1>
-          <p className="mt-1 text-sm text-gray-500">{t('login.subtitle')}</p>
+          <p id="login.subtitle" className="mt-1 text-sm text-gray-500">{t('login.subtitle')}</p>
         </div>
 
         {error && (
           <div className="mb-4">
-            <Alert>{error}</Alert>
+            <Alert id="Login.error">{error}</Alert>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field label={t('login.username')} id="login.username">
             <Input
+              id="login.username.input"
               type="text"
               autoComplete="username"
               value={username}
@@ -68,6 +69,7 @@ export function Login() {
 
           <Field label={t('login.password')} id="login.password">
             <Input
+              id="login.password.input"
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               value={password}
@@ -75,8 +77,9 @@ export function Login() {
               required
               placeholder="••••••••"
             />
-            <label className="mt-1 flex items-center gap-2 text-sm text-gray-600">
+            <label id="login.showPassword" className="mt-1 flex items-center gap-2 text-sm text-gray-600">
               <input
+                id="login.showPassword.checkbox"
                 type="checkbox"
                 checked={showPassword}
                 onChange={(e) => setShowPassword(e.target.checked)}
@@ -88,6 +91,7 @@ export function Login() {
 
           <div className="text-right">
             <Link
+              id="login.forgot"
               to="/forgot-password"
               className="text-sm font-medium text-brand-600 hover:text-brand-700"
             >
@@ -95,15 +99,16 @@ export function Login() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" disabled={submitting}>
+          <Button id="login.submit" type="submit" className="w-full" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {t('login.submit')}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p id="login.noAccount" className="mt-6 text-center text-sm text-gray-600">
           {t('login.noAccount')}{' '}
           <Link
+            id="login.register"
             to="/inscription"
             className="font-medium text-brand-600 hover:text-brand-700"
           >

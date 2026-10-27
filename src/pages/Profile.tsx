@@ -159,6 +159,7 @@ export function Profile() {
         subtitleId="Profile.informations.personnelles.mot.de.passe.et.connexions"
         actions={
           <RefreshButton
+            id="Profile.reload"
             onClick={() => {
               void refreshMe()
               reload()
@@ -173,37 +174,37 @@ export function Profile() {
           <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <dt id="Profile.nom.complet" className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
-              <dd className="text-sm font-medium text-gray-900">
+              <dd id="Profile.nom.complet.value" className="text-sm font-medium text-gray-900">
                 {user.firstName} {user.lastName}
               </dd>
             </div>
             <div>
               <dt id="Profile.identifiant" className="text-sm text-gray-500">{tr('Profile.identifiant')}</dt>
-              <dd className="text-sm font-medium text-gray-900">{user.username}</dd>
+              <dd id="Profile.identifiant.value" className="text-sm font-medium text-gray-900">{user.username}</dd>
             </div>
             <div>
               <dt id="Profile.e.mail" className="text-sm text-gray-500">{tr('Profile.e.mail')}</dt>
-              <dd className="text-sm font-medium text-gray-900">{user.email}</dd>
+              <dd id="Profile.e.mail.value" className="text-sm font-medium text-gray-900">{user.email}</dd>
             </div>
             <div>
               <dt id="Profile.telephone" className="text-sm text-gray-500">{tr('Profile.telephone')}</dt>
-              <dd className="text-sm font-medium text-gray-900">{user.phone ?? '—'}</dd>
+              <dd id="Profile.telephone.value" className="text-sm font-medium text-gray-900">{user.phone ?? '—'}</dd>
             </div>
             <div>
               <dt id="Profile.role" className="text-sm text-gray-500">{tr('Profile.role')}</dt>
-              <dd className="text-sm font-medium text-gray-900">
+              <dd id="Profile.role.value.container" className="text-sm font-medium text-gray-900">
                 <Badge id="Profile.role.value" kind="info">{dt(ROLE_LABELS[user.role] ?? user.role)}</Badge>
               </dd>
             </div>
             <div>
               <dt id="Profile.societes" className="text-sm text-gray-500">{tr('Profile.societes')}</dt>
-              <dd className="text-sm font-medium text-gray-900">
+              <dd id="Profile.societes.value" className="text-sm font-medium text-gray-900">
                 {socs.length > 0 ? (
-                  <ul className="space-y-1">
+                  <ul className="space-y-1" id="Profile.societes.list">
                     {socs.map((e) => (
-                      <li key={e.id} className="flex flex-wrap items-center gap-2">
+                      <li key={e.id} id={`Profile.societe.${e.id}`} className="flex flex-wrap items-center gap-2">
                         <span className={e.id === favoriteSocId ? 'h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500' : 'h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500'} />
-                        <span className={e.id === favoriteSocId ? 'font-medium text-amber-600' : undefined}>{e.name}</span>
+                        <span id={`Profile.societe.${e.id}.nom`} className={e.id === favoriteSocId ? 'font-medium text-amber-600' : undefined}>{e.name}</span>
                         {user.role === 'RESPONSIBLE_SOC' && (
                           <span className="ml-auto flex gap-2">
                             <Button
@@ -251,23 +252,23 @@ export function Profile() {
               <dl className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <dt id="Profile.manager.nom.complet" className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>
-                  <dd className="text-sm font-medium text-gray-900">{user.manager.fullName}</dd>
+                  <dd id="Profile.manager.nom.complet.value" className="text-sm font-medium text-gray-900">{user.manager.fullName}</dd>
                 </div>
                 <div>
                   <dt id="Profile.manager.username" className="text-sm text-gray-500">{tr('Profile.username')}</dt>
-                  <dd className="text-sm font-medium text-gray-900">{user.manager.username}</dd>
+                  <dd id="Profile.manager.username.value" className="text-sm font-medium text-gray-900">{user.manager.username}</dd>
                 </div>
                 <div>
                   <dt id="Profile.manager.e.mail" className="text-sm text-gray-500">{tr('Profile.e.mail')}</dt>
-                  <dd className="text-sm font-medium text-gray-900">{user.manager.email}</dd>
+                  <dd id="Profile.manager.e.mail.value" className="text-sm font-medium text-gray-900">{user.manager.email}</dd>
                 </div>
                 <div>
                   <dt id="Profile.manager.telephone" className="text-sm text-gray-500">{tr('Profile.telephone')}</dt>
-                  <dd className="text-sm font-medium text-gray-900">{user.manager.phone ?? '—'}</dd>
+                  <dd id="Profile.manager.telephone.value" className="text-sm font-medium text-gray-900">{user.manager.phone ?? '—'}</dd>
                 </div>
                 <div>
                   <dt id="Profile.manager.role" className="text-sm text-gray-500">{tr('Profile.role')}</dt>
-                  <dd className="text-sm font-medium text-gray-900">
+                  <dd id="Profile.manager.role.value.container" className="text-sm font-medium text-gray-900">
                     {user.manager.role ? <Badge id="Profile.manager.role.value" kind="warning">{dt(ROLE_LABELS[user.manager.role as keyof typeof ROLE_LABELS] ?? user.manager.role)}</Badge> : '—'}
                   </dd>
                 </div>
@@ -276,20 +277,20 @@ export function Profile() {
           )}
           {user.role === 'RESPONSIBLE_SOC' && editingSoc && (
             <div className="mt-4 grid grid-cols-1 gap-4 rounded-lg border border-brand-100 bg-brand-50/40 p-4 sm:grid-cols-2">
-              <Field label={tr('Profile.nom.de.la.societe')} id="Profile.nom.de.la.societe"><Input value={editingSoc.name} onChange={(e) => setEditingSoc({ ...editingSoc, name: e.target.value })} /></Field>
-              <Field label={tr('Profile.siret')} id="Profile.siret"><Input value={editingSoc.siret ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, siret: e.target.value })} /></Field>
-              <Field label={tr('Profile.description')} id="Profile.description"><Textarea rows={2} value={editingSoc.description ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, description: e.target.value })} /></Field>
-              <Field label={tr('Profile.informations.web')} id="Profile.informations.web"><Textarea rows={2} value={editingSoc.infosWeb ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, infosWeb: e.target.value })} /></Field>
-              <Field label={tr('Profile.site.web')} id="Profile.site.web"><Input type="url" value={editingSoc.website ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, website: e.target.value })} /></Field>
-              <Field label={tr('Profile.gerant')} id="Profile.gerant"><Input value={editingSoc.gerant ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, gerant: e.target.value })} /></Field>
+              <Field label={tr('Profile.nom.de.la.societe')} id="Profile.nom.de.la.societe"><Input id="Profile.nom.de.la.societe.input" value={editingSoc.name} onChange={(e) => setEditingSoc({ ...editingSoc, name: e.target.value })} /></Field>
+              <Field label={tr('Profile.siret')} id="Profile.siret"><Input id="Profile.siret.input" value={editingSoc.siret ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, siret: e.target.value })} /></Field>
+              <Field label={tr('Profile.description')} id="Profile.description"><Textarea id="Profile.description.textarea" rows={2} value={editingSoc.description ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, description: e.target.value })} /></Field>
+              <Field label={tr('Profile.informations.web')} id="Profile.informations.web"><Textarea id="Profile.informations.web.textarea" rows={2} value={editingSoc.infosWeb ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, infosWeb: e.target.value })} /></Field>
+              <Field label={tr('Profile.site.web')} id="Profile.site.web"><Input id="Profile.site.web.input" type="url" value={editingSoc.website ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, website: e.target.value })} /></Field>
+              <Field label={tr('Profile.gerant')} id="Profile.gerant"><Input id="Profile.gerant.input" value={editingSoc.gerant ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, gerant: e.target.value })} /></Field>
               <div className="flex gap-2 sm:col-span-2">
                 <IconButton type="button" icon="save" label={tr('Profile.enregistrer')} variant="primary" className="!w-auto" onClick={() => void saveSoc()} disabled={socSaving} loading={socSaving} id="Profile.enregistrer" />
                 <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setEditingSoc(null)} id="Profile.annuler" />
               </div>
             </div>
           )}
-          {user.role === 'RESPONSIBLE_SOC' && socError && <div className="mt-4"><ErrorBlock message={socError} /></div>}
-          {user.role === 'RESPONSIBLE_SOC' && socMessage && <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">{socMessage}</div>}
+          {user.role === 'RESPONSIBLE_SOC' && socError && <div className="mt-4"><ErrorBlock id="Profile.societe.error" message={socError} /></div>}
+          {user.role === 'RESPONSIBLE_SOC' && socMessage && <div id="Profile.societe.message" className="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">{socMessage}</div>}
           {deletingSoc && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
               <div className="flex h-[500px] w-[500px] max-h-[90vh] max-w-[92vw] flex-col rounded-xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true">
@@ -302,17 +303,17 @@ export function Profile() {
                 </p>
                 <div className="mt-2 flex-1 space-y-2 overflow-y-auto">
                   {dependencies.map((item) => (
-                    <div key={`${item.type}-${item.id}`} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+                    <div key={`${item.type}-${item.id}`} id={`Profile.dependency.${item.type}-${item.id}`} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
                       <svg className="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path d="M15 7h2a5 5 0 1 1 0 10h-2" /><path d="M8 12h8" /></svg>
-                      <span className="truncate text-sm text-gray-700">{item.label}</span>
-                      <span className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+                      <span id={`Profile.dependency.${item.type}-${item.id}.label`} className="truncate text-sm text-gray-700">{item.label}</span>
+                      <span id={`Profile.dependency.${item.type}-${item.id}.type`} className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
                         {DEPENDENCY_LABELS[item.type] ?? item.type}
                       </span>
                     </div>
                   ))}
                 </div>
                 <div className="mt-4 flex items-center justify-end gap-2 border-t border-gray-200 pt-3">
-                  <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading} id="Profile.annuler" />
+                  <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setDeletingSoc(null)} disabled={dependencyLoading} id="Profile.annuler.2" />
                   <Button id="Profile.tout.supprimer" type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                     {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                     {tr('Profile.tout.supprimer')}
@@ -331,9 +332,10 @@ export function Profile() {
                 {tr('Profile.mot.de.passe.mis.a.jour')}
               </div>
             )}
-            {changeError && <ErrorBlock message={changeError} />}
+            {changeError && <ErrorBlock id="Profile.mot.de.passe.error" message={changeError} />}
             <Field label={tr('Profile.mot.de.passe.actuel')} id="Profile.mot.de.passe.actuel">
               <Input
+                id="Profile.mot.de.passe.actuel.input"
                 type="password"
                 autoComplete="current-password"
                 value={currentPassword}
@@ -342,6 +344,7 @@ export function Profile() {
             </Field>
             <Field label={tr('Profile.nouveau.mot.de.passe')} id="Profile.nouveau.mot.de.passe">
               <Input
+                id="Profile.nouveau.mot.de.passe.input"
                 type="password"
                 autoComplete="new-password"
                 value={newPassword}
@@ -350,6 +353,7 @@ export function Profile() {
             </Field>
             <Field label={tr('Profile.confirmation')} id="Profile.confirmation">
               <Input
+                id="Profile.confirmation.input"
                 type="password"
                 autoComplete="new-password"
                 value={confirmPassword}
@@ -373,7 +377,7 @@ export function Profile() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
-                  <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                  <th id="Profile.connexions.index" className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
                     #
                   </th>
                   <th id="Profile.date" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
@@ -392,14 +396,14 @@ export function Profile() {
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
                 {connPage.pageItems.map((c, i) => (
-                  <tr key={c.id} className="even:bg-gray-50">
-                    <td className="w-12 px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                  <tr key={c.id} id={`Profile.connection.${c.id}`} className="even:bg-gray-50">
+                    <td id={`Profile.connection.${c.id}.index`} className="w-12 px-4 py-3 text-right text-sm tabular-nums text-gray-400">
                       {connPage.offset + i + 1}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{formatDateTime(c.loginTime)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{c.ipAddress}</td>
-                    <td className="max-w-xs truncate px-4 py-3 text-sm text-gray-500">{c.userAgent}</td>
-                    <td className="px-4 py-3">
+                    <td id={`Profile.connection.${c.id}.date`} className="px-4 py-3 text-sm text-gray-700">{formatDateTime(c.loginTime)}</td>
+                    <td id={`Profile.connection.${c.id}.ip`} className="px-4 py-3 text-sm text-gray-700">{c.ipAddress}</td>
+                    <td id={`Profile.connection.${c.id}.navigateur`} className="max-w-xs truncate px-4 py-3 text-sm text-gray-500">{c.userAgent}</td>
+                    <td id={`Profile.connection.${c.id}.statut`} className="px-4 py-3">
                       <Badge id={`Profile.statut.value.${c.id}`} kind={c.success ? 'success' : 'error'}>
                         {dt(c.success ? 'Succès' : 'Échec')}
                       </Badge>

@@ -188,42 +188,42 @@ export function Suppliers() {
             {
               key: 'name',
               label: tr('Suppliers.fournisseur'),
-              render: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
+              render: (s) => <span id={`Suppliers.supplier.${s.id}.name`} className="font-medium text-gray-900">{s.name}</span>,
             },
             {
               key: 'contact',
               label: tr('Suppliers.contact'),
               render: (s) => (
                 <div>
-                  {s.contactName ? <p className="text-gray-900">{s.contactName}</p> : null}
-                  {s.contactEmail && <p className="text-xs text-gray-500">{s.contactEmail}</p>}
-                  {s.contactPhone && <p className="text-xs text-gray-500">{s.contactPhone}</p>}
-                  {!s.contactName && !s.contactEmail && <span className="text-gray-400">—</span>}
+                  {s.contactName ? <p id={`Suppliers.supplier.${s.id}.contactName`} className="text-gray-900">{s.contactName}</p> : null}
+                  {s.contactEmail && <p id={`Suppliers.supplier.${s.id}.contactEmail`} className="text-xs text-gray-500">{s.contactEmail}</p>}
+                  {s.contactPhone && <p id={`Suppliers.supplier.${s.id}.contactPhone`} className="text-xs text-gray-500">{s.contactPhone}</p>}
+                  {!s.contactName && !s.contactEmail && <span id={`Suppliers.supplier.${s.id}.contactEmpty`} className="text-gray-400">—</span>}
                 </div>
               ),
             },
             {
               key: 'soc',
               label: tr('Suppliers.societe.associee.colonne'),
-              render: (s) => <span>{s.soc?.name ?? '—'}</span>,
+              render: (s) => <span id={`Suppliers.supplier.${s.id}.soc`}>{s.soc?.name ?? '—'}</span>,
             },
             {
               key: 'socParent',
               label: tr('Clients.societe.parente'),
-              render: (s) => <span>{s.socParent?.name ?? '—'}</span>,
+              render: (s) => <span id={`Suppliers.supplier.${s.id}.socParent`}>{s.socParent?.name ?? '—'}</span>,
             },
             {
               key: 'notes',
               label: tr('Clients.notes'),
               render: (s) => (
-                <span className="line-clamp-2 max-w-56 text-xs text-gray-500">{s.notes ?? '—'}</span>
+                <span id={`Suppliers.supplier.${s.id}.notes`} className="line-clamp-2 max-w-56 text-xs text-gray-500">{s.notes ?? '—'}</span>
               ),
             },
             {
               key: 'active',
               label: tr('common.status'),
               render: (s) => (
-                <Badge kind={s.active ? 'success' : 'muted'}>{dt(s.active ? 'Actif' : 'Inactif')}</Badge>
+                <Badge kind={s.active ? 'success' : 'muted'} id={`Suppliers.supplier.${s.id}.active`}>{dt(s.active ? 'Actif' : 'Inactif')}</Badge>
               ),
             },
             {
@@ -235,12 +235,12 @@ export function Suppliers() {
                     <IconButton
                       icon="edit"
                       label={tr('common.edit')}
-                      onClick={(e) => { e.stopPropagation(); openEdit(s) }} id="common.edit" />
+                      onClick={(e) => { e.stopPropagation(); openEdit(s) }} id={`Suppliers.supplier.${s.id}.edit`} />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
                       variant="danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(s) }} id="common.delete" />
+                      onClick={(e) => { e.stopPropagation(); handleDelete(s) }} id={`Suppliers.supplier.${s.id}.delete`} />
                   </div>
                 ) : (
                   <></>
@@ -252,7 +252,9 @@ export function Suppliers() {
       {!loading && data?.length === 0 && (
         <EmptyState
           title={tr('Suppliers.aucun.fournisseur')}
+          titleId="Suppliers.aucun.fournisseur"
           description={tr('Suppliers.ajoutez.votre.premier.fournisseur.pour.commencer')}
+          descriptionId="Suppliers.ajoutez.votre.premier.fournisseur.pour.commencer"
         />
       )}
 
@@ -260,6 +262,7 @@ export function Suppliers() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Suppliers.nouveau.fournisseur')}
+        titleId="Suppliers.modal.title"
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
@@ -269,35 +272,37 @@ export function Suppliers() {
               variant="primary"
               onClick={handleSubmit as never}
               disabled={submitting} loading={submitting}
+              id={editing ? 'common.save' : 'common.create'}
             />
           </>
         }
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Suppliers.formError" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Suppliers.societe.associee')} id="Suppliers.societe.associee">
-              <Select value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
-                <option value="">{tr('Suppliers.selectionner')}</option>
-                {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
+              <Select id="Suppliers.societe.associee.select" value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
+                <option id="Suppliers.selectionner" value="">{tr('Suppliers.selectionner')}</option>
+                {(allSocs ?? []).map((soc) => <option key={soc.id} id={`Suppliers.societe.associee.option.${soc.id}`} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
-            <Field label={isAdmin ? tr('Clients.societe.parente') : tr('Clients.societe.parente.travail')}>
-              <Select value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
-                <option value="">{tr('Suppliers.aucune')}</option>
-                {parentSocs.map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
+            <Field label={isAdmin ? tr('Clients.societe.parente') : tr('Clients.societe.parente.travail')} id="Clients.societe.parente.form">
+              <Select id="Clients.societe.parente.form.select" value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
+                <option id="Suppliers.aucune" value="">{tr('Suppliers.aucune')}</option>
+                {parentSocs.map((soc) => <option key={soc.id} id={`Clients.societe.parente.form.option.${soc.id}`} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
           </div>
           <Field label={tr('Suppliers.nom.du.fournisseur')} id="Suppliers.nom.du.fournisseur">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <Input id="Suppliers.nom.du.fournisseur.input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
           <Field label={tr('Suppliers.notes.infos.specifiques.pour.votre.societe')} id="Suppliers.notes.infos.specifiques.pour.votre.societe">
             <Textarea
+              id="Suppliers.notes.infos.specifiques.pour.votre.societe.textarea"
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -307,12 +312,14 @@ export function Suppliers() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Suppliers.contact')} id="Suppliers.contact">
               <Input
+                id="Suppliers.contact.input"
                 value={form.contactName}
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
               />
             </Field>
             <Field label={tr('Suppliers.telephone')} id="Suppliers.telephone">
               <Input
+                id="Suppliers.telephone.input"
                 value={form.contactPhone}
                 onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               />
@@ -320,13 +327,15 @@ export function Suppliers() {
           </div>
           <Field label={tr('Suppliers.e.mail.du.contact')} id="Suppliers.e.mail.du.contact">
             <Input
+              id="Suppliers.e.mail.du.contact.input"
               type="email"
               value={form.contactEmail}
               onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label id="Suppliers.fournisseur.actif" className="flex items-center gap-2 text-sm text-gray-700">
             <input
+              id="Suppliers.fournisseur.actif.checkbox"
               type="checkbox"
               checked={form.active}
               onChange={(e) => setForm({ ...form, active: e.target.checked })}

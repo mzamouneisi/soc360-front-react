@@ -12,6 +12,7 @@ import { LanguageSelector } from '../i18n/LanguageSelector'
 
 interface NavItem {
   to: string
+  id: string
   label: string
   icon: string
   end?: boolean
@@ -19,6 +20,7 @@ interface NavItem {
 }
 
 interface NavSection {
+  id?: string
   title?: string
   items: NavItem[]
 }
@@ -69,14 +71,18 @@ function NavSection({ section, role }: { section: NavSection; role: Role }) {
   return (
     <div>
       {section.title && (
-        <p className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+        <p
+          id={section.id}
+          className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-gray-500"
+        >
           {section.title}
         </p>
       )}
-      <div className="space-y-0.5">
+      <div id={section.id ? section.id + '.items' : undefined} className="space-y-0.5">
         {items.map((item) => (
           <NavLink
             key={item.to}
+            id={item.id}
             to={item.to}
             end={item.end ?? item.to === '/'}
             className={({ isActive }) =>
@@ -112,10 +118,10 @@ function HorlogeNumerique() {
 
   return (
     <div className="text-left">
-      <div className="font-mono text-lg font-semibold tracking-wider text-horloge">
+      <div id="MainLayout.horloge.heure" className="font-mono text-lg font-semibold tracking-wider text-horloge">
         {time}
       </div>
-      <div className="text-lg text-gray-400">{date}</div>
+      <div id="MainLayout.horloge.date" className="text-lg text-gray-400">{date}</div>
     </div>
   )
 }
@@ -131,46 +137,50 @@ export function MainLayout() {
   const sections: NavSection[] = [
     {
       items: [
-        { to: '/', label: t('nav.dashboard'), icon: ICONS.dashboard },
+        { to: '/', id: 'nav.dashboard', label: t('nav.dashboard'), icon: ICONS.dashboard },
       ],
     },
     {
+      id: 'nav.group.management',
       title: t('nav.group.management'),
       items: [
-        { to: '/clients', label: t('nav.clients'), icon: ICONS.clients },
-        { to: '/fournisseurs', label: t('nav.suppliers'), icon: ICONS.suppliers },
-        { to: '/projets', label: t('nav.projects'), icon: ICONS.projects },
-        { to: '/types-activites', label: t('nav.activityTypes'), icon: ICONS.activities },
-        { to: '/activites', label: t('nav.activities'), icon: ICONS.activities },
-        { to: '/consultants', label: t('nav.consultants'), icon: ICONS.consultants },
-        { to: '/missions', label: t('nav.missions'), icon: ICONS.missions },
+        { to: '/clients', id: 'nav.clients', label: t('nav.clients'), icon: ICONS.clients },
+        { to: '/fournisseurs', id: 'nav.suppliers', label: t('nav.suppliers'), icon: ICONS.suppliers },
+        { to: '/projets', id: 'nav.projects', label: t('nav.projects'), icon: ICONS.projects },
+        { to: '/types-activites', id: 'nav.activityTypes', label: t('nav.activityTypes'), icon: ICONS.activities },
+        { to: '/activites', id: 'nav.activities', label: t('nav.activities'), icon: ICONS.activities },
+        { to: '/consultants', id: 'nav.consultants', label: t('nav.consultants'), icon: ICONS.consultants },
+        { to: '/missions', id: 'nav.missions', label: t('nav.missions'), icon: ICONS.missions },
       ],
     },
     {
+      id: 'nav.group.activity',
       title: t('nav.group.activity'),
       items: [
-        { to: '/mes-activites', label: t('nav.myActivities'), icon: ICONS.activities, roles: ['CONSULTANT'] },
-        { to: '/cras', label: t('nav.cra'), icon: ICONS.cra },
-        { to: '/indisponibilites', label: t('nav.unavailability'), icon: ICONS.holiday },
-        { to: '/types-indisponibilites', label: t('nav.unavailabilityTypes'), icon: ICONS.holiday, roles: ['ADMIN', 'RESPONSIBLE_SOC'] },
-        { to: '/notes-frais', label: t('nav.expenses'), icon: ICONS.expenses },
-        { to: '/jours-feries', label: t('nav.holidays'), icon: ICONS.holiday },
+        { to: '/mes-activites', id: 'nav.myActivities', label: t('nav.myActivities'), icon: ICONS.activities, roles: ['CONSULTANT'] },
+        { to: '/cras', id: 'nav.cra', label: t('nav.cra'), icon: ICONS.cra },
+        { to: '/indisponibilites', id: 'nav.unavailability', label: t('nav.unavailability'), icon: ICONS.holiday },
+        { to: '/types-indisponibilites', id: 'nav.unavailabilityTypes', label: t('nav.unavailabilityTypes'), icon: ICONS.holiday, roles: ['ADMIN', 'RESPONSIBLE_SOC'] },
+        { to: '/notes-frais', id: 'nav.expenses', label: t('nav.expenses'), icon: ICONS.expenses },
+        { to: '/jours-feries', id: 'nav.holidays', label: t('nav.holidays'), icon: ICONS.holiday },
       ],
     },
     {
+      id: 'nav.group.finance',
       title: t('nav.group.finance'),
       items: [
-        { to: '/facturation', label: t('nav.billing'), icon: ICONS.billing },
-        { to: '/fiches-paie', label: t('nav.payslips'), icon: ICONS.payslips },
+        { to: '/facturation', id: 'nav.billing', label: t('nav.billing'), icon: ICONS.billing },
+        { to: '/fiches-paie', id: 'nav.payslips', label: t('nav.payslips'), icon: ICONS.payslips },
       ],
     },
     {
+      id: 'nav.group.space',
       title: t('nav.group.space'),
       items: [
-        { to: '/documents', label: t('nav.documents'), icon: ICONS.documents },
-        { to: '/messages', label: t('nav.messages'), icon: ICONS.messages },
-        { to: '/support', label: t('nav.support'), icon: ICONS.support },
-        { to: '/parametres', label: t('nav.settings'), icon: ICONS.support },
+        { to: '/documents', id: 'nav.documents', label: t('nav.documents'), icon: ICONS.documents },
+        { to: '/messages', id: 'nav.messages', label: t('nav.messages'), icon: ICONS.messages },
+        { to: '/support', id: 'nav.support', label: t('nav.support'), icon: ICONS.support },
+        { to: '/parametres', id: 'nav.settings', label: t('nav.settings'), icon: ICONS.support },
       ],
     },
   ]
@@ -178,20 +188,21 @@ export function MainLayout() {
   if (user.role === 'ADMIN' || user.role === 'RESPONSIBLE_SOC') {
     const socItems: NavItem[] = []
     if (isAdmin) {
-      socItems.push({ to: '/soc/demo', label: t('nav.demoSoc'), icon: ICONS.soc })
+      socItems.push({ to: '/soc/demo', id: 'nav.demoSoc', label: t('nav.demoSoc'), icon: ICONS.soc })
     }
-    socItems.push({ to: '/soc', label: t('nav.mySocs'), icon: ICONS.soc, end: true })
-    socItems.push({ to: '/soc/toutes', label: t('nav.allSocs'), icon: ICONS.soc })
-    sections.splice(1, 0, { title: t('nav.group.socs'), items: socItems })
+    socItems.push({ to: '/soc', id: 'nav.mySocs', label: t('nav.mySocs'), icon: ICONS.soc, end: true })
+    socItems.push({ to: '/soc/toutes', id: 'nav.allSocs', label: t('nav.allSocs'), icon: ICONS.soc })
+    sections.splice(1, 0, { id: 'nav.group.socs', title: t('nav.group.socs'), items: socItems })
   }
 
   if (isAdmin) {
     sections.push({
+      id: 'nav.group.admin',
       title: t('nav.group.admin'),
       items: [
-        { to: '/tables', label: t('nav.tables'), icon: ICONS.tables },
-        { to: '/langues', label: t('nav.languages'), icon: ICONS.languages },
-        { to: '/logs', label: t('nav.logs'), icon: ICONS.logs },
+        { to: '/tables', id: 'nav.tables', label: t('nav.tables'), icon: ICONS.tables },
+        { to: '/langues', id: 'nav.languages', label: t('nav.languages'), icon: ICONS.languages },
+        { to: '/logs', id: 'nav.logs', label: t('nav.logs'), icon: ICONS.logs },
       ],
     })
   }
@@ -199,19 +210,19 @@ export function MainLayout() {
   return (
     <div className="flex h-full">
       <aside id="app-sidebar" className="flex w-64 shrink-0 flex-col overflow-y-auto bg-gray-900 text-gray-300">
-        <div className="flex h-16 shrink-0 items-center gap-2 px-5 text-lg font-bold text-white">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-extrabold">
+        <div id="app-brand" className="flex h-16 shrink-0 items-center gap-2 px-5 text-lg font-bold text-white">
+          <span id="MainLayout.e" className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-extrabold">
             {tr('MainLayout.e')}
           </span>
-          {tr('MainLayout.soc360')}
+          <span id="MainLayout.soc360">{tr('MainLayout.soc360')}</span>
         </div>
 
         <div id="_horloge_numerique" className="px-5 pb-3">
           <HorlogeNumerique />
         </div>
 
-        <p className="px-5 pb-2 text-gray-500 font_last_commit">
-          {tr('MainLayout.last.commit')} <br></br>{_LAST_COMMIT_}
+        <p id="MainLayout.last.commit" className="px-5 pb-2 text-gray-500 font_last_commit">
+          {tr('MainLayout.last.commit')} <br></br><span id="MainLayout.last.commit.value">{_LAST_COMMIT_}</span>
         </p>
 
         <nav className="flex-1 space-y-0.5 px-3 pb-4">
@@ -222,6 +233,7 @@ export function MainLayout() {
 
         <div className="border-t border-gray-800 p-3">
           <NavLink
+            id="app.profile"
             to="/profil"
             className="flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium text-gray-300 transition hover:bg-gray-800 hover:text-white"
           >
@@ -238,6 +250,7 @@ export function MainLayout() {
           <div>
             {isAdmin ? (
               <NavLink
+                id="app.header.dashboard"
                 to="/"
                 className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-brand-700"
               >
@@ -254,6 +267,7 @@ export function MainLayout() {
             <LanguageSelector />
             <NotificationBell />
             <NavLink
+              id="app.viewProfile"
               to="/profil"
               title={t('app.viewProfile')}
               className="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-3 shadow-sm transition hover:border-brand-600 hover:shadow"
@@ -262,13 +276,14 @@ export function MainLayout() {
                 {initials(user.firstName, user.lastName)}
               </div>
               <div className="leading-tight">
-                <p className="text-sm font-semibold text-gray-900">
+                <p id="app.user.name" className="text-sm font-semibold text-gray-900">
                   {user.firstName} {user.lastName}
                 </p>
-                <p className="text-xs text-gray-500">{ROLE_LABELS[user.role]}</p>
+                <p id="app.user.role" className="text-xs text-gray-500">{ROLE_LABELS[user.role]}</p>
               </div>
             </NavLink>
             <button
+              id="app.logout"
               onClick={logout}
               className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-red-50 hover:text-red-600"
               title={t('app.logout')}

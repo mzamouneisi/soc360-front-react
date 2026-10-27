@@ -484,12 +484,13 @@ export function Unavailability() {
         {!isConsultant && (
           <div className="max-w-xs flex-1">
             <Select
+              id="Unavailability.consultants.filter"
               value={consultantFilter ?? ''}
               onChange={(e) => setConsultantFilter(e.target.value ? Number(e.target.value) : null)}
             >
-              <option value="">{tr('Unavailability.tous.les.consultants')}</option>
+              <option id="Unavailability.tous.les.consultants" value="">{tr('Unavailability.tous.les.consultants')}</option>
               {consultants.data?.map((c) => (
-                <option key={c.id} value={c.id}>
+                <option id={`Unavailability.consultant.option.${c.id}`} key={c.id} value={c.id}>
                   {c.fullName}
                 </option>
               ))}
@@ -507,6 +508,7 @@ export function Unavailability() {
         </div>
         <div className="min-w-[16rem] flex-1">
           <Input
+            id="Unavailability.filtrer.par.type.statut.consultant.ou.dates"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={tr('Unavailability.filtrer.par.type.statut.consultant.ou.dates')}
@@ -519,10 +521,10 @@ export function Unavailability() {
 
       {!list.loading && filtered.length === 0 && (
         <Card className="flex flex-col items-center justify-center py-14">
-          <p className="text-sm font-medium text-gray-900">
+          <p id={search.trim() ? 'Unavailability.aucune.indisponibilite.filtre' : 'Unavailability.aucune.indisponibilite'} className="text-sm font-medium text-gray-900">
             {search.trim() ? tr('Unavailability.aucune.indisponibilite.filtre') : tr('Unavailability.aucune.indisponibilite')}
           </p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p id={search.trim() ? 'Unavailability.modifiez.votre.recherche' : 'Unavailability.cliquez.sur.nouvelle.indisponibilite'} className="mt-1 text-sm text-gray-500">
             {search.trim()
               ? tr('Unavailability.modifiez.votre.recherche')
               : tr('Unavailability.cliquez.sur.nouvelle.indisponibilite')}
@@ -537,31 +539,31 @@ export function Unavailability() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
-                    <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                    <th id="Unavailability.th.index" className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
                       #
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.consultant.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.consultant')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.type.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.type')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.du.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.du')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.au.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.au')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.duree.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.duree')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.statut.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.statut')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.commentaire.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.commentaire')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="Unavailability.actions.th" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('Unavailability.actions')}
                     </th>
                   </tr>
@@ -569,6 +571,7 @@ export function Unavailability() {
                 <tbody className="divide-y divide-gray-100 bg-white">
                   {pageItems.map((u, i) => (
                     <tr
+                      id={`Unavailability.row.${u.id}`}
                       key={u.id}
                       onClick={() => handleRowClick(u)}
                       className={`align-top cursor-pointer ${
@@ -577,32 +580,32 @@ export function Unavailability() {
                           : 'even:bg-gray-50'
                       }`}
                     >
-                      <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                      <td id={`Unavailability.row.${u.id}.index`} className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
                         {safePage * pageSize + i + 1}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{u.consultantName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td id={`Unavailability.row.${u.id}.consultant`} className="px-4 py-3 text-sm text-gray-900">{u.consultantName}</td>
+                      <td id={`Unavailability.row.${u.id}.type`} className="px-4 py-3 text-sm text-gray-900">
                         {unavailabilityTypeLabel(u.type)}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                      <td id={`Unavailability.row.${u.id}.start`} className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                         {formatDate(u.startDate)}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                      <td id={`Unavailability.row.${u.id}.end`} className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                         {formatDate(u.endDate)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{u.durationDays} {tr('Unavailability.j')}</td>
-                      <td className="px-4 py-3">
-                        <Badge kind={statusBadge(u.status)}>
+                      <td id={`Unavailability.row.${u.id}.duration`} className="px-4 py-3 text-sm text-gray-600">{u.durationDays} {tr('Unavailability.j')}</td>
+                      <td id={`Unavailability.row.${u.id}.status`} className="px-4 py-3">
+                        <Badge id={`Unavailability.row.${u.id}.status.badge`} kind={statusBadge(u.status)}>
                           {dt(UNAVAILABILITY_STATUS_LABELS[u.status] ?? u.status)}
                         </Badge>
                         {u.rejectedReason && (
-                          <p className="mt-1 max-w-40 text-xs text-red-600" title={u.rejectedReason}>
+                          <p id={`Unavailability.row.${u.id}.rejectedReason`} className="mt-1 max-w-40 text-xs text-red-600" title={u.rejectedReason}>
                             {u.rejectedReason}
                           </p>
                         )}
                       </td>
-                      <td className="max-w-48 px-4 py-3 text-sm text-gray-600">{u.comment ?? '—'}</td>
-                      <td className="px-4 py-3">
+                      <td id={`Unavailability.row.${u.id}.comment`} className="max-w-48 px-4 py-3 text-sm text-gray-600">{u.comment ?? '—'}</td>
+                      <td id={`Unavailability.row.${u.id}.actions`} className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
                           {canEdit(u) && (
                             <IconButton
@@ -612,7 +615,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 openEdit(u)
-                              }} id="Unavailability.editer" />
+                              }} id={`Unavailability.editer.${u.id}`} />
                           )}
                           {canSubmit(u) && (
                             <IconButton
@@ -621,7 +624,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleSubmit(u)
-                              }} id="Unavailability.soumettre" />
+                              }} id={`Unavailability.soumettre.${u.id}`} />
                           )}
                           {canCancel(u) && (
                             <IconButton
@@ -633,7 +636,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleCancel(u)
-                              }} id="Unavailability.annuler.la.soumission" />
+                              }} id={`Unavailability.annuler.la.soumission.${u.id}`} />
                           )}
                           {canReview(u) && (
                             <>
@@ -644,7 +647,7 @@ export function Unavailability() {
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   void handleValidate(u)
-                                }} id="Unavailability.valider" />
+                                }} id={`Unavailability.valider.${u.id}`} />
                               <IconButton
                                 icon="reject"
                                 label={tr('Unavailability.rejeter')}
@@ -652,7 +655,7 @@ export function Unavailability() {
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   void handleReject(u)
-                                }} id="Unavailability.rejeter" />
+                                }} id={`Unavailability.rejeter.${u.id}`} />
                             </>
                           )}
                           {canInvalidate(u) && (
@@ -663,7 +666,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleInvalidate(u)
-                              }} id="Unavailability.invalider" />
+                              }} id={`Unavailability.invalider.${u.id}`} />
                           )}
                           {canDelete(u) && (
                             <IconButton
@@ -673,7 +676,7 @@ export function Unavailability() {
                               onClick={(e) => {
                                 e.stopPropagation()
                                 void handleDelete(u)
-                              }} id="Unavailability.supprimer" />
+                              }} id={`Unavailability.supprimer.${u.id}`} />
                           )}
                           <IconButton
                             icon="history"
@@ -682,7 +685,7 @@ export function Unavailability() {
                             onClick={(e) => {
                               e.stopPropagation()
                               setHistoryFor(u)
-                            }} id="Unavailability.historique" />
+                            }} id={`Unavailability.historique.${u.id}`} />
                         </div>
                       </td>
                     </tr>
@@ -694,13 +697,13 @@ export function Unavailability() {
 
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
-              <InlineButton disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
+              <InlineButton id="Unavailability.precedent" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
                 {tr('Unavailability.precedent')}
               </InlineButton>
-              <span className="text-sm text-gray-500">
+              <span id="Unavailability.page" className="text-sm text-gray-500">
                 {tr('Unavailability.page')} {safePage + 1} / {totalPages}
               </span>
-              <InlineButton disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)}>
+              <InlineButton id="Unavailability.suivant" disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)}>
                 {tr('Unavailability.suivant')}
               </InlineButton>
             </div>
@@ -711,7 +714,7 @@ export function Unavailability() {
 
       {showForm && (
         <Card className="mb-4 p-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-900">
+          <h3 id={editingId != null ? 'Unavailability.modifier.l.indisponibilite.form' : 'Unavailability.nouvelle.indisponibilite.form'} className="mb-3 text-sm font-semibold text-gray-900">
             {editingId != null ? tr('Unavailability.modifier.l.indisponibilite') : tr('Unavailability.nouvelle.indisponibilite')}
           </h3>
           <div className="flex flex-wrap items-start gap-[30px]">
@@ -721,13 +724,14 @@ export function Unavailability() {
                 <div className="w-56 max-w-full">
                   <Field label={tr('Unavailability.consultant')} id="Unavailability.consultant">
                     <Select
+                      id="Unavailability.consultant.select"
                       value={formConsultantId ?? ''}
                       onChange={(e) => setFormConsultantId(e.target.value ? Number(e.target.value) : null)}
                       title={tr('Unavailability.consultant')}
                     >
-                      <option value="">{tr('Unavailability.choisir')}</option>
+                      <option id="Unavailability.consultant.choisir" value="">{tr('Unavailability.choisir')}</option>
                       {consultants.data?.map((c) => (
-                        <option key={c.id} value={c.id}>
+                        <option id={`Unavailability.consultant.form.option.${c.id}`} key={c.id} value={c.id}>
                           {c.fullName}
                         </option>
                       ))}
@@ -737,13 +741,13 @@ export function Unavailability() {
               )}
               <div className="w-56 max-w-full">
                 <Field label={tr('Unavailability.type')} id="Unavailability.type">
-                  <Select value={formType} onChange={(e) => setFormType(e.target.value)}>
-                    {!formType && <option value="">{tr('Unavailability.choisir')}</option>}
+                  <Select id="Unavailability.type.select" value={formType} onChange={(e) => setFormType(e.target.value)}>
+                    {!formType && <option id="Unavailability.type.choisir" value="">{tr('Unavailability.choisir')}</option>}
                     {formType && !typeOptions.includes(formType) && (
-                      <option value={formType}>{unavailabilityTypeLabel(formType)}</option>
+                      <option id="Unavailability.type.current" value={formType}>{unavailabilityTypeLabel(formType)}</option>
                     )}
-                    {typeOptions.map((label) => (
-                      <option key={label} value={label}>
+                    {typeOptions.map((label, index) => (
+                      <option id={`Unavailability.type.option.${index}`} key={label} value={label}>
                         {label}
                       </option>
                     ))}
@@ -755,13 +759,13 @@ export function Unavailability() {
             <div className="flex flex-wrap items-start gap-3">
               <div className="w-44 max-w-full">
                 <Field label={tr('Unavailability.du')} id="Unavailability.du">
-                  <Input type="date" value={formStart} min={formHireDate ?? undefined}
+                  <Input id="Unavailability.du.input" type="date" value={formStart} min={formHireDate ?? undefined}
                     onChange={(e) => changeDates(e.target.value, formEnd)} />
                 </Field>
               </div>
               <div className="w-44 max-w-full">
                 <Field label={tr('Unavailability.au')} id="Unavailability.au">
-                  <Input type="date" value={formEnd} min={formHireDate ?? formStart}
+                  <Input id="Unavailability.au.input" type="date" value={formEnd} min={formHireDate ?? formStart}
                     onChange={(e) => changeDates(formStart, e.target.value)} />
                 </Field>
               </div>
@@ -772,6 +776,7 @@ export function Unavailability() {
                 <div className="w-56 max-w-full">
                   <Field label="Demi-journée" id="Unavailability.demiJournee">
                     <Select
+                      id="Unavailability.demiJournee.select"
                       value={formFirstDay}
                       onChange={(e) => {
                         const value = e.target.value as DayPart
@@ -779,9 +784,9 @@ export function Unavailability() {
                         setFormLastDay(value)
                       }}
                     >
-                      <option value="ALL">Journée entière</option>
-                      <option value="AM">Matin</option>
-                      <option value="PM">Après-midi</option>
+                      <option id="Unavailability.demiJournee.option.ALL" value="ALL">Journée entière</option>
+                      <option id="Unavailability.demiJournee.option.AM" value="AM">Matin</option>
+                      <option id="Unavailability.demiJournee.option.PM" value="PM">Après-midi</option>
                     </Select>
                   </Field>
                 </div>
@@ -790,28 +795,30 @@ export function Unavailability() {
                   <div className="w-56 max-w-full">
                     <Field label="Début" id="Unavailability.debutDemiJournee">
                       <Select
+                        id="Unavailability.debutDemiJournee.select"
                         value={formFirstDay}
                         onChange={(e) => setFormFirstDay(e.target.value as DayPart)}
                       >
-                        <option value="ALL">Journée entière</option>
-                        <option value="PM">Après-midi</option>
+                        <option id="Unavailability.debutDemiJournee.option.ALL" value="ALL">Journée entière</option>
+                        <option id="Unavailability.debutDemiJournee.option.PM" value="PM">Après-midi</option>
                       </Select>
                     </Field>
                   </div>
                   <div className="w-56 max-w-full">
                     <Field label="Fin" id="Unavailability.finDemiJournee">
                       <Select
+                        id="Unavailability.finDemiJournee.select"
                         value={formLastDay}
                         onChange={(e) => setFormLastDay(e.target.value as DayPart)}
                       >
-                        <option value="ALL">Journée entière</option>
-                        <option value="AM">Matin</option>
+                        <option id="Unavailability.finDemiJournee.option.ALL" value="ALL">Journée entière</option>
+                        <option id="Unavailability.finDemiJournee.option.AM" value="AM">Matin</option>
                       </Select>
                     </Field>
                   </div>
                 </>
               )}
-              <p className="pb-2 text-sm text-gray-500">
+              <p id="Unavailability.duration" className="pb-2 text-sm text-gray-500">
                 Durée : {durationFor(formStart, formEnd, formFirstDay, formLastDay, formCountType)} j
               </p>
             </div>
@@ -819,6 +826,7 @@ export function Unavailability() {
             <div style={{ maxWidth: isConsultant ? '14rem' : '28.75rem' }}>
               <Field label={tr('Unavailability.commentaire')} id="Unavailability.commentaire">
                 <Textarea
+                  id="Unavailability.commentaire.textarea"
                   rows={1}
                   value={formComment}
                   onChange={(e) => setFormComment(e.target.value)}
@@ -853,7 +861,7 @@ export function Unavailability() {
 
           {formError && (
             <div className="mt-3">
-              <Alert variant="error">{formError}</Alert>
+              <Alert id="Unavailability.form.error" variant="error">{formError}</Alert>
             </div>
           )}
           <div className="mt-4 flex items-center justify-end gap-2">
@@ -863,6 +871,7 @@ export function Unavailability() {
               onClick={() => void closeForm()}
               disabled={saving} id="Unavailability.annuler" />
             <IconButton
+              id={editingId != null ? 'Unavailability.save' : 'Unavailability.create'}
               icon={editingId != null ? 'save' : 'add'}
               label={editingId != null ? 'Enregistrer' : 'Créer'}
               variant="primary"
@@ -913,7 +922,7 @@ function UnavailabilityHistoryModal({
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold text-gray-900" id="Unavailability.historique.de.l.indisponibilite">{tr('Unavailability.historique.de.l.indisponibilite')} ({historyPage.total})</h3>
-            <p className="text-xs text-gray-500">
+            <p id="Unavailability.historique.subtitle" className="text-xs text-gray-500">
               {unavailability.consultantName} — {unavailabilityTypeLabel(unavailability.type)}{' '}
               ({unavailability.startDate} → {unavailability.endDate})
             </p>
@@ -925,7 +934,7 @@ function UnavailabilityHistoryModal({
         {history.error && <ErrorBlock message={history.error} />}
 
         {!history.loading && !history.error && (history.data?.length ?? 0) === 0 && (
-          <p className="py-6 text-center text-sm text-gray-500">{tr('Unavailability.aucune.modification.enregistree')}</p>
+          <p id="Unavailability.aucune.modification.enregistree" className="py-6 text-center text-sm text-gray-500">{tr('Unavailability.aucune.modification.enregistree')}</p>
         )}
 
         {!history.loading && (history.data?.length ?? 0) > 0 && (
@@ -933,27 +942,27 @@ function UnavailabilityHistoryModal({
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
-                  <th className="w-10 px-3 py-2 text-right text-xs font-bold uppercase text-gray-400">#</th>
-                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.date')}</th>
-                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.modifie.par')}</th>
-                  <th className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.commentaire')}</th>
-                  <th className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('Unavailability.avant')}</th>
-                  <th className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('Unavailability.apres')}</th>
+                  <th id="Unavailability.history.th.index" className="w-10 px-3 py-2 text-right text-xs font-bold uppercase text-gray-400">#</th>
+                  <th id="Unavailability.history.date" className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.date')}</th>
+                  <th id="Unavailability.history.modifie.par" className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.modifie.par')}</th>
+                  <th id="Unavailability.history.commentaire" className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('Unavailability.commentaire')}</th>
+                  <th id="Unavailability.history.avant" className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('Unavailability.avant')}</th>
+                  <th id="Unavailability.history.apres" className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('Unavailability.apres')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
                 {historyPage.pageItems.map((h: UnavailabilityHistoryDto, i) => (
-                  <tr key={h.id}>
-                    <td className="w-10 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
+                  <tr id={`Unavailability.history.row.${h.id}`} key={h.id}>
+                    <td id={`Unavailability.history.row.${h.id}.index`} className="w-10 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
                       {historyPage.offset + i + 1}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">
+                    <td id={`Unavailability.history.row.${h.id}.date`} className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">
                       {formatDateTime(h.dateModifIndispo)}
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
-                    <td className="px-3 py-2 text-sm text-gray-600">{h.comment ? dt(h.comment) : '—'}</td>
-                    <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsBefore} {tr('Unavailability.j')}</td>
-                    <td className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsAfter} {tr('Unavailability.j')}</td>
+                    <td id={`Unavailability.history.row.${h.id}.modifier`} className="px-3 py-2 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
+                    <td id={`Unavailability.history.row.${h.id}.comment`} className="px-3 py-2 text-sm text-gray-600">{h.comment ? dt(h.comment) : '—'}</td>
+                    <td id={`Unavailability.history.row.${h.id}.before`} className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsBefore} {tr('Unavailability.j')}</td>
+                    <td id={`Unavailability.history.row.${h.id}.after`} className="px-3 py-2 text-center text-sm text-gray-600">{h.nbEventsAfter} {tr('Unavailability.j')}</td>
                   </tr>
                 ))}
               </tbody>

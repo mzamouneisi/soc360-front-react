@@ -147,17 +147,17 @@ export function Documents() {
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">{tr('Documents.documents')}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{(data ?? []).length}</p>
+        <Card className="p-5" id="Documents.card.documents">
+          <p id="Documents.documents.2" className="text-sm font-medium text-gray-500">{tr('Documents.documents')}</p>
+          <p id="Documents.documentsCount" className="mt-2 text-2xl font-bold text-gray-900">{(data ?? []).length}</p>
         </Card>
-        <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">{tr('Documents.expire.sous.30.jours')}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{expiredSoon}</p>
+        <Card className="p-5" id="Documents.card.expiring">
+          <p id="Documents.expire.sous.30.jours" className="text-sm font-medium text-gray-500">{tr('Documents.expire.sous.30.jours')}</p>
+          <p id="Documents.expiredSoonCount" className="mt-2 text-2xl font-bold text-gray-900">{expiredSoon}</p>
         </Card>
-        <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">{tr('Documents.taille.totale')}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">
+        <Card className="p-5" id="Documents.card.size">
+          <p id="Documents.taille.totale" className="text-sm font-medium text-gray-500">{tr('Documents.taille.totale')}</p>
+          <p id="Documents.totalSize" className="mt-2 text-2xl font-bold text-gray-900">
             {formatSize((data ?? []).reduce((s, d) => s + d.size, 0))}
           </p>
         </Card>
@@ -184,8 +184,8 @@ export function Documents() {
                       </svg>
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-900">{d.name}</p>
-                      <p className="text-xs text-gray-500">{formatSize(d.size)}</p>
+                      <p id={`Documents.document.${d.id}.name`} className="truncate font-medium text-gray-900">{d.name}</p>
+                      <p id={`Documents.document.${d.id}.size`} className="text-xs text-gray-500">{formatSize(d.size)}</p>
                     </div>
                   </div>
                 ),
@@ -193,31 +193,31 @@ export function Documents() {
               {
                 key: 'category',
                 label: tr('Documents.categorie'),
-                render: (d) => <Badge kind="info">{d.category}</Badge>,
+                render: (d) => <Badge kind="info" id={`Documents.document.${d.id}.category`}>{d.category}</Badge>,
               },
               {
                 key: 'description',
                 label: tr('Documents.description'),
-                render: (d) => <span className="text-gray-500">{d.description ?? '—'}</span>,
+                render: (d) => <span id={`Documents.document.${d.id}.description`} className="text-gray-500">{d.description ?? '—'}</span>,
               },
               {
                 key: 'expires',
                 label: tr('Documents.expire.le'),
-                render: (d) => <span className="text-gray-500">{formatDate(d.expiresAt)}</span>,
+                render: (d) => <span id={`Documents.document.${d.id}.expires`} className="text-gray-500">{formatDate(d.expiresAt)}</span>,
               },
               {
                 key: 'uploaded',
                 label: tr('Documents.partage.par'),
-                render: (d) => <span className="text-gray-500">{d.uploadedBy}</span>,
+                render: (d) => <span id={`Documents.document.${d.id}.uploadedBy`} className="text-gray-500">{d.uploadedBy}</span>,
               },
               {
                 key: 'actions',
                 label: '',
                 render: (d) => (
                   <div className="flex justify-end gap-1">
-                    <InlineButton onClick={() => handleDownload(d)}>{tr('Documents.telecharger')}</InlineButton>
+                    <InlineButton id={`Documents.document.${d.id}.download`} onClick={() => handleDownload(d)}>{tr('Documents.telecharger')}</InlineButton>
                     {canDelete && (
-                      <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={() => handleDelete(d)} />
+                      <IconButton id={`Documents.document.${d.id}.delete`} icon="delete" label={tr('common.delete')} variant="danger" onClick={() => handleDelete(d)} />
                     )}
                   </div>
                 ),
@@ -230,7 +230,9 @@ export function Documents() {
       {!loading && data && data.length === 0 && (
         <EmptyState
           title={tr('Documents.aucun.document')}
+          titleId="Documents.aucun.document"
           description={tr('Documents.partagez.le.premier.document.de.votre.espace')}
+          descriptionId="Documents.partagez.le.premier.document.de.votre.espace"
         />
       )}
 
@@ -238,10 +240,11 @@ export function Documents() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title={tr('Documents.partager.un.document')}
+        titleId="Documents.partager.un.document.modal"
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} />
-            <Button className="w-auto" onClick={handleUpload as never} disabled={submitting || !file}>
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
+            <Button id="Documents.partager" className="w-auto" onClick={handleUpload as never} disabled={submitting || !file}>
               {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
               {tr('Documents.partager')}
             </Button>
@@ -250,7 +253,7 @@ export function Documents() {
       >
         <form onSubmit={handleUpload} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Documents.formError" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
@@ -261,11 +264,11 @@ export function Documents() {
               className="hidden"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
-            <button type="button" onClick={() => fileRef.current?.click()}>
-              <p className="text-sm font-medium text-brand-600">
+            <button type="button" id="Documents.chooseFile" onClick={() => fileRef.current?.click()}>
+              <p id="Documents.chooseFile.name" className="text-sm font-medium text-brand-600">
                 {file ? file.name : tr('Documents.choisir.un.fichier')}
               </p>
-              {!file && <p className="mt-1 text-xs text-gray-500">{tr('Documents.pdf.images.documents')}</p>}
+              {!file && <p id="Documents.pdf.images.documents" className="mt-1 text-xs text-gray-500">{tr('Documents.pdf.images.documents')}</p>}
             </button>
           </div>
           {file && filePreviewUrl && (
@@ -273,9 +276,9 @@ export function Documents() {
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Documents.categorie')} id="Documents.categorie">
-              <Select value={category} onChange={(e) => setCategory(e.target.value)}>
-                {DOCUMENT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
+              <Select id="Documents.categorie.select" value={category} onChange={(e) => setCategory(e.target.value)}>
+                {DOCUMENT_CATEGORIES.map((cat, index) => (
+                  <option key={cat} id={`Documents.categorie.option.${index}`} value={cat}>
                     {cat}
                   </option>
                 ))}
@@ -283,10 +286,10 @@ export function Documents() {
             </Field>
             {!isConsultant && (
               <Field label={tr('Documents.consultant.concerne')} id="Documents.consultant.concerne">
-                <Select value={consultantId} onChange={(e) => setConsultantId(e.target.value)}>
-                  <option value="">{tr('Documents.tous.general')}</option>
+                <Select id="Documents.consultant.concerne.select" value={consultantId} onChange={(e) => setConsultantId(e.target.value)}>
+                  <option id="Documents.tous.general" value="">{tr('Documents.tous.general')}</option>
                   {(summaries ?? []).map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <option key={c.id} id={`Documents.consultant.concerne.option.${c.id}`} value={c.id}>
                       {c.fullName}
                     </option>
                   ))}
@@ -296,29 +299,31 @@ export function Documents() {
           </div>
           <Field label={tr('Documents.description')} id="Documents.description">
             <Input
+              id="Documents.description.input"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={tr('Documents.contrat.signe.avenant')}
             />
           </Field>
           <Field label={tr('Documents.expiration.optionnel')} id="Documents.expiration.optionnel">
-            <Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
+            <Input id="Documents.expiration.optionnel.input" type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
           </Field>
           <Field label={tr('Documents.visibilite')} id="Documents.visibilite">
-            <Select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
-              <option value="PRIVATE">{tr('Documents.prive.personnes.choisies')}</option>
-              <option value="PUBLIC">{tr('Documents.public.toute.la.societe')}</option>
+            <Select id="Documents.visibilite.select" value={visibility} onChange={(e) => setVisibility(e.target.value)}>
+              <option id="Documents.prive.personnes.choisies" value="PRIVATE">{tr('Documents.prive.personnes.choisies')}</option>
+              <option id="Documents.public.toute.la.societe" value="PUBLIC">{tr('Documents.public.toute.la.societe')}</option>
             </Select>
           </Field>
           {visibility === 'PRIVATE' && (
             <Field label={tr('Documents.partager.avec')} id="Documents.partager.avec">
               <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-gray-200 p-2">
                 {(shareTargets ?? []).length === 0 && (
-                  <p className="px-2 py-1 text-sm text-gray-400">{tr('Documents.aucune.personne.a.partager')}</p>
+                  <p id="Documents.aucune.personne.a.partager" className="px-2 py-1 text-sm text-gray-400">{tr('Documents.aucune.personne.a.partager')}</p>
                 )}
                 {(shareTargets ?? []).map((m) => (
-                  <label key={m.id} className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50">
+                  <label key={m.id} id={`Documents.partager.avec.${m.id}.label`} className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-gray-50">
                     <input
+                      id={`Documents.partager.avec.${m.id}.checkbox`}
                       type="checkbox"
                       checked={sharedWith.includes(m.id)}
                       onChange={(e) =>
@@ -330,8 +335,8 @@ export function Documents() {
                       }
                       className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
                     />
-                    <span className="text-gray-700">{m.fullName}</span>
-                    <span className="text-xs text-gray-400">{m.role}</span>
+                    <span id={`Documents.partager.avec.${m.id}.fullName`} className="text-gray-700">{m.fullName}</span>
+                    <span id={`Documents.partager.avec.${m.id}.role`} className="text-xs text-gray-400">{m.role}</span>
                   </label>
                 ))}
               </div>

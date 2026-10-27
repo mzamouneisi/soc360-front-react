@@ -453,18 +453,19 @@ export function Settings() {
       <PageHeader title={t('settings.title')} titleId="settings.title" subtitle={t('settings.subtitle')} subtitleId="settings.subtitle" />
       <Card className="w-[90%] p-6">
         <h3 className="text-sm font-semibold text-gray-900" id="settings.language.title">{t('settings.language.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">{t('settings.language.description')}</p>
+        <p className="mt-1 text-sm text-gray-500" id="settings.language.description">{t('settings.language.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <Field label={t('settings.language.field')} id="settings.language.field">
             <Select
+              id="settings.language.field.select"
               className="w-56"
               value={preference ?? 'browser'}
               onChange={(e) => void handleLanguageChange(e.target.value)}
               disabled={languageSaving}
             >
-              <option value="browser">{t('settings.language.browser')}</option>
+              <option id="settings.language.browser" value="browser">{t('settings.language.browser')}</option>
               {languages.map((lang) => (
-                <option key={lang} value={lang}>
+                <option key={lang} value={lang} id={`settings.language.option.${lang}`}>
                   {languageLabel(lang)}
                 </option>
               ))}
@@ -472,15 +473,15 @@ export function Settings() {
           </Field>
           {languageSaving && <Spinner />}
         </div>
-        {languageError && <p className="mt-3 text-sm text-red-600">{languageError}</p>}
+        {languageError && <p className="mt-3 text-sm text-red-600" id="settings.language.error">{languageError}</p>}
         {languageSaved && (
-          <p className="mt-3 text-sm text-green-600">{t('settings.language.saved')}</p>
+          <p className="mt-3 text-sm text-green-600" id="settings.language.saved">{t('settings.language.saved')}</p>
         )}
 
         {canEditTemplates && (
           <div>
             <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.companyTranslations.title">{t('settings.companyTranslations.title')}</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500" id="settings.companyTranslations.description">
               {t('settings.companyTranslations.description', { lang: languageLabel(language) })}
             </p>
             {trLoading ? (
@@ -491,30 +492,32 @@ export function Settings() {
               <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="space-y-2">
                   <Input
+                    id="settings.companyTranslations.search"
                     value={trSearch}
                     onChange={(e) => setTrSearch(e.target.value)}
                     placeholder={t('settings.companyTranslations.search')}
                   />
                   <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200">
                     {trFiltered.length === 0 ? (
-                      <p className="px-3 py-4 text-center text-sm text-gray-400">
+                      <p className="px-3 py-4 text-center text-sm text-gray-400" id="settings.companyTranslations.empty">
                         {t('settings.companyTranslations.empty')}
                       </p>
                     ) : (
-                      <ul className="divide-y divide-gray-100">
+                      <ul className="divide-y divide-gray-100" id="settings.companyTranslations.list">
                         {trFiltered.map((entry) => (
-                          <li key={entry.key}>
+                          <li key={entry.key} id={`settings.companyTranslations.entry.${entry.key}`}>
                             <button
                               type="button"
+                              id={`settings.companyTranslations.entry.${entry.key}.button`}
                               onClick={() => setTrSelectedKey(entry.key)}
                               className={`flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm transition hover:bg-gray-50 ${
                                 trSelectedKey === entry.key ? 'bg-brand-50' : ''
                               }`}
                             >
-                              <span className="font-mono text-xs text-gray-400">{entry.key}</span>
-                              <span className="text-gray-900">{entry.override ?? entry.value}</span>
+                              <span className="font-mono text-xs text-gray-400" id={`settings.companyTranslations.entry.${entry.key}.key`}>{entry.key}</span>
+                              <span className="text-gray-900" id={`settings.companyTranslations.entry.${entry.key}.value`}>{entry.override ?? entry.value}</span>
                               {entry.override && (
-                                <span className="text-xs text-brand-600">
+                                <span className="text-xs text-brand-600" id={`settings.companyTranslations.entry.${entry.key}.overridden`}>
                                   {t('settings.companyTranslations.overridden')}
                                 </span>
                               )}
@@ -554,8 +557,8 @@ export function Settings() {
                       onClick={() => void handleTrDelete()}
                       disabled={!trSelected || trSaving || !trSelected.override} id="settings.companyTranslations.delete" />
                   </div>
-                  {trMessage && <p className="text-sm text-green-600">{trMessage}</p>}
-                  {trError && <p className="text-sm text-red-600">{trError}</p>}
+                  {trMessage && <p className="text-sm text-green-600" id="settings.companyTranslations.message">{trMessage}</p>}
+                  {trError && <p className="text-sm text-red-600" id="settings.companyTranslations.error">{trError}</p>}
                 </div>
               </div>
             )}
@@ -563,10 +566,11 @@ export function Settings() {
         )}
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.fontSize.title">{t('settings.fontSize.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">{t('settings.fontSize.description')}</p>
+        <p className="mt-1 text-sm text-gray-500" id="settings.fontSize.description">{t('settings.fontSize.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <Field label={t('settings.fontSize.field')} id="settings.fontSize.field">
             <Select
+              id="settings.fontSize.field.select"
               className="w-28"
               value={String(size)}
               onChange={(e) => {
@@ -575,7 +579,7 @@ export function Settings() {
               }}
             >
               {FONT_SIZES.map((s) => (
-                <option key={s} value={s}>
+                <option key={s} value={s} id={`settings.fontSize.option.${s}`}>
                   {s} {tr('Settings.px')}
                 </option>
               ))}
@@ -584,16 +588,18 @@ export function Settings() {
           <div
             className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800"
             style={{ fontSize: `${size}px` }}
+            id="settings.fontSize.preview"
           >
             {t('settings.fontSize.preview')}
           </div>
         </div>
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.theme.title">{t('settings.theme.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">{t('settings.theme.description')}</p>
+        <p className="mt-1 text-sm text-gray-500" id="settings.theme.description">{t('settings.theme.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <Field label={t('settings.theme.field')} id="settings.theme.field">
             <Select
+              id="settings.theme.field.select"
               className="w-56"
               value={theme}
               onChange={(e) => {
@@ -602,7 +608,7 @@ export function Settings() {
               }}
             >
               {THEMES.map((th) => (
-                <option key={th.id} value={th.id}>
+                <option key={th.id} value={th.id} id={`settings.theme.option.${th.id}`}>
                   {t(`settings.theme.${th.id}`)}
                 </option>
               ))}
@@ -613,7 +619,7 @@ export function Settings() {
               className="inline-block h-5 w-5 rounded-full"
               style={{ backgroundColor: THEMES.find((th) => th.id === theme)?.color }}
             />
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500" id="settings.theme.preview.value">
               {t(`settings.theme.${theme}`)}
             </span>
           </div>
@@ -621,15 +627,17 @@ export function Settings() {
         <div
           className="mt-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800"
           style={{ backgroundColor: 'var(--brand-50)', color: 'var(--brand-800)' }}
+          id="settings.theme.preview"
         >
           {t('settings.theme.preview')}
         </div>
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.pageSize.title">{t('settings.pageSize.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">{t('settings.pageSize.description')}</p>
+        <p className="mt-1 text-sm text-gray-500" id="settings.pageSize.description">{t('settings.pageSize.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <Field label={t('settings.pageSize.field')} id="settings.pageSize.field">
             <Select
+              id="settings.pageSize.field.select"
               className="w-28"
               value={String(pageSize)}
               onChange={(e) => {
@@ -638,7 +646,7 @@ export function Settings() {
               }}
             >
               {[5, 10, 15, 20, 50, 100].map((n) => (
-                <option key={n} value={n}>
+                <option key={n} value={n} id={`settings.pageSize.option.${n}`}>
                   {n}
                 </option>
               ))}
@@ -647,12 +655,13 @@ export function Settings() {
         </div>
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.colors.title">{t('settings.colors.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">{t('settings.colors.description')}</p>
+        <p className="mt-1 text-sm text-gray-500" id="settings.colors.description">{t('settings.colors.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-6">
           <Field label={t('settings.colors.header')} id="settings.colors.header">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.colors.header.input"
                 value={headerColor}
                 onChange={(e) => {
                   setHeaderColor(e.target.value)
@@ -660,13 +669,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{headerColor}</span>
+              <span className="text-sm text-gray-500" id="settings.colors.header.value">{headerColor}</span>
             </div>
           </Field>
           <Field label={t('settings.colors.border')} id="settings.colors.border">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.colors.border.input"
                 value={borderColor}
                 onChange={(e) => {
                   setBorderColor(e.target.value)
@@ -674,30 +684,30 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{borderColor}</span>
+              <span className="text-sm text-gray-500" id="settings.colors.border.value">{borderColor}</span>
             </div>
           </Field>
         </div>
         <div className="mt-4 overflow-hidden rounded-xl border" style={{ borderColor: borderColor }}>
-          <table className="min-w-full divide-y" style={{ borderColor: borderColor }}>
+          <table className="min-w-full divide-y" style={{ borderColor: borderColor }} id="settings.colors.preview.table">
             <thead style={{ backgroundColor: headerColor }}>
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500" id="settings.example">
                   {t('settings.example')}
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500" id="settings.preview">
                   {t('settings.preview')}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y bg-white">
               <tr>
-                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.row')} 1</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.content')}</td>
+                <td className="px-4 py-2 text-sm text-gray-700" id="settings.row.1">{t('settings.row')} 1</td>
+                <td className="px-4 py-2 text-sm text-gray-700" id="settings.content.1">{t('settings.content')}</td>
               </tr>
               <tr className="even:bg-gray-50">
-                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.row')} 2</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{t('settings.content')}</td>
+                <td className="px-4 py-2 text-sm text-gray-700" id="settings.row.2">{t('settings.row')} 2</td>
+                <td className="px-4 py-2 text-sm text-gray-700" id="settings.content.2">{t('settings.content')}</td>
               </tr>
             </tbody>
           </table>
@@ -708,12 +718,13 @@ export function Settings() {
             <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.craColors.title">
               {t('settings.craColors.title')}
             </h3>
-            <p className="mt-1 text-sm text-gray-500">{t('settings.craColors.description')}</p>
+            <p className="mt-1 text-sm text-gray-500" id="settings.craColors.description">{t('settings.craColors.description')}</p>
             <div className="mt-4 flex flex-wrap items-end gap-6">
               <Field label={t('settings.craColors.leave')} id="settings.craColors.leave">
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
+                    id="settings.craColors.leave.input"
                     value={leaveDayColor}
                     onChange={(e) => {
                       setLeaveDayColor(e.target.value)
@@ -721,13 +732,14 @@ export function Settings() {
                     }}
                     className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
                   />
-                  <span className="text-sm text-gray-500">{leaveDayColor}</span>
+                  <span className="text-sm text-gray-500" id="settings.craColors.leave.value">{leaveDayColor}</span>
                 </div>
               </Field>
               <Field label={t('settings.craColors.weekend')} id="settings.craColors.weekend">
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
+                    id="settings.craColors.weekend.input"
                     value={weekendColor}
                     onChange={(e) => {
                       setWeekendColor(e.target.value)
@@ -735,7 +747,7 @@ export function Settings() {
                     }}
                     className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
                   />
-                  <span className="text-sm text-gray-500">{weekendColor}</span>
+                  <span className="text-sm text-gray-500" id="settings.craColors.weekend.value">{weekendColor}</span>
                 </div>
               </Field>
             </div>
@@ -743,10 +755,11 @@ export function Settings() {
         )}
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.buttons.title">{t('settings.buttons.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">{t('settings.buttons.description')}</p>
+        <p className="mt-1 text-sm text-gray-500" id="settings.buttons.description">{t('settings.buttons.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-6">
           <Field label={t('settings.buttons.smallWidth')} id="settings.buttons.smallWidth">
             <Input
+              id="settings.buttons.smallWidth.input"
               type="number"
               min={20}
               max={400}
@@ -760,6 +773,7 @@ export function Settings() {
           </Field>
           <Field label={t('settings.buttons.largeWidth')} id="settings.buttons.largeWidth">
             <Input
+              id="settings.buttons.largeWidth.input"
               type="number"
               min={20}
               max={400}
@@ -775,6 +789,7 @@ export function Settings() {
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.saveColor.input"
                 value={btnSaveColor}
                 onChange={(e) => {
                   setBtnSaveColor(e.target.value)
@@ -782,13 +797,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnSaveColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.saveColor.value">{btnSaveColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.deleteColor')} id="settings.buttons.deleteColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.deleteColor.input"
                 value={btnDeleteColor}
                 onChange={(e) => {
                   setBtnDeleteColor(e.target.value)
@@ -796,13 +812,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnDeleteColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.deleteColor.value">{btnDeleteColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.cancelColor')} id="settings.buttons.cancelColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.cancelColor.input"
                 value={btnCancelColor}
                 onChange={(e) => {
                   setBtnCancelColor(e.target.value)
@@ -810,13 +827,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnCancelColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.cancelColor.value">{btnCancelColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.cancelTextColor')} id="settings.buttons.cancelTextColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.cancelTextColor.input"
                 value={btnCancelTextColor}
                 onChange={(e) => {
                   setBtnCancelTextColor(e.target.value)
@@ -824,13 +842,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnCancelTextColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.cancelTextColor.value">{btnCancelTextColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.submitColor')} id="settings.buttons.submitColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.submitColor.input"
                 value={btnSubmitColor}
                 onChange={(e) => {
                   setBtnSubmitColor(e.target.value)
@@ -838,13 +857,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnSubmitColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.submitColor.value">{btnSubmitColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.submitTextColor')} id="settings.buttons.submitTextColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.submitTextColor.input"
                 value={btnSubmitTextColor}
                 onChange={(e) => {
                   setBtnSubmitTextColor(e.target.value)
@@ -852,13 +872,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnSubmitTextColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.submitTextColor.value">{btnSubmitTextColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.historyColor')} id="settings.buttons.historyColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.historyColor.input"
                 value={btnHistoryColor}
                 onChange={(e) => {
                   setBtnHistoryColor(e.target.value)
@@ -866,13 +887,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnHistoryColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.historyColor.value">{btnHistoryColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.historyTextColor')} id="settings.buttons.historyTextColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.historyTextColor.input"
                 value={btnHistoryTextColor}
                 onChange={(e) => {
                   setBtnHistoryTextColor(e.target.value)
@@ -880,13 +902,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnHistoryTextColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.historyTextColor.value">{btnHistoryTextColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.newColor')} id="settings.buttons.newColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.newColor.input"
                 value={btnNewColor}
                 onChange={(e) => {
                   setBtnNewColor(e.target.value)
@@ -894,13 +917,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnNewColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.newColor.value">{btnNewColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.newTextColor')} id="settings.buttons.newTextColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.newTextColor.input"
                 value={btnNewTextColor}
                 onChange={(e) => {
                   setBtnNewTextColor(e.target.value)
@@ -908,13 +932,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnNewTextColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.newTextColor.value">{btnNewTextColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.okColor')} id="settings.buttons.okColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.okColor.input"
                 value={btnOkColor}
                 onChange={(e) => {
                   setBtnOkColor(e.target.value)
@@ -922,13 +947,14 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnOkColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.okColor.value">{btnOkColor}</span>
             </div>
           </Field>
           <Field label={t('settings.buttons.okTextColor')} id="settings.buttons.okTextColor">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.buttons.okTextColor.input"
                 value={btnOkTextColor}
                 onChange={(e) => {
                   setBtnOkTextColor(e.target.value)
@@ -936,14 +962,15 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{btnOkTextColor}</span>
+              <span className="text-sm text-gray-500" id="settings.buttons.okTextColor.value">{btnOkTextColor}</span>
             </div>
           </Field>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-          <span className="text-sm text-gray-500">{t('settings.buttons.preview')} :</span>
+          <span className="text-sm text-gray-500" id="settings.buttons.preview">{t('settings.buttons.preview')} :</span>
           <button
             type="button"
+            id="settings.buttons.preview.ok"
             className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition hover:brightness-95"
             style={{ minWidth: `${btnSmallWidth}px`, backgroundColor: btnOkColor, color: btnOkTextColor }}
           >
@@ -951,6 +978,7 @@ export function Settings() {
           </button>
           <button
             type="button"
+            id="NoteFraisList.nouvelle.note.de.frais"
             className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition hover:brightness-95"
             style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnNewColor, color: btnNewTextColor }}
           >
@@ -958,6 +986,7 @@ export function Settings() {
           </button>
           <button
             type="button"
+            id="common.delete"
             className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95"
             style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnDeleteColor }}
           >
@@ -965,6 +994,7 @@ export function Settings() {
           </button>
           <button
             type="button"
+            id="common.cancel"
             className="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold transition hover:brightness-95"
             style={{
               minWidth: `${btnLargeWidth}px`,
@@ -976,6 +1006,7 @@ export function Settings() {
           </button>
           <button
             type="button"
+            id="Unavailability.soumettre"
             className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition hover:brightness-95"
             style={{
               minWidth: `${btnLargeWidth}px`,
@@ -988,6 +1019,7 @@ export function Settings() {
           </button>
           <button
             type="button"
+            id="common.history"
             className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold transition hover:brightness-95"
             style={{
               minWidth: `${btnLargeWidth}px`,
@@ -1001,12 +1033,13 @@ export function Settings() {
         </div>
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.background.title">{t('settings.background.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">{t('settings.background.description')}</p>
+        <p className="mt-1 text-sm text-gray-500" id="settings.background.description">{t('settings.background.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <Field label={t('settings.background.color')} id="settings.background.color">
             <div className="flex items-center gap-2">
               <input
                 type="color"
+                id="settings.background.color.input"
                 value={bgColor}
                 onChange={(e) => {
                   setBgColor(e.target.value)
@@ -1014,7 +1047,7 @@ export function Settings() {
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
-              <span className="text-sm text-gray-500">{bgColor}</span>
+              <span className="text-sm text-gray-500" id="settings.background.color.value">{bgColor}</span>
             </div>
           </Field>
           <div
@@ -1022,6 +1055,7 @@ export function Settings() {
             style={{
               background: `linear-gradient(135deg, ${bgColor} 0%, color-mix(in srgb, ${bgColor} 45%, white) 55%, #ffffff 100%)`,
             }}
+            id="settings.background.preview"
           >
             {t('settings.background.preview')}
           </div>
@@ -1030,7 +1064,7 @@ export function Settings() {
         {canEditTemplates && (
           <>
             <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.emailTemplates.title">{t('settings.emailTemplates.title')}</h3>
-            <p className="mt-1 text-sm text-gray-500">{t('settings.emailTemplates.description')}</p>
+            <p className="mt-1 text-sm text-gray-500" id="settings.emailTemplates.description">{t('settings.emailTemplates.description')}</p>
             {templateLoading ? (
               <div className="mt-4">
                 <Spinner />
@@ -1038,9 +1072,9 @@ export function Settings() {
             ) : (
               <div className="mt-4 space-y-4">
                 <Field label={t('settings.emailTemplates.template')} id="settings.emailTemplates.template">
-                  <Select value={templateKey} onChange={(e) => setTemplateKey(e.target.value)}>
+                  <Select id="settings.emailTemplates.template.select" value={templateKey} onChange={(e) => setTemplateKey(e.target.value)}>
                     {emailTemplates.map((item) => (
-                      <option key={item.key} value={item.key}>
+                      <option key={item.key} value={item.key} id={`settings.emailTemplates.template.option.${item.key}`}>
                         {tr(`settings.emailTemplate.${item.key}`)}
                       </option>
                     ))}
@@ -1048,16 +1082,17 @@ export function Settings() {
                 </Field>
                 {selectedTemplate && (
                   <>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500" id="settings.emailTemplates.variables">
                       {t('settings.emailTemplates.variables')} :{' '}
-                      <span className="font-mono">{selectedTemplate.variables.map((v) => `{{${v}}}`).join(', ')}</span>
+                      <span className="font-mono" id="settings.emailTemplates.variables.value">{selectedTemplate.variables.map((v) => `{{${v}}}`).join(', ')}</span>
                       {selectedTemplate.custom ? ` · ${t('settings.emailTemplates.custom')}` : ''}
                     </p>
                     <Field label={t('settings.emailTemplates.subject')} id="settings.emailTemplates.subject">
-                      <Input value={templateSubject} onChange={(e) => setTemplateSubject(e.target.value)} />
+                      <Input id="settings.emailTemplates.subject.input" value={templateSubject} onChange={(e) => setTemplateSubject(e.target.value)} />
                     </Field>
                     <Field label={t('settings.emailTemplates.body')} id="settings.emailTemplates.body">
                       <Textarea
+                        id="settings.emailTemplates.body.textarea"
                         rows={10}
                         className="font-mono text-xs"
                         value={templateBody}
@@ -1078,9 +1113,9 @@ export function Settings() {
                         onClick={() => void handleTemplateReset()}
                         disabled={templateSaving} id="settings.emailTemplates.reset" />
                       {templateSaved && (
-                        <span className="text-sm text-green-600">{t('settings.emailTemplates.saved')}</span>
+                        <span className="text-sm text-green-600" id="settings.emailTemplates.saved">{t('settings.emailTemplates.saved')}</span>
                       )}
-                      {templateError && <span className="text-sm text-red-600">{templateError}</span>}
+                      {templateError && <span className="text-sm text-red-600" id="settings.emailTemplates.error">{templateError}</span>}
                     </div>
                   </>
                 )}
@@ -1090,6 +1125,7 @@ export function Settings() {
         )}
 
         <Button
+          id="common.save.button"
           className="mt-6 w-auto"
           onClick={() => void handleSave()}
           disabled={saving || !changed}
@@ -1097,8 +1133,8 @@ export function Settings() {
           {saving ? <Spinner className="border-white border-t-transparent" /> : null}
           {t('common.save')}
         </Button>
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-        {saved && <p className="mt-3 text-sm text-green-600">{t('settings.saved')}</p>}
+        {error && <p className="mt-3 text-sm text-red-600" id="settings.error">{error}</p>}
+        {saved && <p className="mt-3 text-sm text-green-600" id="settings.saved">{t('settings.saved')}</p>}
       </Card>
     </div>
   )

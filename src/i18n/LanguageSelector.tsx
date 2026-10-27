@@ -5,6 +5,7 @@ export function LanguageSelector({ className = '' }: { className?: string }) {
   const { language, languages, setLanguage, t } = useI18n()
   return (
     <select
+      id="app.selectLanguage"
       aria-label={t('app.selectLanguage')}
       title={t('app.language')}
       value={language}

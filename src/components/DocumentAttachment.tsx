@@ -19,11 +19,12 @@ export interface AttachedDocument {
 export function DocumentView({ value }: { value: AttachedDocument | null | undefined }) {
   if (!value) return null
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
-      <span className="text-sm font-medium text-gray-700">{tr('document.attachment.label')}</span>
-      <span className="text-sm text-gray-700">{value.name}</span>
-      {value.comment && <span className="text-xs text-gray-500">— {value.comment}</span>}
+    <div id="document.view" className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+      <span id="document.attachment.label" className="text-sm font-medium text-gray-700">{tr('document.attachment.label')}</span>
+      <span id="document.attachment.name" className="text-sm text-gray-700">{value.name}</span>
+      {value.comment && <span id="document.attachment.comment.value" className="text-xs text-gray-500">— {value.comment}</span>}
       <IconButton
+        id="document.attachment.view"
         icon="download"
         label={tr('document.attachment.view')}
         onClick={() => {
@@ -149,6 +150,7 @@ export function DocumentAttachment({
     <div>
       <div className="flex flex-wrap items-center gap-2">
         <IconButton
+          id="document.attachment.add"
           icon="add"
           label={tr('document.attachment.add')}
           variant="new"
@@ -157,11 +159,12 @@ export function DocumentAttachment({
         />
         {value ? (
           <>
-            <span className="text-sm text-gray-700">{value.name}</span>
+            <span id="document.attachment.selected.name" className="text-sm text-gray-700">{value.name}</span>
             {value.comment && (
-              <span className="text-xs text-gray-500">— {value.comment}</span>
+              <span id="document.attachment.selected.comment" className="text-xs text-gray-500">— {value.comment}</span>
             )}
             <IconButton
+              id="document.attachment.selected.view"
               icon="download"
               label={tr('document.attachment.view')}
               onClick={() => {
@@ -173,6 +176,7 @@ export function DocumentAttachment({
               }}
             />
             <IconButton
+              id="document.attachment.remove"
               icon="delete"
               label={tr('document.attachment.remove')}
               variant="danger"
@@ -181,23 +185,24 @@ export function DocumentAttachment({
             />
           </>
         ) : (
-          <span className="text-sm text-gray-400">{tr('document.attachment.none')}</span>
+          <span id="document.attachment.none" className="text-sm text-gray-400">{tr('document.attachment.none')}</span>
         )}
       </div>
       {value && existingPreviewUrl && (
-        <DocumentPreview url={existingPreviewUrl} name={value.name} className="mt-2" />
+        <DocumentPreview id="document.attachment.preview" url={existingPreviewUrl} name={value.name} className="mt-2" />
       )}
 
       <Modal
         open={open}
         title={tr('document.attachment.title')}
+        titleId="document.attachment.title"
         onClose={() => setOpen(false)}
         footer={
           <>
-            <Button variant="neutral" onClick={() => setOpen(false)} disabled={saving}>
+            <Button id="document.attachment.cancel" variant="neutral" onClick={() => setOpen(false)} disabled={saving}>
               {tr('common.cancel')}
             </Button>
-            <Button variant="primary" onClick={() => void validate()} disabled={saving}>
+            <Button id="document.attachment.validate" variant="primary" onClick={() => void validate()} disabled={saving}>
               {tr('document.attachment.validate')}
             </Button>
           </>
@@ -206,6 +211,7 @@ export function DocumentAttachment({
         <div className="space-y-4">
           <Field label={tr('document.attachment.file')} id="document.attachment.file">
             <Input
+              id="document.attachment.file.input"
               type="file"
               accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
               aria-label={tr('document.attachment.file')}
@@ -216,17 +222,18 @@ export function DocumentAttachment({
             />
           </Field>
           {file && filePreviewUrl && (
-            <DocumentPreview url={filePreviewUrl} name={file.name} />
+            <DocumentPreview id="document.attachment.file.preview" url={filePreviewUrl} name={file.name} />
           )}
           <Field label={tr('document.attachment.comment')} id="document.attachment.comment">
             <Textarea
+              id="document.attachment.comment.textarea"
               rows={3}
               aria-label={tr('document.attachment.comment')}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
           </Field>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p id="document.attachment.error" className="text-sm text-red-600">{error}</p>}
         </div>
       </Modal>
     </div>

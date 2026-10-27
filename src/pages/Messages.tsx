@@ -122,7 +122,7 @@ export function Messages() {
       />
 
       {!isAdmin && (
-        <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+        <div id="Messages.seuls.les.administrateurs.peuvent.rediger.des.messages.consu" className="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           {tr('Messages.seuls.les.administrateurs.peuvent.rediger.des.messages.consu')}
         </div>
       )}
@@ -131,6 +131,7 @@ export function Messages() {
         {tabs.map((t) => (
           <button
             key={t.key}
+            id={t.key === 'inbox' ? 'Messages.reception' : 'Messages.envoyes'}
             onClick={() => {
               setTab(t.key)
               setPage(0)
@@ -160,13 +161,13 @@ export function Messages() {
                 label: tr('Messages.objet.colonne'),
                 render: (m) => (
                   <div>
-                    <p className={`font-medium ${m.read ? 'text-gray-700' : 'text-gray-900'}`}>
+                    <p id={`Messages.message.${m.id}.subject`} className={`font-medium ${m.read ? 'text-gray-700' : 'text-gray-900'}`}>
                       {m.subject}
                       {!m.read && (
-                        <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-brand-600" />
+                        <span id={`Messages.message.${m.id}.unreadDot`} className="ml-1.5 inline-block h-2 w-2 rounded-full bg-brand-600" />
                       )}
                     </p>
-                    <p className="max-w-md truncate text-xs text-gray-500">{m.body}</p>
+                    <p id={`Messages.message.${m.id}.bodyPreview`} className="max-w-md truncate text-xs text-gray-500">{m.body}</p>
                   </div>
                 ),
               },
@@ -181,7 +182,7 @@ export function Messages() {
               {
                 key: 'date',
                 label: tr('Messages.date'),
-                render: (m) => <span className="text-gray-500">{formatDateTime(m.createdAt)}</span>,
+                render: (m) => <span id={`Messages.message.${m.id}.date`} className="text-gray-500">{formatDateTime(m.createdAt)}</span>,
               },
             ]}
           />
@@ -192,7 +193,9 @@ export function Messages() {
       {!loading && data && data.items.length === 0 && (
         <EmptyState
           title={tr('Messages.aucun.message')}
+          titleId="Messages.aucun.message"
           description={tab === 'inbox' ? tr('Messages.boite.reception.vide') : tr('Messages.aucun.envoi')}
+          descriptionId="Messages.empty.description"
         />
       )}
 
@@ -200,6 +203,7 @@ export function Messages() {
         open={composeOpen}
         onClose={() => setComposeOpen(false)}
         title={tr('Messages.nouveau.message')}
+        titleId="Messages.nouveau.message.modal"
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setComposeOpen(false)} id="common.cancel" />
@@ -209,27 +213,27 @@ export function Messages() {
       >
         <form onSubmit={handleSend} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Messages.formError" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
           <Field label={tr('Messages.destinataire')} id="Messages.destinataire">
-            <Select value={recipientId} onChange={(e) => setRecipientId(e.target.value)}>
-              <option value="">{tr('Messages.selectionner')}</option>
+            <Select id="Messages.destinataire.select" value={recipientId} onChange={(e) => setRecipientId(e.target.value)}>
+              <option id="Messages.selectionner" value="">{tr('Messages.selectionner')}</option>
               {(users?.items ?? [])
                 .filter((u) => u.id !== user?.id)
                 .map((u) => (
-                  <option key={u.id} value={u.id}>
+                  <option key={u.id} id={`Messages.destinataire.option.${u.id}`} value={u.id}>
                     {u.firstName} {u.lastName} ({u.username})
                   </option>
                 ))}
             </Select>
           </Field>
           <Field label={tr('Messages.objet')} id="Messages.objet">
-            <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
+            <Input id="Messages.objet.input" value={subject} onChange={(e) => setSubject(e.target.value)} />
           </Field>
           <Field label={tr('Messages.message')} id="Messages.message">
-            <Textarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
+            <Textarea id="Messages.message.textarea" rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
           </Field>
         </form>
       </Modal>
@@ -238,16 +242,17 @@ export function Messages() {
         open={viewing !== null}
         onClose={() => setViewing(null)}
         title={viewing?.subject ?? 'Message'}
+        titleId="Messages.view.title"
         footer={
           <>
-            <IconButton icon="close" label={tr('common.close')} onClick={() => setViewing(null)} id="common.close" />
+            <IconButton icon="close" label={tr('common.close')} onClick={() => setViewing(null)} id="Messages.view.close" />
             <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={handleDelete} id="common.delete" />
           </>
         }
       >
         {viewing && (
           <div className="space-y-3">
-            <p className="text-sm text-gray-500">
+            <p id="Messages.view.meta" className="text-sm text-gray-500">
               {tab === 'inbox' ? tr('Messages.de') : tr('Messages.a')} :{' '}
               {(tab === 'inbox' ? viewing.sender : viewing.recipient)
                 ? `${(tab === 'inbox' ? viewing.sender : viewing.recipient)!.firstName} ${
@@ -256,7 +261,7 @@ export function Messages() {
                 : '—'}{' '}
               · {formatDateTime(viewing.createdAt)}
             </p>
-            <p className="whitespace-pre-wrap text-sm text-gray-800">{viewing.body}</p>
+            <p id="Messages.view.body" className="whitespace-pre-wrap text-sm text-gray-800">{viewing.body}</p>
           </div>
         )}
       </Modal>

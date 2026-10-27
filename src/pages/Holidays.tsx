@@ -141,33 +141,33 @@ export function Holidays() {
         subtitleId={canEdit ? 'Holidays.definissez.les.jours.feries.specifiques.de.la.societe' : undefined}
       />
 
-      <Card className="max-w-3xl p-6">
+      <Card id="Holidays.calendar" className="max-w-3xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <IconButton icon="chevronLeft" label={tr('Holidays.prec')} variant="soft" onClick={goPrev} id="Holidays.prec" />
-            <InlineButton variant="soft" onClick={goToday}>{tr('Holidays.aujourd.hui')}</InlineButton>
+            <InlineButton id="Holidays.aujourd.hui" variant="soft" onClick={goToday}>{tr('Holidays.aujourd.hui')}</InlineButton>
             <IconButton icon="chevronRight" label={tr('Holidays.suiv')} variant="soft" onClick={goNext} id="Holidays.suiv" />
             <RefreshButton onClick={() => setTick((t) => t + 1)} label="" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 id="Holidays.monthLabel" className="text-lg font-semibold text-gray-900">
             {monthLabel(month + 1)} {year}
           </h2>
           {canEdit && (
-            <Button variant="primary" className="w-auto" onClick={duplicateToNextYear}>
+            <Button id="Holidays.dupliquer.vers" variant="primary" className="w-auto" onClick={duplicateToNextYear}>
               {tr('Holidays.dupliquer.vers')} {year + 1}
             </Button>
           )}
         </div>
 
         {canEdit && (
-          <p className="mt-3 text-sm text-gray-500">
+          <p id="Holidays.cliquez.sur.un.jour.pour.l.ajouter.comme.jour.ferie.ou.le.su" className="mt-3 text-sm text-gray-500">
             {tr('Holidays.cliquez.sur.un.jour.pour.l.ajouter.comme.jour.ferie.ou.le.su')}
           </p>
         )}
 
         <div className="mt-4 grid grid-cols-7 gap-1">
           {weekdayShortLabels().map((d) => (
-            <div key={d} className="px-1 py-2 text-center text-xs font-semibold uppercase text-gray-500">
+            <div id={`Holidays.weekday.${d}`} key={d} className="px-1 py-2 text-center text-xs font-semibold uppercase text-gray-500">
               {d}
             </div>
           ))}
@@ -187,6 +187,7 @@ export function Holidays() {
                 : 'border-gray-200 bg-white text-gray-700 hover:border-brand-300'
             return (
               <button
+                id={`Holidays.day.${key}`}
                 key={key}
                 onClick={() => toggleDay(date)}
                 disabled={!canEdit}
@@ -195,22 +196,22 @@ export function Holidays() {
                   isToday ? 'ring-2 ring-brand-500' : ''
                 } ${!canEdit ? 'cursor-default' : ''}`}
               >
-                <span className={`font-medium ${holiday ? 'text-brand-700' : national ? 'text-yellow-700' : ''}`}>
+                <span id={`Holidays.day.${key}.number`} className={`font-medium ${holiday ? 'text-brand-700' : national ? 'text-yellow-700' : ''}`}>
                   {date.getDate()}
                 </span>
                 {holiday && (
-                  <span className="block truncate text-xs text-brand-600">{holiday.label}</span>
+                  <span id={`Holidays.day.${key}.holiday`} className="block truncate text-xs text-brand-600">{holiday.label}</span>
                 )}
                 {national && (
-                  <span className="block truncate text-xs text-yellow-600">{national.label}</span>
+                  <span id={`Holidays.day.${key}.national`} className="block truncate text-xs text-yellow-600">{national.label}</span>
                 )}
               </button>
             )
           })}
         </div>
 
-        {error && <ErrorBlock message={error} />}
-        {feedback && !error && <p className="mt-3 text-sm text-green-600">{feedback}</p>}
+        {error && <ErrorBlock id="Holidays.error" message={error} />}
+        {feedback && !error && <p id="Holidays.feedback" className="mt-3 text-sm text-green-600">{feedback}</p>}
       </Card>
     </div>
   )

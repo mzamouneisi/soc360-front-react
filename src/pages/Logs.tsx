@@ -57,20 +57,22 @@ export function Logs() {
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">{tr('Logs.nombre.de.lignes.2')}</span>
+          <span id="Logs.nombre.de.lignes.2" className="text-sm text-gray-500">{tr('Logs.nombre.de.lignes.2')}</span>
           <Select
+            id="Logs.nombre.de.lignes.select"
             className="w-auto min-w-24"
             value={lines}
             onChange={(e) => setLines(Number(e.target.value))}
             aria-label={tr('Logs.nombre.de.lignes')}
           >
             {PRESETS.map((p) => (
-              <option key={p.value} value={p.value}>
+              <option id={`Logs.preset.${p.value}`} key={p.value} value={p.value}>
                 {p.label}
               </option>
             ))}
           </Select>
           <Input
+            id="Logs.nombre.de.lignes.input"
             type="number"
             min={1}
             max={2000}
@@ -79,12 +81,13 @@ export function Logs() {
             onChange={(e) => setLines(Number(e.target.value))}
           />
         </div>
-        <InlineButton variant="primary" onClick={() => setQuery(lines)} disabled={loading || lines < 1}>
+        <InlineButton id="Logs.afficher" variant="primary" onClick={() => setQuery(lines)} disabled={loading || lines < 1}>
           {tr('Logs.afficher')}
         </InlineButton>
         <div className="flex flex-1 items-center gap-2">
-          <span className="text-sm text-gray-500">{tr('Logs.filtrer')}</span>
+          <span id="Logs.filtrer" className="text-sm text-gray-500">{tr('Logs.filtrer')}</span>
           <Input
+            id="Logs.filtrer.input"
             type="search"
             placeholder={tr('Logs.texte.a.rechercher')}
             value={filter}
@@ -95,7 +98,7 @@ export function Logs() {
         </div>
       </div>
 
-      {error && <ErrorBlock message={error} />}
+      {error && <ErrorBlock id="Logs.error" message={error} />}
       {loading && <LoadingBlock />}
 
       {!loading && !error && data && (
@@ -108,16 +111,17 @@ export function Logs() {
             return (
               <>
                 <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-                  <span className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600">
+                  <span id="Logs.count" className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600">
                     {visible.length} {tr('Logs.ligne')}{visible.length > 1 ? 's' : ''}
                     {needle && ` / ${data.lines.length}`}
                   </span>
                   {data.file && (
-                    <span className="truncate font-mono text-xs text-gray-400" title={data.file}>
+                    <span id="Logs.file.value" className="truncate font-mono text-xs text-gray-400" title={data.file}>
                       {data.file}
                     </span>
                   )}
                   <InlineButton
+                    id="Logs.copy"
                     variant="primary"
                     className="ml-3"
                     onClick={() => void copyText(visible.join('\n'))}
@@ -130,12 +134,14 @@ export function Logs() {
 
                 {visible.length > 0 ? (
                   <div className="overflow-hidden rounded-xl border border-gray-200 bg-gray-950 shadow-sm">
-                    <pre className="max-h-[70vh] overflow-auto p-4 font-mono text-xs leading-relaxed text-gray-100">
+                    <pre id="Logs.lines" className="max-h-[70vh] overflow-auto p-4 font-mono text-xs leading-relaxed text-gray-100">
                       {visible.join('\n')}
                     </pre>
                   </div>
                 ) : (
                   <EmptyState
+                    titleId="Logs.empty.title"
+                    descriptionId="Logs.empty.description"
                     title={needle ? 'Aucune ligne ne correspond au filtre' : 'Aucune ligne de log'}
                     description={
                       needle

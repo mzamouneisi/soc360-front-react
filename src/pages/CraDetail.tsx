@@ -206,6 +206,7 @@ function ActivityChip({
   halfDay,
   valid,
   onClick,
+  id,
 }: {
   color?: string | null
   name: string
@@ -213,10 +214,12 @@ function ActivityChip({
   halfDay?: HalfDay | null
   valid?: boolean
   onClick?: () => void
+  id?: string
 }) {
   return (
     <button
       type="button"
+      id={id}
       onClick={onClick}
       className="flex w-full items-center gap-1.5 rounded-md bg-gray-100 px-1.5 py-1 text-left text-xs font-medium text-gray-700 transition hover:bg-gray-200"
     >
@@ -225,13 +228,13 @@ function ActivityChip({
         style={{ backgroundColor: color ?? '#9ca3af' }}
       />
       {halfDay && (
-        <span className="shrink-0 text-[10px] font-normal uppercase text-gray-400">
+        <span id={id ? `${id}.halfday` : undefined} className="shrink-0 text-[10px] font-normal uppercase text-gray-400">
           {halfDay === 'AM' ? 'matin' : 'après-midi'}
         </span>
       )}
-      <span className="truncate">{name}</span>
-      <span className="ml-auto shrink-0 text-gray-400">{tr('CraDetail.')}{days}</span>
-      {valid && <span className="shrink-0 text-green-600">✓</span>}
+      <span id={id ? `${id}.name` : undefined} className="truncate">{name}</span>
+      <span id={id ? `${id}.days` : undefined} className="ml-auto shrink-0 text-gray-400">{tr('CraDetail.')}{days}</span>
+      {valid && <span id={id ? `${id}.valid` : undefined} className="shrink-0 text-green-600">✓</span>}
     </button>
   )
 }
@@ -924,23 +927,24 @@ export function CraDetail({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <button
+            id="CraDetail.retour"
             onClick={() => (onClose ? onClose() : navigate(cra.type === 'CONGE' ? '/indispos' : '/cras'))}
             className="text-sm font-medium text-brand-600 hover:text-brand-700"
           >
             {onClose ? '← Fermer' : cra.type === 'CONGE' ? '← Retour aux Indispos' : '← Retour aux CRA'}
           </button>
-          <h2 className="mt-1 text-2xl font-bold text-gray-900">
+          <h2 id="CraDetail.titre" className="mt-1 text-2xl font-bold text-gray-900">
             {tr(cra.type === 'CONGE' ? 'CraDetail.titre.indispo' : 'CraDetail.titre.cra', {
               name: cra.consultantName ?? '—',
             })}
           </h2>
-          <p className="text-sm text-gray-500">
+          <p id="CraDetail.mois" className="text-sm text-gray-500">
             {monthLabel(cra.month)} {cra.year}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <RefreshButton onClick={reload} label="" />
-          <Badge kind={statusBadge(cra.status)}>
+          <RefreshButton id="CraDetail.reload" onClick={reload} label="" />
+          <Badge id="CraDetail.statut" kind={statusBadge(cra.status)}>
             {dt(CRA_STATUS_LABELS[cra.status] ?? cra.status)}
           </Badge>
           {canCancel && (
@@ -950,41 +954,41 @@ export function CraDetail({
               variant="danger"
               onClick={() => setCancelOpen(true)} id="CraDetail.annuler" />
           )}
-          <span className="text-sm text-gray-500">{cra.totalWorkedDays} {tr('CraDetail.j')}</span>
+          <span id="CraDetail.total.jours" className="text-sm text-gray-500">{cra.totalWorkedDays} {tr('CraDetail.j')}</span>
           <IconButton icon="history" label={tr('CraDetail.historique')} variant="history" onClick={openHistory} id="CraDetail.historique" />
-          <InlineButton onClick={handleExportClientPdf}>{tr('CraDetail.export.pdf.client')}</InlineButton>
-          <InlineButton onClick={handleExportCompanyPdf}>{tr('CraDetail.export.pdf.ma.societe')}</InlineButton>
+          <InlineButton id="CraDetail.export.pdf.client" onClick={handleExportClientPdf}>{tr('CraDetail.export.pdf.client')}</InlineButton>
+          <InlineButton id="CraDetail.export.pdf.ma.societe" onClick={handleExportCompanyPdf}>{tr('CraDetail.export.pdf.ma.societe')}</InlineButton>
         </div>
       </div>
 
-      {formError && <ErrorBlock message={formError} />}
+      {formError && <ErrorBlock id="CraDetail.error" message={formError} />}
 
       {cra.status === 'REJECTED' && cra.comment && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <strong>{tr('CraDetail.rejete')}</strong> {cra.comment}
+        <div id="CraDetail.rejete.alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong id="CraDetail.rejete">{tr('CraDetail.rejete')}</strong> {cra.comment}
         </div>
       )}
 
       {cra.status === 'CANCELLED' && cra.comment && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <strong>{tr('CraDetail.annulee')}</strong> {cra.comment}
+        <div id="CraDetail.annulee.alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <strong id="CraDetail.annulee">{tr('CraDetail.annulee')}</strong> {cra.comment}
         </div>
       )}
 
       {managerCanAct && (cra.status === 'VALIDATED' || cra.status === 'VALREJ') && (
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+        <div id="CraDetail.validation.info" className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           {isIndispo ? tr('CraDetail.cette.indispo') : tr('CraDetail.ce.cra')} {tr('CraDetail.est')} {dt(statusAdjective(cra.status, isIndispo))}.
         </div>
       )}
 
       {!formEditable && !consultantEditsSemiValid && (
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+        <div id="CraDetail.locked.info" className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           {isIndispo ? tr('CraDetail.cette.indispo') : tr('CraDetail.ce.cra')} {tr('CraDetail.est')} {dt(statusAdjective(cra.status, isIndispo))} {tr('CraDetail.et.n.est.plus.modifiable')}
         </div>
       )}
 
       {consultantEditsSemiValid && (
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+        <div id="CraDetail.semi.info" className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
           {isIndispo ? tr('CraDetail.cette.indispo') : tr('CraDetail.ce.cra')} {tr('CraDetail.est')} {dt(statusAdjective(cra.status, isIndispo))}{tr('CraDetail.vous.pouvez.modifier.les.evenements.non.valides.et.remplir.l')}
         </div>
       )}
@@ -992,6 +996,7 @@ export function CraDetail({
       <div className="flex items-center justify-between">
         <div className="inline-flex rounded-lg border border-gray-200 bg-gray-100 p-1">
           <button
+            id="CraDetail.calendrier"
             onClick={() => setTab('calendar')}
             className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${
               tab === 'calendar'
@@ -1002,6 +1007,7 @@ export function CraDetail({
             {tr('CraDetail.calendrier')}
           </button>
           <button
+            id="CraDetail.ligne"
             onClick={() => setTab('ligne')}
             className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${
               tab === 'ligne'
@@ -1014,18 +1020,19 @@ export function CraDetail({
         </div>
         {editable && (
           <div className="flex flex-wrap items-center gap-2">
-            <Button className="w-auto" onClick={() => setFillMonthOpen(true)}>
+            <Button id="CraDetail.remplir.tout.le.mois" className="w-auto" onClick={() => setFillMonthOpen(true)}>
               {tr('CraDetail.remplir.tout.le.mois')}
             </Button>
-            <InlineButton onClick={() => setFillRangeOpen(true)}>
+            <InlineButton id="CraDetail.remplir.une.plage" onClick={() => setFillRangeOpen(true)}>
               {tr('CraDetail.remplir.une.plage')}
             </InlineButton>
             {!isAdmin && !isIndispo && (
-              <Button className="w-auto" onClick={() => setAbsenceOpen(true)}>
+              <Button id="CraDetail.declarer.une.absence" className="w-auto" onClick={() => setAbsenceOpen(true)}>
                 {tr('CraDetail.declarer.une.absence')}
               </Button>
             )}
             <InlineButton
+              id="CraDetail.supprimer.tous.les.evenements"
               variant="danger"
               onClick={handleDeleteAll}
             >
@@ -1036,8 +1043,8 @@ export function CraDetail({
       </div>
 
       {!craValid && editable && hasAnyActivity && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <strong>{tr('CraDetail.cra.incomplet')}</strong> {incompleteDays.length} {tr('CraDetail.jour')}
+        <div id="CraDetail.incomplet.alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <strong id="CraDetail.cra.incomplet">{tr('CraDetail.cra.incomplet')}</strong> {incompleteDays.length} {tr('CraDetail.jour')}
           {incompleteDays.length > 1 ? 's' : ''} {tr('CraDetail.travaille')}
           {incompleteDays.length > 1 ? 's' : ''} {tr('CraDetail.ne.totalise')}
           {incompleteDays.length > 1 ? 'nt' : ''} {tr('CraDetail.pas.1.jour.le.cra.ne.peut.etre.envoye.que.lorsque.chaque.jou')}
@@ -1046,38 +1053,40 @@ export function CraDetail({
 
       <Card>
         <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold text-gray-900">
+          <h3 id="CraDetail.absences.declarees" className="text-sm font-semibold text-gray-900">
             {tr('CraDetail.absences.declarees')}
           </h3>
           {linkedAbsencesPending && cra.status === 'SUBMITTED' && (
-            <p className="text-xs text-amber-700">{tr('CraDetail.absence.info')}</p>
+            <p id="CraDetail.absence.info" className="text-xs text-amber-700">{tr('CraDetail.absence.info')}</p>
           )}
         </div>
         {linkedAbsences.length === 0 ? (
-          <p className="text-sm text-gray-500">{tr('CraDetail.aucune.absence.declaree')}</p>
+          <p id="CraDetail.aucune.absence.declaree" className="text-sm text-gray-500">{tr('CraDetail.aucune.absence.declaree')}</p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100" id="CraDetail.absences.list">
             {linkedAbsences.map((absence) => (
-              <li key={absence.id} className="flex flex-wrap items-center gap-2 py-2">
-                <span className="text-xs font-medium text-gray-700">
+              <li key={absence.id} id={`CraDetail.absence.${absence.id}`} className="flex flex-wrap items-center gap-2 py-2">
+                <span id={`CraDetail.absence.${absence.id}.dates`} className="text-xs font-medium text-gray-700">
                   {absence.startDate}
                   {absence.endDate !== absence.startDate && ` → ${absence.endDate}`}
                 </span>
-                <span className="text-sm text-gray-900">
+                <span id={`CraDetail.absence.${absence.id}.type`} className="text-sm text-gray-900">
                   {tr(UNAVAILABILITY_TYPE_LABELS[absence.type] ?? absence.type)}
                 </span>
-                <Badge kind={statusBadge(absence.status)}>
+                <Badge id={`CraDetail.absence.${absence.id}.statut`} kind={statusBadge(absence.status)}>
                   {tr(UNAVAILABILITY_STATUS_KEYS[absence.status] ?? absence.status)}
                 </Badge>
                 {canValidateLinkedAbsence(absence) && (
-                  <span className="ml-auto flex gap-1">
+                  <span id={`CraDetail.absence.${absence.id}.actions`} className="ml-auto flex gap-1">
                     <InlineButton
+                      id={`CraDetail.absence.${absence.id}.valider`}
                       disabled={absenceBusy === absence.id}
                       onClick={() => handleAbsenceValidate(absence)}
                     >
                       {tr('CraDetail.valider.l.absence')}
                     </InlineButton>
                     <InlineButton
+                      id={`CraDetail.absence.${absence.id}.rejeter`}
                       variant="danger"
                       disabled={absenceBusy === absence.id}
                       onClick={() => handleAbsenceReject(absence)}
@@ -1098,6 +1107,7 @@ export function CraDetail({
             {weekdayShortLabels().map((label, index) => (
               <div
                 key={label}
+                id={`CraDetail.weekday.${index}`}
                 className={`px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 ${
                   weekendColumns.has(index) ? '' : 'bg-gray-50'
                 }`}
@@ -1122,6 +1132,7 @@ export function CraDetail({
               return (
                 <div
                   key={date}
+                  id={`CraDetail.day.${date}`}
                   className={`min-h-28 p-1.5 ${dayBackground(day?.dayType, isWeekendDay(day))}`}
                   style={dayColorStyle(day?.dayType, isWeekendDay(day), leaveColor, weekendColor)}
                   title={
@@ -1131,13 +1142,14 @@ export function CraDetail({
                   }
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-gray-500">{dayNum}</span>
+                    <span id={`CraDetail.day.${date}.number`} className="text-xs font-semibold text-gray-500">{dayNum}</span>
                     {canAddEvents &&
                       day &&
                       (day.dayType === 'WORKED' ||
                         day.dayType === 'WEEKEND' ||
                         day.dayType === 'PUBLIC_HOLIDAY') && (
                       <button
+                        id={`CraDetail.day.${date}.add`}
                         onClick={() => setEventModal(dayIndex)}
                         className="rounded p-0.5 text-gray-400 transition hover:bg-gray-200 hover:text-gray-600"
                         aria-label={tr('CraDetail.ajouter.un.evenement')}
@@ -1159,6 +1171,7 @@ export function CraDetail({
                         return (
                           <ActivityChip
                             key={index}
+                            id={`CraDetail.activity.${act.id ?? index}`}
                             color={info?.type?.color}
                             name={info?.name ?? 'Activité inconnue'}
                             days={Number(act.days) || 0}
@@ -1173,7 +1186,7 @@ export function CraDetail({
                         )
                       })}
                     {day && day.dayType !== 'WORKED' && (
-                      <span className="block px-1 text-[11px] font-medium text-gray-400">
+                      <span id={`CraDetail.day.${date}.type`} className="block px-1 text-[11px] font-medium text-gray-400">
                         {day.dayType === 'PUBLIC_HOLIDAY' && holidays.has(date)
                           ? holidays.get(date)
                           : dayTypeLabel(day.dayType)}{' '}
@@ -1182,6 +1195,7 @@ export function CraDetail({
                     )}
                     {day?.dayType === 'WORKED' && day.activities.length > 0 && (
                       <span
+                        id={`CraDetail.day.${date}.total`}
                         className={`block px-1 text-[11px] font-semibold ${
                           dayIsValid(day) ? 'text-green-600' : 'text-red-500'
                         }`}
@@ -1195,7 +1209,7 @@ export function CraDetail({
               )
             })}
           </div>
-          <div className="border-t border-gray-100 px-4 py-2 text-xs text-gray-400">
+          <div id="CraDetail.calendar.hint" className="border-t border-gray-100 px-4 py-2 text-xs text-gray-400">
             {tr('CraDetail.cliquez.sur.un.jour.travaille.ou.le.symbole.pour.ajouter.mod')}
           </div>
         </Card>
@@ -1205,19 +1219,19 @@ export function CraDetail({
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                  <th id="CraDetail.table.index" className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
                     #
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="CraDetail.jour.2" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('CraDetail.jour.2')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="CraDetail.total" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('CraDetail.total')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="CraDetail.evenements" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('CraDetail.evenements')}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="CraDetail.commentaire" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('CraDetail.commentaire')}
                   </th>
                 </tr>
@@ -1229,21 +1243,23 @@ export function CraDetail({
                   return (
                     <tr
                       key={day.date}
+                      id={`CraDetail.row.${day.date}`}
                       className="align-top"
                       style={isWeekendDay(day) ? { backgroundColor: weekendColor } : undefined}
                     >
-                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                      <td id={`CraDetail.row.${day.date}.index`} className="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
                         {i + 1}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
+                      <td id={`CraDetail.row.${day.date}.date`} className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                         {new Date(day.date + 'T00:00:00').toLocaleDateString(getFormatLocale(), {
                           weekday: 'short',
                           day: '2-digit',
                           month: '2-digit',
                         })}
                       </td>
-                      <td className="px-4 py-3">
+                      <td id={`CraDetail.row.${day.date}.total`} className="px-4 py-3">
                         <span
+                          id={`CraDetail.row.${day.date}.total.value`}
                           className={`text-sm font-semibold ${
                             dayIsValid(day) ? 'text-green-600' : 'text-red-500'
                           }`}
@@ -1251,38 +1267,41 @@ export function CraDetail({
                           {formatDays(total)}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td id={`CraDetail.row.${day.date}.events`} className="px-4 py-3">
                         <div className="space-y-2">
                           {day.activities.map((act, j) => (
-                            <div key={j} className="flex flex-wrap items-center gap-2">
+                            <div key={j} id={`CraDetail.row.${day.date}.event.${j}`} className="flex flex-wrap items-center gap-2">
                               {canAddEvents && canModifyActivity(act) ? (
                                 <>
                                   <Select
+                                    id={`CraDetail.row.${day.date}.event.${j}.activity`}
                                     className="w-48"
                                     value={act.activityId}
                                     onChange={(e) =>
                                       updateActivity(i, j, { activityId: e.target.value })
                                     }
                                   >
-                                    <option value="">{tr('CraDetail.activite')}</option>
+                                    <option id={`CraDetail.row.${day.date}.event.${j}.activity.empty`} value="">{tr('CraDetail.activite')}</option>
                                     {filteredActivities.map((a) => (
-                                      <option key={a.id} value={a.id}>
+                                      <option key={a.id} value={a.id} id={`CraDetail.row.${day.date}.event.${j}.activity.option.${a.id}`}>
                                         {a.name}
                                       </option>
                                     ))}
                                   </Select>
                                   <Select
+                                    id={`CraDetail.row.${day.date}.event.${j}.days`}
                                     className="w-24"
                                     value={act.days}
                                     onChange={(e) => updateActivity(i, j, { days: e.target.value })}
                                   >
                                     {allowedDaysFor(day, j).map((dv) => (
-                                      <option key={dv} value={dv}>
+                                      <option key={dv} value={dv} id={`CraDetail.row.${day.date}.event.${j}.days.option.${dv}`}>
                                         {formatDays(Number(dv))}
                                       </option>
                                     ))}
                                   </Select>
                                   <button
+                                    id={`CraDetail.row.${day.date}.event.${j}.remove`}
                                     onClick={() => removeActivity(i, j)}
                                     className="text-red-500 hover:text-red-700"
                                     aria-label={tr('CraDetail.supprimer.l.evenement')}
@@ -1291,7 +1310,7 @@ export function CraDetail({
                                   </button>
                                 </>
                               ) : (
-                                <span className="text-sm">
+                                <span id={`CraDetail.row.${day.date}.event.${j}.value`} className="text-sm">
                                   {activityMap.get(act.activityId)?.name ?? 'Activité inconnue'} ·{' '}
                                   {formatDays(Number(act.days) || 0)}
                                   {act.valid ? ' ✓' : ''}
@@ -1302,6 +1321,7 @@ export function CraDetail({
                           {canAddEvents && day.dayType !== 'BEFORE_HIRE'
                             && !(day.unavailable && isConsultant) && (
                             <button
+                              id={`CraDetail.row.${day.date}.add`}
                               onClick={() => addActivity(i)}
                               disabled={total >= 1}
                               className="text-sm font-medium text-brand-600 hover:text-brand-700 disabled:cursor-not-allowed disabled:text-gray-400"
@@ -1311,16 +1331,17 @@ export function CraDetail({
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td id={`CraDetail.row.${day.date}.comment`} className="px-4 py-3">
                         {formEditable ? (
                           <input
+                            id={`CraDetail.row.${day.date}.comment.input`}
                             value={day.comment}
                             onChange={(e) => updateDay(i, { comment: e.target.value })}
                             className="w-40 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
                             placeholder={tr('CraDetail.commentaire')}
                           />
                         ) : (
-                          <span className="text-sm text-gray-600">{day.comment || '—'}</span>
+                          <span id={`CraDetail.row.${day.date}.comment.value`} className="text-sm text-gray-600">{day.comment || '—'}</span>
                         )}
                       </td>
                     </tr>
@@ -1375,6 +1396,7 @@ export function CraDetail({
             {canInvalidate && (
               <span title={!hasActiveEvent ? 'aucun événement à invalider' : undefined}>
                 <IconButton
+                  id="CraDetail.invalider.tout"
                   icon="reject"
                   label={tr('CraDetail.invalider.tout')}
                   variant="danger"
@@ -1384,6 +1406,7 @@ export function CraDetail({
               </span>
             )}
             <IconButton
+              id="CraDetail.envoyer"
               icon="send"
               label={tr('CraDetail.envoyer')}
               variant="primary"
@@ -1514,14 +1537,15 @@ export function CraDetail({
         <Modal
           open
           title={tr('CraDetail.information')}
+          titleId="CraDetail.information.title"
           onClose={() => setRestrictionDialog(null)}
           footer={
-            <Button className="w-auto" onClick={() => setRestrictionDialog(null)}>
+            <Button id="CraDetail.information.ok" className="w-auto" onClick={() => setRestrictionDialog(null)}>
               OK
             </Button>
           }
         >
-          <p className="text-sm text-gray-700">{restrictionDialog}</p>
+          <p id="CraDetail.information.message" className="text-sm text-gray-700">{restrictionDialog}</p>
         </Modal>
       )}
     </div>
@@ -1541,14 +1565,15 @@ function FillMonthModal({
     <Modal
       open
       title={tr('CraDetail.remplir.tout.le.mois')}
+      titleId="CraDetail.remplir.tout.le.mois.title"
       onClose={onClose}
-      footer={<IconButton icon="cancel" label="Annuler" onClick={onClose} />}
+      footer={<IconButton id="CraDetail.remplir.tout.le.mois.cancel" icon="cancel" label="Annuler" onClick={onClose} />}
     >
-      <p className="mb-3 text-sm text-gray-500">
+      <p id="CraDetail.remplir.tout.le.mois.instruction" className="mb-3 text-sm text-gray-500">
         {tr('CraDetail.choisissez.l.activite.a.appliquer.a.tous.les.jours.travaille')}
       </p>
       {activities.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
+        <p id="CraDetail.remplir.tout.le.mois.empty" className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
           {tr('CraDetail.aucune.activite.correspondant.a.ce.mois')}
         </p>
       ) : (
@@ -1556,6 +1581,7 @@ function FillMonthModal({
           {activities.map((a) => (
             <button
               key={a.id}
+              id={`CraDetail.remplir.tout.le.mois.activity.${a.id}`}
               type="button"
               onClick={() => onSelect(String(a.id))}
               className="flex w-full items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-left text-sm transition hover:bg-gray-50"
@@ -1564,8 +1590,8 @@ function FillMonthModal({
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: a.type?.color ?? '#9ca3af' }}
               />
-              <span className="font-medium text-gray-800">{a.name}</span>
-              <span className="ml-auto text-xs text-gray-400">
+              <span id={`CraDetail.remplir.tout.le.mois.activity.${a.id}.name`} className="font-medium text-gray-800">{a.name}</span>
+              <span id={`CraDetail.remplir.tout.le.mois.activity.${a.id}.dates`} className="ml-auto text-xs text-gray-400">
                 {a.startDate ?? '…'} → {a.endDate ?? '…'}
               </span>
             </button>
@@ -1597,11 +1623,12 @@ function FillRangeModal({
     <Modal
       open
       title={tr('CraDetail.remplir.une.plage')}
+      titleId="CraDetail.remplir.une.plage.title"
       onClose={onClose}
       footer={
         <>
-          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
-          <Button className="w-auto" onClick={() => onFill(start, end, activityId)}>
+          <IconButton id="CraDetail.remplir.une.plage.cancel" icon="cancel" label="Annuler" onClick={onClose} />
+          <Button id="CraDetail.remplir.une.plage.submit" className="w-auto" onClick={() => onFill(start, end, activityId)}>
             Remplir
           </Button>
         </>
@@ -1611,6 +1638,7 @@ function FillRangeModal({
         <div className="grid grid-cols-2 gap-3">
           <Field label={tr('CraDetail.date.de.debut')} id="CraDetail.date.de.debut">
             <Input
+              id="CraDetail.date.de.debut.input"
               type="date"
               min={monthStart}
               max={monthEnd}
@@ -1620,6 +1648,7 @@ function FillRangeModal({
           </Field>
           <Field label={tr('CraDetail.date.de.fin')} id="CraDetail.date.de.fin">
             <Input
+              id="CraDetail.date.de.fin.input"
               type="date"
               min={monthStart}
               max={monthEnd}
@@ -1629,9 +1658,9 @@ function FillRangeModal({
           </Field>
         </div>
         <div>
-          <p className="mb-2 text-sm text-gray-500">{tr('CraDetail.activite.2')}</p>
+          <p id="CraDetail.activite.2" className="mb-2 text-sm text-gray-500">{tr('CraDetail.activite.2')}</p>
           {activities.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
+            <p id="CraDetail.remplir.une.plage.empty" className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
               {tr('CraDetail.aucune.activite.correspondant.a.ce.mois')}
             </p>
           ) : (
@@ -1639,6 +1668,7 @@ function FillRangeModal({
               {activities.map((a) => (
                 <button
                   key={a.id}
+                  id={`CraDetail.remplir.une.plage.activity.${a.id}`}
                   type="button"
                   onClick={() => setActivityId(String(a.id))}
                   className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition ${
@@ -1651,7 +1681,7 @@ function FillRangeModal({
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: a.type?.color ?? '#9ca3af' }}
                   />
-                  <span className="font-medium text-gray-800">{a.name}</span>
+                  <span id={`CraDetail.remplir.une.plage.activity.${a.id}.name`} className="font-medium text-gray-800">{a.name}</span>
                 </button>
               ))}
             </div>
@@ -1728,24 +1758,26 @@ function EventModal({
         day: 'numeric',
         month: 'long',
       })}`}
+      titleId="CraDetail.evenements.title"
       onClose={onClose}
       size="lg"
       footer={
         <>
-          <IconButton icon="close" label="Fermer" onClick={onClose} />
+          <IconButton id="CraDetail.evenements.close" icon="close" label="Fermer" onClick={onClose} />
         </>
       }
     >
       <div className="space-y-4">
         <DocumentView value={document} />
         <div className="flex flex-wrap items-center gap-3">
-          <span className={`text-sm font-semibold ${dayIsValid(day) ? 'text-green-600' : 'text-red-500'}`}>
+          <span id="CraDetail.evenements.total" className={`text-sm font-semibold ${dayIsValid(day) ? 'text-green-600' : 'text-red-500'}`}>
             {formatDays(total)}
             {day.dayType === 'WORKED' && !dayIsValid(day) ? ' — doit totaliser 1 jour' : ''}
           </span>
           {leaveSelectable && (
-            <label className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-gray-600">
+            <label id="CraDetail.evenements.include.leaves" className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-gray-600">
               <input
+                id="CraDetail.evenements.include.leaves.input"
                 type="checkbox"
                 checked={showLeaves}
                 onChange={(e) => setShowLeaves(e.target.checked)}
@@ -1762,6 +1794,7 @@ function EventModal({
             return (
               <div
                 key={j}
+                id={`CraDetail.evenement.${j}`}
                 className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 px-3 py-2"
               >
                 <span
@@ -1771,36 +1804,40 @@ function EventModal({
                 {editable && canModify(act) ? (
                   <>
                     <Select
+                      id={`CraDetail.evenement.${j}.activity`}
                       className="w-56"
                       value={act.activityId}
                       onChange={(e) => onUpdateActivity(j, { activityId: e.target.value })}
                     >
-                      <option value="">{tr('CraDetail.activite')}</option>
+                      <option id={`CraDetail.evenement.${j}.activity.empty`} value="">{tr('CraDetail.activite')}</option>
                       {activityOptions.map((a) => (
-                        <option key={a.id} value={a.id}>
+                        <option key={a.id} value={a.id} id={`CraDetail.evenement.${j}.activity.option.${a.id}`}>
                           {a.name}
                         </option>
                       ))}
                     </Select>
                     <Select
+                      id={`CraDetail.evenement.${j}.days`}
                       className="w-28"
                       value={act.days}
                       onChange={(e) => onUpdateActivity(j, { days: e.target.value })}
                     >
                       {allowedDaysFor(day, j).map((dv) => (
-                        <option key={dv} value={dv}>
+                        <option key={dv} value={dv} id={`CraDetail.evenement.${j}.days.option.${dv}`}>
                           {formatDays(Number(dv))}
                         </option>
                       ))}
                     </Select>
                     {act.days === '0.5' && (
                       <div
+                        id={`CraDetail.evenement.${j}.halfday`}
                         role="group"
                         aria-label="Demi-journée"
                         className="flex shrink-0 items-center gap-2 text-sm text-gray-600"
                       >
-                        <label className="flex items-center gap-1">
+                        <label id={`CraDetail.evenement.${j}.halfday.am.label`} className="flex items-center gap-1">
                           <input
+                            id={`CraDetail.evenement.${j}.halfday.am.input`}
                             type="radio"
                             name={`half-day-${j}`}
                             checked={act.halfDay === 'AM'}
@@ -1809,8 +1846,9 @@ function EventModal({
                           />
                           Matin
                         </label>
-                        <label className="flex items-center gap-1">
+                        <label id={`CraDetail.evenement.${j}.halfday.pm.label`} className="flex items-center gap-1">
                           <input
+                            id={`CraDetail.evenement.${j}.halfday.pm.input`}
                             type="radio"
                             name={`half-day-${j}`}
                             checked={act.halfDay === 'PM'}
@@ -1822,12 +1860,14 @@ function EventModal({
                       </div>
                     )}
                     <input
+                      id={`CraDetail.evenement.${j}.comment`}
                       value={act.comment}
                       onChange={(e) => onUpdateActivity(j, { comment: e.target.value })}
                       className="flex-1 min-w-24 rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
                       placeholder={tr('CraDetail.commentaire')}
                     />
                     <button
+                      id={`CraDetail.evenement.${j}.remove`}
                       onClick={() => onRemoveActivity(j)}
                       className="text-red-500 hover:text-red-700"
                       aria-label={tr('CraDetail.supprimer.l.evenement')}
@@ -1836,7 +1876,7 @@ function EventModal({
                     </button>
                   </>
                 ) : (
-                  <span className="text-sm">
+                  <span id={`CraDetail.evenement.${j}.value`} className="text-sm">
                     {info?.name ?? 'Activité inconnue'} · {formatDays(Number(act.days) || 0)}
                     {act.days === '0.5' && act.halfDay ? ` (${halfDayLabel(act.halfDay)})` : ''}
                     {act.valid ? ' ✓' : ''}
@@ -1844,8 +1884,9 @@ function EventModal({
                   </span>
                 )}
                 {managerCanAct && (
-                  <label className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-gray-600">
+                  <label id={`CraDetail.evenement.${j}.valid.label`} className="ml-auto flex shrink-0 items-center gap-1.5 text-sm text-gray-600">
                     <input
+                      id={`CraDetail.evenement.${j}.valid.input`}
                       type="checkbox"
                       checked={act.valid}
                       disabled={isOwner && act.valid}
@@ -1863,7 +1904,7 @@ function EventModal({
             )
           })}
           {day.activities.length === 0 && (
-            <p className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
+            <p id="CraDetail.evenements.empty" className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-sm text-gray-400">
               {tr('CraDetail.aucun.evenement.pour.ce.jour')}
             </p>
           )}
@@ -1871,6 +1912,7 @@ function EventModal({
 
         {editable && (
           <button
+            id="CraDetail.evenements.add"
             onClick={onAddActivity}
             disabled={total >= 1}
             className="text-sm font-medium text-brand-600 hover:text-brand-700 disabled:cursor-not-allowed disabled:text-gray-400"
@@ -1903,24 +1945,26 @@ function RangeValidModal({
     <Modal
       open
       title={`${label} une plage de dates`}
+      titleId="CraDetail.plage.title"
       onClose={onClose}
       footer={
         <>
-          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
-          <Button className="w-auto" onClick={() => onApply(start, end)}>
+          <IconButton id="CraDetail.plage.cancel" icon="cancel" label="Annuler" onClick={onClose} />
+          <Button id="CraDetail.plage.submit" className="w-auto" onClick={() => onApply(start, end)}>
             {label}
           </Button>
         </>
       }
     >
-      <p className="mb-3 text-sm text-gray-500">
+      <p id="CraDetail.plage.description" className="mb-3 text-sm text-gray-500">
         {action === 'validate'
           ? 'Toutes les activités de la plage seront marquées comme validées.'
           : 'Toutes les activités de la plage seront marquées comme non validées.'}
       </p>
       <div className="grid grid-cols-2 gap-3">
-        <Field label={tr('CraDetail.date.de.debut')} id="CraDetail.date.de.debut">
+        <Field label={tr('CraDetail.date.de.debut')} id="CraDetail.plage.date.de.debut">
           <Input
+            id="CraDetail.plage.date.de.debut.input"
             type="date"
             min={monthStart}
             max={monthEnd}
@@ -1928,8 +1972,9 @@ function RangeValidModal({
             onChange={(e) => setStart(e.target.value)}
           />
         </Field>
-        <Field label={tr('CraDetail.date.de.fin')} id="CraDetail.date.de.fin">
+        <Field label={tr('CraDetail.date.de.fin')} id="CraDetail.plage.date.de.fin">
           <Input
+            id="CraDetail.plage.date.de.fin.input"
             type="date"
             min={monthStart}
             max={monthEnd}
@@ -1959,11 +2004,13 @@ function CancelModal({
     <Modal
       open
       title={tr('CraDetail.annuler.l.indispo')}
+      titleId="CraDetail.annuler.l.indispo.title"
       onClose={onClose}
       footer={
         <>
-          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
+          <IconButton id="CraDetail.annuler.l.indispo.cancel" icon="cancel" label="Annuler" onClick={onClose} />
           <Button
+            id="CraDetail.annuler.l.indispo.confirm"
             variant="danger"
             className="w-auto"
             onClick={() => onConfirm(comment.trim())}
@@ -1975,13 +2022,14 @@ function CancelModal({
         </>
       }
     >
-      <p className="mb-3 text-sm text-gray-500">
+      <p id="CraDetail.annuler.l.indispo.info" className="mb-3 text-sm text-gray-500">
         {commentRequired
           ? 'Indiquez le motif de l\'annulation (obligatoire) :'
           : 'Retirer cette Indispo (elle repassera en brouillon). Motif (facultatif) :'}
       </p>
-      <Field label={commentRequired ? 'Commentaire *' : 'Commentaire'}>
+      <Field label={commentRequired ? 'Commentaire *' : 'Commentaire'} id="CraDetail.annuler.commentaire">
         <Input
+          id="CraDetail.annuler.commentaire.input"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder={tr('CraDetail.motif.de.l.annulation')}
@@ -2006,11 +2054,13 @@ function SendBackModal({
     <Modal
       open
       title={tr('CraDetail.envoyer.au.consultant')}
+      titleId="CraDetail.envoyer.au.consultant.title"
       onClose={onClose}
       footer={
         <>
-          <IconButton icon="cancel" label="Annuler" onClick={onClose} />
+          <IconButton id="CraDetail.envoyer.au.consultant.cancel" icon="cancel" label="Annuler" onClick={onClose} />
           <Button
+            id="CraDetail.envoyer.au.consultant.submit"
             className="w-auto"
             onClick={() => onConfirm(comment.trim())}
             disabled={!canSubmit || submitting}
@@ -2021,11 +2071,12 @@ function SendBackModal({
         </>
       }
     >
-      <p className="mb-3 text-sm text-gray-500">
+      <p id="CraDetail.envoyer.au.consultant.info" className="mb-3 text-sm text-gray-500">
         {tr('CraDetail.indiquez.un.commentaire.obligatoire')}
       </p>
       <Field label={tr('CraDetail.commentaire.2')} id="CraDetail.commentaire.2">
         <Textarea
+          id="CraDetail.commentaire.2.textarea"
           rows={4}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -2108,11 +2159,12 @@ function AbsenceModal({
     <Modal
       open
       title={tr('CraDetail.declarer.une.absence')}
+      titleId="CraDetail.declarer.une.absence.title"
       onClose={() => void handleCancel()}
       footer={
         <>
-          <IconButton icon="cancel" label="Annuler" onClick={() => void handleCancel()} />
-          <Button className="w-auto" onClick={() => void submit()} disabled={submitting}>
+          <IconButton id="CraDetail.declarer.une.absence.cancel" icon="cancel" label="Annuler" onClick={() => void handleCancel()} />
+          <Button id="CraDetail.declarer.une.absence.submit" className="w-auto" onClick={() => void submit()} disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('CraDetail.declarer.une.absence')}
           </Button>
@@ -2120,13 +2172,13 @@ function AbsenceModal({
       }
     >
       <div className="space-y-4">
-        <p className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+        <p id="CraDetail.absence.info.2" className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
           {tr('CraDetail.absence.info')}
         </p>
         <Field label={tr('Unavailability.type')} id="CraDetail.type.d.absence">
-          <Select value={type} onChange={(e) => setType(e.target.value as UnavailabilityType)}>
+          <Select id="CraDetail.type.d.absence.select" value={type} onChange={(e) => setType(e.target.value as UnavailabilityType)}>
             {TYPES.map((t) => (
-              <option key={t} value={t}>
+              <option key={t} value={t} id={`CraDetail.type.d.absence.option.${t}`}>
                 {UNAVAILABILITY_TYPE_LABELS[t]}
               </option>
             ))}
@@ -2135,6 +2187,7 @@ function AbsenceModal({
         <div className="grid grid-cols-2 gap-3">
           <Field label={tr('CraDetail.date.de.debut')} id="CraDetail.absence.date.de.debut">
             <Input
+              id="CraDetail.absence.date.de.debut.input"
               type="date"
               min={monthStart}
               max={monthEnd}
@@ -2148,6 +2201,7 @@ function AbsenceModal({
           </Field>
           <Field label={tr('CraDetail.date.de.fin')} id="CraDetail.absence.date.de.fin">
             <Input
+              id="CraDetail.absence.date.de.fin.input"
               type="date"
               min={start || monthStart}
               max={monthEnd}
@@ -2157,7 +2211,7 @@ function AbsenceModal({
           </Field>
         </div>
         <Field label={tr('CraDetail.commentaire.2')} id="CraDetail.absence.commentaire">
-          <Textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
+          <Textarea id="CraDetail.absence.commentaire.textarea" rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
         </Field>
         <Field label={tr('document.attachment.add')} id="CraDetail.absence.document">
           <DocumentAttachment
@@ -2166,7 +2220,7 @@ function AbsenceModal({
             consultantId={consultantId}
           />
         </Field>
-        {error && <ErrorBlock message={error} />}
+        {error && <ErrorBlock id="CraDetail.absence.error" message={error} />}
       </div>
     </Modal>
   )
@@ -2189,64 +2243,68 @@ function PendingAbsencesModal({
     <Modal
       open
       title={tr('CraDetail.indispos.a.valider')}
+      titleId="CraDetail.indispos.a.valider.title"
       onClose={onClose}
       size="lg"
       footer={
-        <Button className="w-auto" onClick={onClose}>
+        <Button id="CraDetail.indispos.a.valider.close" className="w-auto" onClick={onClose}>
           {tr('CraDetail.fermer')}
         </Button>
       }
     >
-      <p className="mb-3 text-sm text-gray-600">{tr('CraDetail.indispos.a.valider.info')}</p>
+      <p id="CraDetail.indispos.a.valider.info" className="mb-3 text-sm text-gray-600">{tr('CraDetail.indispos.a.valider.info')}</p>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead style={{ backgroundColor: 'var(--table-header)' }}>
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+              <th id="CraDetail.indispo.date.debut" className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                 {tr('CraDetail.indispo.date.debut')}
               </th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+              <th id="CraDetail.indispo.date.fin" className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                 {tr('CraDetail.indispo.date.fin')}
               </th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+              <th id="Unavailability.type" className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                 {tr('Unavailability.type')}
               </th>
-              <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+              <th id="Unavailability.statut" className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                 {tr('Unavailability.statut')}
               </th>
-              <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+              <th id="CraList.actions" className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
                 {tr('CraList.actions')}
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {absences.map((absence) => (
-              <tr key={absence.id}>
-                <td className="px-3 py-2 text-sm text-gray-700">{absence.startDate}</td>
-                <td className="px-3 py-2 text-sm text-gray-700">{absence.endDate}</td>
-                <td className="px-3 py-2 text-sm text-gray-700">
+              <tr key={absence.id} id={`CraDetail.pending.${absence.id}`}>
+                <td id={`CraDetail.pending.${absence.id}.start`} className="px-3 py-2 text-sm text-gray-700">{absence.startDate}</td>
+                <td id={`CraDetail.pending.${absence.id}.end`} className="px-3 py-2 text-sm text-gray-700">{absence.endDate}</td>
+                <td id={`CraDetail.pending.${absence.id}.type`} className="px-3 py-2 text-sm text-gray-700">
                   {tr(UNAVAILABILITY_TYPE_LABELS[absence.type] ?? absence.type)}
                 </td>
-                <td className="px-3 py-2">
-                  <Badge kind={statusBadge(absence.status)}>
+                <td id={`CraDetail.pending.${absence.id}.status`} className="px-3 py-2">
+                  <Badge id={`CraDetail.pending.${absence.id}.status.badge`} kind={statusBadge(absence.status)}>
                     {tr(UNAVAILABILITY_STATUS_KEYS[absence.status] ?? absence.status)}
                   </Badge>
                 </td>
-                <td className="px-3 py-2">
+                <td id={`CraDetail.pending.${absence.id}.actions`} className="px-3 py-2">
                   <div className="flex items-center justify-end gap-1">
                     <Link
+                      id={`CraDetail.pending.${absence.id}.open`}
                       to={`/indisponibilites?open=${absence.id}`}
                       className="text-xs font-medium text-brand-600 underline hover:text-brand-700"
                     >
                       {tr('CraDetail.ouvrir.l.indispo')}
                     </Link>
                     <InlineButton
+                      id={`CraDetail.pending.${absence.id}.validate`}
                       disabled={busy === absence.id}
                       onClick={() => onValidate(absence)}
                     >
                       {tr('CraDetail.valider.l.absence')}
                     </InlineButton>
                     <InlineButton
+                      id={`CraDetail.pending.${absence.id}.reject`}
                       variant="danger"
                       disabled={busy === absence.id}
                       onClick={() => onReject(absence)}

@@ -165,21 +165,21 @@ export function Projects() {
               label: tr('Projects.projet'),
               render: (p) => (
                 <div>
-                  <p className="font-medium text-gray-900">{p.name}</p>
-                  {p.description && <p className="text-xs text-gray-500">{p.description}</p>}
+                  <p id={`Projects.project.${p.id}.name`} className="font-medium text-gray-900">{p.name}</p>
+                  {p.description && <p id={`Projects.project.${p.id}.description`} className="text-xs text-gray-500">{p.description}</p>}
                 </div>
               ),
             },
             {
               key: 'client',
               label: tr('Projects.client'),
-              render: (p) => <span>{p.client?.name ?? '—'}</span>,
+              render: (p) => <span id={`Projects.project.${p.id}.client`}>{p.client?.name ?? '—'}</span>,
             },
             {
               key: 'dates',
               label: tr('common.period'),
               render: (p) => (
-                <span className="text-gray-500">
+                <span id={`Projects.project.${p.id}.dates`} className="text-gray-500">
                   {formatDate(p.startDate)} → {formatDate(p.endDate)}
                 </span>
               ),
@@ -188,7 +188,7 @@ export function Projects() {
               key: 'rate',
               label: tr('Projects.tjm'),
               render: (p) => (
-                <span className="font-medium text-gray-900">
+                <span id={`Projects.project.${p.id}.rate`} className="font-medium text-gray-900">
                   {formatMoney(p.dailyRate, p.currency)}
                 </span>
               ),
@@ -196,13 +196,13 @@ export function Projects() {
             {
               key: 'soc',
               label: tr('common.company'),
-              render: (p) => (isAdmin ? <span>{p.soc?.name ?? '—'}</span> : <span>—</span>),
+              render: (p) => (isAdmin ? <span id={`Projects.project.${p.id}.soc`}>{p.soc?.name ?? '—'}</span> : <span id={`Projects.project.${p.id}.soc`}>—</span>),
             },
             {
               key: 'active',
               label: tr('common.status'),
               render: (p) => (
-                <Badge kind={p.active ? 'success' : 'muted'}>{p.active ? tr('common.active') : tr('common.inactive')}</Badge>
+                <Badge kind={p.active ? 'success' : 'muted'} id={`Projects.project.${p.id}.active`}>{p.active ? tr('common.active') : tr('common.inactive')}</Badge>
               ),
             },
             {
@@ -214,12 +214,12 @@ export function Projects() {
                     <IconButton
                       icon="edit"
                       label={tr('common.edit')}
-                      onClick={(e) => { e.stopPropagation(); openEdit(p) }} id="common.edit" />
+                      onClick={(e) => { e.stopPropagation(); openEdit(p) }} id={`Projects.project.${p.id}.edit`} />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
                       variant="danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(p) }} id="common.delete" />
+                      onClick={(e) => { e.stopPropagation(); handleDelete(p) }} id={`Projects.project.${p.id}.delete`} />
                   </div>
                 ) : (
                   <></>
@@ -233,6 +233,7 @@ export function Projects() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Projects.nouveau.projet')}
+        titleId="Projects.modal.title"
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
@@ -242,21 +243,23 @@ export function Projects() {
               variant="primary"
               onClick={handleSubmit as never}
               disabled={submitting} loading={submitting}
+              id={editing ? 'common.save' : 'common.create'}
             />
           </>
         }
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Projects.formError" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
           <Field label={tr('Projects.nom.du.projet')} id="Projects.nom.du.projet">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <Input id="Projects.nom.du.projet.input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
           <Field label={tr('Projects.description')} id="Projects.description">
             <Textarea
+              id="Projects.description.textarea"
               rows={2}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -265,12 +268,13 @@ export function Projects() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Projects.client')} id="Projects.client">
               <Select
+                id="Projects.client.select"
                 value={form.clientId}
                 onChange={(e) => setForm({ ...form, clientId: e.target.value })}
               >
-                <option value="">{tr('Projects.selectionner')}</option>
+                <option id="Projects.selectionner" value="">{tr('Projects.selectionner')}</option>
                 {(clients ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option key={c.id} id={`Projects.client.select.option.${c.id}`} value={c.id}>
                     {c.name}
                   </option>
                 ))}
@@ -279,12 +283,13 @@ export function Projects() {
             {isAdmin && (
               <Field label={tr('Projects.societe')} id="Projects.societe">
                 <Select
+                  id="Projects.societe.select"
                   value={form.socId}
                   onChange={(e) => setForm({ ...form, socId: e.target.value })}
                 >
-                  <option value="">{tr('Projects.selectionner')}</option>
+                  <option id="Projects.selectionner.2" value="">{tr('Projects.selectionner')}</option>
                   {(socs ?? []).map((soc) => (
-                    <option key={soc.id} value={soc.id}>
+                    <option key={soc.id} id={`Projects.societe.select.option.${soc.id}`} value={soc.id}>
                       {soc.name}
                     </option>
                   ))}
@@ -295,6 +300,7 @@ export function Projects() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Projects.debut')} id="Projects.debut">
               <Input
+                id="Projects.debut.input"
                 type="date"
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
@@ -302,6 +308,7 @@ export function Projects() {
             </Field>
             <Field label={tr('Projects.fin')} id="Projects.fin">
               <Input
+                id="Projects.fin.input"
                 type="date"
                 value={form.endDate}
                 onChange={(e) => setForm({ ...form, endDate: e.target.value })}
@@ -311,6 +318,7 @@ export function Projects() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Projects.tjm')} id="Projects.tjm">
               <Input
+                id="Projects.tjm.input"
                 type="number"
                 step="0.01"
                 min="0"
@@ -320,17 +328,19 @@ export function Projects() {
             </Field>
             <Field label={tr('Projects.devise')} id="Projects.devise">
               <Select
+                id="Projects.devise.select"
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
               >
-                <option value="EUR">{tr('Projects.eur')}</option>
-                <option value="USD">{tr('Projects.usd')}</option>
-                <option value="CHF">{tr('Projects.chf')}</option>
+                <option id="Projects.eur" value="EUR">{tr('Projects.eur')}</option>
+                <option id="Projects.usd" value="USD">{tr('Projects.usd')}</option>
+                <option id="Projects.chf" value="CHF">{tr('Projects.chf')}</option>
               </Select>
             </Field>
           </div>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label id="Projects.projet.actif" className="flex items-center gap-2 text-sm text-gray-700">
             <input
+              id="Projects.projet.actif.checkbox"
               type="checkbox"
               checked={form.active}
               onChange={(e) => setForm({ ...form, active: e.target.checked })}

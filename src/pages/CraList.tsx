@@ -304,13 +304,14 @@ export function CraList() {
           {!isConsultant && (
             <div className="max-w-xs flex-1">
               <Select
+                id="CraList.consultants"
                 value={consultantFilter ?? ''}
                 onChange={(e) => setConsultantFilter(e.target.value ? Number(e.target.value) : null)}
                 title={tr('CraList.consultants')}
               >
-                <option value="">{tr('CraList.tous.les.consultants')}</option>
+                <option id="CraList.tous.les.consultants" value="">{tr('CraList.tous.les.consultants')}</option>
                 {consultants.data?.map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option id={`CraList.consultant.option.${c.id}`} key={c.id} value={c.id}>
                     {c.fullName}
                   </option>
                 ))}
@@ -332,6 +333,7 @@ export function CraList() {
           </div>
           <div className="min-w-[16rem] flex-1">
             <Input
+              id="CraList.filtrer.par.annee.mois.consultant.ou.statut"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={tr('CraList.filtrer.par.annee.mois.consultant.ou.statut')}
@@ -342,12 +344,12 @@ export function CraList() {
 
       {!loading && list.length === 0 && (
         <Card className="flex flex-col items-center justify-center py-14">
-          <p className="text-sm font-medium text-gray-900">
+          <p id={search.trim() ? 'CraList.aucun.cra.ne.correspond.au.filtre' : 'CraList.aucun.cra.pour.cette.annee'} className="text-sm font-medium text-gray-900">
             {search.trim()
               ? tr('CraList.aucun.cra.ne.correspond.au.filtre')
               : tr('CraList.aucun.cra.pour.cette.annee')}
           </p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p id={search.trim() ? 'CraList.modifiez.votre.recherche' : isConsultant ? 'CraList.cliquez.sur.nouveau.cra' : 'CraList.aucun.cra.saisi'} className="mt-1 text-sm text-gray-500">
             {search.trim()
               ? tr('CraList.modifiez.votre.recherche')
               : isConsultant
@@ -364,31 +366,31 @@ export function CraList() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead style={{ backgroundColor: 'var(--table-header)' }}>
                   <tr>
-                    <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                    <th id="CraList.th.index" className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
                       #
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.annee.mois" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.annee.mois')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.consultant" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.consultant')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.statut" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.statut')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.jours" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.jours')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.soumis.le" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.soumis.le')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.valide.le" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.valide.le')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.commentaire" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.commentaire')}
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                    <th id="CraList.actions" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                       {tr('CraList.actions')}
                     </th>
                   </tr>
@@ -396,6 +398,7 @@ export function CraList() {
                 <tbody className="divide-y divide-gray-100 bg-white">
                   {pageItems.map((cra, i) => (
                     <tr
+                      id={`CraList.row.${cra.id}`}
                       key={cra.id}
                       className={`align-top ${
                         cra.id === openCraId
@@ -405,49 +408,50 @@ export function CraList() {
                             : 'even:bg-gray-50'
                       }`}
                     >
-                      <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                      <td id={`CraList.row.${cra.id}.index`} className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
                         {safePage * (user?.pageSize ?? 5) + i + 1}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
+                      <td id={`CraList.row.${cra.id}.period`} className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                         {cra.year}-{String(cra.month).padStart(2, '0')}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td id={`CraList.row.${cra.id}.consultant`} className="px-4 py-3 text-sm text-gray-900">
                         {cra.consultantName ?? '—'}
                       </td>
-                      <td className="px-4 py-3">
-                        <Badge kind={statusBadge(cra.status)}>
+                      <td id={`CraList.row.${cra.id}.status`} className="px-4 py-3">
+                        <Badge id={`CraList.row.${cra.id}.status.badge`} kind={statusBadge(cra.status)}>
                           {dt(CRA_STATUS_LABELS[cra.status] ?? cra.status)}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{cra.totalWorkedDays} {tr('CraList.j')}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td id={`CraList.row.${cra.id}.days`} className="px-4 py-3 text-sm text-gray-900">{cra.totalWorkedDays} {tr('CraList.j')}</td>
+                      <td id={`CraList.row.${cra.id}.submitted`} className="px-4 py-3 text-sm text-gray-500">
                         {formatDate(cra.submittedAt)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td id={`CraList.row.${cra.id}.validated`} className="px-4 py-3 text-sm text-gray-500">
                         {formatDate(cra.validatedAt)}
                       </td>
-                      <td className="max-w-64 px-4 py-3 text-sm text-gray-600">
+                      <td id={`CraList.row.${cra.id}.comment`} className="max-w-64 px-4 py-3 text-sm text-gray-600">
                         {cra.comment || '—'}
                       </td>
-                      <td className="px-4 py-3">
+                      <td id={`CraList.row.${cra.id}.actions`} className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
                           <IconButton
                             icon={editable(cra) ? 'edit' : 'view'}
                             label={editable(cra) ? tr('CraList.editer') : tr('CraList.ouvrir')}
                             variant="primary"
                             onClick={() => setOpenCraId(cra.id)}
+                            id={`CraList.${editable(cra) ? 'editer' : 'ouvrir'}.${cra.id}`}
                           />
                           <IconButton
                             icon="history"
                             label={tr('CraList.historique')}
                             variant="history"
-                            onClick={() => setHistoryCra(cra)} id="CraList.historique" />
+                            onClick={() => setHistoryCra(cra)} id={`CraList.historique.${cra.id}`} />
                           {editable(cra) && (
                             <IconButton
                               icon="delete"
                               label={tr('CraList.supprimer')}
                               variant="danger"
-                              onClick={() => handleDelete(cra)} id="CraList.supprimer" />
+                              onClick={() => handleDelete(cra)} id={`CraList.supprimer.${cra.id}`} />
                           )}
                           {canValidate(cra) && cra.status === 'SUBMITTED' && (
                             <>
@@ -455,12 +459,12 @@ export function CraList() {
                                 icon="check"
                                 label={tr('CraList.valider')}
                                 variant="soft"
-                                onClick={() => changeStatus(cra.id, 'validate')} id="CraList.valider" />
+                                onClick={() => changeStatus(cra.id, 'validate')} id={`CraList.valider.${cra.id}`} />
                               <IconButton
                                 icon="reject"
                                 label={tr('CraList.rejeter')}
                                 variant="danger"
-                                onClick={() => changeStatus(cra.id, 'reject')} id="CraList.rejeter" />
+                                onClick={() => changeStatus(cra.id, 'reject')} id={`CraList.rejeter.${cra.id}`} />
                             </>
                           )}
                         </div>
@@ -479,7 +483,7 @@ export function CraList() {
                 label={tr('CraList.precedent')}
                 disabled={safePage === 0}
                 onClick={() => setPage(safePage - 1)} id="CraList.precedent" />
-              <span className="text-sm text-gray-500">
+              <span id="CraList.page" className="text-sm text-gray-500">
                 {tr('CraList.page')} {safePage + 1} / {totalPages}
               </span>
               <IconButton
@@ -493,26 +497,28 @@ export function CraList() {
       )}
 
       <Card className="mt-4 flex flex-wrap items-center gap-3 p-4">
-        <label className="flex items-center gap-2 whitespace-nowrap text-sm text-gray-600">
-          <span className="min-w-[4.5rem]">{tr('CraList.mois')}</span>
+        <label id="CraList.mois" className="flex items-center gap-2 whitespace-nowrap text-sm text-gray-600">
+          <span id="CraList.mois.label" className="min-w-[4.5rem]">{tr('CraList.mois')}</span>
           <Select
+            id="CraList.mois.select"
             className="w-auto"
             value={month}
             onChange={(e) => void openPeriod(year, Number(e.target.value))}
           >
             {allowedMonths.map((m) => (
-              <option key={m} value={m}>
+              <option id={`CraList.mois.option.${m}`} key={m} value={m}>
                 {monthLabel(m)}
               </option>
             ))}
           </Select>
           <Select
+            id="CraList.annee.select"
             className="w-auto"
             value={year}
             onChange={(e) => void openPeriod(Number(e.target.value), month)}
           >
             {allowedYears.map((y) => (
-              <option key={y} value={y}>
+              <option id={`CraList.annee.option.${y}`} key={y} value={y}>
                 {y}
               </option>
             ))}
@@ -522,7 +528,7 @@ export function CraList() {
           <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev}
             disabled={beforeHirePeriod(shiftMonth(year, month, -1).year, shiftMonth(year, month, -1).month)}
             id="CraList.mois.precedent" />
-          <InlineButton onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
+          <InlineButton id="CraList.revenir.au.mois.courant" onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
             {tr('CraList.mois.courant')}
           </InlineButton>
           <IconButton icon="chevronRight" label={tr('CraList.mois.suivant')} onClick={goNext} id="CraList.mois.suivant" />
@@ -531,7 +537,7 @@ export function CraList() {
 
       {canCreateCra && ownerId && (
         <div className="mt-4 flex items-center justify-center gap-3">
-          <Button className="w-auto" onClick={() => createCra('CRA')}>
+          <Button id="CraList.nouveau.cra" className="w-auto" onClick={() => createCra('CRA')}>
             {tr('CraList.nouveau.cra')}
           </Button>
         </div>

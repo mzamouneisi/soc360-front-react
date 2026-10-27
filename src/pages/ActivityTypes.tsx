@@ -149,6 +149,7 @@ export function ActivityTypes() {
 
       <div className="mb-6 max-w-sm">
         <Input
+          id="ActivityTypes.search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={tr('ActivityTypes.rechercher.un.type')}
@@ -176,8 +177,8 @@ export function ActivityTypes() {
                     style={{ backgroundColor: t.color ?? '#94a3b8' }}
                   />
                   <div>
-                    <p className="font-medium text-gray-900">{dt(t.labelFr)}</p>
-                    {t.labelEn && <p className="text-xs text-gray-500">{t.labelEn}</p>}
+                    <p id={`ActivityTypes.type.${t.id}.labelFr`} className="font-medium text-gray-900">{dt(t.labelFr)}</p>
+                    {t.labelEn && <p id={`ActivityTypes.type.${t.id}.labelEn`} className="text-xs text-gray-500">{t.labelEn}</p>}
                   </div>
                 </div>
               ),
@@ -185,18 +186,18 @@ export function ActivityTypes() {
             {
               key: 'code',
               label: tr('ActivityTypes.code'),
-              render: (t) => <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{dt(t.code)}</code>,
+              render: (t) => <code id={`ActivityTypes.type.${t.id}.code`} className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{dt(t.code)}</code>,
             },
             {
               key: 'soc',
               label: tr('common.company'),
-              render: (t) => <span className="text-gray-500">{t.socName ?? '—'}</span>,
+              render: (t) => <span id={`ActivityTypes.type.${t.id}.soc`} className="text-gray-500">{t.socName ?? '—'}</span>,
             },
             {
               key: 'active',
               label: tr('common.status'),
               render: (t) => (
-                <Badge kind={t.active ? 'success' : 'muted'}>{t.active ? tr('common.active') : tr('common.inactive')}</Badge>
+                <Badge kind={t.active ? 'success' : 'muted'} id={`ActivityTypes.type.${t.id}.active`}>{t.active ? tr('common.active') : tr('common.inactive')}</Badge>
               ),
             },
             {
@@ -211,11 +212,12 @@ export function ActivityTypes() {
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(t)
-                      }} id="common.edit" />
+                      }} id={`ActivityTypes.type.${t.id}.edit`} />
                     <IconButton
                       icon={t.active ? 'toggleOff' : 'toggleOn'}
                       label={t.active ? tr('common.disable') : tr('common.enable')}
                       onClick={() => handleToggleActive(t)}
+                      id={`ActivityTypes.type.${t.id}.toggle`}
                     />
                     <IconButton
                       icon="delete"
@@ -224,7 +226,7 @@ export function ActivityTypes() {
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete(t)
-                      }} id="common.delete" />
+                      }} id={`ActivityTypes.type.${t.id}.delete`} />
                   </div>
                 ) : (
                   <></>
@@ -235,16 +237,18 @@ export function ActivityTypes() {
       )}
 
       {!loading && data && data.length > 0 && filtered.length === 0 && (
-        <EmptyState title={tr('ActivityTypes.aucun.resultat')} description={tr('ActivityTypes.aucun.type.ne.correspond.a.la.recherche')} />
+        <EmptyState title={tr('ActivityTypes.aucun.resultat')} titleId="ActivityTypes.aucun.resultat" description={tr('ActivityTypes.aucun.type.ne.correspond.a.la.recherche')} descriptionId="ActivityTypes.aucun.type.ne.correspond.a.la.recherche" />
       )}
 
       {!loading && data && data.length === 0 && (
         <EmptyState
           title={tr('ActivityTypes.aucun.type.d.activite')}
+          titleId="ActivityTypes.aucun.type.d.activite"
           description={tr('ActivityTypes.creez.des.types.de.prestations.pour.vos.activites.et.vos.cra')}
+          descriptionId="ActivityTypes.creez.des.types.de.prestations.pour.vos.activites.et.vos.cra"
           action={
             canEdit && workingSocId ? (
-              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} id="ActivityTypes.nouveau.type" />
+              <IconButton icon="add" label={tr('ActivityTypes.nouveau.type')} variant="new" onClick={openCreate} id="ActivityTypes.nouveau.type.empty" />
             ) : undefined
           }
         />
@@ -254,6 +258,7 @@ export function ActivityTypes() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title={form.id != null ? tr('ActivityTypes.modifier.le.type') : tr('ActivityTypes.nouveau.type.d.activite')}
+        titleId={form.id != null ? 'ActivityTypes.modifier.le.type.modal' : 'ActivityTypes.nouveau.type.d.activite.modal'}
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
@@ -263,19 +268,21 @@ export function ActivityTypes() {
               variant="primary"
               onClick={handleSubmit as never}
               disabled={submitting} loading={submitting}
+              id={form.id != null ? 'common.save' : 'common.create'}
             />
           </>
         }
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="ActivityTypes.formError" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('ActivityTypes.code')} id="ActivityTypes.code">
               <Input
+                id="ActivityTypes.code.input"
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
                 placeholder={tr('ActivityTypes.mission')}
@@ -283,6 +290,7 @@ export function ActivityTypes() {
             </Field>
             <Field label={tr('ActivityTypes.libelle.fr')} id="ActivityTypes.libelle.fr">
               <Input
+                id="ActivityTypes.libelle.fr.input"
                 value={form.labelFr}
                 onChange={(e) => setForm({ ...form, labelFr: e.target.value })}
                 placeholder={tr('ActivityTypes.mission.2')}
@@ -292,6 +300,7 @@ export function ActivityTypes() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('ActivityTypes.libelle.en')} id="ActivityTypes.libelle.en">
               <Input
+                id="ActivityTypes.libelle.en.input"
                 value={form.labelEn}
                 onChange={(e) => setForm({ ...form, labelEn: e.target.value })}
                 placeholder={tr('ActivityTypes.mission.2')}
@@ -300,12 +309,14 @@ export function ActivityTypes() {
             <Field label={tr('ActivityTypes.couleur')} id="ActivityTypes.couleur">
               <div className="flex items-center gap-2">
                 <input
+                  id="ActivityTypes.couleur.input"
                   type="color"
                   value={form.color}
                   onChange={(e) => setForm({ ...form, color: e.target.value })}
                   className="h-9 w-12 cursor-pointer rounded border border-gray-300"
                 />
                 <Input
+                  id="ActivityTypes.couleur.text"
                   value={form.color}
                   onChange={(e) => setForm({ ...form, color: e.target.value })}
                   className="max-w-[8rem]"

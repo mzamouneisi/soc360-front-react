@@ -85,23 +85,25 @@ export function Facturation() {
           <div className="flex items-center gap-2">
             <RefreshButton onClick={reload} />
             <Select
+              id="Facturation.month"
               className="w-auto"
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                <option key={m} value={m}>
+                <option id={`Facturation.month.${m}`} key={m} value={m}>
                   {monthLabel(m)}
                 </option>
               ))}
             </Select>
             <Select
+              id="Facturation.year"
               className="w-auto"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
               {[now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1].map((y) => (
-                <option key={y} value={y}>
+                <option id={`Facturation.year.${y}`} key={y} value={y}>
                   {y}
                 </option>
               ))}
@@ -111,17 +113,18 @@ export function Facturation() {
       />
 
       {isAdmin && (
-        <Card className="mb-6 p-4">
-          <label className="flex items-center gap-2 text-sm text-gray-600">
+        <Card id="Facturation.socSelectCard" className="mb-6 p-4">
+          <label id="Facturation.societe" className="flex items-center gap-2 text-sm text-gray-600">
             {tr('Facturation.societe')}
             <Select
+              id="Facturation.societe.select"
               className="w-64"
               value={selectedSoc ?? ''}
               onChange={(e) => setSelectedSoc(e.target.value ? Number(e.target.value) : null)}
             >
-              <option value="">{tr('Facturation.selectionner')}</option>
+              <option id="Facturation.selectionner" value="">{tr('Facturation.selectionner')}</option>
               {(socs ?? []).map((soc: SocDto) => (
-                <option key={soc.id} value={soc.id}>
+                <option id={`Facturation.societe.${soc.id}`} key={soc.id} value={soc.id}>
                   {soc.name}
                 </option>
               ))}
@@ -130,102 +133,102 @@ export function Facturation() {
         </Card>
       )}
 
-      {detailError && <ErrorBlock message={detailError} />}
+      {detailError && <ErrorBlock id="Facturation.detailError" message={detailError} />}
       {detailLoading && <LoadingBlock />}
 
       {detail && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="p-5">
-              <p className="text-sm font-medium text-gray-500">{tr('Facturation.abonnement')}</p>
+            <Card id="Facturation.card.subscription" className="p-5">
+              <p id="Facturation.abonnement" className="text-sm font-medium text-gray-500">{tr('Facturation.abonnement')}</p>
               <div className="mt-2 flex items-center gap-2">
-                <p className="text-2xl font-bold text-gray-900">{dt(subscription?.plan ?? '—')}</p>
+                <p id="Facturation.subscription.plan" className="text-2xl font-bold text-gray-900">{dt(subscription?.plan ?? '—')}</p>
                 {subscription && (
-                  <Badge kind={statusBadge(subscription.status)}>
+                  <Badge id="Facturation.subscription.status" kind={statusBadge(subscription.status)}>
                     {dt(SUBSCRIPTION_STATUS_LABELS[subscription.status] ?? subscription.status)}
                   </Badge>
                 )}
               </div>
               {subscription && (
-                <p className="mt-1 text-sm text-gray-500">
+                <p id="Facturation.subscription.details" className="mt-1 text-sm text-gray-500">
                   {formatMoney(subscription.monthlyPrice)} {tr('Facturation.mois.debut')}{' '}
                   {formatDate(subscription.startDate)}
                   {subscription.trialEndDate && ` · ${tr('Facturation.essai.jusqu.au', { date: formatDate(subscription.trialEndDate) })}`}
                 </p>
               )}
             </Card>
-            <Card className="p-5">
-              <p className="text-sm font-medium text-gray-500">{tr('Facturation.ca.mensuel.missions.actives')}</p>
-              <p className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(monthlyRevenue)}</p>
-              <p className="mt-1 text-xs text-gray-500">{activeProjects.length} {tr('Facturation.mission.s.active.s')}</p>
+            <Card id="Facturation.card.revenue" className="p-5">
+              <p id="Facturation.ca.mensuel.missions.actives" className="text-sm font-medium text-gray-500">{tr('Facturation.ca.mensuel.missions.actives')}</p>
+              <p id="Facturation.revenue.value" className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(monthlyRevenue)}</p>
+              <p id="Facturation.missions.activeCount" className="mt-1 text-xs text-gray-500">{activeProjects.length} {tr('Facturation.mission.s.active.s')}</p>
             </Card>
-            <Card className="p-5">
-              <p className="text-sm font-medium text-gray-500">
+            <Card id="Facturation.card.cra" className="p-5">
+              <p id="Facturation.cra.valides" className="text-sm font-medium text-gray-500">
                 {tr('Facturation.cra.valides')} {monthShort(month)} {year}
               </p>
-              <p className="mt-2 text-2xl font-bold text-gray-900">{validatedCras.length}</p>
-              <p className="mt-1 text-xs text-gray-500">{validatedHours} {tr('Facturation.h.validees')}</p>
+              <p id="Facturation.cra.count" className="mt-2 text-2xl font-bold text-gray-900">{validatedCras.length}</p>
+              <p id="Facturation.cra.hours" className="mt-1 text-xs text-gray-500">{validatedHours} {tr('Facturation.h.validees')}</p>
             </Card>
-            <Card className="p-5">
-              <p className="text-sm font-medium text-gray-500">{tr('Facturation.total.regle')}</p>
-              <p className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(totalPaid)}</p>
-              <p className="mt-1 text-xs text-gray-500">{(detail.payments ?? []).length} {tr('Facturation.paiement.s')}</p>
+            <Card id="Facturation.card.paid" className="p-5">
+              <p id="Facturation.total.regle" className="text-sm font-medium text-gray-500">{tr('Facturation.total.regle')}</p>
+              <p id="Facturation.paid.value" className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(totalPaid)}</p>
+              <p id="Facturation.payments.count" className="mt-1 text-xs text-gray-500">{(detail.payments ?? []).length} {tr('Facturation.paiement.s')}</p>
             </Card>
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Card className="p-5">
+            <Card id="Facturation.card.missions" className="p-5">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900" id="Facturation.missions.facturables">{tr('Facturation.missions.facturables')}</h3>
                 <div className="flex gap-2">
-                  <InlineButton onClick={() => handleExport('csv')} disabled={exporting !== null}>
+                  <InlineButton id="Facturation.export.csv" onClick={() => handleExport('csv')} disabled={exporting !== null}>
                     {exporting === 'csv' ? <Spinner /> : 'CRA CSV'}
                   </InlineButton>
-                  <InlineButton onClick={() => handleExport('pdf')} disabled={exporting !== null}>
+                  <InlineButton id="Facturation.export.pdf" onClick={() => handleExport('pdf')} disabled={exporting !== null}>
                     {exporting === 'pdf' ? <Spinner /> : 'CRA PDF'}
                   </InlineButton>
                 </div>
               </div>
               <div className="mt-4 divide-y divide-gray-100">
                 {activeProjects.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between py-3">
+                  <div id={`Facturation.mission.${p.id}`} key={p.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="font-medium text-gray-900">{p.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p id={`Facturation.mission.${p.id}.name`} className="font-medium text-gray-900">{p.name}</p>
+                      <p id={`Facturation.mission.${p.id}.client`} className="text-xs text-gray-500">
                         {p.client?.name ?? 'Client inconnu'} · {formatDate(p.startDate)} → {formatDate(p.endDate)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">
+                      <p id={`Facturation.mission.${p.id}.amount`} className="font-semibold text-gray-900">
                         {formatMoney((p.dailyRate ?? 0) * 21, p.currency ?? 'EUR')}
-                        <span className="text-xs font-normal text-gray-500"> {tr('Facturation.mois')}</span>
+                        <span id={`Facturation.mission.${p.id}.month`} className="text-xs font-normal text-gray-500"> {tr('Facturation.mois')}</span>
                       </p>
-                      <p className="text-xs text-gray-500">{tr('Facturation.tjm')} {formatMoney(p.dailyRate, p.currency ?? 'EUR')}</p>
+                      <p id={`Facturation.mission.${p.id}.tjm`} className="text-xs text-gray-500">{tr('Facturation.tjm')} {formatMoney(p.dailyRate, p.currency ?? 'EUR')}</p>
                     </div>
                   </div>
                 ))}
                 {activeProjects.length === 0 && (
-                  <p className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucune.mission.active')}</p>
+                  <p id="Facturation.aucune.mission.active" className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucune.mission.active')}</p>
                 )}
               </div>
             </Card>
 
-            <Card className="p-5">
+            <Card id="Facturation.card.payments" className="p-5">
               <h3 className="text-lg font-semibold text-gray-900" id="Facturation.paiements">{tr('Facturation.paiements')}</h3>
               <div className="mt-4 divide-y divide-gray-100">
                 {(detail.payments ?? []).map((p) => (
-                  <div key={p.id} className="flex items-center justify-between py-3">
+                  <div id={`Facturation.payment.${p.id}`} key={p.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="font-medium text-gray-900">{formatMoney(p.amount)}</p>
-                      <p className="text-xs text-gray-500">
+                      <p id={`Facturation.payment.${p.id}.amount`} className="font-medium text-gray-900">{formatMoney(p.amount)}</p>
+                      <p id={`Facturation.payment.${p.id}.details`} className="text-xs text-gray-500">
                         {formatDate(p.paymentDate)} · {p.method}
                       </p>
                     </div>
-                    <span className="text-xs text-gray-400">{p.reference ?? '—'}</span>
+                    <span id={`Facturation.payment.${p.id}.reference`} className="text-xs text-gray-400">{p.reference ?? '—'}</span>
                   </div>
                 ))}
                 {(detail.payments ?? []).length === 0 && (
-                  <p className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucun.paiement.enregistre')}</p>
+                  <p id="Facturation.aucun.paiement.enregistre" className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucun.paiement.enregistre')}</p>
                 )}
               </div>
             </Card>
@@ -234,9 +237,9 @@ export function Facturation() {
       )}
 
       {!detailLoading && !detail && !detailError && (
-        <Card className="flex flex-col items-center justify-center py-14">
-          <p className="text-sm font-medium text-gray-900">{tr('Facturation.selectionnez.une.societe')}</p>
-          <p className="mt-1 text-sm text-gray-500">{tr('Facturation.aucune.donnee.de.facturation')}</p>
+        <Card id="Facturation.noSelection" className="flex flex-col items-center justify-center py-14">
+          <p id="Facturation.selectionnez.une.societe" className="text-sm font-medium text-gray-900">{tr('Facturation.selectionnez.une.societe')}</p>
+          <p id="Facturation.aucune.donnee.de.facturation" className="mt-1 text-sm text-gray-500">{tr('Facturation.aucune.donnee.de.facturation')}</p>
         </Card>
       )}
     </div>

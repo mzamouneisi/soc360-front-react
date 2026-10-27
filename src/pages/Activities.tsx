@@ -221,7 +221,7 @@ export function Activities() {
             {canEdit ? (
               <>
                 <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} id="Activities.nouvelle.activite" />
-                <InlineButton className="ml-2" variant="primary" onClick={() => navigate('/types-activites')}>
+                <InlineButton id="Activities.gerer.les.types" className="ml-2" variant="primary" onClick={() => navigate('/types-activites')}>
                   {tr('Activities.gerer.les.types')}
                 </InlineButton>
               </>
@@ -234,12 +234,13 @@ export function Activities() {
         <div className="w-56">
           <Field label={tr('Activities.collaborateur')} id="Activities.collaborateur">
             <Select
+              id="Activities.collaborateur.select"
               value={consultantFilter}
               onChange={(e) => setConsultantFilter(e.target.value)}
             >
-              <option value="">{tr('Activities.tous.les.collaborateurs')}</option>
+              <option id="Activities.tous.les.collaborateurs" value="">{tr('Activities.tous.les.collaborateurs')}</option>
               {(filterCollaborators ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
+                <option id={`Activities.collaborateur.option.${c.id}`} key={c.id} value={c.id}>
                   {c.fullName}
                 </option>
               ))}
@@ -248,10 +249,10 @@ export function Activities() {
         </div>
         <div className="w-56">
           <Field label={tr('Activities.type.d.activite')} id="Activities.type.d.activite">
-            <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-              <option value="">{tr('Activities.tous.les.types')}</option>
+            <Select id="Activities.type.d.activite.select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+              <option id="Activities.tous.les.types" value="">{tr('Activities.tous.les.types')}</option>
               {(filterTypes ?? []).map((t) => (
-                <option key={t.id} value={t.id}>
+                <option id={`Activities.type.option.${t.id}`} key={t.id} value={t.id}>
                   {t.labelFr}
                 </option>
               ))}
@@ -260,6 +261,7 @@ export function Activities() {
         </div>
         {(consultantFilter || typeFilter) && (
           <InlineButton
+            id="Activities.reinitialiser"
             className="mb-0.5"
             onClick={() => {
               setConsultantFilter('')
@@ -274,6 +276,7 @@ export function Activities() {
       <div className="mb-6 flex flex-wrap gap-2">
         {(types ?? []).map((t: ActivityTypeDto) => (
           <span
+            id={`Activities.type.pill.${t.id}`}
             key={t.id}
             className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700"
           >
@@ -301,24 +304,24 @@ export function Activities() {
               label: tr('Activities.activite'),
               render: (a) => (
                 <div>
-                  <p className="font-medium text-gray-900">{dt(a.name)}</p>
-                  {a.description && <p className="text-xs text-gray-500">{dt(a.description)}</p>}
+                  <p id={`Activities.row.${a.id}.name`} className="font-medium text-gray-900">{dt(a.name)}</p>
+                  {a.description && <p id={`Activities.row.${a.id}.description`} className="text-xs text-gray-500">{dt(a.description)}</p>}
                 </div>
               ),
             },
             {
               key: 'type',
               label: tr('common.type'),
-              render: (a) => <Badge kind="info">{a.type ? dt(a.type.labelFr) : '—'}</Badge>,
+              render: (a) => <Badge id={`Activities.row.${a.id}.type`} kind="info">{a.type ? dt(a.type.labelFr) : '—'}</Badge>,
             },
             {
               key: 'project',
               label: tr('Projects.projet'),
               render: (a) => (
                 <div>
-                  <p className="font-medium text-gray-900">{a.project?.name ?? '—'}</p>
+                  <p id={`Activities.row.${a.id}.project`} className="font-medium text-gray-900">{a.project?.name ?? '—'}</p>
                   {a.project?.clientName && (
-                    <p className="text-xs text-gray-500">{a.project.clientName}</p>
+                    <p id={`Activities.row.${a.id}.project.client`} className="text-xs text-gray-500">{a.project.clientName}</p>
                   )}
                 </div>
               ),
@@ -327,7 +330,7 @@ export function Activities() {
               key: 'consultant',
               label: tr('Activities.collaborateur'),
               render: (a) => (
-                <span className="text-gray-700">
+                <span id={`Activities.row.${a.id}.consultant`} className="text-gray-700">
                   {a.consultant
                     ? `${a.consultant.firstName} ${a.consultant.lastName}`
                     : '—'}
@@ -338,7 +341,7 @@ export function Activities() {
               key: 'dates',
               label: tr('common.period'),
               render: (a) => (
-                <span className="text-gray-600">
+                <span id={`Activities.row.${a.id}.dates`} className="text-gray-600">
                   {a.startDate ? a.startDate : '—'}
                   {a.endDate ? ` → ${a.endDate}` : a.startDate ? ' →' : ''}
                 </span>
@@ -348,7 +351,7 @@ export function Activities() {
               key: 'price',
               label: tr('Activities.tarif'),
               render: (a) => (
-                <span className="font-medium text-gray-900">{formatMoney(a.price, a.currency)}</span>
+                <span id={`Activities.row.${a.id}.price`} className="font-medium text-gray-900">{formatMoney(a.price, a.currency)}</span>
               ),
             },
             {
@@ -356,10 +359,10 @@ export function Activities() {
               label: tr('Activities.week.end.jours.feries'),
               render: (a) => (
                 <div className="flex flex-col gap-1">
-                  <Badge kind={a.weekendAllowed ? 'success' : 'muted'}>
+                  <Badge id={`Activities.row.${a.id}.weekend`} kind={a.weekendAllowed ? 'success' : 'muted'}>
                     {tr('Activities.week.end')} : {a.weekendAllowed ? tr('common.yes') : tr('common.no')}
                   </Badge>
-                  <Badge kind={a.holidayAllowed ? 'success' : 'muted'}>
+                  <Badge id={`Activities.row.${a.id}.holiday`} kind={a.holidayAllowed ? 'success' : 'muted'}>
                     {tr('Activities.jours.feries')} : {a.holidayAllowed ? tr('common.yes') : tr('common.no')}
                   </Badge>
                 </div>
@@ -368,13 +371,13 @@ export function Activities() {
             {
               key: 'soc',
               label: tr('common.company'),
-              render: (a) => <span className="text-gray-500">{a.soc?.name ?? '—'}</span>,
+              render: (a) => <span id={`Activities.row.${a.id}.soc`} className="text-gray-500">{a.soc?.name ?? '—'}</span>,
             },
             {
               key: 'active',
               label: tr('common.status'),
               render: (a) => (
-                <Badge kind={a.active ? 'success' : 'muted'}>{a.active ? tr('Activities.active') : tr('Activities.inactive')}</Badge>
+                <Badge id={`Activities.row.${a.id}.active`} kind={a.active ? 'success' : 'muted'}>{a.active ? tr('Activities.active') : tr('Activities.inactive')}</Badge>
               ),
             },
             {
@@ -389,7 +392,7 @@ export function Activities() {
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(a)
-                      }} id="common.edit" />
+                      }} id={`common.edit.${a.id}`} />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
@@ -397,7 +400,7 @@ export function Activities() {
                       onClick={(e) => {
                         e.stopPropagation()
                         handleDelete(a)
-                      }} id="common.delete" />
+                      }} id={`common.delete.${a.id}`} />
                   </div>
                 ) : (
                   <></>
@@ -409,6 +412,8 @@ export function Activities() {
 
       {!loading && data && data.length > 0 && filtered.length === 0 && (
         <EmptyState
+          titleId="Activities.aucun.resultat"
+          descriptionId="Activities.aucune.activite.ne.correspond.aux.filtres.selectionnes"
           title={tr('Activities.aucun.resultat')}
           description={tr('Activities.aucune.activite.ne.correspond.aux.filtres.selectionnes')}
         />
@@ -416,11 +421,13 @@ export function Activities() {
 
       {!loading && data && data.length === 0 && (
         <EmptyState
+          titleId="Activities.aucune.activite"
+          descriptionId="Activities.creez.des.prestations.facturables.pour.vos.cra"
           title={tr('Activities.aucune.activite')}
           description={tr('Activities.creez.des.prestations.facturables.pour.vos.cra')}
           action={
             canEdit ? (
-              <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} id="Activities.nouvelle.activite" />
+              <IconButton icon="add" label={tr('Activities.nouvelle.activite')} variant="new" onClick={openCreate} id="Activities.nouvelle.activite.empty" />
             ) : undefined
           }
         />
@@ -429,11 +436,13 @@ export function Activities() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        titleId="Activities.modal.title"
         title={editing ? tr('Activities.modifier.activite', { name: editing.name }) : tr('Activities.nouvelle.activite')}
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton
+              id={editing ? 'common.save' : 'common.create'}
               icon={editing ? 'save' : 'add'}
               label={editing ? tr('common.save') : tr('common.create')}
               variant="primary"
@@ -445,13 +454,14 @@ export function Activities() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Activities.form.error" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
           {isAdmin && (
             <Field label={tr('Activities.societe')} id="Activities.societe">
               <Select
+                id="Activities.societe.select"
                 value={form.socId}
                 onChange={(e) =>
                   setForm({
@@ -463,9 +473,9 @@ export function Activities() {
                   })
                 }
               >
-                <option value="">{tr('Activities.selectionner')}</option>
+                <option id="Activities.selectionner" value="">{tr('Activities.selectionner')}</option>
                 {(socs ?? []).map((s) => (
-                  <option key={s.id} value={s.id}>
+                  <option id={`Activities.societe.option.${s.id}`} key={s.id} value={s.id}>
                     {s.name}
                   </option>
                 ))}
@@ -473,22 +483,24 @@ export function Activities() {
             </Field>
           )}
           <Field label={tr('Activities.nom')} id="Activities.nom">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input id="Activities.nom.input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </Field>
           <Field label={tr('Activities.description')} id="Activities.description">
             <Input
+              id="Activities.description.input"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </Field>
           <Field label={tr('Activities.projet')} id="Activities.projet">
             <Select
+              id="Activities.projet.select"
               value={form.projectId}
               onChange={(e) => setForm({ ...form, projectId: e.target.value })}
             >
-              <option value="">{tr('Activities.selectionner')}</option>
+              <option id="Activities.projet.selectionner" value="">{tr('Activities.selectionner')}</option>
               {(projects ?? []).map((p) => (
-                <option key={p.id} value={p.id}>
+                <option id={`Activities.projet.option.${p.id}`} key={p.id} value={p.id}>
                   {p.name}
                   {p.client?.name ? ` — ${p.client.name}` : ''}
                 </option>
@@ -497,10 +509,10 @@ export function Activities() {
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Field label={tr('Activities.type')} id="Activities.type">
-              <Select value={form.typeId} onChange={(e) => setForm({ ...form, typeId: e.target.value })}>
-                <option value="">{tr('Activities.selectionner')}</option>
+              <Select id="Activities.type.select" value={form.typeId} onChange={(e) => setForm({ ...form, typeId: e.target.value })}>
+                <option id="Activities.type.selectionner" value="">{tr('Activities.selectionner')}</option>
                 {(types ?? []).map((t) => (
-                  <option key={t.id} value={t.id}>
+                  <option id={`Activities.type.form.option.${t.id}`} key={t.id} value={t.id}>
                     {t.labelFr}
                   </option>
                 ))}
@@ -508,6 +520,7 @@ export function Activities() {
             </Field>
             <Field label={tr('Activities.prix')} id="Activities.prix">
               <Input
+                id="Activities.prix.input"
                 type="number"
                 step="0.01"
                 min="0"
@@ -517,31 +530,33 @@ export function Activities() {
             </Field>
             <Field label={tr('Activities.devise')} id="Activities.devise">
               <Select
+                id="Activities.devise.select"
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
               >
-                <option value="EUR">{tr('Activities.eur')}</option>
-                <option value="USD">{tr('Activities.usd')}</option>
-                <option value="CHF">{tr('Activities.chf')}</option>
-                <option value="GBP">{tr('Activities.gbp')}</option>
+                <option id="Activities.devise.option.EUR" value="EUR">{tr('Activities.eur')}</option>
+                <option id="Activities.devise.option.USD" value="USD">{tr('Activities.usd')}</option>
+                <option id="Activities.devise.option.CHF" value="CHF">{tr('Activities.chf')}</option>
+                <option id="Activities.devise.option.GBP" value="GBP">{tr('Activities.gbp')}</option>
               </Select>
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={needsConsultant ? tr('Activities.collaborateur.obligatoire') : tr('Activities.collaborateur')} id="Activities.collaborateur.form">
               <Select
+                id="Activities.collaborateur.form.select"
                 value={form.consultantId}
                 onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
               >
                 {needsConsultant ? (
-                  <option value="" disabled>
+                  <option id="Activities.collaborateur.form.selectionner" value="" disabled>
                     {tr('Activities.selectionner')}
                   </option>
                 ) : (
-                  <option value="">{tr('Activities.aucun')}</option>
+                  <option id="Activities.collaborateur.form.aucun" value="">{tr('Activities.aucun')}</option>
                 )}
                 {(collaborators ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option id={`Activities.collaborateur.form.option.${c.id}`} key={c.id} value={c.id}>
                     {c.fullName}
                   </option>
                 ))}
@@ -549,6 +564,7 @@ export function Activities() {
             </Field>
             <Field label={tr('Activities.date.de.debut')} id="Activities.date.de.debut">
               <Input
+                id="Activities.date.de.debut.input"
                 type="date"
                 value={form.startDate}
                 onChange={(e) => setForm({ ...form, startDate: e.target.value })}
@@ -556,14 +572,16 @@ export function Activities() {
             </Field>
             <Field label={tr('Activities.date.de.fin.optionnelle')} id="Activities.date.de.fin.optionnelle">
               <Input
+                id="Activities.date.de.fin.optionnelle.input"
                 type="date"
                 value={form.endDate}
                 onChange={(e) => setForm({ ...form, endDate: e.target.value })}
               />
             </Field>
           </div>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label id="Activities.activite.active.label" className="flex items-center gap-2 text-sm text-gray-700">
             <input
+              id="Activities.activite.active.checkbox"
               type="checkbox"
               checked={form.active}
               onChange={(e) => setForm({ ...form, active: e.target.checked })}
@@ -571,8 +589,9 @@ export function Activities() {
             />
             {tr('Activities.activite.active')}
           </label>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label id="Activities.activite.possible.le.week.end.label" className="flex items-center gap-2 text-sm text-gray-700">
             <input
+              id="Activities.activite.possible.le.week.end.checkbox"
               type="checkbox"
               checked={form.weekendAllowed}
               onChange={(e) => setForm({ ...form, weekendAllowed: e.target.checked })}
@@ -580,8 +599,9 @@ export function Activities() {
             />
             {tr('Activities.activite.possible.le.week.end')}
           </label>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label id="Activities.activite.possible.les.jours.feries.label" className="flex items-center gap-2 text-sm text-gray-700">
             <input
+              id="Activities.activite.possible.les.jours.feries.checkbox"
               type="checkbox"
               checked={form.holidayAllowed}
               onChange={(e) => setForm({ ...form, holidayAllowed: e.target.checked })}

@@ -46,7 +46,7 @@ export function ChangePassword() {
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-gray-900" id="ChangePassword.changer.le.mot.de.passe">{tr('ChangePassword.changer.le.mot.de.passe')}</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p id="ChangePassword.subtitle" className="mt-1 text-sm text-gray-500">
             {forced
               ? 'Votre premier mot de passe doit être modifié avant de continuer.'
               : 'Mettez à jour votre mot de passe.'}
@@ -55,19 +55,20 @@ export function ChangePassword() {
 
         {success && (
           <div className="mb-4">
-            <Alert variant="success">{tr('ChangePassword.mot.de.passe.mis.a.jour.redirection')}</Alert>
+            <Alert id="ChangePassword.mot.de.passe.mis.a.jour.redirection" variant="success">{tr('ChangePassword.mot.de.passe.mis.a.jour.redirection')}</Alert>
           </div>
         )}
 
         {error && (
           <div className="mb-4">
-            <Alert>{error}</Alert>
+            <Alert id="ChangePassword.error">{error}</Alert>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field label={tr('ChangePassword.mot.de.passe.actuel')} id="ChangePassword.mot.de.passe.actuel">
             <Input
+              id="ChangePassword.mot.de.passe.actuel.input"
               type="password"
               autoComplete="current-password"
               value={currentPassword}
@@ -79,6 +80,7 @@ export function ChangePassword() {
 
           <Field label={tr('ChangePassword.nouveau.mot.de.passe')} id="ChangePassword.nouveau.mot.de.passe">
             <Input
+              id="ChangePassword.nouveau.mot.de.passe.input"
               type="password"
               autoComplete="new-password"
               value={newPassword}
@@ -90,6 +92,7 @@ export function ChangePassword() {
 
           <Field label={tr('ChangePassword.confirmer.le.nouveau.mot.de.passe')} id="ChangePassword.confirmer.le.nouveau.mot.de.passe">
             <Input
+              id="ChangePassword.confirmer.le.nouveau.mot.de.passe.input"
               type="password"
               autoComplete="new-password"
               value={confirmPassword}
@@ -99,7 +102,7 @@ export function ChangePassword() {
             />
           </Field>
 
-          <Button type="submit" className="w-full" disabled={submitting || success}>
+          <Button id="ChangePassword.mettre.a.jour" type="submit" className="w-full" disabled={submitting || success}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('ChangePassword.mettre.a.jour')}
           </Button>
@@ -108,6 +111,7 @@ export function ChangePassword() {
         {!forced && (
           <div className="mt-6 text-center">
             <button
+              id="ChangePassword.annuler.et.revenir"
               onClick={logout}
               className="text-sm font-medium text-gray-500 hover:text-gray-700"
             >

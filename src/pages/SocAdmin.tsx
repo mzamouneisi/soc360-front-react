@@ -250,12 +250,13 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
       />
 
       {error && <ErrorBlock message={error} />}
-      {actionError && <div className="mb-4"><ErrorBlock message={actionError} /></div>}
+      {actionError && <div className="mb-4"><ErrorBlock id="SocAdmin.actionError" message={actionError} /></div>}
       {loading && <LoadingBlock />}
 
       {!loading && socs && socs.length > 0 && (
         <div className="mb-4">
           <Input
+            id="SocAdmin.rechercher.par.nom.siret.ou.gerant"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={tr('SocAdmin.rechercher.par.nom.siret.ou.gerant')}
@@ -266,6 +267,8 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
 
       {!loading && socs !== null && filtered.length === 0 && (
         <EmptyState
+          titleId={search ? 'SocAdmin.aucun.resultat' : 'SocAdmin.aucune.societe'}
+          descriptionId={search ? 'SocAdmin.aucune.societe.recherche' : 'SocAdmin.aucune.societe.enregistree'}
           title={search ? tr('SocAdmin.aucun.resultat') : tr('SocAdmin.aucune.societe')}
           description={
             search
@@ -284,31 +287,31 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
             {
               key: 'name',
               label: tr('common.company'),
-              render: (s) => <span className="font-medium text-gray-900">{s.name}</span>,
+              render: (s) => <span id={`SocAdmin.row.${s.id}.name`} className="font-medium text-gray-900">{s.name}</span>,
             },
             {
               key: 'siret',
               label: tr('SocAdmin.siret'),
-              render: (s) => <span className="text-gray-600">{s.siret ?? '—'}</span>,
+              render: (s) => <span id={`SocAdmin.row.${s.id}.siret`} className="text-gray-600">{s.siret ?? '—'}</span>,
             },
             {
               key: 'gerant',
               label: tr('SocAdmin.gerant'),
-              render: (s) => <span className="text-gray-600">{s.gerant ?? '—'}</span>,
+              render: (s) => <span id={`SocAdmin.row.${s.id}.gerant`} className="text-gray-600">{s.gerant ?? '—'}</span>,
             },
             {
               key: 'ville',
               label: tr('SocAdmin.ville'),
-              render: (s) => <span className="text-gray-600">{s.address?.city ?? '—'}</span>,
+              render: (s) => <span id={`SocAdmin.row.${s.id}.ville`} className="text-gray-600">{s.address?.city ?? '—'}</span>,
             },
             {
               key: 'status',
               label: tr('SocAdmin.gere.par.moi'),
               render: (s) =>
                 canManage(s) ? (
-                  <Badge kind="success">{tr('common.yes')}</Badge>
+                  <Badge id={`SocAdmin.row.${s.id}.managed`} kind="success">{tr('common.yes')}</Badge>
                 ) : (
-                  <Badge kind="muted">{tr('common.no')}</Badge>
+                  <Badge id={`SocAdmin.row.${s.id}.managed`} kind="muted">{tr('common.no')}</Badge>
                 ),
             },
             {
@@ -323,7 +326,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                       onClick={(e) => {
                         e.stopPropagation()
                         openEdit(s)
-                      }} id="common.edit" />
+                      }} id={`common.edit.${s.id}`} />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
@@ -331,7 +334,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                       onClick={(e) => {
                         e.stopPropagation()
                         void handleDelete(s)
-                      }} id="common.delete" />
+                      }} id={`common.delete.${s.id}`} />
                   </div>
                 ) : (
                   <></>
@@ -353,6 +356,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         <Modal
           open
           onClose={() => setEditingForm(null)}
+          titleId="SocAdmin.modifier.societe"
           title={tr('SocAdmin.modifier.societe', { name: editingForm.soc.name })}
           size="lg"
           footer={
@@ -370,52 +374,52 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('SocAdmin.nom.de.la.societe')} id="SocAdmin.nom.de.la.societe">
-              <Input value={editingForm.form.name} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, name: e.target.value } })} />
+              <Input id="SocAdmin.nom.de.la.societe.input" value={editingForm.form.name} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, name: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.siret')} id="SocAdmin.siret">
-              <Input value={editingForm.form.siret} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, siret: e.target.value } })} />
+              <Input id="SocAdmin.siret.input" value={editingForm.form.siret} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, siret: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.gerant')} id="SocAdmin.gerant">
-              <Input value={editingForm.form.gerant} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, gerant: e.target.value } })} />
+              <Input id="SocAdmin.gerant.input" value={editingForm.form.gerant} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, gerant: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.code.naf')} id="SocAdmin.code.naf">
-              <Input value={editingForm.form.codeNaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, codeNaf: e.target.value } })} />
+              <Input id="SocAdmin.code.naf.input" value={editingForm.form.codeNaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, codeNaf: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.urssaf')} id="SocAdmin.urssaf">
-              <Input value={editingForm.form.urssaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, urssaf: e.target.value } })} />
+              <Input id="SocAdmin.urssaf.input" value={editingForm.form.urssaf} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, urssaf: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.categorie.entreprise')} id="SocAdmin.categorie.entreprise">
-              <Input value={editingForm.form.categorieEntreprise} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, categorieEntreprise: e.target.value } })} />
+              <Input id="SocAdmin.categorie.entreprise.input" value={editingForm.form.categorieEntreprise} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, categorieEntreprise: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.date.de.creation')} id="SocAdmin.date.de.creation">
-              <Input type="date" value={editingForm.form.dateCreation} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateCreation: e.target.value } })} />
+              <Input id="SocAdmin.date.de.creation.input" type="date" value={editingForm.form.dateCreation} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateCreation: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.date.de.fermeture')} id="SocAdmin.date.de.fermeture">
-              <Input type="date" value={editingForm.form.dateFermeture} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateFermeture: e.target.value } })} />
+              <Input id="SocAdmin.date.de.fermeture.input" type="date" value={editingForm.form.dateFermeture} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateFermeture: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.site.web')} id="SocAdmin.site.web">
-              <Input type="url" value={editingForm.form.website} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, website: e.target.value } })} />
+              <Input id="SocAdmin.site.web.input" type="url" value={editingForm.form.website} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, website: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.rue')} id="SocAdmin.rue">
-              <Input value={editingForm.form.street} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, street: e.target.value } })} />
+              <Input id="SocAdmin.rue.input" value={editingForm.form.street} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, street: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.code.postal')} id="SocAdmin.code.postal">
-              <Input value={editingForm.form.zipCode} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, zipCode: e.target.value } })} />
+              <Input id="SocAdmin.code.postal.input" value={editingForm.form.zipCode} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, zipCode: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.ville')} id="SocAdmin.ville">
-              <Input value={editingForm.form.city} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, city: e.target.value } })} />
+              <Input id="SocAdmin.ville.input" value={editingForm.form.city} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, city: e.target.value } })} />
             </Field>
             <Field label={tr('SocAdmin.pays')} id="SocAdmin.pays">
-              <Input value={editingForm.form.country} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, country: e.target.value } })} />
+              <Input id="SocAdmin.pays.input" value={editingForm.form.country} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, country: e.target.value } })} />
             </Field>
             <div className="sm:col-span-2">
               <Field label={tr('SocAdmin.description')} id="SocAdmin.description">
-                <Textarea rows={3} value={editingForm.form.description} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, description: e.target.value } })} />
+                <Textarea id="SocAdmin.description.textarea" rows={3} value={editingForm.form.description} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, description: e.target.value } })} />
               </Field>
             </div>
             <div className="sm:col-span-2">
               <Field label={tr('SocAdmin.informations.web')} id="SocAdmin.informations.web">
-                <Textarea rows={3} value={editingForm.form.infosWeb} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, infosWeb: e.target.value } })} />
+                <Textarea id="SocAdmin.informations.web.textarea" rows={3} value={editingForm.form.infosWeb} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, infosWeb: e.target.value } })} />
               </Field>
             </div>
           </div>
@@ -426,26 +430,27 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         <Modal
           open
           onClose={() => setDeleting(null)}
+          titleId="SocAdmin.supprimer.la.societe.modal"
           title={tr('SocAdmin.supprimer.la.societe', { name: deleting.name })}
           footer={
             <>
-              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setDeleting(null)} disabled={dependencyLoading} id="common.cancel" />
-              <Button type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
+              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setDeleting(null)} disabled={dependencyLoading} id="SocAdmin.delete.cancel" />
+              <Button id="SocAdmin.tout.supprimer" type="button" variant="danger" className="!w-auto" onClick={() => void confirmDeleteAll()} disabled={dependencyLoading}>
                 {dependencyLoading ? <Spinner className="border-white border-t-transparent" /> : null}
                 {tr('SocAdmin.tout.supprimer')}
               </Button>
             </>
           }
         >
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div id="SocAdmin.attention.cette.societe.sera.supprimee.avec.tous.ses.objets." className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {tr('SocAdmin.attention.cette.societe.sera.supprimee.avec.tous.ses.objets.')}
           </div>
-          <p className="mt-3 text-sm font-medium text-gray-700">{tr('SocAdmin.objets.lies')}{dependencies.length})</p>
+          <p id="SocAdmin.objets.lies" className="mt-3 text-sm font-medium text-gray-700">{tr('SocAdmin.objets.lies')}{dependencies.length})</p>
           <div className="mt-2 max-h-64 space-y-2 overflow-y-auto">
             {dependencies.map((item) => (
               <div key={`${item.type}-${item.id}`} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
-                <span className="truncate text-sm text-gray-700">{item.label}</span>
-                <span className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+                <span id={`SocAdmin.dependency.${item.type}.${item.id}.label`} className="truncate text-sm text-gray-700">{item.label}</span>
+                <span id={`SocAdmin.dependency.${item.type}.${item.id}.type`} className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
                   {tr(DEPENDENCY_LABEL_KEYS[item.type] ?? item.type)}
                 </span>
               </div>
@@ -458,19 +463,20 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         <Modal
           open
           onClose={() => setDemoResult(null)}
+          titleId="SocAdmin.societe.demo.creee"
           title={tr('SocAdmin.societe.demo.creee', { number: demoResult.number })}
           footer={
             <IconButton icon="close" label={tr('common.close')} type="button" onClick={() => setDemoResult(null)} id="common.close" />
           }
         >
           <div className="space-y-2 text-sm">
-            <Row label={tr('SocAdmin.societe')} value={demoResult.socName} />
-            <Row label={tr('SocAdmin.responsable')} value={demoResult.username} />
-            <Row label={tr('SocAdmin.mot.de.passe')} value={demoResult.password} />
-            <Row label={tr('SocAdmin.client')} value={demoResult.clientName} />
-            <Row label={tr('SocAdmin.projet')} value={demoResult.projectName} />
-            <Row label={tr('SocAdmin.activite.mission')} value={demoResult.activityName} />
-            <Row label={tr('SocAdmin.consultant')} value={demoResult.consultantName} />
+            <Row id="SocAdmin.societe.demo.socName" label={tr('SocAdmin.societe')} value={demoResult.socName} />
+            <Row id="SocAdmin.societe.demo.username" label={tr('SocAdmin.responsable')} value={demoResult.username} />
+            <Row id="SocAdmin.societe.demo.password" label={tr('SocAdmin.mot.de.passe')} value={demoResult.password} />
+            <Row id="SocAdmin.societe.demo.clientName" label={tr('SocAdmin.client')} value={demoResult.clientName} />
+            <Row id="SocAdmin.societe.demo.projectName" label={tr('SocAdmin.projet')} value={demoResult.projectName} />
+            <Row id="SocAdmin.societe.demo.activityName" label={tr('SocAdmin.activite.mission')} value={demoResult.activityName} />
+            <Row id="SocAdmin.societe.demo.consultantName" label={tr('SocAdmin.consultant')} value={demoResult.consultantName} />
           </div>
         </Modal>
       )}
@@ -478,11 +484,11 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
   )
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ id, label, value }: { id?: string; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-gray-200 px-3 py-2">
-      <span className="w-32 shrink-0 font-medium text-gray-500">{label}</span>
-      <span className="font-mono text-gray-900">{value}</span>
+    <div id={id} className="flex items-start gap-2 rounded-lg border border-gray-200 px-3 py-2">
+      <span id={id ? `${id}.label` : undefined} className="w-32 shrink-0 font-medium text-gray-500">{label}</span>
+      <span id={id ? `${id}.value` : undefined} className="font-mono text-gray-900">{value}</span>
     </div>
   )
 }

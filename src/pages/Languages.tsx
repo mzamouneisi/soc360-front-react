@@ -448,26 +448,28 @@ export function Languages() {
 
       {error && <ErrorBlock message={error} />}
       {message && (
-        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+        <div id="Languages.message" className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
           {message}
         </div>
       )}
 
       <Card className="mb-6 p-6">
         <h3 className="text-sm font-semibold text-gray-900" id="Languages.langues.disponibles">{tr('Languages.langues.disponibles')}</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <p id="Languages.ajouter.une.langue.cree.une.nouvelle.colonne.dans.la.table.d" className="mt-1 text-sm text-gray-500">
           {tr('Languages.ajouter.une.langue.cree.une.nouvelle.colonne.dans.la.table.d')}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {languages.map((lang) => (
             <span
+              id={`Languages.language.${lang}`}
               key={lang}
               className="inline-flex items-center gap-1 rounded-full bg-gray-100 py-1 pl-3 pr-1 text-sm text-gray-700"
             >
-              <span className="font-semibold uppercase">{lang}</span>
-              <span className="text-gray-500">{languageLabel(lang)}</span>
+              <span id={`Languages.language.${lang}.code`} className="font-semibold uppercase">{lang}</span>
+              <span id={`Languages.language.${lang}.label`} className="text-gray-500">{languageLabel(lang)}</span>
               {lang !== 'fr' && (
                 <button
+                  id={`Languages.supprimer.la.langue.${lang}`}
                   type="button"
                   aria-label={tr('languages.deleteAria', { lang })}
                   title={tr('Languages.supprimer.la.langue')}
@@ -486,6 +488,7 @@ export function Languages() {
         <div className="mt-6 flex flex-wrap items-start gap-4">
           <Field label={tr('Languages.filtrer.les.langues')} id="Languages.filtrer.les.langues">
             <Input
+              id="Languages.filtrer.les.langues.input"
               className="w-56"
               value={languageFilter}
               placeholder={tr('Languages.ex.esp.german.ar')}
@@ -494,23 +497,24 @@ export function Languages() {
           </Field>
           <Field label={tr('Languages.langues.connues')} id="Languages.langues.connues">
             <select
+              id="Languages.langues.connues.select"
               size={5}
               value={selectedCode}
               onChange={(e) => setSelectedCode(e.target.value)}
               className="w-64 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
             >
               {knownOptions.map((language) => (
-                <option key={language.code} value={language.code}>
+                <option id={`Languages.langues.connues.option.${language.code}`} key={language.code} value={language.code}>
                   {language.code} — {language.label}
                 </option>
               ))}
             </select>
           </Field>
           <div className="flex flex-col gap-2 pt-6">
-            <InlineButton onClick={() => void addLanguage()} disabled={!selectedCode}>
+            <InlineButton id="Languages.ajouter.la.langue" onClick={() => void addLanguage()} disabled={!selectedCode}>
               {tr('Languages.ajouter.la.langue')}
             </InlineButton>
-            <span className="text-xs text-gray-500">
+            <span id={selectedCode ? 'languages.selection' : 'languages.availableCount'} className="text-xs text-gray-500">
               {selectedCode
                 ? tr('languages.selection', {
                     code: selectedCode,
@@ -527,11 +531,12 @@ export function Languages() {
           <h4 className="text-sm font-semibold text-gray-900" id="Languages.remplir.les.traductions.d.une.langue">
             {tr('Languages.remplir.les.traductions.d.une.langue')}
           </h4>
-          <p className="mt-1 text-sm text-gray-500">
+          <p id="Languages.remplit.les.cellules.vides.de.la.langue.choisie.a.partir.du." className="mt-1 text-sm text-gray-500">
             {tr('Languages.remplit.les.cellules.vides.de.la.langue.choisie.a.partir.du.')}
           </p>
           <div className="mt-3 flex flex-wrap items-start">
             <select
+              id="Languages.langue.a.remplir"
               aria-label={tr('Languages.langue.a.remplir')}
               value={fillTarget}
               onChange={(e) => setFillLanguage(e.target.value)}
@@ -540,12 +545,13 @@ export function Languages() {
               {languages
                 .filter((language) => language !== 'fr')
                 .map((language) => (
-                  <option key={language} value={language}>
+                  <option id={`Languages.langue.a.remplir.option.${language}`} key={language} value={language}>
                     {language} — {languageLabel(language)}
                   </option>
                 ))}
             </select>
             <Button
+              id="Languages.remplir.les.traductions"
               className="!ml-5 !w-64"
               onClick={() => void autofillLanguage(fillTarget)}
               disabled={!fillTarget || autofilling === fillTarget}
@@ -562,11 +568,12 @@ export function Languages() {
           <h4 className="text-sm font-semibold text-gray-900" id="Languages.export.import.langue">
             {tr('Languages.export.import.langue')}
           </h4>
-          <p className="mt-1 text-sm text-gray-500">{tr('Languages.colonnes.a.exporter')}</p>
+          <p id="Languages.colonnes.a.exporter" className="mt-1 text-sm text-gray-500">{tr('Languages.colonnes.a.exporter')}</p>
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
             {languages.map((language) => (
-              <label key={language} className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <label id={`Languages.export.column.${language}`} key={language} className="inline-flex items-center gap-2 text-sm text-gray-700">
                 <input
+                  id={`Languages.export.column.${language}.checkbox`}
                   type="checkbox"
                   checked={exportColumns.includes(language)}
                   onChange={() => toggleExportColumn(language)}
@@ -577,9 +584,10 @@ export function Languages() {
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-6">
             <div className="flex flex-wrap items-center gap-4">
-              <span className="text-sm font-medium text-gray-700">{tr('Languages.type.export')}</span>
-              <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <span id="Languages.type.export" className="text-sm font-medium text-gray-700">{tr('Languages.type.export')}</span>
+              <label id="Languages.exportFormat.csv" className="inline-flex items-center gap-2 text-sm text-gray-700">
                 <input
+                  id="Languages.exportFormat.csv.radio"
                   type="radio"
                   name="exportFormat"
                   value="csv"
@@ -588,8 +596,9 @@ export function Languages() {
                 />
                 CSV
               </label>
-              <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <label id="Languages.exportFormat.json" className="inline-flex items-center gap-2 text-sm text-gray-700">
                 <input
+                  id="Languages.exportFormat.json.radio"
                   type="radio"
                   name="exportFormat"
                   value="json"
@@ -601,15 +610,17 @@ export function Languages() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <InlineButton
+                id="Languages.exporter"
                 onClick={exportLanguages}
                 disabled={exportSelected.length < 2}
                 title={exportSelected.length < 2 ? tr('Languages.au.moins.deux.langues') : undefined}
               >
                 {tr('Languages.exporter')}
               </InlineButton>
-              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+              <label id="Languages.importer" className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
                 {tr('Languages.importer')}
                 <input
+                  id="Languages.importer.file"
                   type="file"
                   accept={exportFormat === 'json' ? 'application/json,.json' : 'text/csv,.csv'}
                   className="hidden"
@@ -630,6 +641,7 @@ export function Languages() {
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <Field label={tr('Languages.cle')} id="Languages.cle">
             <Input
+              id="Languages.cle.input"
               className="w-64"
               value={newKey}
               placeholder={tr('Languages.mon.nouvelle.cle')}
@@ -637,8 +649,9 @@ export function Languages() {
             />
           </Field>
           {languages.map((lang) => (
-            <Field key={lang} label={languageLabel(lang)}>
+            <Field key={lang} id={`Languages.nouvelle.traduction.${lang}`} label={languageLabel(lang)}>
               <Input
+                id={`Languages.nouvelle.traduction.${lang}.input`}
                 className="w-56"
                 value={newTranslations[lang] ?? ''}
                 onChange={(e) =>
@@ -647,7 +660,7 @@ export function Languages() {
               />
             </Field>
           ))}
-          <Button className="w-auto" onClick={() => void addEntry()} disabled={!newKey.trim()}>
+          <Button id="Languages.ajouter.la.cle" className="w-auto" onClick={() => void addEntry()} disabled={!newKey.trim()}>
             {tr('Languages.ajouter.la.cle')}
           </Button>
         </div>
@@ -656,11 +669,12 @@ export function Languages() {
       <Card className="p-6">
         <div className="flex items-baseline gap-2">
           <h3 className="text-sm font-semibold text-gray-900" id="Languages.chaines.traduites">{tr('Languages.chaines.traduites')}</h3>
-          <span className="text-sm font-semibold text-gray-500">{entryCount}</span>
+          <span id="Languages.chaines.traduites.count" className="text-sm font-semibold text-gray-500">{entryCount}</span>
         </div>
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <Field label={tr('languages.searchRows')} id="languages.searchRows">
             <Input
+              id="languages.searchRows.input"
               className="max-w-full"
               style={{ width: '54rem' }}
               value={search}
@@ -669,7 +683,7 @@ export function Languages() {
             />
           </Field>
           {search.trim() && (
-            <span className="pb-2 text-sm text-gray-500">
+            <span id="Languages.filteredCount" className="pb-2 text-sm text-gray-500">
               {filteredEntries.length} / {entryCount}
             </span>
           )}
@@ -677,7 +691,7 @@ export function Languages() {
         {loading && <LoadingBlock />}
         {!loading && entryCount === 0 && (
           <div className="mt-4">
-            <EmptyState title={tr('Languages.aucune.traduction')} description={tr('Languages.ajoutez.une.cle.pour.commencer')} />
+            <EmptyState titleId="Languages.aucune.traduction" descriptionId="Languages.ajoutez.une.cle.pour.commencer" title={tr('Languages.aucune.traduction')} description={tr('Languages.ajoutez.une.cle.pour.commencer')} />
           </div>
         )}
         {!loading && entryCount > 0 && (
@@ -685,62 +699,65 @@ export function Languages() {
             <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>
                 <tr>
-                  <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="Languages.th.index" className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
                     #
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="Languages.cle.th" className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Languages.cle')}
                   </th>
                   {languages.map((lang) => (
                     <th
+                      id={`Languages.th.${lang}`}
                       key={lang}
                       className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
                     >
                       {lang.toUpperCase()} · {languageLabel(lang)}
                     </th>
                   ))}
-                  <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
+                  <th id="Languages.actions.th" className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">
                     {tr('Languages.actions')}
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
                 {visibleEntries.map((entry, index) => (
-                  <tr key={entry.id} className="even:bg-gray-50">
-                    <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-xs text-gray-500">
+                  <tr id={`Languages.row.${entry.id}`} key={entry.id} className="even:bg-gray-50">
+                    <td id={`Languages.row.${entry.id}.index`} className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-xs text-gray-500">
                       {safePage * pageSize + index + 1}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-gray-700">
+                    <td id={`Languages.row.${entry.id}.key`} className="whitespace-nowrap px-3 py-2 font-mono text-xs text-gray-700">
                       {entry.key}
                     </td>
                     {languages.map((lang) => (
-                      <td key={lang} className="px-3 py-2">
+                      <td id={`Languages.row.${entry.id}.${lang}`} key={lang} className="px-3 py-2">
                         <Input
+                          id={`Languages.row.${entry.id}.${lang}.input`}
                           className="w-64"
                           value={drafts[entry.id]?.[lang] ?? ''}
                           onChange={(e) => setDraft(entry.id, lang, e.target.value)}
                         />
                       </td>
                     ))}
-                    <td className="whitespace-nowrap px-3 py-2 text-right">
+                    <td id={`Languages.row.${entry.id}.actions`} className="whitespace-nowrap px-3 py-2 text-right">
                       <IconButton
                         icon="save"
                         label={tr('Languages.enregistrer')}
                         variant="primary"
                         className="mr-1.5"
                         onClick={() => void saveRow(entry)}
-                        disabled={saving === entry.id} loading={saving === entry.id} id="Languages.enregistrer" />
+                        disabled={saving === entry.id} loading={saving === entry.id} id={`Languages.enregistrer.${entry.id}`} />
                       <IconButton
                         icon="delete"
                         label={tr('Languages.supprimer')}
                         variant="danger"
-                        onClick={() => void deleteRow(entry)} id="Languages.supprimer" />
+                        onClick={() => void deleteRow(entry)} id={`Languages.supprimer.${entry.id}`} />
                     </td>
                   </tr>
                 ))}
                 {visibleEntries.length === 0 && (
                   <tr>
                     <td
+                      id="Languages.noElements"
                       colSpan={languages.length + 3}
                       className="px-3 py-6 text-center text-sm text-gray-400"
                     >

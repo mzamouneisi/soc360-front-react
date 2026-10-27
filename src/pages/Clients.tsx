@@ -186,42 +186,42 @@ export function Clients() {
             {
               key: 'name',
               label: tr('Clients.client'),
-              render: (c) => <span className="font-medium text-gray-900">{c.name}</span>,
+              render: (c) => <span id={`Clients.client.${c.id}.name`} className="font-medium text-gray-900">{c.name}</span>,
             },
             {
               key: 'contact',
               label: tr('Clients.contact'),
               render: (c) => (
                 <div>
-                  {c.contactName ? <p className="text-gray-900">{c.contactName}</p> : null}
-                  {c.contactEmail && <p className="text-xs text-gray-500">{c.contactEmail}</p>}
-                  {c.contactPhone && <p className="text-xs text-gray-500">{c.contactPhone}</p>}
-                  {!c.contactName && !c.contactEmail && <span className="text-gray-400">—</span>}
+                  {c.contactName ? <p id={`Clients.client.${c.id}.contactName`} className="text-gray-900">{c.contactName}</p> : null}
+                  {c.contactEmail && <p id={`Clients.client.${c.id}.contactEmail`} className="text-xs text-gray-500">{c.contactEmail}</p>}
+                  {c.contactPhone && <p id={`Clients.client.${c.id}.contactPhone`} className="text-xs text-gray-500">{c.contactPhone}</p>}
+                  {!c.contactName && !c.contactEmail && <span id={`Clients.client.${c.id}.contactEmpty`} className="text-gray-400">—</span>}
                 </div>
               ),
             },
             {
               key: 'soc',
               label: tr('Clients.societe.associee'),
-              render: (c) => <span>{c.soc?.name ?? '—'}</span>,
+              render: (c) => <span id={`Clients.client.${c.id}.soc`}>{c.soc?.name ?? '—'}</span>,
             },
             {
               key: 'socParent',
               label: tr('Clients.societe.parente'),
-              render: (c) => <span>{c.socParent?.name ?? '—'}</span>,
+              render: (c) => <span id={`Clients.client.${c.id}.socParent`}>{c.socParent?.name ?? '—'}</span>,
             },
             {
               key: 'notes',
               label: tr('Clients.notes'),
               render: (c) => (
-                <span className="line-clamp-2 max-w-56 text-xs text-gray-500">{c.notes ?? '—'}</span>
+                <span id={`Clients.client.${c.id}.notes`} className="line-clamp-2 max-w-56 text-xs text-gray-500">{c.notes ?? '—'}</span>
               ),
             },
             {
               key: 'active',
               label: tr('common.status'),
               render: (c) => (
-                <Badge kind={c.active ? 'success' : 'muted'}>{c.active ? tr('common.active') : tr('common.inactive')}</Badge>
+                <Badge kind={c.active ? 'success' : 'muted'} id={`Clients.client.${c.id}.active`}>{c.active ? tr('common.active') : tr('common.inactive')}</Badge>
               ),
             },
             {
@@ -234,12 +234,12 @@ export function Clients() {
                       icon="edit"
                       label={tr('common.edit')}
                       variant="primary"
-                      onClick={(e) => { e.stopPropagation(); openEdit(c) }} id="common.edit" />
+                      onClick={(e) => { e.stopPropagation(); openEdit(c) }} id={`Clients.client.${c.id}.edit`} />
                     <IconButton
                       icon="delete"
                       label={tr('common.delete')}
                       variant="danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(c) }} id="common.delete" />
+                      onClick={(e) => { e.stopPropagation(); handleDelete(c) }} id={`Clients.client.${c.id}.delete`} />
                   </div>
                 ) : (
                   <></>
@@ -251,7 +251,9 @@ export function Clients() {
       {!loading && data?.length === 0 && (
         <EmptyState
           title={tr('Clients.aucun.client')}
+          titleId="Clients.aucun.client"
           description={tr('Clients.ajoutez.votre.premier.client.pour.commencer')}
+          descriptionId="Clients.ajoutez.votre.premier.client.pour.commencer"
         />
       )}
 
@@ -259,6 +261,7 @@ export function Clients() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title={editing ? `${tr('common.edit')} ${editing.name}` : tr('Clients.nouveau.client')}
+        titleId="Clients.modal.title"
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
@@ -268,35 +271,37 @@ export function Clients() {
               variant="primary"
               onClick={handleSubmit as never}
               disabled={submitting} loading={submitting}
+              id={editing ? 'common.save' : 'common.create'}
             />
           </>
         }
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Clients.formError" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Clients.societe.associee')} id="Clients.societe.associee">
-              <Select value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
-                <option value="">{tr('Clients.selectionner')}</option>
-                {(allSocs ?? []).map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
+              <Select id="Clients.societe.associee.select" value={form.socId} onChange={(e) => void selectCompany(e.target.value)}>
+                <option id="Clients.selectionner" value="">{tr('Clients.selectionner')}</option>
+                {(allSocs ?? []).map((soc) => <option key={soc.id} id={`Clients.societe.associee.option.${soc.id}`} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
-            <Field label={isAdmin ? tr('Clients.societe.parente') : tr('Clients.societe.parente.travail')}>
-              <Select value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
-                <option value="">{tr('Clients.aucune')}</option>
-                {parentSocs.map((soc) => <option key={soc.id} value={soc.id}>{soc.name}</option>)}
+            <Field label={isAdmin ? tr('Clients.societe.parente') : tr('Clients.societe.parente.travail')} id="Clients.societe.parente.form">
+              <Select id="Clients.societe.parente.form.select" value={form.socParentId} onChange={(e) => setForm({ ...form, socParentId: e.target.value })}>
+                <option id="Clients.aucune" value="">{tr('Clients.aucune')}</option>
+                {parentSocs.map((soc) => <option key={soc.id} id={`Clients.societe.parente.form.option.${soc.id}`} value={soc.id}>{soc.name}</option>)}
               </Select>
             </Field>
           </div>
           <Field label={tr('Clients.nom.du.client')} id="Clients.nom.du.client">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <Input id="Clients.nom.du.client.input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </Field>
           <Field label={tr('Clients.notes.infos.specifiques.pour.votre.societe')} id="Clients.notes.infos.specifiques.pour.votre.societe">
             <Textarea
+              id="Clients.notes.infos.specifiques.pour.votre.societe.textarea"
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -306,12 +311,14 @@ export function Clients() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Clients.contact')} id="Clients.contact">
               <Input
+                id="Clients.contact.input"
                 value={form.contactName}
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
               />
             </Field>
             <Field label={tr('Clients.telephone')} id="Clients.telephone">
               <Input
+                id="Clients.telephone.input"
                 value={form.contactPhone}
                 onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               />
@@ -319,13 +326,15 @@ export function Clients() {
           </div>
           <Field label={tr('Clients.e.mail.du.contact')} id="Clients.e.mail.du.contact">
             <Input
+              id="Clients.e.mail.du.contact.input"
               type="email"
               value={form.contactEmail}
               onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
             />
           </Field>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label id="Clients.client.actif" className="flex items-center gap-2 text-sm text-gray-700">
             <input
+              id="Clients.client.actif.checkbox"
               type="checkbox"
               checked={form.active}
               onChange={(e) => setForm({ ...form, active: e.target.checked })}

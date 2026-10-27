@@ -392,7 +392,7 @@ export function Consultants() {
               <>
                 <IconButton icon="add" label={tr('Consultants.nouveau.collaborateur')} variant="new" onClick={openCreate} id="Consultants.nouveau.collaborateur" />
                 {canEdit ? (
-                  <InlineButton className="ml-2" variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
+                  <InlineButton id="common.importCsv" className="ml-2" variant="primary" onClick={() => { setImportOpen(true); setImportError(null); setImportResult(null); setImportFile(null); setForm({ ...emptyForm, socId: isAdmin ? '' : String(workingSocId ?? user?.socId ?? '') }) }}>
                     {tr('common.importCsv')}
                   </InlineButton>
                 ) : null}
@@ -404,6 +404,7 @@ export function Consultants() {
 
       <div className="mb-4">
         <Input
+          id="Consultants.rechercher.par.nom.email.poste"
           placeholder={tr('Consultants.rechercher.par.nom.email.poste')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -427,26 +428,26 @@ export function Consultants() {
                 label: tr('Consultants.collaborateur'),
                 render: (c) => (
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p id={`Consultants.row.${c.id}.name`} className="font-medium text-gray-900">
                       {c.firstName} {c.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">{c.position ?? '—'}</p>
+                    <p id={`Consultants.row.${c.id}.position`} className="text-xs text-gray-500">{c.position ?? '—'}</p>
                   </div>
                 ),
               },
               {
                 key: 'username',
                 label: tr('Consultants.nom.d.utilisateur'),
-                render: (c) => <span className="text-gray-700">@{c.username}</span>,
+                render: (c) => <span id={`Consultants.row.${c.id}.username`} className="text-gray-700">@{c.username}</span>,
               },
               {
                 key: 'contact',
                 label: tr('Consultants.contact'),
                 render: (c) => (
                   <div>
-                    {c.email && <p className="text-gray-700">{c.email}</p>}
-                    {c.phone && <p className="text-xs text-gray-500">{c.phone}</p>}
-                    {!c.email && !c.phone && <span className="text-gray-400">—</span>}
+                    {c.email && <p id={`Consultants.row.${c.id}.email`} className="text-gray-700">{c.email}</p>}
+                    {c.phone && <p id={`Consultants.row.${c.id}.phone`} className="text-xs text-gray-500">{c.phone}</p>}
+                    {!c.email && !c.phone && <span id={`Consultants.row.${c.id}.contact.empty`} className="text-gray-400">—</span>}
                   </div>
                 ),
               },
@@ -454,7 +455,7 @@ export function Consultants() {
                 key: 'role',
                 label: tr('common.role'),
                 render: (c) => (
-                  <Badge kind={c.role === 'RESPONSIBLE_SOC' ? 'info' : c.role === 'MANAGER' ? 'warning' : c.role === 'ADMIN' ? 'success' : 'muted'}>
+                  <Badge id={`Consultants.row.${c.id}.role`} kind={c.role === 'RESPONSIBLE_SOC' ? 'info' : c.role === 'MANAGER' ? 'warning' : c.role === 'ADMIN' ? 'success' : 'muted'}>
                     {dt(ROLE_LABELS[c.role] ?? c.role)}
                   </Badge>
                 ),
@@ -462,20 +463,20 @@ export function Consultants() {
               {
                 key: 'manager',
                 label: tr('Consultants.manager'),
-                render: (c) => <span>{c.managerName ?? '—'}</span>,
+                render: (c) => <span id={`Consultants.row.${c.id}.manager`}>{c.managerName ?? '—'}</span>,
               },
               {
                 key: 'salary',
                 label: tr('Consultants.salaire.de.base'),
                 render: (c) => (
-                  <span>{formatMoney(c.salary, c.currency ?? 'EUR')}</span>
+                  <span id={`Consultants.row.${c.id}.salary`}>{formatMoney(c.salary, c.currency ?? 'EUR')}</span>
                 ),
               },
               {
                 key: 'employee',
                 label: tr('Consultants.salarie.label'),
                 render: (c) => (
-                  <Badge kind={c.employee ? 'success' : 'muted'}>
+                  <Badge id={`Consultants.row.${c.id}.employee`} kind={c.employee ? 'success' : 'muted'}>
                     {c.employee ? tr('common.yes') : tr('common.no')}
                   </Badge>
                 ),
@@ -483,13 +484,13 @@ export function Consultants() {
               {
                 key: 'hire',
                 label: tr('Consultants.date.d.embauche'),
-                render: (c) => <span className="text-gray-500">{formatDate(c.hireDate)}</span>,
+                render: (c) => <span id={`Consultants.row.${c.id}.hireDate`} className="text-gray-500">{formatDate(c.hireDate)}</span>,
               },
               {
                 key: 'active',
                 label: tr('common.status'),
                 render: (c) => (
-                  <Badge kind={c.active ? 'success' : 'muted'}>
+                  <Badge id={`Consultants.row.${c.id}.active`} kind={c.active ? 'success' : 'muted'}>
                     {c.active ? tr('common.active') : tr('common.inactive')}
                   </Badge>
                 ),
@@ -502,10 +503,10 @@ export function Consultants() {
                   if (!canEdit) return <></>
                   return (
                     <div className="flex justify-end gap-1">
-                      <IconButton icon="edit" label={tr('common.edit')} variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }} id="common.edit" />
-                      <IconButton icon="history" label={tr('common.history')} variant="history" onClick={(e) => { e.stopPropagation(); openHistory(c) }} id="common.history" />
+                      <IconButton icon="edit" label={tr('common.edit')} variant="primary" onClick={(e) => { e.stopPropagation(); openEdit(c) }} id={`common.edit.${c.id}`} />
+                      <IconButton icon="history" label={tr('common.history')} variant="history" onClick={(e) => { e.stopPropagation(); openHistory(c) }} id={`common.history.${c.id}`} />
                       {!isSelf && c.role !== 'ADMIN' && (
-                        <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={(e) => { e.stopPropagation(); handleDelete(c) }} id="common.delete" />
+                        <IconButton icon="delete" label={tr('common.delete')} variant="danger" onClick={(e) => { e.stopPropagation(); handleDelete(c) }} id={`common.delete.${c.id}`} />
                       )}
                     </div>
                   )
@@ -524,6 +525,8 @@ export function Consultants() {
 
       {!loading && data && data.items.length === 0 && (
         <EmptyState
+          titleId="Consultants.aucun.collaborateur"
+          descriptionId="Consultants.ajoutez.un.collaborateur.ou.importez.un.fichier.csv"
           title={tr('Consultants.aucun.collaborateur')}
           description={tr('Consultants.ajoutez.un.collaborateur.ou.importez.un.fichier.csv')}
         />
@@ -532,6 +535,7 @@ export function Consultants() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        titleId="Consultants.modal.title"
         title={editing
           ? `${tr('common.edit')} ${editing.firstName} ${editing.lastName}`
           : form.role === 'RESPONSIBLE_SOC'
@@ -543,13 +547,13 @@ export function Consultants() {
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
-            <IconButton icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
+            <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
           </>
         }
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Consultants.form.error" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
@@ -557,11 +561,12 @@ export function Consultants() {
             {((!editing && canCreateManager) || (editing && canEdit)) && (
               <Field label={tr('Consultants.type.de.collaborateur')} id="Consultants.type.de.collaborateur">
                 <Select
+                  id="Consultants.type.de.collaborateur.select"
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value, username: '', password: '' })}
                 >
                   {roleOptions.map((r) => (
-                    <option key={r} value={r}>
+                    <option id={`Consultants.type.de.collaborateur.option.${r}`} key={r} value={r}>
                       {dt(ROLE_LABELS[r] ?? r)}
                     </option>
                   ))}
@@ -569,8 +574,9 @@ export function Consultants() {
               </Field>
             )}
             <div className="flex items-end">
-              <label className="flex items-center gap-2 pb-2 text-sm text-gray-700">
+              <label id="Consultants.salarie.label.checkbox.label" className="flex items-center gap-2 pb-2 text-sm text-gray-700">
                 <input
+                  id="Consultants.salarie.label.checkbox"
                   type="checkbox"
                   checked={form.employee}
                   onChange={(e) => setForm({ ...form, employee: e.target.checked })}
@@ -582,38 +588,39 @@ export function Consultants() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.prenom')} id="Consultants.prenom">
-              <Input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
+              <Input id="Consultants.prenom.input" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
             </Field>
             <Field label={tr('Consultants.nom')} id="Consultants.nom">
-              <Input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
+              <Input id="Consultants.nom.input" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.email')} id="Consultants.email">
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input id="Consultants.email.input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </Field>
             <Field label={tr('Consultants.telephone')} id="Consultants.telephone">
-              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Input id="Consultants.telephone.input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </Field>
           </div>
           {editing && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label={tr('Consultants.nom.d.utilisateur')} id="Consultants.nom.d.utilisateur">
-                <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+                <Input id="Consultants.nom.d.utilisateur.input" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
               </Field>
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.poste')} id="Consultants.poste">
-              <Input value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
+              <Input id="Consultants.poste.input" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} />
             </Field>
             <Field label={tr('Consultants.nationalite')} id="Consultants.nationalite">
-              <Input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder={tr('Consultants.fr')} />
+              <Input id="Consultants.nationalite.input" value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} placeholder={tr('Consultants.fr')} />
             </Field>
           </div>
           <Field label={tr('Consultants.adresse')} id="Consultants.adresse">
             <div className="flex items-center gap-2">
               <Input
+                id="Consultants.adresse.input"
                 value={form.address}
                 onChange={(e) => {
                   setForm({ ...form, address: e.target.value })
@@ -623,6 +630,7 @@ export function Consultants() {
                 placeholder={tr('Consultants.adresse.placeholder')}
               />
               <InlineButton
+                id="Consultants.adresse.rechercher"
                 type="button"
                 className="shrink-0"
                 onClick={() => void searchAddress()}
@@ -632,10 +640,11 @@ export function Consultants() {
               </InlineButton>
             </div>
             {addressSuggestions.length > 0 && (
-              <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
+              <ul id="Consultants.adresse.suggestions" className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
                 {addressSuggestions.map((suggestion) => (
-                  <li key={suggestion.id}>
+                  <li id={`Consultants.adresse.suggestion.${suggestion.id}`} key={suggestion.id}>
                     <button
+                      id={`Consultants.adresse.suggestion.${suggestion.id}.button`}
                       type="button"
                       className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => {
@@ -651,26 +660,26 @@ export function Consultants() {
               </ul>
             )}
             {addressSearched && !addressSearching && addressSuggestions.length === 0 && (
-              <p className="mt-1 text-xs text-gray-500">{tr('Consultants.adresse.aucun')}</p>
+              <p id="Consultants.adresse.aucun" className="mt-1 text-xs text-gray-500">{tr('Consultants.adresse.aucun')}</p>
             )}
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.date.d.embauche')} id="Consultants.date.d.embauche">
-              <Input type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
+              <Input id="Consultants.date.d.embauche.input" type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
             </Field>
             <Field label={tr('Consultants.date.de.naissance')} id="Consultants.date.de.naissance">
-              <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
+              <Input id="Consultants.date.de.naissance.input" type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.n.de.securite.sociale')} id="Consultants.n.de.securite.sociale">
-              <Input value={form.socialNumber} onChange={(e) => setForm({ ...form, socialNumber: e.target.value })} />
+              <Input id="Consultants.n.de.securite.sociale.input" value={form.socialNumber} onChange={(e) => setForm({ ...form, socialNumber: e.target.value })} />
             </Field>
             <Field label={tr('Consultants.manager')} id="Consultants.manager">
-              <Select value={form.managerId} onChange={(e) => setForm({ ...form, managerId: e.target.value })}>
-                <option value="">{tr('Consultants.aucun')}</option>
+              <Select id="Consultants.manager.select" value={form.managerId} onChange={(e) => setForm({ ...form, managerId: e.target.value })}>
+                <option id="Consultants.manager.aucun" value="">{tr('Consultants.aucun')}</option>
                 {managerOptions.map((m) => (
-                  <option key={m.id} value={m.id}>
+                  <option id={`Consultants.manager.option.${m.id}`} key={m.id} value={m.id}>
                     {m.fullName}
                   </option>
                 ))}
@@ -678,8 +687,9 @@ export function Consultants() {
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={form.employee ? tr('Consultants.salaire.de.base') : tr('Consultants.tjm.interne')}>
+            <Field id="Consultants.salary" label={form.employee ? tr('Consultants.salaire.de.base') : tr('Consultants.tjm.interne')}>
               <Input
+                id="Consultants.salary.input"
                 type="number"
                 step="0.01"
                 min="0"
@@ -688,23 +698,24 @@ export function Consultants() {
               />
             </Field>
             <Field label={tr('Consultants.devise')} id="Consultants.devise">
-              <Select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
-                <option value="EUR">{tr('Consultants.eur')}</option>
-                <option value="USD">{tr('Consultants.usd')}</option>
-                <option value="CHF">{tr('Consultants.chf')}</option>
+              <Select id="Consultants.devise.select" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
+                <option id="Consultants.devise.option.EUR" value="EUR">{tr('Consultants.eur')}</option>
+                <option id="Consultants.devise.option.USD" value="USD">{tr('Consultants.usd')}</option>
+                <option id="Consultants.devise.option.CHF" value="CHF">{tr('Consultants.chf')}</option>
               </Select>
             </Field>
           </div>
           <Field label={tr('Consultants.mode.paiement')} id="Consultants.mode.paiement">
             <Select
+              id="Consultants.mode.paiement.select"
               value={form.modePaiement}
               onChange={(e) => setForm({ ...form, modePaiement: e.target.value })}
             >
               {(form.modePaiement && !PAYMENT_METHODS.includes(form.modePaiement)
                 ? [...PAYMENT_METHODS, form.modePaiement]
                 : PAYMENT_METHODS
-              ).map((method) => (
-                <option key={method} value={method}>
+              ).map((method, index) => (
+                <option id={`Consultants.mode.paiement.option.${index}`} key={method} value={method}>
                   {dt(method)}
                 </option>
               ))}
@@ -715,12 +726,14 @@ export function Consultants() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label={tr('Consultants.statut.professionnel')} id="Consultants.statut.professionnel">
                   <Input
+                    id="Consultants.statut.professionnel.input"
                     value={form.statutProfessionnel}
                     onChange={(e) => setForm({ ...form, statutProfessionnel: e.target.value })}
                   />
                 </Field>
                 <Field label={tr('Consultants.position')} id="Consultants.position">
                   <Input
+                    id="Consultants.position.input"
                     value={form.positionProfessionnelle}
                     onChange={(e) => setForm({ ...form, positionProfessionnelle: e.target.value })}
                   />
@@ -729,12 +742,14 @@ export function Consultants() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label={tr('Consultants.coefficient')} id="Consultants.coefficient">
                   <Input
+                    id="Consultants.coefficient.input"
                     value={form.coefficient}
                     onChange={(e) => setForm({ ...form, coefficient: e.target.value })}
                   />
                 </Field>
                 <Field label={tr('Consultants.matricule')} id="Consultants.matricule">
                   <Input
+                    id="Consultants.matricule.input"
                     value={form.matricule}
                     onChange={(e) => setForm({ ...form, matricule: e.target.value })}
                   />
@@ -744,10 +759,10 @@ export function Consultants() {
           )}
           {isAdmin && (
             <Field label={tr('Consultants.societe')} id="Consultants.societe">
-              <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
-                <option value="">{tr('Consultants.selectionner')}</option>
+              <Select id="Consultants.societe.select" value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
+                <option id="Consultants.societe.selectionner" value="">{tr('Consultants.selectionner')}</option>
                 {(socs ?? []).map((soc) => (
-                  <option key={soc.id} value={soc.id}>
+                  <option id={`Consultants.societe.option.${soc.id}`} key={soc.id} value={soc.id}>
                     {soc.name}
                   </option>
                 ))}
@@ -756,23 +771,23 @@ export function Consultants() {
           )}
           {!editing && (
             <div className="rounded-lg border border-brand-200 bg-brand-50 p-3">
-              <p className="mb-2 text-sm font-medium text-brand-800">
+              <p id={form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC' ? 'Consultants.compte.utilisateur.obligatoire' : 'Consultants.compte.utilisateur.optionnel'} className="mb-2 text-sm font-medium text-brand-800">
                 {form.role === 'MANAGER' || form.role === 'RESPONSIBLE_SOC'
                   ? tr('Consultants.compte.utilisateur.obligatoire')
                   : tr('Consultants.compte.utilisateur.optionnel')}
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <Field label={tr('Consultants.nom.d.utilisateur')} id="Consultants.nom.d.utilisateur">
-                  <Input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+                <Field label={tr('Consultants.nom.d.utilisateur')} id="Consultants.nom.d.utilisateur.new">
+                  <Input id="Consultants.nom.d.utilisateur.new.input" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
                 </Field>
                 <Field label={tr('Consultants.email.de.connexion')} id="Consultants.email.de.connexion">
-                  <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                  <Input id="Consultants.email.de.connexion.input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </Field>
                 <Field label={tr('Consultants.mot.de.passe.initial')} id="Consultants.mot.de.passe.initial">
-                  <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                  <Input id="Consultants.mot.de.passe.initial.input" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
                 </Field>
               </div>
-              <p className="mt-2 text-xs text-brand-700">
+              <p id="Consultants.le.collaborateur.devra.changer.son.mot.de.passe.a.la.premier" className="mt-2 text-xs text-brand-700">
                 {tr('Consultants.le.collaborateur.devra.changer.son.mot.de.passe.a.la.premier')}
               </p>
             </div>
@@ -783,6 +798,7 @@ export function Consultants() {
       <Modal
         open={importOpen}
         onClose={() => setImportOpen(false)}
+        titleId="Consultants.importer.des.consultants.csv"
         title={tr('Consultants.importer.des.consultants.csv')}
         footer={
           <>
@@ -792,15 +808,15 @@ export function Consultants() {
         }
       >
         <form onSubmit={handleImport} className="space-y-4">
-          <p className="text-sm text-gray-600">
-            {tr('Consultants.format.attendu')} <code className="rounded bg-gray-100 px-1">{tr('Consultants.prenom.nom.email.telephone.poste.dateembauche.aaaa.mm.jj.dat')}</code>
+          <p id="Consultants.format.attendu" className="text-sm text-gray-600">
+            {tr('Consultants.format.attendu')} <code id="Consultants.prenom.nom.email.telephone.poste.dateembauche.aaaa.mm.jj.dat" className="rounded bg-gray-100 px-1">{tr('Consultants.prenom.nom.email.telephone.poste.dateembauche.aaaa.mm.jj.dat')}</code>
           </p>
           {isAdmin && (
-            <Field label={tr('Consultants.societe')} id="Consultants.societe">
-              <Select value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
-                <option value="">{tr('Consultants.selectionner')}</option>
+            <Field label={tr('Consultants.societe')} id="Consultants.societe.import">
+              <Select id="Consultants.societe.import.select" value={form.socId} onChange={(e) => setForm({ ...form, socId: e.target.value })}>
+                <option id="Consultants.societe.import.selectionner" value="">{tr('Consultants.selectionner')}</option>
                 {(socs ?? []).map((soc) => (
-                  <option key={soc.id} value={soc.id}>
+                  <option id={`Consultants.societe.import.option.${soc.id}`} key={soc.id} value={soc.id}>
                     {soc.name}
                   </option>
                 ))}
@@ -808,23 +824,24 @@ export function Consultants() {
             </Field>
           )}
           <input
+            id="Consultants.import.file"
             type="file"
             accept=".csv,text/csv"
             onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
             className="block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700"
           />
           {importError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Consultants.import.error" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {importError}
             </div>
           )}
           {importResult && (
-            <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+            <div id="Consultants.import.result" className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
               {importResult.imported} {tr('Consultants.consultant.s.importe.s')} {importResult.errors} {tr('Consultants.erreur.s')}
               {importResult.errorLines.length > 0 && (
-                <ul className="mt-1 list-inside list-disc text-xs">
+                <ul id="Consultants.import.errorLines" className="mt-1 list-inside list-disc text-xs">
                   {importResult.errorLines.slice(0, 5).map((line, i) => (
-                    <li key={i}>{line}</li>
+                    <li id={`Consultants.import.errorLines.${i}`} key={i}>{line}</li>
                   ))}
                 </ul>
               )}
@@ -837,24 +854,25 @@ export function Consultants() {
       <Modal
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
+        titleId="Consultants.history.title"
         title={historyFor ? tr('Consultants.historique.de', { name: `${historyFor.firstName} ${historyFor.lastName}` }) : tr('common.history')}
-        footer={<IconButton icon="close" label={tr('common.close')} onClick={() => setHistoryOpen(false)} id="common.close" />}
+        footer={<IconButton icon="close" label={tr('common.close')} onClick={() => setHistoryOpen(false)} id="Consultants.history.close" />}
       >
         {historyLoading && <LoadingBlock />}
         {!historyLoading && historyItems.length === 0 && (
-          <p className="text-sm text-gray-500">{tr('Consultants.aucune.modification.enregistree')}</p>
+          <p id="Consultants.aucune.modification.enregistree" className="text-sm text-gray-500">{tr('Consultants.aucune.modification.enregistree')}</p>
         )}
         {historyItems.length > 0 && (
-          <ul className="space-y-3">
+          <ul id="Consultants.history.list" className="space-y-3">
             {historyItems.map((h) => (
-              <li key={h.id} className="rounded-lg border border-gray-200 p-3">
+              <li id={`Consultants.history.item.${h.id}`} key={h.id} className="rounded-lg border border-gray-200 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">
+                  <span id={`Consultants.history.item.${h.id}.action`} className="text-sm font-medium text-gray-900">
                     {h.action === 'CREATE' ? tr('Consultants.creation') : h.action === 'UPDATE' ? tr('Consultants.modification') : tr('Consultants.suppression')}
                   </span>
-                  <span className="text-xs text-gray-500">{h.dateMaj ? formatDateTime(h.dateMaj) : ''}</span>
+                  <span id={`Consultants.history.item.${h.id}.date`} className="text-xs text-gray-500">{h.dateMaj ? formatDateTime(h.dateMaj) : ''}</span>
                 </div>
-                <p className="mt-1 text-xs text-gray-600">
+                <p id={`Consultants.history.item.${h.id}.user`} className="mt-1 text-xs text-gray-600">
                   {tr('Consultants.par')} {h.userName ?? '—'}
                 </p>
               </li>

@@ -183,13 +183,13 @@ export function RelationsGraph({
     const { width, height } = dimsRef.current
 
     container.innerHTML = ''
-    const svg = d3.select(container).append('svg').attr('width', width).attr('height', height)
+    const svg = d3.select(container).append('svg').attr('id', 'RelationsGraph.svg').attr('width', width).attr('height', height)
     svgRef.current = svg
 
-    const zoomG = svg.append('g')
+    const zoomG = svg.append('g').attr('id', 'RelationsGraph.zoom')
     zoomGRef.current = zoomG
-    linkGroupRef.current = zoomG.append('g').attr('class', 'links')
-    nodeGroupRef.current = zoomG.append('g').attr('class', 'nodes')
+    linkGroupRef.current = zoomG.append('g').attr('class', 'links').attr('id', 'RelationsGraph.links')
+    nodeGroupRef.current = zoomG.append('g').attr('class', 'nodes').attr('id', 'RelationsGraph.nodes')
 
     const zoomBehavior = d3.zoom<SVGSVGElement, unknown>().scaleExtent([0.2, 4]).on('zoom', (event: any) => {
       zoomG.attr('transform', event.transform)
@@ -288,6 +288,7 @@ export function RelationsGraph({
         .enter()
         .append('path')
         .attr('class', 'link fk')
+        .attr('id', (d: GraphLink) => `RelationsGraph.link.${d.table}.${d.column}.${d.target_table}`)
         .attr('fill', 'none')
         .attr('stroke', '#999')
         .attr('stroke-opacity', 0.8)
@@ -300,6 +301,7 @@ export function RelationsGraph({
         .enter()
         .append('g')
         .attr('class', 'node')
+        .attr('id', (d: GraphNode) => `RelationsGraph.node.${d.id}`)
         .style('cursor', 'grab')
         .call(
           d3
@@ -338,6 +340,7 @@ export function RelationsGraph({
 
       node
         .append('text')
+        .attr('id', (d: GraphNode) => `RelationsGraph.node.${d.id}.label`)
         .text((d: GraphNode) => truncate(d.id, 18))
         .attr('text-anchor', 'middle')
         .attr('dy', 4)
@@ -443,17 +446,17 @@ export function RelationsGraph({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-semibold text-gray-900">
+        <span id="RelationsGraph.relations" className="text-sm font-semibold text-gray-900">
           {tr('RelationsGraph.relations')} {focusedTable || 'Toutes tables'}
         </span>
         <div className="ml-auto flex items-center gap-1">
-          <InlineButton onClick={zoomIn} aria-label={tr('RelationsGraph.zoom.avant')}>
+          <InlineButton id="RelationsGraph.zoom.avant" onClick={zoomIn} aria-label={tr('RelationsGraph.zoom.avant')}>
             +
           </InlineButton>
-          <InlineButton onClick={zoomOut} aria-label={tr('RelationsGraph.zoom.arriere')}>
+          <InlineButton id="RelationsGraph.zoom.arriere" onClick={zoomOut} aria-label={tr('RelationsGraph.zoom.arriere')}>
             −
           </InlineButton>
-          <InlineButton onClick={fit}>{tr('RelationsGraph.ajuster')}</InlineButton>
+          <InlineButton id="RelationsGraph.ajuster" onClick={fit}>{tr('RelationsGraph.ajuster')}</InlineButton>
         </div>
       </div>
 
@@ -463,6 +466,7 @@ export function RelationsGraph({
       >
         {tooltip.visible && (
           <div
+            id="RelationsGraph.tooltip"
             className="pointer-events-none absolute z-10 rounded bg-black/80 px-2 py-1 text-xs text-white"
             style={{ left: tooltip.left, top: tooltip.top }}
           >
@@ -472,10 +476,10 @@ export function RelationsGraph({
       </div>
 
       <div className="flex items-center gap-3 text-sm text-gray-600">
-        <span className="flex items-center gap-1.5">
+        <span id="RelationsGraph.table.legend" className="flex items-center gap-1.5">
           <b>●</b> {tr('RelationsGraph.table')}
         </span>
-        <span className="flex items-center gap-1.5 text-red-500">{tr('RelationsGraph.cle.etrangere')}</span>
+        <span id="RelationsGraph.cle.etrangere.legend" className="flex items-center gap-1.5 text-red-500">{tr('RelationsGraph.cle.etrangere')}</span>
       </div>
     </div>
   )

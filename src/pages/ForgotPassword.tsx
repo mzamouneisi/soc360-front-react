@@ -31,26 +31,27 @@ export function ForgotPassword() {
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-gray-900" id="ForgotPassword.mot.de.passe.oublie">{tr('ForgotPassword.mot.de.passe.oublie')}</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p id="ForgotPassword.entrez.votre.adresse.e.mail.pour.reinitialiser.votre.mot.de." className="mt-1 text-sm text-gray-500">
             {tr('ForgotPassword.entrez.votre.adresse.e.mail.pour.reinitialiser.votre.mot.de.')}
           </p>
         </div>
 
         {error && (
           <div className="mb-4">
-            <Alert>{error}</Alert>
+            <Alert id="ForgotPassword.error">{error}</Alert>
           </div>
         )}
 
         {message && (
           <div className="mb-4">
-            <Alert variant="success">{message}</Alert>
+            <Alert id="ForgotPassword.message" variant="success">{message}</Alert>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field label={tr('ForgotPassword.adresse.e.mail')} id="ForgotPassword.adresse.e.mail">
             <Input
+              id="ForgotPassword.adresse.e.mail.input"
               type="email"
               autoComplete="email"
               value={email}
@@ -60,7 +61,7 @@ export function ForgotPassword() {
             />
           </Field>
 
-          <Button type="submit" className="w-full" disabled={submitting}>
+          <Button id="ForgotPassword.envoyer.le.lien" type="submit" className="w-full" disabled={submitting}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('ForgotPassword.envoyer.le.lien')}
           </Button>
@@ -68,6 +69,7 @@ export function ForgotPassword() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           <Link
+            id="ForgotPassword.retour.a.la.connexion"
             to="/login"
             className="font-medium text-brand-600 hover:text-brand-700"
           >

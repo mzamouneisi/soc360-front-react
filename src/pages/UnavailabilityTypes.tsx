@@ -269,7 +269,7 @@ export function UnavailabilityTypes() {
       key: 'status',
       label: tr('UnavailabilityTypes.col.status'),
       render: (r: UnavailabilityTypeConfigDto) => (
-        <Badge kind={statusBadge(r.status)}>
+        <Badge id={`UnavailabilityTypes.status.${r.id}`} kind={statusBadge(r.status)}>
           {tr(`UnavailabilityTypes.status.${r.status}`)}
         </Badge>
       ),
@@ -279,13 +279,14 @@ export function UnavailabilityTypes() {
       label: '',
       render: (r: UnavailabilityTypeConfigDto) => (
         <div className="flex justify-end gap-1">
-          <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(r)} id="common.edit" />
+          <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(r)} id={`common.edit.${r.id}`} />
           {r.status === 'ACTIVE' && (
             <IconButton
               icon="cancel"
               label={tr('UnavailabilityTypes.disable')}
               variant="danger"
               onClick={() => void handleDisable(r)}
+              id={`UnavailabilityTypes.disable.${r.id}`}
             />
           )}
           <IconButton
@@ -293,6 +294,7 @@ export function UnavailabilityTypes() {
             label={tr('UnavailabilityTypes.deleteRow')}
             variant="danger"
             onClick={() => void handleDelete(r)}
+            id={`UnavailabilityTypes.deleteRow.${r.id}`}
           />
         </div>
       ),
@@ -330,12 +332,13 @@ export function UnavailabilityTypes() {
           rowKey={(r) => String(r.id)}
           rows={rows}
           columns={columns}
-          empty={<EmptyState title={tr('UnavailabilityTypes.empty')} />}
+          empty={<EmptyState titleId="UnavailabilityTypes.empty" title={tr('UnavailabilityTypes.empty')} />}
         />
       )}
 
       <Modal
         open={formOpen}
+        titleId={editingId == null ? 'UnavailabilityTypes.form.new' : 'UnavailabilityTypes.form.edit'}
         title={editingId == null
           ? tr('UnavailabilityTypes.form.new')
           : tr('UnavailabilityTypes.form.edit')}
@@ -343,10 +346,10 @@ export function UnavailabilityTypes() {
         size="lg"
         footer={
           <>
-            <Button variant="neutral" onClick={() => setFormOpen(false)} disabled={saving}>
+            <Button id="common.cancel" variant="neutral" onClick={() => setFormOpen(false)} disabled={saving}>
               {tr('common.cancel')}
             </Button>
-            <Button variant="primary" onClick={() => void handleSave()} disabled={saving}>
+            <Button id="UnavailabilityTypes.save" variant="primary" onClick={() => void handleSave()} disabled={saving}>
               {tr('UnavailabilityTypes.save')}
             </Button>
           </>
@@ -354,12 +357,13 @@ export function UnavailabilityTypes() {
       >
         {formError && (
           <div className="mb-4">
-            <ErrorBlock message={formError} />
+            <ErrorBlock id="UnavailabilityTypes.form.error" message={formError} />
           </div>
         )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={tr('UnavailabilityTypes.col.type')} id="UnavailabilityTypes.form.type">
             <Input
+              id="UnavailabilityTypes.form.type.input"
               aria-label={tr('UnavailabilityTypes.col.type')}
               value={form.name}
               onChange={(e) => setField('name', e.target.value)}
@@ -368,6 +372,7 @@ export function UnavailabilityTypes() {
           <div className="grid grid-cols-2 gap-3">
             <Field label={tr('UnavailabilityTypes.col.duration')} id="UnavailabilityTypes.form.duration">
               <Input
+                id="UnavailabilityTypes.form.duration.input"
                 type="number"
                 min="0.01"
                 step="0.5"
@@ -378,82 +383,90 @@ export function UnavailabilityTypes() {
             </Field>
             <Field label={tr('UnavailabilityTypes.col.durationUnit')} id="UnavailabilityTypes.form.durationUnit">
               <Select
+                id="UnavailabilityTypes.form.durationUnit.select"
                 aria-label={tr('UnavailabilityTypes.col.durationUnit')}
                 value={form.durationUnit}
                 onChange={(e) => setField('durationUnit', e.target.value as DurationUnit)}
               >
                 {DURATION_UNITS.map((unit) => (
-                  <option key={unit} value={unit}>{unitLabel(unit)}</option>
+                  <option id={`UnavailabilityTypes.form.durationUnit.option.${unit}`} key={unit} value={unit}>{unitLabel(unit)}</option>
                 ))}
               </Select>
             </Field>
           </div>
           <Field label={tr('UnavailabilityTypes.col.count')} id="UnavailabilityTypes.form.count">
             <Select
+              id="UnavailabilityTypes.form.count.select"
               aria-label={tr('UnavailabilityTypes.col.count')}
               value={form.countType}
               onChange={(e) => setField('countType', e.target.value as CountType)}
             >
               {COUNT_TYPES.map((type) => (
-                <option key={type} value={type}>{countTypeLabel(type)}</option>
+                <option id={`UnavailabilityTypes.form.count.option.${type}`} key={type} value={type}>{countTypeLabel(type)}</option>
               ))}
             </Select>
           </Field>
           <Field label={tr('UnavailabilityTypes.col.remuneration')} id="UnavailabilityTypes.form.remuneration">
             <Select
+              id="UnavailabilityTypes.form.remuneration.select"
               aria-label={tr('UnavailabilityTypes.col.remuneration')}
               value={form.remuneration}
               onChange={(e) => setField('remuneration', e.target.value as FormState['remuneration'])}
             >
-              <option value="">{tr('UnavailabilityTypes.value.notProvided')}</option>
-              <option value="true">{tr('common.yes')}</option>
-              <option value="false">{tr('common.no')}</option>
+              <option id="UnavailabilityTypes.form.remuneration.option.none" value="">{tr('UnavailabilityTypes.value.notProvided')}</option>
+              <option id="UnavailabilityTypes.form.remuneration.option.yes" value="true">{tr('common.yes')}</option>
+              <option id="UnavailabilityTypes.form.remuneration.option.no" value="false">{tr('common.no')}</option>
             </Select>
           </Field>
           <Field label={tr('UnavailabilityTypes.col.cp')} id="UnavailabilityTypes.form.cp">
             <Select
+              id="UnavailabilityTypes.form.cp.select"
               aria-label={tr('UnavailabilityTypes.col.cp')}
               value={form.paidLeaveAccrual}
               onChange={(e) => setField('paidLeaveAccrual', e.target.value as 'true' | 'false')}
             >
-              <option value="true">{tr('common.yes')}</option>
-              <option value="false">{tr('common.no')}</option>
+              <option id="UnavailabilityTypes.form.cp.option.yes" value="true">{tr('common.yes')}</option>
+              <option id="UnavailabilityTypes.form.cp.option.no" value="false">{tr('common.no')}</option>
             </Select>
           </Field>
           <Field label={tr('UnavailabilityTypes.col.legal')} id="UnavailabilityTypes.form.legal">
             <Select
+              id="UnavailabilityTypes.form.legal.select"
               aria-label={tr('UnavailabilityTypes.col.legal')}
               value={form.providedByLaw}
               onChange={(e) => setField('providedByLaw', e.target.value as 'true' | 'false')}
             >
-              <option value="true">{tr('common.yes')}</option>
-              <option value="false">{tr('common.no')}</option>
+              <option id="UnavailabilityTypes.form.legal.option.yes" value="true">{tr('common.yes')}</option>
+              <option id="UnavailabilityTypes.form.legal.option.no" value="false">{tr('common.no')}</option>
             </Select>
           </Field>
           <Field label={tr('UnavailabilityTypes.col.syntec')} id="UnavailabilityTypes.form.collective">
             <Select
+              id="UnavailabilityTypes.form.collective.select"
               aria-label={tr('UnavailabilityTypes.col.syntec')}
               value={form.providedByCollectiveAgreement}
               onChange={(e) =>
                 setField('providedByCollectiveAgreement', e.target.value as 'true' | 'false')}
             >
-              <option value="true">{tr('common.yes')}</option>
-              <option value="false">{tr('common.no')}</option>
+              <option id="UnavailabilityTypes.form.collective.option.yes" value="true">{tr('common.yes')}</option>
+              <option id="UnavailabilityTypes.form.collective.option.no" value="false">{tr('common.no')}</option>
             </Select>
           </Field>
           <Field label={tr('UnavailabilityTypes.col.document')} id="UnavailabilityTypes.form.document">
             <Select
+              id="UnavailabilityTypes.form.document.select"
               aria-label={tr('UnavailabilityTypes.col.document')}
               value={form.documentRequired}
               onChange={(e) => setField('documentRequired', e.target.value as 'true' | 'false')}
             >
-              <option value="true">{tr('common.yes')}</option>
-              <option value="false">{tr('common.no')}</option>
+              <option id="UnavailabilityTypes.form.document.option.yes" value="true">{tr('common.yes')}</option>
+              <option id="UnavailabilityTypes.form.document.option.no" value="false">{tr('common.no')}</option>
             </Select>
           </Field>
           <div className="sm:col-span-2">
             <Field label={tr('UnavailabilityTypes.col.conditions')} id="UnavailabilityTypes.form.conditions">
               <Textarea
+                id="UnavailabilityTypes.form.conditions.textarea"
                 aria-label={tr('UnavailabilityTypes.col.conditions')}
                 rows={3}
                 value={form.mainCondition}

@@ -306,12 +306,13 @@ export function NoteFraisList() {
           <div className="flex items-center gap-2">
             <RefreshButton onClick={reload} />
             <Select
+              id="NoteFraisList.year.select"
               className="w-auto"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
               {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
-                <option key={y} value={y}>
+                <option id={`NoteFraisList.year.option.${y}`} key={y} value={y}>
                   {y}
                 </option>
               ))}
@@ -323,16 +324,16 @@ export function NoteFraisList() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">{tr('NoteFraisList.total')} {year}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(totalYear)}</p>
+          <p id="NoteFraisList.total" className="text-sm font-medium text-gray-500">{tr('NoteFraisList.total')} {year}</p>
+          <p id="NoteFraisList.total.value" className="mt-2 text-2xl font-bold text-gray-900">{formatMoney(totalYear)}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">{tr('NoteFraisList.en.attente.de.validation')}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{pendingCount}</p>
+          <p id="NoteFraisList.en.attente.de.validation" className="text-sm font-medium text-gray-500">{tr('NoteFraisList.en.attente.de.validation')}</p>
+          <p id="NoteFraisList.en.attente.de.validation.value" className="mt-2 text-2xl font-bold text-gray-900">{pendingCount}</p>
         </Card>
         <Card className="p-5">
-          <p className="text-sm font-medium text-gray-500">{tr('NoteFraisList.notes')} {year}</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">{(data ?? []).length}</p>
+          <p id="NoteFraisList.notes" className="text-sm font-medium text-gray-500">{tr('NoteFraisList.notes')} {year}</p>
+          <p id="NoteFraisList.notes.value" className="mt-2 text-2xl font-bold text-gray-900">{(data ?? []).length}</p>
         </Card>
       </div>
 
@@ -344,7 +345,7 @@ export function NoteFraisList() {
               const value = totalsByMonth[String(i + 1)] ?? 0
               return (
                 <div key={i} className="w-10 text-center">
-                  <p className="text-xs font-medium text-gray-900">
+                  <p id={`NoteFraisList.month.${i + 1}.value`} className="text-xs font-medium text-gray-900">
                     {value > 0 ? formatMoney(value) : '—'}
                   </p>
                   <div className="mx-auto mt-1 h-20 w-4 overflow-hidden rounded bg-gray-100">
@@ -355,7 +356,7 @@ export function NoteFraisList() {
                       }}
                     />
                   </div>
-                  <p className="mt-1 text-[10px] text-gray-400">{monthShort(i + 1)}</p>
+                  <p id={`NoteFraisList.month.${i + 1}.label`} className="mt-1 text-[10px] text-gray-400">{monthShort(i + 1)}</p>
                 </div>
               )
             })}
@@ -367,8 +368,9 @@ export function NoteFraisList() {
         <Card className="mt-6 p-5">
           <h3 className="text-sm font-semibold text-gray-900" id="NoteFraisList.montants.par.categorie">{tr('NoteFraisList.montants.par.categorie')}</h3>
           <div className="mt-3 flex flex-wrap gap-2">
-            {Object.entries(totalsByCategory).map(([cat, value]) => (
+            {Object.entries(totalsByCategory).map(([cat, value], index) => (
               <span
+                id={`NoteFraisList.category.${index}`}
                 key={cat}
                 className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-700"
               >
@@ -392,13 +394,13 @@ export function NoteFraisList() {
               {
                 key: 'consultant',
                 label: tr('NoteFraisList.consultant'),
-                render: (nf) => <span className="font-medium text-gray-900">{nf.consultantName}</span>,
+                render: (nf) => <span id={`NoteFraisList.row.${nf.id}.consultant`} className="font-medium text-gray-900">{nf.consultantName}</span>,
               },
               {
                 key: 'period',
                 label: tr('common.period'),
                 render: (nf) => (
-                  <span className="text-gray-700">
+                  <span id={`NoteFraisList.row.${nf.id}.period`} className="text-gray-700">
                     {monthLabel(nf.month)} {nf.year}
                   </span>
                 ),
@@ -406,18 +408,18 @@ export function NoteFraisList() {
               {
                 key: 'lines',
                 label: tr('NoteFraisList.lignes'),
-                render: (nf) => <span>{nf.lines.length}</span>,
+                render: (nf) => <span id={`NoteFraisList.row.${nf.id}.lines`}>{nf.lines.length}</span>,
               },
               {
                 key: 'total',
                 label: tr('NoteFraisList.total'),
-                render: (nf) => <span className="font-semibold text-gray-900">{formatMoney(nf.totalAmount)}</span>,
+                render: (nf) => <span id={`NoteFraisList.row.${nf.id}.total`} className="font-semibold text-gray-900">{formatMoney(nf.totalAmount)}</span>,
               },
               {
                 key: 'status',
                 label: tr('common.status'),
                 render: (nf) => (
-                  <Badge kind={statusBadge(nf.status)}>
+                  <Badge id={`NoteFraisList.row.${nf.id}.status`} kind={statusBadge(nf.status)}>
                     {dt(NOTE_FRAIS_STATUS_LABELS[nf.status] ?? nf.status)}
                   </Badge>
                 ),
@@ -425,7 +427,7 @@ export function NoteFraisList() {
               {
                 key: 'comment',
                 label: tr('NoteFraisList.rejet'),
-                render: (nf) => (nf.status === 'REJECTED' ? <span className="text-xs text-amber-700">{nf.comment}</span> : <span>—</span>),
+                render: (nf) => (nf.status === 'REJECTED' ? <span id={`NoteFraisList.row.${nf.id}.comment`} className="text-xs text-amber-700">{nf.comment}</span> : <span id={`NoteFraisList.row.${nf.id}.comment`}>—</span>),
               },
               {
                 key: 'actions',
@@ -434,17 +436,17 @@ export function NoteFraisList() {
                   <div className="flex justify-end gap-1">
                     {(nf.status === 'DRAFT' || nf.status === 'REJECTED') && (
                       <>
-                        <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} id="common.edit" />
-                        <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => changeStatus(nf, 'submit')} id="Unavailability.soumettre" />
+                        <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} id={`common.edit.${nf.id}`} />
+                        <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => changeStatus(nf, 'submit')} id={`Unavailability.soumettre.${nf.id}`} />
                       </>
                     )}
                     {canValidate && nf.status === 'SUBMITTED' && (
                       <>
-                        <IconButton icon="check" label={tr('Unavailability.valider')} variant="soft" onClick={() => changeStatus(nf, 'validate')} id="Unavailability.valider" />
-                        <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => changeStatus(nf, 'reject')} id="Unavailability.rejeter" />
+                        <IconButton icon="check" label={tr('Unavailability.valider')} variant="soft" onClick={() => changeStatus(nf, 'validate')} id={`Unavailability.valider.${nf.id}`} />
+                        <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => changeStatus(nf, 'reject')} id={`Unavailability.rejeter.${nf.id}`} />
                       </>
                     )}
-                    <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={() => changeStatus(nf, 'delete')} id="NoteFraisList.suppr" />
+                    <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={() => changeStatus(nf, 'delete')} id={`NoteFraisList.suppr.${nf.id}`} />
                   </div>
                 ),
               },
@@ -455,26 +457,27 @@ export function NoteFraisList() {
 
       {!loading && data && data.length === 0 && (
         <Card className="mt-6 flex flex-col items-center justify-center py-14">
-          <p className="text-sm font-medium text-gray-900">{tr('NoteFraisList.aucune.note.de.frais.pour')} {year}</p>
-          <p className="mt-1 text-sm text-gray-500">{tr('NoteFraisList.creez.votre.premiere.note.de.frais')}</p>
+          <p id="NoteFraisList.aucune.note.de.frais.pour" className="text-sm font-medium text-gray-900">{tr('NoteFraisList.aucune.note.de.frais.pour')} {year}</p>
+          <p id="NoteFraisList.creez.votre.premiere.note.de.frais" className="mt-1 text-sm text-gray-500">{tr('NoteFraisList.creez.votre.premiere.note.de.frais')}</p>
         </Card>
       )}
 
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        titleId={editing ? 'NoteFraisList.modifier.la.note.de.modal' : 'NoteFraisList.nouvelle.note.de.frais.modal'}
         title={editing ? tr('NoteFraisList.modifier.la.note.de', { name: editing.consultantName }) : tr('NoteFraisList.nouvelle.note.de.frais')}
         size="xl"
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
-            <IconButton icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
+            <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
           </>
         }
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="NoteFraisList.form.error" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
@@ -482,12 +485,13 @@ export function NoteFraisList() {
             {!isConsultant && (
               <Field label={tr('NoteFraisList.consultant')} id="NoteFraisList.consultant">
                 <Select
+                  id="NoteFraisList.consultant.select"
                   value={form.consultantId}
                   onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
                 >
-                  <option value="">{tr('NoteFraisList.selectionner')}</option>
+                  <option id="NoteFraisList.selectionner" value="">{tr('NoteFraisList.selectionner')}</option>
                   {(summaries ?? []).map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <option id={`NoteFraisList.consultant.option.${c.id}`} key={c.id} value={c.id}>
                       {c.fullName}
                     </option>
                   ))}
@@ -496,11 +500,12 @@ export function NoteFraisList() {
             )}
             <Field label={tr('NoteFraisList.mois')} id="NoteFraisList.mois">
               <Select
+                id="NoteFraisList.mois.select"
                 value={form.month}
                 onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
+                  <option id={`NoteFraisList.mois.option.${m}`} key={m} value={m}>
                     {monthLabel(m)}
                   </option>
                 ))}
@@ -508,11 +513,12 @@ export function NoteFraisList() {
             </Field>
             <Field label={tr('NoteFraisList.annee')} id="NoteFraisList.annee">
               <Select
+                id="NoteFraisList.annee.select"
                 value={form.year}
                 onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
               >
                 {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
-                  <option key={y} value={y}>
+                  <option id={`NoteFraisList.annee.option.${y}`} key={y} value={y}>
                     {y}
                   </option>
                 ))}
@@ -522,8 +528,8 @@ export function NoteFraisList() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-700">{tr('NoteFraisList.lignes.de.depenses')}</p>
-              <span className="text-sm text-gray-500">
+              <p id="NoteFraisList.lignes.de.depenses" className="text-sm font-medium text-gray-700">{tr('NoteFraisList.lignes.de.depenses')}</p>
+              <span id="NoteFraisList.total.2" className="text-sm text-gray-500">
                 {tr('NoteFraisList.total.2')} {formatMoney(form.lines.reduce((s, l) => s + lineAmount(l), 0))}
               </span>
             </div>
@@ -531,6 +537,7 @@ export function NoteFraisList() {
               {form.lines.map((line, i) => (
                 <div key={i} className="grid grid-cols-1 gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-12 sm:items-center">
                   <Input
+                    id={`NoteFraisList.line.${i}.enseigne`}
                     placeholder={tr('NoteFraisList.nom.enseigne')}
                     className="sm:col-span-2"
                     value={line.enseigne}
@@ -542,6 +549,7 @@ export function NoteFraisList() {
                     }
                   />
                   <Input
+                    id={`NoteFraisList.line.${i}.date`}
                     type="date"
                     className="sm:col-span-2"
                     value={line.date}
@@ -553,6 +561,7 @@ export function NoteFraisList() {
                     }
                   />
                   <Select
+                    id={`NoteFraisList.line.${i}.category`}
                     className="sm:col-span-2"
                     value={line.category}
                     onChange={(e) =>
@@ -562,13 +571,14 @@ export function NoteFraisList() {
                       })
                     }
                   >
-                    {NOTE_FRAIS_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
+                    {NOTE_FRAIS_CATEGORIES.map((cat, categoryIndex) => (
+                      <option id={`NoteFraisList.line.${i}.category.option.${categoryIndex}`} key={cat} value={cat}>
                         {cat}
                       </option>
                     ))}
                   </Select>
                   <Input
+                    id={`NoteFraisList.line.${i}.label`}
                     placeholder={tr('NoteFraisList.libelle.action')}
                     className="sm:col-span-2"
                     value={line.label}
@@ -580,6 +590,7 @@ export function NoteFraisList() {
                     }
                   />
                   <Input
+                    id={`NoteFraisList.line.${i}.adresse`}
                     placeholder={tr('NoteFraisList.adresse')}
                     className="sm:col-span-4"
                     value={line.adresse}
@@ -591,6 +602,7 @@ export function NoteFraisList() {
                     }
                   />
                   <Input
+                    id={`NoteFraisList.line.${i}.montantHT`}
                     type="number"
                     step="0.01"
                     min="0"
@@ -605,6 +617,7 @@ export function NoteFraisList() {
                     }
                   />
                   <Input
+                    id={`NoteFraisList.line.${i}.montantTTC`}
                     type="number"
                     step="0.01"
                     min="0"
@@ -618,8 +631,9 @@ export function NoteFraisList() {
                       })
                     }
                   />
-                  <label className="flex items-center gap-2 text-sm text-gray-600 sm:col-span-1">
+                  <label id={`NoteFraisList.line.${i}.reimbursed.label`} className="flex items-center gap-2 text-sm text-gray-600 sm:col-span-1">
                     <input
+                      id={`NoteFraisList.line.${i}.reimbursed`}
                       type="checkbox"
                       checked={line.reimbursed}
                       onChange={(e) =>
@@ -635,6 +649,7 @@ export function NoteFraisList() {
                     {tr('NoteFraisList.remb')}
                   </label>
                   <button
+                    id={`NoteFraisList.line.${i}.supprimer`}
                     type="button"
                     onClick={() =>
                       setForm({ ...form, lines: form.lines.filter((_, j) => j !== i) })
@@ -647,6 +662,7 @@ export function NoteFraisList() {
               ))}
             </div>
             <button
+              id="NoteFraisList.ajouter.une.ligne"
               type="button"
               onClick={() => setForm({ ...form, lines: [...form.lines, newLine()] })}
               className="mt-3 text-sm font-medium text-brand-600 hover:text-brand-700"
@@ -657,9 +673,10 @@ export function NoteFraisList() {
 
           <div className="rounded-lg border border-dashed border-gray-300 p-3">
             <div className="flex flex-wrap items-center gap-3">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+              <label id="NoteFraisList.joindre.une.facture.image.pdf" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
                 {tr('NoteFraisList.joindre.une.facture.image.pdf')}
                 <input
+                  id="NoteFraisList.joindre.une.facture.image.pdf.file"
                   type="file"
                   accept="image/*,application/pdf"
                   className="hidden"
@@ -667,9 +684,10 @@ export function NoteFraisList() {
                 />
               </label>
               {attachmentName && (
-                <span className="text-sm text-gray-600">
+                <span id="NoteFraisList.attachment.name" className="text-sm text-gray-600">
                   {attachmentName}{' '}
                   <button
+                    id="NoteFraisList.retirer"
                     type="button"
                     onClick={() => {
                       if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
@@ -684,14 +702,14 @@ export function NoteFraisList() {
               )}
             </div>
             {ocrPending && (
-              <p className="mt-2 text-sm text-brand-700">{tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}</p>
+              <p id="NoteFraisList.lecture.de.la.facture.en.cours.ocr" className="mt-2 text-sm text-brand-700">{tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}</p>
             )}
             {attachmentUrl && (
               <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
                 {attachmentName && isImageFile(attachmentName) ? (
-                  <img src={attachmentUrl} alt={tr('NoteFraisList.apercu.de.la.facture')} className="max-h-72 w-full object-contain" />
+                  <img id="NoteFraisList.apercu.image" src={attachmentUrl} alt={tr('NoteFraisList.apercu.de.la.facture')} className="max-h-72 w-full object-contain" />
                 ) : (
-                  <iframe src={attachmentUrl} title={tr('NoteFraisList.apercu.du.document')} className="h-72 w-full" />
+                  <iframe id="NoteFraisList.apercu.document" src={attachmentUrl} title={tr('NoteFraisList.apercu.du.document')} className="h-72 w-full" />
                 )}
               </div>
             )}
@@ -699,6 +717,7 @@ export function NoteFraisList() {
 
           <Field label={tr('NoteFraisList.infos.facture.texte.de.la.facture')} id="NoteFraisList.infos.facture.texte.de.la.facture">
             <Textarea
+              id="NoteFraisList.infos.facture.texte.de.la.facture.textarea"
               rows={4}
               placeholder={tr('NoteFraisList.collez.ou.saisissez.ici.le.contenu.de.la.facture.du.ticket')}
               value={form.infosFacture}

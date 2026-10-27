@@ -47,18 +47,18 @@ export function ResetPassword() {
       <Card className="w-full max-w-sm p-8">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-gray-900" id="ResetPassword.nouveau.mot.de.passe">{tr('ResetPassword.nouveau.mot.de.passe')}</h1>
-          <p className="mt-1 text-sm text-gray-500">{tr('ResetPassword.choisissez.un.nouveau.mot.de.passe')}</p>
+          <p id="ResetPassword.choisissez.un.nouveau.mot.de.passe" className="mt-1 text-sm text-gray-500">{tr('ResetPassword.choisissez.un.nouveau.mot.de.passe')}</p>
         </div>
 
         {!token && (
           <div className="mb-4">
-            <Alert>{tr('ResetPassword.le.lien.de.reinitialisation.est.invalide.ou.incomplet')}</Alert>
+            <Alert id="ResetPassword.le.lien.de.reinitialisation.est.invalide.ou.incomplet">{tr('ResetPassword.le.lien.de.reinitialisation.est.invalide.ou.incomplet')}</Alert>
           </div>
         )}
 
         {success && (
           <div className="mb-4">
-            <Alert variant="success">
+            <Alert id="ResetPassword.mot.de.passe.mis.a.jour.redirection.vers.la.connexion" variant="success">
               {tr('ResetPassword.mot.de.passe.mis.a.jour.redirection.vers.la.connexion')}
             </Alert>
           </div>
@@ -66,13 +66,14 @@ export function ResetPassword() {
 
         {error && (
           <div className="mb-4">
-            <Alert>{error}</Alert>
+            <Alert id="ResetPassword.error">{error}</Alert>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label={tr('ResetPassword.nouveau.mot.de.passe')} id="ResetPassword.nouveau.mot.de.passe">
+          <Field label={tr('ResetPassword.nouveau.mot.de.passe')} id="ResetPassword.nouveau.mot.de.passe.label">
             <Input
+              id="ResetPassword.nouveau.mot.de.passe.input"
               type="password"
               autoComplete="new-password"
               value={newPassword}
@@ -85,6 +86,7 @@ export function ResetPassword() {
 
           <Field label={tr('ResetPassword.confirmer.le.nouveau.mot.de.passe')} id="ResetPassword.confirmer.le.nouveau.mot.de.passe">
             <Input
+              id="ResetPassword.confirmer.le.nouveau.mot.de.passe.input"
               type="password"
               autoComplete="new-password"
               value={confirmPassword}
@@ -95,7 +97,7 @@ export function ResetPassword() {
             />
           </Field>
 
-          <Button type="submit" className="w-full" disabled={submitting || success || !token}>
+          <Button id="ResetPassword.reinitialiser" type="submit" className="w-full" disabled={submitting || success || !token}>
             {submitting ? <Spinner className="border-white border-t-transparent" /> : null}
             {tr('ResetPassword.reinitialiser')}
           </Button>
@@ -103,6 +105,7 @@ export function ResetPassword() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           <Link
+            id="ResetPassword.retour.a.la.connexion"
             to="/login"
             className="font-medium text-brand-600 hover:text-brand-700"
           >

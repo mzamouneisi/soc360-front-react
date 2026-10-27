@@ -30,14 +30,15 @@ export function CraHistoryModal({
     <Modal
       open
       title={`${tr('CraHistoryModal.historique')} (${page.total})`}
+      titleId="CraHistoryModal.historique.title"
       size="lg"
       onClose={onClose}
-      footer={<IconButton icon="close" label="Fermer" onClick={onClose} />}
+      footer={<IconButton id="CraHistoryModal.close" icon="close" label="Fermer" onClick={onClose} />}
     >
       {history.loading && <LoadingBlock />}
-      {history.error && <ErrorBlock message={history.error} />}
+      {history.error && <ErrorBlock id="CraHistoryModal.error" message={history.error} />}
       {!history.loading && !history.error && rows.length === 0 && (
-        <p className="rounded-lg border border-dashed border-gray-300 px-3 py-6 text-center text-sm text-gray-400">
+        <p id="CraHistoryModal.aucun.historique.pour" className="rounded-lg border border-dashed border-gray-300 px-3 py-6 text-center text-sm text-gray-400">
           {tr('CraHistoryModal.aucun.historique.pour')} {isIndispo ? 'cette Indispo' : 'ce CRA'}.
         </p>
       )}
@@ -46,39 +47,39 @@ export function CraHistoryModal({
           <table className="min-w-full divide-y divide-gray-200">
             <thead style={{ backgroundColor: 'var(--table-header)' }}>
               <tr>
-                <th className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                <th id="CraHistoryModal.index" className="w-12 px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
                   #
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                <th id="CraHistoryModal.date.modif" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                   {tr('CraHistoryModal.date.modif')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                <th id="CraHistoryModal.modifie.par" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                   {tr('CraHistoryModal.modifie.par')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                <th id="CraHistoryModal.commentaire" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                   {tr('CraHistoryModal.commentaire')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                <th id="CraHistoryModal.statut.avant" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                   {tr('CraHistoryModal.statut.avant')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
+                <th id="CraHistoryModal.statut.apres" className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500">
                   {tr('CraHistoryModal.statut.apres')}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {page.pageItems.map((h, i) => (
-                <tr key={h.id} className="align-top">
-                  <td className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
+                <tr key={h.id} id={`CraHistoryModal.row.${h.id}`} className="align-top">
+                  <td id={`CraHistoryModal.row.${h.id}.index`} className="w-12 whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
                     {page.offset + i + 1}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
+                  <td id={`CraHistoryModal.row.${h.id}.date`} className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
                     {formatDateTime(h.dateModif)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
-                  <td className="max-w-64 px-4 py-3 text-sm text-gray-600">{h.comment || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{statusLabel(h.statusBefore)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{statusLabel(h.statusAfter)}</td>
+                  <td id={`CraHistoryModal.row.${h.id}.modifier`} className="px-4 py-3 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
+                  <td id={`CraHistoryModal.row.${h.id}.comment`} className="max-w-64 px-4 py-3 text-sm text-gray-600">{h.comment || '—'}</td>
+                  <td id={`CraHistoryModal.row.${h.id}.statusBefore`} className="px-4 py-3 text-sm text-gray-500">{statusLabel(h.statusBefore)}</td>
+                  <td id={`CraHistoryModal.row.${h.id}.statusAfter`} className="px-4 py-3 text-sm text-gray-900">{statusLabel(h.statusAfter)}</td>
                 </tr>
               ))}
             </tbody>

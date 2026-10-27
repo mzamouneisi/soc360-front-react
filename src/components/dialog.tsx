@@ -195,9 +195,10 @@ export function DialogHost() {
         </div>
 
         <div className="max-h-[500px] overflow-y-auto px-6 py-5">
-          <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{message}</p>
+          <p id="dialog-message" className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{message}</p>
           {mode === 'prompt' && (
             <input
+              id="dialog-input"
               autoFocus
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
@@ -210,6 +211,7 @@ export function DialogHost() {
         <div className="flex items-center justify-end gap-3 border-t border-gray-100 px-6 py-4">
           {mode !== 'alert' && (
             <button
+              id="dialog-cancel"
               type="button"
               onClick={abort}
               className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-300 px-4 text-sm font-semibold transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
@@ -223,6 +225,7 @@ export function DialogHost() {
             </button>
           )}
           <button
+            id="dialog-confirm"
             type="button"
             autoFocus={mode !== 'prompt'}
             onClick={confirm}

@@ -28,7 +28,7 @@ export function FullPageSpinner() {
     <div className="flex h-full items-center justify-center bg-gray-50">
       <div className="flex flex-col items-center gap-3">
         <Spinner className="h-8 w-8" />
-        <p className="text-sm text-gray-500">{t('common.loading')}</p>
+        <p id="common.loading" className="text-sm text-gray-500">{t('common.loading')}</p>
       </div>
     </div>
   )
@@ -147,9 +147,11 @@ export function Button({
 
 export function Alert({
   variant = 'error',
+  id,
   children,
 }: {
   variant?: 'error' | 'success' | 'info'
+  id?: string
   children: ReactNode
 }) {
   const styles = {
@@ -159,6 +161,7 @@ export function Alert({
   }
   return (
     <div
+      id={id}
       className={`rounded-lg border px-3 py-2 text-sm ${styles[variant]}`}
       role={variant === 'error' ? 'alert' : 'status'}
     >
@@ -169,15 +172,18 @@ export function Alert({
 
 export function Card({
   className = '',
+  id,
   style,
   children,
 }: {
   className?: string
+  id?: string
   style?: CSSProperties
   children: ReactNode
 }) {
   return (
     <div
+      id={id}
       className={`rounded-xl border border-gray-200 bg-white shadow-sm ${className}`}
       style={style}
     >
@@ -201,7 +207,7 @@ export function Field({
     <div className="space-y-1">
       <label id={id} className="block text-sm font-medium text-gray-700">{label}</label>
       {children}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p id={id ? `${id}.error` : undefined} className="text-xs text-red-600">{error}</p>}
     </div>
   )
 }
@@ -292,16 +298,19 @@ export function RefreshButton({
   label,
   variant = 'primary',
   disabled = false,
+  id = 'common.reload',
 }: {
   onClick: () => void
   className?: string
   label?: string
   variant?: 'neutral' | 'primary' | 'danger'
   disabled?: boolean
+  id?: string
 }) {
   const { t } = useI18n()
   return (
     <InlineButton
+      id={id}
       onClick={onClick}
       title={t('common.reload')}
       aria-label={t('common.reload')}

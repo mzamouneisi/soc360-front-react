@@ -33,7 +33,7 @@ export function MyActivities() {
           subtitle={tr('MyActivities.activites.qui.vous.sont.affectees.lecture.seule')}
           subtitleId="MyActivities.activites.qui.vous.sont.affectees.lecture.seule"
         />
-        <ErrorBlock message={tr('hireDate.required.activities')} />
+        <ErrorBlock id="hireDate.required.activities" message={tr('hireDate.required.activities')} />
       </div>
     )
   }
@@ -51,7 +51,7 @@ export function MyActivities() {
         actions={<RefreshButton onClick={reload} />}
       />
 
-      {error && <ErrorBlock message={error} />}
+      {error && <ErrorBlock id="MyActivities.error" message={error} />}
       {loading && <LoadingBlock />}
 
       {!loading && mine.length > 0 && (
@@ -65,24 +65,24 @@ export function MyActivities() {
               label: tr('Activities.activite'),
               render: (a) => (
                 <div>
-                  <p className="font-medium text-gray-900">{a.name}</p>
-                  {a.description && <p className="text-xs text-gray-500">{a.description}</p>}
+                  <p id={`MyActivities.activity.${a.id}.name`} className="font-medium text-gray-900">{a.name}</p>
+                  {a.description && <p id={`MyActivities.activity.${a.id}.description`} className="text-xs text-gray-500">{a.description}</p>}
                 </div>
               ),
             },
             {
               key: 'type',
               label: tr('common.type'),
-              render: (a) => <Badge kind="info">{a.type?.labelFr ?? '—'}</Badge>,
+              render: (a) => <Badge id={`MyActivities.activity.${a.id}.type`} kind="info">{a.type?.labelFr ?? '—'}</Badge>,
             },
             {
               key: 'project',
               label: tr('Projects.projet'),
               render: (a) => (
                 <div>
-                  <p className="font-medium text-gray-900">{a.project?.name ?? '—'}</p>
+                  <p id={`MyActivities.activity.${a.id}.project`} className="font-medium text-gray-900">{a.project?.name ?? '—'}</p>
                   {a.project?.clientName && (
-                    <p className="text-xs text-gray-500">{a.project.clientName}</p>
+                    <p id={`MyActivities.activity.${a.id}.projectClient`} className="text-xs text-gray-500">{a.project.clientName}</p>
                   )}
                 </div>
               ),
@@ -91,7 +91,7 @@ export function MyActivities() {
               key: 'period',
               label: tr('common.period'),
               render: (a) => (
-                <span className="text-gray-600">
+                <span id={`MyActivities.activity.${a.id}.period`} className="text-gray-600">
                   {a.startDate ? a.startDate : '—'}
                   {a.endDate ? ` → ${a.endDate}` : a.startDate ? ' →' : ''}
                 </span>
@@ -102,10 +102,10 @@ export function MyActivities() {
               label: tr('Activities.week.end.jours.feries'),
               render: (a) => (
                 <div className="flex flex-col gap-1">
-                  <Badge kind={a.weekendAllowed ? 'success' : 'muted'}>
+                  <Badge id={`MyActivities.activity.${a.id}.weekend`} kind={a.weekendAllowed ? 'success' : 'muted'}>
                     {tr('Activities.week.end')} : {dt(a.weekendAllowed ? 'Oui' : 'Non')}
                   </Badge>
-                  <Badge kind={a.holidayAllowed ? 'success' : 'muted'}>
+                  <Badge id={`MyActivities.activity.${a.id}.holiday`} kind={a.holidayAllowed ? 'success' : 'muted'}>
                     {tr('Activities.jours.feries')} : {dt(a.holidayAllowed ? 'Oui' : 'Non')}
                   </Badge>
                 </div>
@@ -115,7 +115,7 @@ export function MyActivities() {
               key: 'active',
               label: tr('common.status'),
               render: (a) => (
-                <Badge kind={a.active ? 'success' : 'muted'}>
+                <Badge id={`MyActivities.activity.${a.id}.active`} kind={a.active ? 'success' : 'muted'}>
                   {dt(a.active ? 'Active' : 'Inactive')}
                 </Badge>
               ),
@@ -126,6 +126,8 @@ export function MyActivities() {
 
       {!loading && data && mine.length === 0 && (
         <EmptyState
+          titleId="MyActivities.aucune.activite"
+          descriptionId="MyActivities.aucune.activite.ne.vous.est.affectee.pour.le.moment"
           title={tr('MyActivities.aucune.activite')}
           description={tr('MyActivities.aucune.activite.ne.vous.est.affectee.pour.le.moment')}
         />

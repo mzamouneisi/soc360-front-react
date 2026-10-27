@@ -144,8 +144,9 @@ export function Support() {
         }
       />
 
-      <label className="mb-4 flex w-fit items-center gap-2 text-sm text-gray-600">
+      <label id="Support.mes.tickets.uniquement" className="mb-4 flex w-fit items-center gap-2 text-sm text-gray-600">
         <input
+          id="Support.mes.tickets.uniquement.checkbox"
           type="checkbox"
           checked={mine}
           onChange={(e) => {
@@ -173,8 +174,8 @@ export function Support() {
                 label: tr('Support.ticket'),
                 render: (t) => (
                   <div>
-                    <p className="font-medium text-gray-900">{t.title}</p>
-                    <p className="text-xs text-gray-500">
+                    <p id={`Support.ticket.${t.id}.title`} className="font-medium text-gray-900">{t.title}</p>
+                    <p id={`Support.ticket.${t.id}.meta`} className="text-xs text-gray-500">
                       {t.category ?? tr('Support.general')} · {formatDateTime(t.createdAt)}
                     </p>
                   </div>
@@ -184,7 +185,7 @@ export function Support() {
                 key: 'status',
                 label: tr('common.status'),
                 render: (t) => (
-                  <Badge kind={statusBadge(t.status)}>
+                  <Badge kind={statusBadge(t.status)} id={`Support.ticket.${t.id}.status`}>
                     {dt(TICKET_STATUS_LABELS[t.status] ?? t.status)}
                   </Badge>
                 ),
@@ -193,7 +194,7 @@ export function Support() {
                 key: 'priority',
                 label: tr('Support.priorite'),
                 render: (t) => (
-                  <Badge kind={t.priority === 'URGENT' || t.priority === 'HIGH' ? 'error' : 'muted'}>
+                  <Badge kind={t.priority === 'URGENT' || t.priority === 'HIGH' ? 'error' : 'muted'} id={`Support.ticket.${t.id}.priority`}>
                     {dt(TICKET_PRIORITY_LABELS[t.priority] ?? t.priority)}
                   </Badge>
                 ),
@@ -219,7 +220,9 @@ export function Support() {
       {!loading && data && data.items.length === 0 && (
         <EmptyState
           title={tr('Support.aucun.ticket')}
+          titleId="Support.aucun.ticket"
           description={tr('Support.creez.un.ticket.pour.contacter.le.support')}
+          descriptionId="Support.creez.un.ticket.pour.contacter.le.support"
           action={
             <IconButton
               icon="add"
@@ -228,7 +231,7 @@ export function Support() {
               onClick={() => {
                 setCreateOpen(true)
                 setFormError(null)
-              }} id="Support.nouveau.ticket" />
+              }} id="Support.nouveau.ticket.empty" />
           }
         />
       )}
@@ -237,6 +240,7 @@ export function Support() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title={tr('Support.nouveau.ticket')}
+        titleId="Support.nouveau.ticket.modal"
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setCreateOpen(false)} id="common.cancel" />
@@ -246,30 +250,32 @@ export function Support() {
       >
         <form onSubmit={handleCreate} className="space-y-4">
           {formError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div id="Support.formError" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {formError}
             </div>
           )}
           <Field label={tr('Support.titre')} id="Support.titre">
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input id="Support.titre.input" value={title} onChange={(e) => setTitle(e.target.value)} />
           </Field>
           <Field label={tr('Support.description')} id="Support.description">
-            <Textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Textarea id="Support.description.textarea" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Support.priorite')} id="Support.priorite">
               <Select
+                id="Support.priorite.select"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TicketPriority)}
               >
-                <option value="LOW">{tr('Support.basse')}</option>
-                <option value="MEDIUM">{tr('Support.moyenne')}</option>
-                <option value="HIGH">{tr('Support.haute')}</option>
-                <option value="URGENT">{tr('Support.urgente')}</option>
+                <option id="Support.basse" value="LOW">{tr('Support.basse')}</option>
+                <option id="Support.moyenne" value="MEDIUM">{tr('Support.moyenne')}</option>
+                <option id="Support.haute" value="HIGH">{tr('Support.haute')}</option>
+                <option id="Support.urgente" value="URGENT">{tr('Support.urgente')}</option>
               </Select>
             </Field>
             <Field label={tr('Support.categorie')} id="Support.categorie">
               <Input
+                id="Support.categorie.input"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder={tr('Support.facturation.bug.question')}
@@ -283,59 +289,61 @@ export function Support() {
         open={detail !== null}
         onClose={() => setDetail(null)}
         title={detail?.title ?? 'Ticket'}
+        titleId="Support.detail.title"
         size="lg"
       >
         {detail && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge kind={statusBadge(detail.status)}>
+              <Badge kind={statusBadge(detail.status)} id="Support.detail.status">
                 {TICKET_STATUS_LABELS[detail.status] ?? detail.status}
               </Badge>
-              <Badge kind={detail.priority === 'URGENT' || detail.priority === 'HIGH' ? 'error' : 'muted'}>
+              <Badge kind={detail.priority === 'URGENT' || detail.priority === 'HIGH' ? 'error' : 'muted'} id="Support.detail.priority">
                 {TICKET_PRIORITY_LABELS[detail.priority] ?? detail.priority}
               </Badge>
-              <span className="text-xs text-gray-500">
+              <span id="Support.detail.meta" className="text-xs text-gray-500">
                 {detail.creator ? `Créé par ${detail.creator.firstName} ${detail.creator.lastName}` : 'Créé par le support'} ·{' '}
                 {formatDateTime(detail.createdAt)}
               </span>
             </div>
 
-            <p className="whitespace-pre-wrap text-sm text-gray-700">{detail.description}</p>
+            <p id="Support.detail.description" className="whitespace-pre-wrap text-sm text-gray-700">{detail.description}</p>
 
             {canManage && detail.status !== 'CLOSED' && (
               <div className="flex flex-wrap gap-2">
                 {detail.status === 'OPEN' && (
-                  <InlineButton onClick={() => handleStatusChange('IN_PROGRESS')}>
+                  <InlineButton id="Support.passer.en.cours" onClick={() => handleStatusChange('IN_PROGRESS')}>
                     {tr('Support.passer.en.cours')}
                   </InlineButton>
                 )}
                 {(detail.status === 'OPEN' || detail.status === 'IN_PROGRESS') && (
-                  <InlineButton onClick={() => handleStatusChange('RESOLVED')}>{tr('Support.resoudre')}</InlineButton>
+                  <InlineButton id="Support.resoudre" onClick={() => handleStatusChange('RESOLVED')}>{tr('Support.resoudre')}</InlineButton>
                 )}
-                <InlineButton onClick={() => handleStatusChange('CLOSED')}>{tr('Support.clore')}</InlineButton>
+                <InlineButton id="Support.clore" onClick={() => handleStatusChange('CLOSED')}>{tr('Support.clore')}</InlineButton>
               </div>
             )}
             {canManage && detail.status === 'CLOSED' && (
-              <InlineButton onClick={() => handleStatusChange('OPEN')}>{tr('Support.rouvrir')}</InlineButton>
+              <InlineButton id="Support.rouvrir" onClick={() => handleStatusChange('OPEN')}>{tr('Support.rouvrir')}</InlineButton>
             )}
 
             <div className="space-y-3 border-t border-gray-200 pt-4">
-              <p className="text-sm font-semibold text-gray-900">{tr('Support.echanges')}</p>
+              <p id="Support.echanges" className="text-sm font-semibold text-gray-900">{tr('Support.echanges')}</p>
               {exchanges.length === 0 && (
-                <p className="text-sm text-gray-400">{tr('Support.aucun.echange.pour.le.moment')}</p>
+                <p id="Support.aucun.echange.pour.le.moment" className="text-sm text-gray-400">{tr('Support.aucun.echange.pour.le.moment')}</p>
               )}
               {exchanges.map((exc) => (
                 <div key={exc.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                  <p className="text-xs text-gray-500">
+                  <p id={`Support.exchange.${exc.id}.author`} className="text-xs text-gray-500">
                     {exc.author ? `${exc.author.firstName} ${exc.author.lastName}` : 'Support'} ·{' '}
                     {formatDateTime(exc.createdAt)}
                   </p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-gray-800">{exc.body}</p>
+                  <p id={`Support.exchange.${exc.id}.body`} className="mt-1 whitespace-pre-wrap text-sm text-gray-800">{exc.body}</p>
                 </div>
               ))}
 
               <div className="space-y-2">
                 <Textarea
+                  id="Support.exchange.input"
                   rows={3}
                   placeholder={tr('Support.votre.message')}
                   value={exchangeBody}

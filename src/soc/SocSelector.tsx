@@ -13,13 +13,14 @@ export function SocSelector() {
     <div className="relative">
       <button
         type="button"
+        id="SocSelector.active"
         onClick={() => setOpen((o) => !o)}
         className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
         aria-haspopup="listbox"
         aria-expanded={open}
         title={tr('SocSelector.societe.active')}
       >
-        <span className="max-w-48 truncate">
+        <span id="SocSelector.active.name" className="max-w-48 truncate">
           {selectedSoc?.name ?? (socs.length > 0 ? 'Choisir une société' : 'Espace de travail')}
         </span>
         <svg className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -34,20 +35,21 @@ export function SocSelector() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="absolute right-0 z-50 mt-2 w-72 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+          <div id="SocSelector.menu" className="absolute right-0 z-50 mt-2 w-72 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
             {loading && socs.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-gray-500">{tr('SocSelector.chargement')}</p>
+              <p id="SocSelector.chargement" className="px-3 py-2 text-sm text-gray-500">{tr('SocSelector.chargement')}</p>
             ) : socs.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-gray-500">{tr('SocSelector.aucune.societe.associee')}</p>
+              <p id="SocSelector.aucune.societe.associee" className="px-3 py-2 text-sm text-gray-500">{tr('SocSelector.aucune.societe.associee')}</p>
             ) : (
-              <ul role="listbox" aria-label={tr('SocSelector.societe.active')}>
+              <ul id="SocSelector.list" role="listbox" aria-label={tr('SocSelector.societe.active')}>
                 {socs.map((soc) => {
                   const isFavorite = soc.id === favoriteSocId
                   const isSelected = soc.id === selectedSoc?.id
                   return (
-                    <li key={soc.id} className="flex items-center gap-1">
+                    <li key={soc.id} id={`SocSelector.societe.${soc.id}`} className="flex items-center gap-1">
                       <button
                         type="button"
+                        id={`SocSelector.societe.${soc.id}.select`}
                         role="option"
                         aria-selected={isSelected}
                         onClick={() => {
@@ -60,7 +62,7 @@ export function SocSelector() {
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
-                        <span className="truncate">{soc.name}</span>
+                        <span id={`SocSelector.societe.${soc.id}.name`} className="truncate">{soc.name}</span>
                         {isSelected && (
                           <svg className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path
@@ -74,6 +76,7 @@ export function SocSelector() {
                       {canAddSoc && (
                         <button
                           type="button"
+                          id={`SocSelector.societe.${soc.id}.favorite`}
                           title={isFavorite ? 'Société favorite' : 'Définir comme favorite'}
                           aria-label={isFavorite ? 'Société favorite' : 'Définir comme favorite'}
                           disabled={favoriting === soc.id}
@@ -106,9 +109,10 @@ export function SocSelector() {
             )}
 
             {canAddSoc && (
-              <div className="mt-2 border-t border-gray-100 pt-2">
+              <div id="SocSelector.add.container" className="mt-2 border-t border-gray-100 pt-2">
                 <button
                   type="button"
+                  id="SocSelector.inscrire.une.societe"
                   onClick={() => {
                     setOpen(false)
                     setAdding(true)
