@@ -272,6 +272,22 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
   })
 
+  it('pré-sélectionne le collaborateur connecté', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    const select = within(dialog).getAllByRole('combobox')[0]
+    expect(select).toHaveValue('1')
+    expect(within(select).getByRole('option', { name: 'M Manager' })).toBeInTheDocument()
+  })
+
   it('crée une note de frais depuis le formulaire', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
@@ -299,6 +315,9 @@ describe('NoteFraisList', () => {
     await within(dialog).findByText('facture.png')
     const selects = within(dialog).getAllByRole('combobox')
     fireEvent.change(selects[0], { target: { value: '10' } })
+    fireEvent.change(within(dialog).getByPlaceholderText('Nom enseigne'), {
+      target: { value: 'SNCF' },
+    })
     fireEvent.change(within(dialog).getByPlaceholderText('Libellé / action'), {
       target: { value: 'Train' },
     })
@@ -319,7 +338,7 @@ describe('NoteFraisList', () => {
             label: 'Train',
             montantHT: 45,
             montantTTC: 0,
-            enseigne: null,
+            enseigne: 'SNCF',
             adresse: null,
             reimbursed: false,
             comment: null,
@@ -385,6 +404,42 @@ describe('NoteFraisList', () => {
     })
     fireEvent.click(download)
     await waitFor(() => expect(documentDownloadMock).toHaveBeenCalledWith(77, 'facture.png'))
+  })
+
+  it('refuse une ligne sans enseigne ou montant', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([
+      { id: 10, fullName: 'Alice Martin', position: 'Consultante', email: 'alice@soc.fr' },
+    ])
+    documentUploadMock.mockResolvedValue({ id: 77, name: 'facture.png' })
+    ocrImageTextMock.mockResolvedValue('')
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
+      target: { files: [new File(['fake'], 'facture.png', { type: 'image/png' })] },
+    })
+    await within(dialog).findByText('facture.png')
+    const selects = within(dialog).getAllByRole('combobox')
+    fireEvent.change(selects[0], { target: { value: '10' } })
+    fireEvent.change(within(dialog).getByPlaceholderText('Libellé / action'), {
+      target: { value: 'Train' },
+    })
+    const createButton = within(dialog).getByRole('button', { name: 'Créer' })
+    await waitFor(() => expect(createButton).toBeEnabled())
+    fireEvent.click(createButton)
+
+    await waitFor(() =>
+      expect(document.getElementById('NoteFraisList.form.error')?.textContent).toContain(
+        "Nom d'enseigne",
+      ),
+    )
+    expect(createMock).not.toHaveBeenCalled()
   })
 
   it('affiche l’erreur API dans un bloc d’erreur', async () => {
