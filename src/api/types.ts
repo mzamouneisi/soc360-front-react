@@ -107,6 +107,8 @@ export interface UserDto {
   buttonOkTextColor: string
   buttonNewColor: string
   buttonNewTextColor: string
+  buttonDisableColor: string
+  buttonDisableTextColor: string
   backgroundColor: string
   manager: ManagerInfo | null
 }

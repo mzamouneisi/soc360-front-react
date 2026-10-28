@@ -113,7 +113,7 @@ export function Button({
   style,
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'yellow' | 'green' | 'danger' | 'neutral'
+  variant?: 'primary' | 'yellow' | 'green' | 'danger' | 'neutral' | 'disable'
   size?: 'auto' | 'sm' | 'lg'
 }) {
   const variants = {
@@ -121,6 +121,7 @@ export function Button({
     yellow: 'bg-yellow-500 text-white hover:bg-yellow-600',
     green: 'bg-green-600 text-white hover:bg-green-700',
     danger: 'text-white hover:brightness-95',
+    disable: 'text-white hover:brightness-95',
     neutral: 'border border-gray-300 hover:brightness-95',
   }
   const resolved: 'sm' | 'lg' =
@@ -130,9 +131,11 @@ export function Button({
       ? { backgroundColor: 'var(--btn-save-color)' }
       : variant === 'danger'
         ? { backgroundColor: 'var(--btn-delete-color)' }
-        : variant === 'neutral'
-          ? { backgroundColor: 'var(--btn-cancel-color)', color: 'var(--btn-cancel-text-color)' }
-          : {}
+        : variant === 'disable'
+          ? { backgroundColor: 'var(--btn-disable-color)', color: 'var(--btn-disable-text-color)' }
+          : variant === 'neutral'
+            ? { backgroundColor: 'var(--btn-cancel-color)', color: 'var(--btn-cancel-text-color)' }
+            : {}
   return (
     <button
       className={`inline-flex w-auto items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
@@ -245,10 +248,11 @@ export function InlineButton({
   children,
   style,
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' | 'ok' | 'new' }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' | 'ok' | 'new' | 'disable' }) {
   const variants = {
     neutral: 'border border-gray-300 hover:brightness-95',
     danger: 'border border-transparent text-white hover:brightness-95',
+    disable: 'border border-transparent text-white hover:brightness-95',
     primary: 'border border-transparent text-white hover:brightness-95',
     soft: 'border hover:brightness-95',
     history: 'border hover:brightness-95',
@@ -260,8 +264,10 @@ export function InlineButton({
       ? { backgroundColor: 'var(--btn-save-color)' }
       : variant === 'danger'
         ? { backgroundColor: 'var(--btn-delete-color)' }
-        : variant === 'neutral'
-          ? { backgroundColor: 'var(--btn-cancel-color)', color: 'var(--btn-cancel-text-color)' }
+        : variant === 'disable'
+          ? { backgroundColor: 'var(--btn-disable-color)', color: 'var(--btn-disable-text-color)' }
+          : variant === 'neutral'
+            ? { backgroundColor: 'var(--btn-cancel-color)', color: 'var(--btn-cancel-text-color)' }
           : variant === 'ok'
             ? { backgroundColor: 'var(--btn-ok-color)', color: 'var(--btn-ok-text-color)' }
             : variant === 'new'
@@ -334,7 +340,7 @@ export function IconButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   icon: IconName
   label: string
-  variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' | 'ok' | 'new'
+  variant?: 'neutral' | 'danger' | 'primary' | 'soft' | 'history' | 'ok' | 'new' | 'disable'
   loading?: boolean
 }) {
   return (

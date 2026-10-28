@@ -299,7 +299,7 @@ export function UnavailabilityTypes() {
             <IconButton
               icon="cancel"
               label={tr('UnavailabilityTypes.disable')}
-              variant="danger"
+              variant="disable"
               onClick={() => void handleDisable(r)}
               id={`UnavailabilityTypes.disable.${r.id}`}
             />

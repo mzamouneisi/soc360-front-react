@@ -1060,6 +1060,8 @@ export const EXTRACTED_FR: Record<string, string> = {
   "NoteFraisList.date": "Date",
   "NoteFraisList.categorie": "Catégorie",
   "Unavailability.date.passee": "Une indisponibilité ne peut pas être saisie dans le passé.",
+  "settings.buttons.disableColor": "Couleur bouton Désactiver",
+  "settings.buttons.disableTextColor": "Couleur texte bouton Désactiver",
 
 }
 
@@ -2125,6 +2127,8 @@ export const EXTRACTED_EN: Record<string, string> = {
   "NoteFraisList.date": "Date",
   "NoteFraisList.categorie": "Category",
   "Unavailability.date.passee": "An unavailability cannot be entered in the past.",
+  "settings.buttons.disableColor": "Disable button colour",
+  "settings.buttons.disableTextColor": "Disable button text colour",
 
 }
 
@@ -3190,4 +3194,6 @@ export const EXTRACTED_AR: Record<string, string> = {
   "NoteFraisList.date": "التاريخ",
   "NoteFraisList.categorie": "الفئة",
   "Unavailability.date.passee": "لا يمكن إدخال عدم التوفر في الماضي.",
+  "settings.buttons.disableColor": "لون زر التعطيل",
+  "settings.buttons.disableTextColor": "لون نص زر التعطيل",
 }

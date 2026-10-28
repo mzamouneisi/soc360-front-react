@@ -47,6 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.style.setProperty('--btn-ok-text-color', user?.buttonOkTextColor || '#ffffff')
     doc.style.setProperty('--btn-new-color', user?.buttonNewColor || '#0ea5e9')
     doc.style.setProperty('--btn-new-text-color', user?.buttonNewTextColor || '#ffffff')
+    doc.style.setProperty('--btn-disable-color', user?.buttonDisableColor || '#f97316')
+    doc.style.setProperty('--btn-disable-text-color', user?.buttonDisableTextColor || '#ffffff')
     doc.style.setProperty('--app-bg-color', user?.backgroundColor || '#bae6fd')
   }, [
     user?.fontSize,
@@ -67,6 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.buttonOkTextColor,
     user?.buttonNewColor,
     user?.buttonNewTextColor,
+    user?.buttonDisableColor,
+    user?.buttonDisableTextColor,
     user?.backgroundColor,
   ])
 

@@ -113,6 +113,8 @@ export function Settings() {
   const [btnOkTextColor, setBtnOkTextColor] = useState<string>(user?.buttonOkTextColor || '#ffffff')
   const [btnNewColor, setBtnNewColor] = useState<string>(user?.buttonNewColor || '#0ea5e9')
   const [btnNewTextColor, setBtnNewTextColor] = useState<string>(user?.buttonNewTextColor || '#ffffff')
+  const [btnDisableColor, setBtnDisableColor] = useState<string>(user?.buttonDisableColor || '#f97316')
+  const [btnDisableTextColor, setBtnDisableTextColor] = useState<string>(user?.buttonDisableTextColor || '#ffffff')
   const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
   const [leaveDayColor, setLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
   const [weekendColor, setWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
@@ -270,6 +272,8 @@ export function Settings() {
     (u.buttonOkTextColor || '#ffffff') !== btnOkTextColor ||
     (u.buttonNewColor || '#0ea5e9') !== btnNewColor ||
     (u.buttonNewTextColor || '#ffffff') !== btnNewTextColor ||
+    (u.buttonDisableColor || '#f97316') !== btnDisableColor ||
+    (u.buttonDisableTextColor || '#ffffff') !== btnDisableTextColor ||
     (u.backgroundColor || '#bae6fd') !== bgColor ||
     (canEditCraColors && selectedSocId != null &&
       (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor))
@@ -319,7 +323,9 @@ export function Settings() {
           (u.buttonOkColor || '#16a34a') !== btnOkColor ||
           (u.buttonOkTextColor || '#ffffff') !== btnOkTextColor ||
           (u.buttonNewColor || '#0ea5e9') !== btnNewColor ||
-          (u.buttonNewTextColor || '#ffffff') !== btnNewTextColor) {
+          (u.buttonNewTextColor || '#ffffff') !== btnNewTextColor ||
+          (u.buttonDisableColor || '#f97316') !== btnDisableColor ||
+          (u.buttonDisableTextColor || '#ffffff') !== btnDisableTextColor) {
         await authApi.updateButtonSettings({
           buttonSmallWidth: btnSmallWidth,
           buttonLargeWidth: btnLargeWidth,
@@ -335,6 +341,8 @@ export function Settings() {
           buttonOkTextColor: btnOkTextColor,
           buttonNewColor: btnNewColor,
           buttonNewTextColor: btnNewTextColor,
+          buttonDisableColor: btnDisableColor,
+          buttonDisableTextColor: btnDisableTextColor,
         })
       }
       if ((u.backgroundColor || '#bae6fd') !== bgColor) {
@@ -815,6 +823,36 @@ export function Settings() {
               <span className="text-sm text-gray-500" id="settings.buttons.deleteColor.value">{btnDeleteColor}</span>
             </div>
           </Field>
+          <Field label={t('settings.buttons.disableColor')} id="settings.buttons.disableColor">
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                id="settings.buttons.disableColor.input"
+                value={btnDisableColor}
+                onChange={(e) => {
+                  setBtnDisableColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500" id="settings.buttons.disableColor.value">{btnDisableColor}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.buttons.disableTextColor')} id="settings.buttons.disableTextColor">
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                id="settings.buttons.disableTextColor.input"
+                value={btnDisableTextColor}
+                onChange={(e) => {
+                  setBtnDisableTextColor(e.target.value)
+                  setSaved(false)
+                }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+              />
+              <span className="text-sm text-gray-500" id="settings.buttons.disableTextColor.value">{btnDisableTextColor}</span>
+            </div>
+          </Field>
           <Field label={t('settings.buttons.cancelColor')} id="settings.buttons.cancelColor">
             <div className="flex items-center gap-2">
               <input
@@ -991,6 +1029,18 @@ export function Settings() {
             style={{ minWidth: `${btnLargeWidth}px`, backgroundColor: btnDeleteColor }}
           >
             {tr('common.delete')}
+          </button>
+          <button
+            type="button"
+            id="UnavailabilityTypes.disable"
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition hover:brightness-95"
+            style={{
+              minWidth: `${btnLargeWidth}px`,
+              backgroundColor: btnDisableColor,
+              color: btnDisableTextColor,
+            }}
+          >
+            {tr('UnavailabilityTypes.disable')}
           </button>
           <button
             type="button"
