@@ -3,6 +3,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { noteFraisApi } from '../api/noteFrais'
 import { consultantsApi } from '../api/consultants'
+import { documentsApi } from '../api/documents'
 import { isImageFile, ocrImageText } from '../lib/ocr'
 import { parseReceipt } from '../lib/receipt'
 import { ApiError } from '../api/client'
@@ -138,6 +139,8 @@ export function NoteFraisList() {
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null)
   const [attachmentName, setAttachmentName] = useState<string | null>(null)
   const [ocrPending, setOcrPending] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null)
 
   if (!user) return null
 
@@ -153,7 +156,9 @@ export function NoteFraisList() {
     setFormError(null)
     setAttachmentUrl(null)
     setAttachmentName(null)
+    setAttachmentDocumentId(null)
     setOcrPending(false)
+    setUploading(false)
     setModalOpen(true)
   }
 
@@ -181,20 +186,32 @@ export function NoteFraisList() {
     setEditing(nf)
     setFormError(null)
     setAttachmentUrl(null)
-    setAttachmentName(null)
+    setAttachmentName(nf.documentName ?? null)
+    setAttachmentDocumentId(nf.documentId ?? null)
     setOcrPending(false)
+    setUploading(false)
     setModalOpen(true)
   }
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
-    setAttachmentUrl(URL.createObjectURL(file))
-    setAttachmentName(file.name)
     setFormError(null)
-
+    setUploading(true)
     try {
+      // 1. Le justificatif est d'abord téléversé (il est obligatoire).
+      const document = await documentsApi.upload(file, {
+        category: 'JUSTIFICATIF',
+        consultantId: form.consultantId ? Number(form.consultantId) : user?.consultantId ?? undefined,
+        socId: user?.socId ?? undefined,
+        description: 'Justificatif de note de frais',
+      })
+      if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
+      setAttachmentDocumentId(document.id)
+      setAttachmentName(document.name)
+      setAttachmentUrl(URL.createObjectURL(file))
+
+      // 2. Le texte du document est ensuite placé dans la zone de texte prévue.
       let text = ''
       if (isImageFile(file.name)) {
         setOcrPending(true)
@@ -208,6 +225,7 @@ export function NoteFraisList() {
         text = result.text ?? ''
       }
       if (text.trim()) {
+        // 3. Puis on reconnaît un maximum de valeurs pour pré-remplir le formulaire.
         setForm((prev) => ({
           ...prev,
           infosFacture: text,
@@ -222,6 +240,8 @@ export function NoteFraisList() {
       }
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -229,6 +249,11 @@ export function NoteFraisList() {
     e.preventDefault()
     setSubmitting(true)
     setFormError(null)
+    if (!attachmentDocumentId) {
+      setFormError(tr('NoteFraisList.justificatif.obligatoire.erreur'))
+      setSubmitting(false)
+      return
+    }
     try {
       const request = {
         consultantId: Number(form.consultantId),
@@ -248,6 +273,8 @@ export function NoteFraisList() {
             comment: l.comment || null,
           })),
         infosFacture: form.infosFacture || null,
+        documentId: attachmentDocumentId,
+        documentName: attachmentName,
       }
       if (request.lines.length === 0) {
         setFormError('Ajoutez au moins une ligne')
@@ -471,7 +498,7 @@ export function NoteFraisList() {
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
-            <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
+            <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting || uploading} loading={submitting || uploading} />
           </>
         }
       >
@@ -674,7 +701,10 @@ export function NoteFraisList() {
           <div className="rounded-lg border border-dashed border-gray-300 p-3">
             <div className="flex flex-wrap items-center gap-3">
               <label id="NoteFraisList.joindre.une.facture.image.pdf" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                {tr('NoteFraisList.joindre.une.facture.image.pdf')}
+                {tr('NoteFraisList.joindre.une.facture.image.pdf')} *
+                <span id="NoteFraisList.justificatif.obligatoire" className="text-xs font-normal text-red-600">
+                  {tr('NoteFraisList.justificatif.obligatoire')}
+                </span>
                 <input
                   id="NoteFraisList.joindre.une.facture.image.pdf.file"
                   type="file"
@@ -684,8 +714,18 @@ export function NoteFraisList() {
                 />
               </label>
               {attachmentName && (
-                <span id="NoteFraisList.attachment.name" className="text-sm text-gray-600">
-                  {attachmentName}{' '}
+                <span id="NoteFraisList.attachment.name" className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                  <span id="NoteFraisList.attachment.name.value">{attachmentName}</span>
+                  {attachmentDocumentId != null && (
+                    <button
+                      id="NoteFraisList.justificatif.telecharger"
+                      type="button"
+                      onClick={() => void documentsApi.download(attachmentDocumentId, attachmentName ?? 'justificatif')}
+                      className="text-brand-600 hover:text-brand-700"
+                    >
+                      {tr('NoteFraisList.justificatif.telecharger')}
+                    </button>
+                  )}
                   <button
                     id="NoteFraisList.retirer"
                     type="button"
@@ -693,6 +733,7 @@ export function NoteFraisList() {
                       if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
                       setAttachmentUrl(null)
                       setAttachmentName(null)
+                      setAttachmentDocumentId(null)
                     }}
                     className="text-red-600 hover:text-red-800"
                   >
@@ -701,8 +742,12 @@ export function NoteFraisList() {
                 </span>
               )}
             </div>
-            {ocrPending && (
-              <p id="NoteFraisList.lecture.de.la.facture.en.cours.ocr" className="mt-2 text-sm text-brand-700">{tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}</p>
+            {(uploading || ocrPending) && (
+              <p id="NoteFraisList.lecture.de.la.facture.en.cours.ocr" className="mt-2 text-sm text-brand-700">
+                {uploading
+                  ? tr('NoteFraisList.justificatif.televersement')
+                  : tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}
+              </p>
             )}
             {attachmentUrl && (
               <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">

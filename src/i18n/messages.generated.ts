@@ -112,7 +112,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "Consultants.eur": "EUR",
   "Consultants.format.attendu": "Format attendu :",
   "Consultants.fr": "FR",
-  "Consultants.gerez.votre.equipe.de.consultants": "Gérez votre équipe de consultants",
+  "Consultants.gerez.votre.equipe.de.consultants": "Gérez votre équipe de collaborateurs",
   "Consultants.importer.des.consultants.csv": "Importer des consultants (CSV)",
   "Consultants.le.collaborateur.devra.changer.son.mot.de.passe.a.la.premier": "Le collaborateur devra changer son mot de passe à la première connexion.",
   "Consultants.manager": "Manager",
@@ -1050,6 +1050,11 @@ export const EXTRACTED_FR: Record<string, string> = {
   "CraPdf.error.incomplete": "Tous les jours ouvrés doivent être renseignés pour générer le CRA Interne.",
   "CraPdf.error.status": "L'export PDF n'est pas disponible pour ce CRA.",
   "CraPdf.error.empty": "Aucune donnée à exporter.",
+  "NoteFraisList.justificatif.obligatoire": "Justificatif obligatoire (facture, reçu…)",
+  "NoteFraisList.justificatif.obligatoire.erreur": "Le justificatif (facture, reçu) est obligatoire.",
+  "NoteFraisList.justificatif.telecharger": "Télécharger le justificatif",
+  "NoteFraisList.justificatif.remplacer": "Remplacer",
+  "NoteFraisList.justificatif.televersement": "Téléversement du justificatif…",
 }
 
 export const EXTRACTED_EN: Record<string, string> = {
@@ -1166,7 +1171,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "Consultants.eur": "EUR",
   "Consultants.format.attendu": "Expected format:",
   "Consultants.fr": "EN",
-  "Consultants.gerez.votre.equipe.de.consultants": "Manage your team of consultants",
+  "Consultants.gerez.votre.equipe.de.consultants": "Manage your team of collaborators",
   "Consultants.importer.des.consultants.csv": "Import consultants (CSV)",
   "Consultants.le.collaborateur.devra.changer.son.mot.de.passe.a.la.premier": "The employee will have to change their password at the first connection.",
   "Consultants.manager": "Manager",
@@ -2104,6 +2109,11 @@ export const EXTRACTED_EN: Record<string, string> = {
   "CraPdf.error.incomplete": "All working days must be filled to generate the Internal CRA.",
   "CraPdf.error.status": "PDF export is not available for this CRA.",
   "CraPdf.error.empty": "No data to export.",
+  "NoteFraisList.justificatif.obligatoire": "Receipt required (invoice, receipt…)",
+  "NoteFraisList.justificatif.obligatoire.erreur": "The receipt (invoice, receipt) is required.",
+  "NoteFraisList.justificatif.telecharger": "Download receipt",
+  "NoteFraisList.justificatif.remplacer": "Replace",
+  "NoteFraisList.justificatif.televersement": "Uploading receipt…",
 }
 
 export const EXTRACTED_AR: Record<string, string> = {
@@ -2220,7 +2230,7 @@ export const EXTRACTED_AR: Record<string, string> = {
   "Consultants.eur": "يورو",
   "Consultants.format.attendu": "الشكل المتوقع:",
   "Consultants.fr": "إن",
-  "Consultants.gerez.votre.equipe.de.consultants": "إدارة فريقك من الاستشاريين",
+  "Consultants.gerez.votre.equipe.de.consultants": "إدارة فريقك من المتعاونين",
   "Consultants.importer.des.consultants.csv": "مستشارو الاستيراد (CSV)",
   "Consultants.le.collaborateur.devra.changer.son.mot.de.passe.a.la.premier": "سيتعين على الموظف تغيير كلمة المرور الخاصة به عند الاتصال الأول.",
   "Consultants.manager": "مدير",
@@ -3158,4 +3168,9 @@ export const EXTRACTED_AR: Record<string, string> = {
   "CraPdf.error.incomplete": "يجب تعبئة جميع أيام العمل لإنشاء CRA الداخلي.",
   "CraPdf.error.status": "تصدير PDF غير متاح لـ CRA هذا.",
   "CraPdf.error.empty": "لا توجد بيانات للتصدير.",
+  "NoteFraisList.justificatif.obligatoire": "إيصال مطلوب (فاتورة، إيصال…)",
+  "NoteFraisList.justificatif.obligatoire.erreur": "الإيصال (فاتورة، إيصال) مطلوب.",
+  "NoteFraisList.justificatif.telecharger": "تنزيل الإيصال",
+  "NoteFraisList.justificatif.remplacer": "استبدال",
+  "NoteFraisList.justificatif.televersement": "جارٍ تحميل الإيصال…",
 }

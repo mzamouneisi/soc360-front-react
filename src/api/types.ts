@@ -543,6 +543,8 @@ export interface NoteFraisDto {
   paidAt: string | null
   comment: string | null
   infosFacture?: string | null
+  documentId?: number | null
+  documentName?: string | null
   lines: NoteFraisLineDto[]
 }
 
@@ -564,6 +566,8 @@ export interface CreateNoteFraisRequest {
   year: number
   lines: NoteFraisLineRequest[]
   infosFacture?: string | null
+  documentId?: number | null
+  documentName?: string | null
 }
 
 export interface HrDocumentDto {
