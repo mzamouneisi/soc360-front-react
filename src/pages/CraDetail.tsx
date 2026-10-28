@@ -11,6 +11,7 @@ import { ApiError } from '../api/client'
 import { documentsApi } from '../api/documents'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
+import { useI18n } from '../i18n'
 import { usePagination } from '../lib/usePagination'
 import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, Pagination } from '../components/data'
@@ -38,6 +39,13 @@ import type {
   UnavailabilityType,
 } from '../api/types'
 import type { ReactNode } from 'react'
+
+interface ExportMission {
+  projectId: number
+  clientName: string
+  missionName: string
+  days: number
+}
 
 interface EditableActivity {
   id: string
@@ -251,6 +259,7 @@ export function CraDetail({
   const navigate = useNavigate()
   const { user } = useAuth()
   const dt = useDynamicTranslate()
+  const { language } = useI18n()
 
   const { data: cra, loading, error, setData, reload } = useAsync(
     () => crasApi.getById(id),
@@ -285,6 +294,11 @@ export function CraDetail({
   const [absenceOpen, setAbsenceOpen] = useState(false)
   const [absenceBusy, setAbsenceBusy] = useState<number | null>(null)
   const [pendingAbsencesOpen, setPendingAbsencesOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
+  const [exportType, setExportType] = useState<'client' | 'internal'>('client')
+  const [exportProjectId, setExportProjectId] = useState('')
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [exportSubmitting, setExportSubmitting] = useState(false)
 
   useEffect(() => {
     if (cra) setDays(cra.days.map(dayToEditable))
@@ -369,6 +383,37 @@ export function CraDetail({
     return null
   }, [days, activityMap])
 
+  const exportMissions = useMemo<ExportMission[]>(() => {
+    const map = new Map<number, ExportMission>()
+    for (const day of days) {
+      if (day.dayType !== 'WORKED') continue
+      for (const item of day.activities) {
+        const activity = activityMap.get(item.activityId)
+        const code = (activity?.type?.code ?? '').toUpperCase()
+        const project = activity?.project
+        if (!project) continue
+        if (code.startsWith('CONGE') || code === 'FORMATION' || code === 'INTER_CONTRAT') continue
+        const missionDays = Number(item.days) || 0
+        if (missionDays <= 0) continue
+        const existing = map.get(project.id)
+        if (existing) {
+          existing.days += missionDays
+        } else {
+          map.set(project.id, {
+            projectId: project.id,
+            clientName: project.clientName ?? '—',
+            missionName: project.name,
+            days: missionDays,
+          })
+        }
+      }
+    }
+    return [...map.values()].sort(
+      (a, b) =>
+        a.clientName.localeCompare(b.clientName) || a.missionName.localeCompare(b.missionName),
+    )
+  }, [days, activityMap])
+
   const incompleteDays = useMemo(() => {
     if (cra?.type === 'CONGE') return []
     return days.filter((d) => !dayIsValid(d))
@@ -391,6 +436,19 @@ export function CraDetail({
   const canValidate = isAdminOrResp || isManagerOfConsultant
   const ownerId = user?.consultantId ?? user?.id ?? null
   const isOwner = ownerId != null && cra.consultantId === ownerId
+
+  // Export PDF : un seul bouton. Le CRA Client est possible dès qu'une mission comporte
+  // des jours travaillés ; le CRA Interne exige que tous les jours ouvrés soient renseignés.
+  const exportStatusAllowed =
+    cra.type === 'CRA' &&
+    (cra.status === 'DRAFT' || cra.status === 'SUBMITTED' || cra.status === 'VALIDATED')
+  const hasMissionDays = exportMissions.length > 0
+  const allWorkingDaysFilled =
+    days.length > 0 &&
+    days.every((d) => d.dayType !== 'WORKED' || d.activities.some((a) => Number(a.days) > 0))
+  const canExportClient = exportStatusAllowed && hasMissionDays
+  const canExportInternal = exportStatusAllowed && allWorkingDaysFilled
+  const canExportPdf = canExportClient || canExportInternal
 
   const editable = cra.status === 'DRAFT' || cra.status === 'REJECTED' || cra.status === 'CANCELLED'
   // Le propriétaire (quel que soit son rôle) ne peut plus modifier un CRA/Indispo validé : il peut
@@ -835,21 +893,52 @@ export function CraDetail({
     setHistoryOpen(true)
   }
 
-  async function handleExportClientPdf() {
-    if (!cra) return
-    try {
-      await crasApi.exportClientPdf(cra.id)
-    } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
-    }
+  function openExportDialog() {
+    if (!cra || !canExportPdf) return
+    setExportError(null)
+    setExportType(hasMissionDays ? 'client' : 'internal')
+    setExportProjectId(exportMissions.length === 1 ? String(exportMissions[0].projectId) : '')
+    setExportOpen(true)
   }
 
-  async function handleExportCompanyPdf() {
+  function closeExportDialog() {
+    if (exportSubmitting) return
+    setExportOpen(false)
+    setExportError(null)
+  }
+
+  async function handleGenerateExport() {
     if (!cra) return
+    setExportError(null)
+    if (exportType === 'client') {
+      if (!canExportClient || !exportProjectId) {
+        setExportError(tr('CraPdf.error.noMission'))
+        return
+      }
+    } else if (!canExportInternal) {
+      setExportError(tr('CraPdf.error.incomplete'))
+      return
+    }
+    setExportSubmitting(true)
+    // Onglet ouvert immédiatement (sinon le navigateur bloque l'ouverture après l'appel async).
+    const target = window.open('', '_blank')
     try {
-      await crasApi.exportCompanyPdf(cra.id)
+      const url =
+        exportType === 'client'
+          ? await crasApi.exportClientUrl(cra.id, Number(exportProjectId), language)
+          : await crasApi.exportCompanyUrl(cra.id, language)
+      if (target) {
+        target.location.href = url
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      }
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+      setExportOpen(false)
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+      target?.close()
+      setExportError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setExportSubmitting(false)
     }
   }
 
@@ -957,8 +1046,15 @@ export function CraDetail({
           )}
           <span id="CraDetail.total.jours" className="text-sm text-gray-500">{cra.totalWorkedDays} {tr('CraDetail.j')}</span>
           <IconButton icon="history" label={tr('CraDetail.historique')} variant="history" onClick={openHistory} id="CraDetail.historique" />
-          <InlineButton id="CraDetail.export.pdf.client" onClick={handleExportClientPdf}>{tr('CraDetail.export.pdf.client')}</InlineButton>
-          <InlineButton id="CraDetail.export.pdf.ma.societe" onClick={handleExportCompanyPdf}>{tr('CraDetail.export.pdf.ma.societe')}</InlineButton>
+          <InlineButton
+            id="CraPdf.export"
+            variant="primary"
+            onClick={openExportDialog}
+            disabled={!canExportPdf}
+            title={tr('CraPdf.export')}
+          >
+            {tr('CraPdf.export')}
+          </InlineButton>
         </div>
       </div>
 
@@ -1532,6 +1628,132 @@ export function CraDetail({
           onConfirm={(comment) => void handleSendBack(comment)}
           onClose={() => setSendBackOpen(false)}
         />
+      )}
+
+      {exportOpen && (
+        <Modal
+          open
+          title={tr('CraPdf.dialog.title')}
+          titleId="CraPdf.dialog.title"
+          onClose={closeExportDialog}
+          footer={
+            <>
+              <Button
+                id="CraPdf.cancel"
+                type="button"
+                variant="neutral"
+                className="!w-auto"
+                onClick={closeExportDialog}
+                disabled={exportSubmitting}
+              >
+                {tr('CraPdf.cancel')}
+              </Button>
+              <Button
+                id="CraPdf.generate"
+                type="button"
+                className="!w-auto"
+                onClick={() => void handleGenerateExport()}
+                disabled={exportSubmitting}
+              >
+                {exportSubmitting ? <Spinner className="border-white border-t-transparent" /> : null}
+                {tr('CraPdf.generate')}
+              </Button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            {exportError && <ErrorBlock id="CraPdf.error" message={exportError} />}
+            <fieldset className="space-y-2">
+              <legend id="CraPdf.type" className="text-sm font-medium text-gray-700">
+                {tr('CraPdf.type')}
+              </legend>
+              <label className="flex items-start gap-2 text-sm text-gray-700">
+                <input
+                  id="CraPdf.type.client"
+                  type="radio"
+                  name="cra-export-type"
+                  className="mt-0.5"
+                  checked={exportType === 'client'}
+                  disabled={!canExportClient}
+                  onChange={() => {
+                    setExportType('client')
+                    setExportError(null)
+                    if (!exportProjectId && exportMissions.length === 1) {
+                      setExportProjectId(String(exportMissions[0].projectId))
+                    }
+                  }}
+                />
+                <span>
+                  <span id="CraPdf.type.client.label" className="font-medium">
+                    {tr('CraPdf.type.client')}
+                  </span>
+                  <span id="CraPdf.help.client" className="block text-xs text-gray-500">
+                    {tr('CraPdf.help.client')}
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 text-sm text-gray-700">
+                <input
+                  id="CraPdf.type.internal"
+                  type="radio"
+                  name="cra-export-type"
+                  className="mt-0.5"
+                  checked={exportType === 'internal'}
+                  disabled={!canExportInternal}
+                  onChange={() => {
+                    setExportType('internal')
+                    setExportError(null)
+                  }}
+                />
+                <span>
+                  <span id="CraPdf.type.internal.label" className="font-medium">
+                    {tr('CraPdf.type.internal')}
+                  </span>
+                  <span id="CraPdf.help.internal" className="block text-xs text-gray-500">
+                    {tr('CraPdf.help.internal')}
+                  </span>
+                </span>
+              </label>
+            </fieldset>
+
+            {exportType === 'client' && exportMissions.length > 1 && (
+              <Field label={tr('CraPdf.mission')} id="CraPdf.mission">
+                <Select
+                  id="CraPdf.mission.select"
+                  value={exportProjectId}
+                  onChange={(e) => {
+                    setExportProjectId(e.target.value)
+                    setExportError(null)
+                  }}
+                >
+                  <option id="CraPdf.select.mission" value="">
+                    {tr('CraPdf.select.mission')}
+                  </option>
+                  {exportMissions.map((mission) => (
+                    <option
+                      id={`CraPdf.mission.option.${mission.projectId}`}
+                      key={mission.projectId}
+                      value={mission.projectId}
+                    >
+                      {mission.clientName} – {mission.missionName}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
+            {exportType === 'client' && exportMissions.length === 1 && (
+              <p id="CraPdf.mission.value" className="text-sm text-gray-700">
+                <span className="font-medium">{tr('CraPdf.mission')} : </span>
+                {exportMissions[0].clientName} – {exportMissions[0].missionName}
+              </p>
+            )}
+            {!canExportPdf && (
+              <p id="CraPdf.error.unavailable" className="text-sm text-red-600">
+                {tr('CraPdf.error.status')}
+              </p>
+            )}
+          </div>
+        </Modal>
       )}
 
       {restrictionDialog && (

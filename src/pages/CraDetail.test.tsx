@@ -16,6 +16,8 @@ const {
   declareAbsenceMock,
   absenceValidateMock,
   absenceRejectMock,
+  exportClientUrlMock,
+  exportCompanyUrlMock,
   activitiesFindAllMock,
   holidaysFindByCountryYearMock,
   socHolidaysListMock,
@@ -29,6 +31,8 @@ const {
   declareAbsenceMock: vi.fn(),
   absenceValidateMock: vi.fn(),
   absenceRejectMock: vi.fn(),
+  exportClientUrlMock: vi.fn(),
+  exportCompanyUrlMock: vi.fn(),
   activitiesFindAllMock: vi.fn(),
   holidaysFindByCountryYearMock: vi.fn(),
   socHolidaysListMock: vi.fn(),
@@ -54,6 +58,8 @@ vi.mock('../api/cras', () => ({
     invalidateRange: invalidateRangeMock,
     history: historyMock,
     declareAbsence: declareAbsenceMock,
+    exportClientUrl: exportClientUrlMock,
+    exportCompanyUrl: exportCompanyUrlMock,
   },
 }))
 
@@ -84,6 +90,7 @@ vi.mock('../api/socHolidays', () => ({
 
 afterEach(() => {
   vi.clearAllMocks()
+  vi.restoreAllMocks()
   setTranslationState('fr', {})
   userMock.value = null as unknown as UserDto
 })
@@ -1354,6 +1361,121 @@ describe('CraDetail', () => {
       1,
       expect.objectContaining({ type: 'CONGE_PAYE' }),
     ))
+  })
+
+
+  const missionActivity = {
+    id: 5,
+    name: 'Développement',
+    description: null,
+    price: 0,
+    currency: 'EUR',
+    startDate: null,
+    endDate: null,
+    type: { id: 1, code: 'MISSION', labelFr: 'Mission' },
+    project: { id: 7, name: 'Mission SFR', clientName: 'SFR' },
+    consultant: { id: 10, firstName: 'Alice', lastName: 'Martin' },
+    soc: { id: 5, name: 'SOC Test' },
+    active: true,
+    indispo: false,
+    weekendAllowed: false,
+    holidayAllowed: false,
+  }
+
+  function openNewTabMock() {
+    const target = { location: { href: '' }, close: vi.fn() }
+    vi.spyOn(window, 'open').mockReturnValue(target as unknown as Window)
+    return target
+  }
+
+  it('un seul bouton Export PDF ouvre le dialogue et génère le CRA Client', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(true, 'DRAFT'))
+    activitiesFindAllMock.mockResolvedValue([missionActivity])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+    exportClientUrlMock.mockResolvedValue('blob:client')
+
+    renderDetail()
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+
+    expect(screen.getAllByRole('button', { name: 'Export PDF' })).toHaveLength(1)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Export PDF' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: 'Export PDF' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('CRA Client')).toBeInTheDocument()
+    expect(within(dialog).getByText('SFR – Mission SFR')).toBeInTheDocument()
+    const target = openNewTabMock()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Générer le PDF' }))
+
+    await waitFor(() =>
+      expect(exportClientUrlMock).toHaveBeenCalledWith(1, 7, expect.any(String)),
+    )
+    expect(target.location.href).toBe('blob:client')
+  })
+
+  it('désactive l’option CRA Interne tant que tous les jours ouvrés ne sont pas renseignés', async () => {
+    userMock.value = managerUser
+    const draft = cra(true, 'DRAFT')
+    draft.days = draft.days.map((d) =>
+      d.dayType === 'WORKED' && d.date === '2026-08-03' ? { ...d, activities: [] } : d,
+    )
+    getByIdMock.mockResolvedValue(draft)
+    activitiesFindAllMock.mockResolvedValue([missionActivity])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Export PDF' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: 'Export PDF' }))
+
+    const internal = await screen.findByRole('radio', { name: /CRA Interne/ })
+    expect(internal).toBeDisabled()
+    expect(screen.getByRole('radio', { name: /CRA Client/ })).toBeChecked()
+  })
+
+  it('sélectionne le CRA Interne quand aucune mission n’est travaillée mais que le mois est complet', async () => {
+    userMock.value = managerUser
+    getByIdMock.mockResolvedValue(cra(true, 'DRAFT'))
+    activitiesFindAllMock.mockResolvedValue([
+      { ...missionActivity, type: { id: 2, code: 'CONGE_PAYE', labelFr: 'Congé payé' } },
+    ])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+    exportCompanyUrlMock.mockResolvedValue('blob:interne')
+
+    renderDetail()
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Export PDF' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: 'Export PDF' }))
+
+    const dialog = await screen.findByRole('dialog')
+    const internal = within(dialog).getByRole('radio', { name: /CRA Interne/ })
+    expect(internal).toBeChecked()
+    expect(within(dialog).getByRole('radio', { name: /CRA Client/ })).toBeDisabled()
+
+    const target = openNewTabMock()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Générer le PDF' }))
+    await waitFor(() => expect(exportCompanyUrlMock).toHaveBeenCalledWith(1, expect.any(String)))
+    expect(target.location.href).toBe('blob:interne')
+  })
+
+  it('désactive Export PDF sans mission travaillée et avec un mois incomplet', async () => {
+    userMock.value = managerUser
+    const empty = cra(true, 'DRAFT')
+    empty.days = empty.days.map((d) =>
+      d.dayType === 'WORKED' ? { ...d, activities: [] } : d,
+    )
+    getByIdMock.mockResolvedValue(empty)
+    activitiesFindAllMock.mockResolvedValue([missionActivity])
+    holidaysFindByCountryYearMock.mockResolvedValue([])
+    socHolidaysListMock.mockResolvedValue([])
+
+    renderDetail()
+    await screen.findByText('Alice Martin', { exact: false }, { timeout: 3000 })
+    expect(screen.getByRole('button', { name: 'Export PDF' })).toBeDisabled()
   })
 
   it('masque « Déclarer une absence » pour un admin', async () => {
