@@ -53,7 +53,7 @@ describe('DocumentAttachment', () => {
     const fileInput = screen.getByLabelText('Fichier')
     expect(fileInput).toHaveAttribute(
       'accept',
-      '.jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf',
+      '.jpg,.jpeg,.png,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.rtf,image/jpeg,image/png,application/pdf,text/plain',
     )
     const file = new File(['contenu'], 'justificatif.pdf', { type: 'application/pdf' })
     fireEvent.change(fileInput, { target: { files: [file] } })

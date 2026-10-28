@@ -335,7 +335,7 @@ describe('NoteFraisList', () => {
 
     const dialog = await screen.findByRole('dialog')
     await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
-    expect(within(dialog).getByAltText('Aperçu de la facture')).toHaveAttribute(
+    expect(within(dialog).getByAltText(/Aperçu de l.image/)).toHaveAttribute(
       'src',
       'blob:preview',
     )

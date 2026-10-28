@@ -5,7 +5,6 @@ import { ApiError } from '../api/client'
 import { Button, Field, IconButton, Input, Textarea } from './ui'
 import { Modal } from './data'
 import { DocumentPreview } from './DocumentPreview'
-import { isImageFile } from '../lib/ocr'
 import { dialog } from './dialog'
 
 export interface AttachedDocument {
@@ -62,11 +61,6 @@ export function DocumentAttachment({
 
   useEffect(() => {
     if (!value) {
-      setExistingPreviewUrl(null)
-      return
-    }
-    const previewable = isImageFile(value.name) || /\.pdf$/i.test(value.name)
-    if (!previewable) {
       setExistingPreviewUrl(null)
       return
     }
@@ -188,8 +182,8 @@ export function DocumentAttachment({
           <span id="document.attachment.none" className="text-sm text-gray-400">{tr('document.attachment.none')}</span>
         )}
       </div>
-      {value && existingPreviewUrl && (
-        <DocumentPreview id="document.attachment.preview" url={existingPreviewUrl} name={value.name} className="mt-2" />
+      {value && (
+        <DocumentPreview id="document.attachment.preview" url={existingPreviewUrl ?? undefined} name={value.name} className="mt-2" />
       )}
 
       <Modal
@@ -213,7 +207,7 @@ export function DocumentAttachment({
             <Input
               id="document.attachment.file.input"
               type="file"
-              accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+              accept=".jpg,.jpeg,.png,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.rtf,image/jpeg,image/png,application/pdf,text/plain"
               aria-label={tr('document.attachment.file')}
               onChange={(e) => {
                 setFile(e.target.files?.[0] ?? null)

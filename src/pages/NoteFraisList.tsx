@@ -11,6 +11,7 @@ import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { Card, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { DocumentPreview } from '../components/DocumentPreview'
 import { dialog } from '../components/dialog'
 import {
   NOTE_FRAIS_CATEGORIES,
@@ -245,15 +246,20 @@ export function NoteFraisList() {
       setAttachmentUrl(URL.createObjectURL(file))
 
       // 2. Le texte du document est ensuite placé dans la zone de texte prévue.
+      const textFile = /\.(txt|csv|md|json|xml|log)$/i.test(file.name)
+      const pdfFile = /\.pdf$/i.test(file.name)
+      const extractable = textFile || isImageFile(file.name) || pdfFile
       let text = ''
-      if (isImageFile(file.name)) {
+      if (textFile) {
+        text = await file.text()
+      } else if (isImageFile(file.name)) {
         setOcrPending(true)
         try {
           text = await ocrImageText(file)
         } finally {
           setOcrPending(false)
         }
-      } else {
+      } else if (pdfFile) {
         const result = await noteFraisApi.extractText(file)
         text = result.text ?? ''
       }
@@ -264,7 +270,7 @@ export function NoteFraisList() {
           infosFacture: text,
           lines: fillLineFromText(prev.lines, text, file.name),
         }))
-      } else {
+      } else if (extractable) {
         setFormError(
           isImageFile(file.name)
             ? 'OCR non disponible pour cette image : saisissez les informations manuellement.'
@@ -597,7 +603,7 @@ export function NoteFraisList() {
                 <input
                   id="NoteFraisList.joindre.une.facture.image.pdf.file"
                   type="file"
-                  accept="image/*,application/pdf"
+                  accept="image/*,application/pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.rtf"
                   aria-label={tr('NoteFraisList.joindre.une.facture.image.pdf')}
                   disabled={attachmentDocumentId != null || uploading}
                   className="hidden"
@@ -640,14 +646,13 @@ export function NoteFraisList() {
                   : tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}
               </p>
             )}
-            {attachmentUrl && (
-              <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
-                {attachmentName && isImageFile(attachmentName) ? (
-                  <img id="NoteFraisList.apercu.image" src={attachmentUrl} alt={tr('NoteFraisList.apercu.de.la.facture')} className="max-h-72 w-full object-contain" />
-                ) : (
-                  <iframe id="NoteFraisList.apercu.document" src={attachmentUrl} title={tr('NoteFraisList.apercu.du.document')} className="h-72 w-full" />
-                )}
-              </div>
+            {attachmentUrl && attachmentName && (
+              <DocumentPreview
+                id="NoteFraisList.apercu"
+                url={attachmentUrl}
+                name={attachmentName}
+                className="mt-3"
+              />
             )}
           </div>
 
