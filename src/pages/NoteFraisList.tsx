@@ -686,7 +686,7 @@ export function NoteFraisList() {
                       })
                     }
                   />
-                  <div className="sm:col-span-4 min-w-0">
+                  <div className="sm:col-span-2 min-w-0">
                     <Input
                       id={`NoteFraisList.line.${i}.date`}
                       type="date"
