@@ -745,6 +745,37 @@ describe('Unavailability', () => {
     expect(createMock.mock.calls[0][0].consultantId).toBe(1)
   })
 
+  it('affiche en lecture seule l’indisponibilité validée du propriétaire', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([
+      item({
+        status: 'VALIDATED',
+        consultantId: 1,
+        documentId: 77,
+        documentName: 'facture.pdf',
+      }),
+    ])
+    summariesMock.mockResolvedValue([
+      { id: 1, fullName: 'M Manager', position: null, email: null },
+    ])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+    await screen.findByText('Validée')
+    fireEvent.click(document.getElementById('Unavailability.row.1') as HTMLElement)
+
+    expect(
+      await screen.findByText('Lecture seule : cette indisponibilité est validée.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Enregistrer' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Fermer' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Retirer le document' }),
+    ).toBeDisabled()
+  })
+
   it('permet au manager de modifier une indisponibilité validée', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([item({ status: 'VALIDATED', comment: 'Déjà validée' })])
