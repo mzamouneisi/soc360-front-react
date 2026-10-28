@@ -297,8 +297,17 @@ describe('NoteFraisList', () => {
     fireEvent.change(within(dialog).getByPlaceholderText('Nom enseigne'), {
       target: { value: 'SNCF' },
     })
+    fireEvent.change(within(dialog).getByPlaceholderText('Libellé / action'), {
+      target: { value: 'Train' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Adresse'), {
+      target: { value: '1 rue de Paris' },
+    })
     fireEvent.change(within(dialog).getByPlaceholderText('Montant HT €'), {
       target: { value: '45' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Montant TTC €'), {
+      target: { value: '55' },
     })
 
     await waitFor(() => {
@@ -356,8 +365,14 @@ describe('NoteFraisList', () => {
     fireEvent.change(within(dialog).getByPlaceholderText('Libellé / action'), {
       target: { value: 'Train' },
     })
+    fireEvent.change(within(dialog).getByPlaceholderText('Adresse'), {
+      target: { value: '1 rue de Paris' },
+    })
     fireEvent.change(within(dialog).getByPlaceholderText('Montant HT €'), {
       target: { value: '45' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Montant TTC €'), {
+      target: { value: '55' },
     })
     const createButton = within(dialog).getByRole('button', { name: 'Créer' })
     await waitFor(() => expect(createButton).toBeEnabled())
@@ -374,9 +389,9 @@ describe('NoteFraisList', () => {
             category: 'Déplacement',
             label: 'Train',
             montantHT: 45,
-            montantTTC: 0,
+            montantTTC: 55,
             enseigne: 'SNCF',
-            adresse: null,
+            adresse: '1 rue de Paris',
             reimbursed: false,
             comment: null,
           },

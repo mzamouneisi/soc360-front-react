@@ -274,8 +274,11 @@ export function NoteFraisList() {
       (l) =>
         !l.enseigne.trim() ||
         !l.category.trim() ||
+        !l.label.trim() ||
+        !l.adresse.trim() ||
         !l.date ||
-        (!Number(l.montantHT) && !Number(l.montantTTC)),
+        Number(l.montantHT) <= 0 ||
+        Number(l.montantTTC) <= 0,
     )
     if (invalidLine) {
       setFormError(tr('NoteFraisList.champs.obligatoires'))
@@ -353,8 +356,11 @@ export function NoteFraisList() {
       (l) =>
         l.enseigne.trim() &&
         l.category.trim() &&
+        l.label.trim() &&
+        l.adresse.trim() &&
         l.date &&
-        (Number(l.montantHT) > 0 || Number(l.montantTTC) > 0),
+        Number(l.montantHT) > 0 &&
+        Number(l.montantTTC) > 0,
     )
 
   const formIsValid =
@@ -746,6 +752,8 @@ export function NoteFraisList() {
                     id={`NoteFraisList.line.${i}.label`}
                     placeholder={tr('NoteFraisList.libelle.action')}
                     title={tr('NoteFraisList.libelle.action')}
+                    required
+                    aria-required="true"
                     className="sm:col-span-2"
                     value={line.label}
                     onChange={(e) =>
@@ -759,6 +767,8 @@ export function NoteFraisList() {
                     id={`NoteFraisList.line.${i}.adresse`}
                     placeholder={tr('NoteFraisList.adresse')}
                     title={tr('NoteFraisList.adresse')}
+                    required
+                    aria-required="true"
                     className="sm:col-span-4"
                     value={line.adresse}
                     onChange={(e) =>
@@ -775,6 +785,7 @@ export function NoteFraisList() {
                     min="0"
                     placeholder={tr('NoteFraisList.montant.ht')}
                     title={tr('NoteFraisList.montant.ht')}
+                    required
                     aria-required="true"
                     className="sm:col-span-2"
                     value={line.montantHT}
@@ -792,6 +803,7 @@ export function NoteFraisList() {
                     min="0"
                     placeholder={tr('NoteFraisList.montant.ttc')}
                     title={tr('NoteFraisList.montant.ttc')}
+                    required
                     aria-required="true"
                     className="sm:col-span-2"
                     value={line.montantTTC}
