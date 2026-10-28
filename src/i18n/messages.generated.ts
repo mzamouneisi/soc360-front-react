@@ -1057,6 +1057,8 @@ export const EXTRACTED_FR: Record<string, string> = {
   "NoteFraisList.justificatif.televersement": "Téléversement du justificatif…",
   "NoteFraisList.justificatif.obligatoire.titre": "Justificatif obligatoire",
   "NoteFraisList.champs.obligatoires": "Nom d'enseigne, catégorie, date et montant obligatoires.",
+  "NoteFraisList.date": "Date",
+  "NoteFraisList.categorie": "Catégorie",
 
 }
 
@@ -2119,6 +2121,8 @@ export const EXTRACTED_EN: Record<string, string> = {
   "NoteFraisList.justificatif.televersement": "Uploading receipt…",
   "NoteFraisList.justificatif.obligatoire.titre": "Receipt required",
   "NoteFraisList.champs.obligatoires": "Store name, category, date and amount are required.",
+  "NoteFraisList.date": "Date",
+  "NoteFraisList.categorie": "Category",
 
 }
 
@@ -3181,4 +3185,6 @@ export const EXTRACTED_AR: Record<string, string> = {
   "NoteFraisList.justificatif.televersement": "جارٍ تحميل الإيصال…",
   "NoteFraisList.justificatif.obligatoire.titre": "إيصال مطلوب",
   "NoteFraisList.champs.obligatoires": "اسم المتجر والفئة والتاريخ والمبلغ مطلوبة.",
+  "NoteFraisList.date": "التاريخ",
+  "NoteFraisList.categorie": "الفئة",
 }

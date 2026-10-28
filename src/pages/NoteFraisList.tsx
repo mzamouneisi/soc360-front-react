@@ -361,6 +361,7 @@ export function NoteFraisList() {
             <RefreshButton onClick={reload} />
             <Select
               id="NoteFraisList.year.select"
+              title={tr('NoteFraisList.annee')}
               className="w-auto"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
@@ -614,6 +615,7 @@ export function NoteFraisList() {
               <Field label={tr('NoteFraisList.consultant')} id="NoteFraisList.consultant">
                 <Select
                   id="NoteFraisList.consultant.select"
+                  title={tr('NoteFraisList.consultant')}
                   value={form.consultantId}
                   onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
                 >
@@ -629,6 +631,7 @@ export function NoteFraisList() {
             <Field label={tr('NoteFraisList.mois')} id="NoteFraisList.mois">
               <Select
                 id="NoteFraisList.mois.select"
+                title={tr('NoteFraisList.mois')}
                 value={form.month}
                 onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
               >
@@ -642,6 +645,7 @@ export function NoteFraisList() {
             <Field label={tr('NoteFraisList.annee')} id="NoteFraisList.annee">
               <Select
                 id="NoteFraisList.annee.select"
+                title={tr('NoteFraisList.annee')}
                 value={form.year}
                 onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
               >
@@ -670,6 +674,7 @@ export function NoteFraisList() {
                   <Input
                     id={`NoteFraisList.line.${i}.enseigne`}
                     placeholder={tr('NoteFraisList.nom.enseigne')}
+                    title={tr('NoteFraisList.nom.enseigne')}
                     required
                     aria-required="true"
                     className="sm:col-span-2"
@@ -684,9 +689,10 @@ export function NoteFraisList() {
                   <Input
                     id={`NoteFraisList.line.${i}.date`}
                     type="date"
+                    title={tr('NoteFraisList.date')}
                     required
                     aria-required="true"
-                    className="sm:col-span-3"
+                    className="sm:col-span-4"
                     value={line.date}
                     onChange={(e) =>
                       setForm({
@@ -697,6 +703,7 @@ export function NoteFraisList() {
                   />
                   <Select
                     id={`NoteFraisList.line.${i}.category`}
+                    title={tr('NoteFraisList.categorie')}
                     required
                     aria-required="true"
                     className="sm:col-span-2"
@@ -717,6 +724,7 @@ export function NoteFraisList() {
                   <Input
                     id={`NoteFraisList.line.${i}.label`}
                     placeholder={tr('NoteFraisList.libelle.action')}
+                    title={tr('NoteFraisList.libelle.action')}
                     className="sm:col-span-2"
                     value={line.label}
                     onChange={(e) =>
@@ -729,6 +737,7 @@ export function NoteFraisList() {
                   <Input
                     id={`NoteFraisList.line.${i}.adresse`}
                     placeholder={tr('NoteFraisList.adresse')}
+                    title={tr('NoteFraisList.adresse')}
                     className="sm:col-span-4"
                     value={line.adresse}
                     onChange={(e) =>
@@ -744,6 +753,7 @@ export function NoteFraisList() {
                     step="0.01"
                     min="0"
                     placeholder={tr('NoteFraisList.montant.ht')}
+                    title={tr('NoteFraisList.montant.ht')}
                     aria-required="true"
                     className="sm:col-span-2"
                     value={line.montantHT}
@@ -760,6 +770,7 @@ export function NoteFraisList() {
                     step="0.01"
                     min="0"
                     placeholder={tr('NoteFraisList.montant.ttc')}
+                    title={tr('NoteFraisList.montant.ttc')}
                     aria-required="true"
                     className="sm:col-span-2"
                     value={line.montantTTC}
@@ -774,6 +785,7 @@ export function NoteFraisList() {
                     <input
                       id={`NoteFraisList.line.${i}.reimbursed`}
                       type="checkbox"
+                      title={tr('NoteFraisList.remb')}
                       checked={line.reimbursed}
                       onChange={(e) =>
                         setForm({
@@ -790,6 +802,7 @@ export function NoteFraisList() {
                   <button
                     id={`NoteFraisList.line.${i}.supprimer`}
                     type="button"
+                    title={tr('NoteFraisList.supprimer')}
                     onClick={() =>
                       setForm({ ...form, lines: form.lines.filter((_, j) => j !== i) })
                     }
@@ -813,6 +826,7 @@ export function NoteFraisList() {
           <Field label={tr('NoteFraisList.infos.facture.texte.de.la.facture')} id="NoteFraisList.infos.facture.texte.de.la.facture">
             <Textarea
               id="NoteFraisList.infos.facture.texte.de.la.facture.textarea"
+              title={tr('NoteFraisList.infos.facture.texte.de.la.facture')}
               rows={4}
               placeholder={tr('NoteFraisList.collez.ou.saisissez.ici.le.contenu.de.la.facture.du.ticket')}
               value={form.infosFacture}
