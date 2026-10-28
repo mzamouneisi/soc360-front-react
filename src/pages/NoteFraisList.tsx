@@ -545,12 +545,19 @@ export function NoteFraisList() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <label id="NoteFraisList.joindre.une.facture.image.pdf" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                {tr('NoteFraisList.joindre.une.facture.image.pdf')} *
+              <label
+                id="NoteFraisList.joindre.une.facture.image.pdf"
+                title={tr('NoteFraisList.joindre.une.facture.image.pdf')}
+                aria-disabled={attachmentDocumentId != null || uploading}
+                className={`inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-base font-semibold text-gray-700 transition ${attachmentDocumentId != null || uploading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-50'}`}
+              >
+                +
                 <input
                   id="NoteFraisList.joindre.une.facture.image.pdf.file"
                   type="file"
                   accept="image/*,application/pdf"
+                  aria-label={tr('NoteFraisList.joindre.une.facture.image.pdf')}
+                  disabled={attachmentDocumentId != null || uploading}
                   className="hidden"
                   onChange={handleFile}
                 />

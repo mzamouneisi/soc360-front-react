@@ -394,11 +394,14 @@ describe('NoteFraisList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
 
     const dialog = await screen.findByRole('dialog')
-    fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
+    expect(within(dialog).getByTitle('Joindre une facture (image / PDF)')).toHaveTextContent('+')
+    const fileInput = within(dialog).getByLabelText(/Joindre une facture/)
+    fireEvent.change(fileInput, {
       target: { files: [new File(['fake'], 'facture.png', { type: 'image/png' })] },
     })
 
     await waitFor(() => expect(documentUploadMock).toHaveBeenCalled())
+    await waitFor(() => expect(fileInput).toBeDisabled())
     const download = await within(dialog).findByRole('button', {
       name: 'Télécharger le justificatif',
     })
@@ -481,16 +484,16 @@ describe('NoteFraisList', () => {
     ).toHaveValue('Restaurant McDo 25,50 € le 12/03/2026')
   })
 
-  it('ajoute une nouvelle ligne pour chaque facture OCR dans la même période', async () => {
+  it('désactive le bouton + après le premier justificatif', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
     totalsByMonthMock.mockResolvedValue({})
     totalsByCategoryMock.mockResolvedValue({})
     summariesMock.mockResolvedValue([])
     documentUploadMock.mockResolvedValue({ id: 77, name: 'facture1.png' })
-    ocrImageTextMock
-      .mockResolvedValueOnce('ALLO PIZZA DI NAPOLI\n26 RUE DE BOISSY\n91480 QUINCY SOUS SENART\n16/01/2025 20:44\nNET A PAYER TTC EURO 25.00')
-      .mockResolvedValueOnce('RESTAURATION DE PASSION\n2 Bis AVENUE DE QUINCY\n77380 COMBS LA VILLE\nMardi 14 Janvier 2025\n2 repas 34,00 €\nPAYÉ 34,00 «')
+    ocrImageTextMock.mockResolvedValue(
+      'ALLO PIZZA DI NAPOLI\n26 RUE DE BOISSY\n91480 QUINCY SOUS SENART\n16/01/2025 20:44\nNET A PAYER TTC EURO 25.00',
+    )
 
     renderList()
     fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
@@ -500,22 +503,18 @@ describe('NoteFraisList', () => {
     fireEvent.change(fileInput, {
       target: { files: [new File(['fake'], 'facture1.png', { type: 'image/png' })] },
     })
+
+    await waitFor(() => expect(fileInput).toBeDisabled())
+    expect(within(dialog).getAllByPlaceholderText('Montant TTC €')).toHaveLength(1)
+    expect(within(dialog).getByPlaceholderText('Montant TTC €')).toHaveValue(25)
+    expect(within(dialog).getByPlaceholderText('Nom enseigne')).toHaveValue(
+      'ALLO PIZZA DI NAPOLI',
+    )
+
     fireEvent.change(fileInput, {
       target: { files: [new File(['fake'], 'facture2.png', { type: 'image/png' })] },
     })
-
-    await waitFor(() =>
-      expect(within(dialog).getAllByPlaceholderText('Montant TTC €')).toHaveLength(2),
-    )
-    const amounts = within(dialog).getAllByPlaceholderText('Montant TTC €')
-    expect(amounts[0]).toHaveValue(25)
-    expect(amounts[1]).toHaveValue(34)
-    expect(within(dialog).getAllByPlaceholderText('Nom enseigne')[0]).toHaveValue(
-      'ALLO PIZZA DI NAPOLI',
-    )
-    expect(within(dialog).getAllByPlaceholderText('Nom enseigne')[1]).toHaveValue(
-      'RESTAURATION DE PASSION',
-    )
+    expect(within(dialog).getAllByPlaceholderText('Montant TTC €')).toHaveLength(1)
   })
 
   it('affiche une erreur quand l’OCR ne trouve pas de texte dans l’image', async () => {
