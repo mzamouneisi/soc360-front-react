@@ -272,6 +272,41 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
   })
 
+  it('masque les libellés obligatoires quand tous les champs sont remplis', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentUploadMock.mockResolvedValue({ id: 77, name: 'facture.png' })
+    ocrImageTextMock.mockResolvedValue('')
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(document.getElementById('NoteFraisList.justificatif.obligatoire')).not.toBeNull()
+    expect(document.getElementById('NoteFraisList.champs.obligatoires')).not.toBeNull()
+
+    fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
+      target: { files: [new File(['fake'], 'facture.png', { type: 'image/png' })] },
+    })
+    await waitFor(() =>
+      expect(within(dialog).getByLabelText(/Joindre une facture/)).toBeDisabled(),
+    )
+    fireEvent.change(within(dialog).getByPlaceholderText('Nom enseigne'), {
+      target: { value: 'SNCF' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Montant HT €'), {
+      target: { value: '45' },
+    })
+
+    await waitFor(() => {
+      expect(document.getElementById('NoteFraisList.justificatif.obligatoire')).toBeNull()
+      expect(document.getElementById('NoteFraisList.champs.obligatoires')).toBeNull()
+    })
+  })
+
   it('pré-sélectionne le collaborateur connecté', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
@@ -324,7 +359,9 @@ describe('NoteFraisList', () => {
     fireEvent.change(within(dialog).getByPlaceholderText('Montant HT €'), {
       target: { value: '45' },
     })
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Créer' }))
+    const createButton = within(dialog).getByRole('button', { name: 'Créer' })
+    await waitFor(() => expect(createButton).toBeEnabled())
+    fireEvent.click(createButton)
 
     await waitFor(() =>
       expect(createMock).toHaveBeenCalledWith({
@@ -351,7 +388,7 @@ describe('NoteFraisList', () => {
     )
   })
 
-  it('refuse de créer une note de frais sans justificatif', async () => {
+  it('désactive la création tant que le justificatif manque', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
     totalsByMonthMock.mockResolvedValue({})
@@ -372,11 +409,10 @@ describe('NoteFraisList', () => {
     fireEvent.change(within(dialog).getByPlaceholderText('Montant HT €'), {
       target: { value: '45' },
     })
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Créer' }))
 
-    expect(
-      await within(dialog).findByText('Le justificatif (facture, reçu) est obligatoire.'),
-    ).toBeInTheDocument()
+    await waitFor(() =>
+      expect(within(dialog).getByRole('button', { name: 'Créer' })).toBeDisabled(),
+    )
     expect(createMock).not.toHaveBeenCalled()
   })
 
@@ -409,7 +445,7 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(documentDownloadMock).toHaveBeenCalledWith(77, 'facture.png'))
   })
 
-  it('refuse une ligne sans enseigne ou montant', async () => {
+  it('désactive la création si une ligne est incomplète', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
     totalsByMonthMock.mockResolvedValue({})
@@ -433,14 +469,8 @@ describe('NoteFraisList', () => {
     fireEvent.change(within(dialog).getByPlaceholderText('Libellé / action'), {
       target: { value: 'Train' },
     })
-    const createButton = within(dialog).getByRole('button', { name: 'Créer' })
-    await waitFor(() => expect(createButton).toBeEnabled())
-    fireEvent.click(createButton)
-
     await waitFor(() =>
-      expect(document.getElementById('NoteFraisList.form.error')?.textContent).toContain(
-        "Nom d'enseigne",
-      ),
+      expect(within(dialog).getByRole('button', { name: 'Créer' })).toBeDisabled(),
     )
     expect(createMock).not.toHaveBeenCalled()
   })

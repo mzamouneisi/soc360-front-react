@@ -345,6 +345,21 @@ export function NoteFraisList() {
     }
   }
 
+  const filledLines = form.lines.filter((l) => !isBlankLine(l))
+  const requiredFieldsCompleted =
+    attachmentDocumentId != null &&
+    filledLines.length > 0 &&
+    filledLines.every(
+      (l) =>
+        l.enseigne.trim() &&
+        l.category.trim() &&
+        l.date &&
+        (Number(l.montantHT) > 0 || Number(l.montantTTC) > 0),
+    )
+
+  const formIsValid =
+    requiredFieldsCompleted && (isConsultant || form.consultantId.trim() !== '')
+
   const totalYear = (data ?? []).reduce((sum, nf) => sum + nf.totalAmount, 0)
   const pendingCount = (data ?? []).filter((nf) => nf.status === 'SUBMITTED').length
 
@@ -526,7 +541,7 @@ export function NoteFraisList() {
         footer={
           <>
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
-            <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting || uploading} loading={submitting || uploading} />
+            <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting || uploading || !formIsValid} loading={submitting || uploading} />
           </>
         }
       >
@@ -541,9 +556,11 @@ export function NoteFraisList() {
               <p id="NoteFraisList.justificatif.obligatoire.titre" className="text-sm font-semibold text-gray-900">
                 {tr('NoteFraisList.justificatif.obligatoire.titre')}
               </p>
-              <span id="NoteFraisList.justificatif.obligatoire" className="text-xs font-normal text-red-600">
-                {tr('NoteFraisList.justificatif.obligatoire')}
-              </span>
+              {!requiredFieldsCompleted && (
+                <span id="NoteFraisList.justificatif.obligatoire" className="text-xs font-normal text-red-600">
+                  {tr('NoteFraisList.justificatif.obligatoire')}
+                </span>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <label
@@ -662,7 +679,9 @@ export function NoteFraisList() {
             <div className="mb-2 flex items-center justify-between">
               <div>
                 <p id="NoteFraisList.lignes.de.depenses" className="text-sm font-medium text-gray-700">{tr('NoteFraisList.lignes.de.depenses')}</p>
-                <p id="NoteFraisList.champs.obligatoires" className="text-xs text-red-600">{tr('NoteFraisList.champs.obligatoires')}</p>
+                {!requiredFieldsCompleted && (
+                  <p id="NoteFraisList.champs.obligatoires" className="text-xs text-red-600">{tr('NoteFraisList.champs.obligatoires')}</p>
+                )}
               </div>
               <span id="NoteFraisList.total.2" className="text-sm text-gray-500">
                 {tr('NoteFraisList.total.2')} {formatMoney(form.lines.reduce((s, l) => s + lineAmount(l), 0))}
