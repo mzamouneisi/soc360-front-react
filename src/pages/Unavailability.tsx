@@ -254,8 +254,11 @@ export function Unavailability() {
   const ownerId = user.consultantId ?? user.id ?? null
   const isOwner = (u: UnavailabilityDto) => ownerId != null && u.consultantId === ownerId
   const canEdit = (u: UnavailabilityDto) =>
-    isOwner(u) ? u.status === 'DRAFT' || u.status === 'REJECTED' : !isConsultant
-  const canSubmit = (u: UnavailabilityDto) => u.status === 'DRAFT' || u.status === 'REJECTED'
+    isOwner(u)
+      ? u.status === 'DRAFT' || u.status === 'REJECTED' || u.status === 'CANCELLED'
+      : !isConsultant
+  const canSubmit = (u: UnavailabilityDto) =>
+    u.status === 'DRAFT' || u.status === 'REJECTED' || u.status === 'CANCELLED'
   const canDelete = (u: UnavailabilityDto) => u.status === 'DRAFT' || u.status === 'REJECTED'
   const canCancel = (u: UnavailabilityDto) =>
     isOwner(u) && (u.status === 'SUBMITTED' || u.status === 'VALIDATED')

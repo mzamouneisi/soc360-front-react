@@ -745,6 +745,24 @@ describe('Unavailability', () => {
     expect(createMock.mock.calls[0][0].consultantId).toBe(1)
   })
 
+  it('permet au propriétaire de modifier et resoumettre une indisponibilité annulée', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([item({ status: 'CANCELLED', consultantId: 1 })])
+    summariesMock.mockResolvedValue([])
+    findByConsultantMock.mockResolvedValue([])
+    submitMock.mockResolvedValue(item({ status: 'SUBMITTED', consultantId: 1 }))
+
+    renderPage()
+    await screen.findByText('Annulée')
+
+    expect(screen.getByRole('button', { name: 'Soumettre' })).toBeInTheDocument()
+    fireEvent.click(document.getElementById('Unavailability.row.1') as HTMLElement)
+    expect(await screen.findByRole('button', { name: 'Enregistrer' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Soumettre' }))
+    await waitFor(() => expect(submitMock).toHaveBeenCalledWith(1))
+  })
+
   it('affiche en lecture seule l’indisponibilité validée du propriétaire', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([
