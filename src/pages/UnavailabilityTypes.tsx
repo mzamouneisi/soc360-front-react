@@ -198,6 +198,21 @@ export function UnavailabilityTypes() {
     }
   }
 
+  async function handleEnable(row: UnavailabilityTypeConfigDto) {
+    if (!(await dialog.confirm(tr('UnavailabilityTypes.confirmEnable'), {
+      variant: 'question',
+      okLabel: tr('UnavailabilityTypes.enable'),
+    }))) {
+      return
+    }
+    try {
+      await unavailabilityTypesApi.enable(row.id)
+      reload()
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    }
+  }
+
   async function handleDelete(row: UnavailabilityTypeConfigDto) {
     if (!(await dialog.confirm(tr('UnavailabilityTypes.confirmDelete', { type: row.name }), {
       variant: 'warning',
@@ -287,6 +302,15 @@ export function UnavailabilityTypes() {
               variant="danger"
               onClick={() => void handleDisable(r)}
               id={`UnavailabilityTypes.disable.${r.id}`}
+            />
+          )}
+          {r.status === 'DISABLED' && (
+            <IconButton
+              icon="refresh"
+              label={tr('UnavailabilityTypes.enable')}
+              variant="soft"
+              onClick={() => void handleEnable(r)}
+              id={`UnavailabilityTypes.enable.${r.id}`}
             />
           )}
           <IconButton

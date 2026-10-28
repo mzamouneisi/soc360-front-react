@@ -239,6 +239,9 @@ const fr: Messages = {
   'UnavailabilityTypes.col.durationUnit': 'Unité de durée',
   'UnavailabilityTypes.col.status': 'Statut',
   'UnavailabilityTypes.disable': 'Désactiver',
+  'UnavailabilityTypes.enable': 'Réactiver',
+  'UnavailabilityTypes.confirmEnable': 'Réactiver ce type d’indisponibilité ?',
+  'UnavailabilityTypes.status.DELETED': 'Supprimé',
   'UnavailabilityTypes.confirmDisable':
     'Voulez-vous vraiment désactiver ce type d’indisponibilité ? Il ne sera plus proposé aux consultants lors de la création d’une nouvelle indisponibilité. Les indisponibilités existantes ne seront pas modifiées.',
   'UnavailabilityTypes.status.ACTIVE': 'Actif',
@@ -477,6 +480,9 @@ const en: Messages = {
   'UnavailabilityTypes.col.durationUnit': 'Duration unit',
   'UnavailabilityTypes.col.status': 'Status',
   'UnavailabilityTypes.disable': 'Disable',
+  'UnavailabilityTypes.enable': 'Reactivate',
+  'UnavailabilityTypes.confirmEnable': 'Reactivate this time-off type?',
+  'UnavailabilityTypes.status.DELETED': 'Deleted',
   'UnavailabilityTypes.confirmDisable':
     'Do you really want to disable this time-off type? It will no longer be offered to consultants when creating a new time-off. Existing time-offs will not be changed.',
   'UnavailabilityTypes.status.ACTIVE': 'Active',
@@ -592,6 +598,9 @@ const ar: Messages = {
   'UnavailabilityTypes.col.durationUnit': 'وحدة المدة',
   'UnavailabilityTypes.col.status': 'الحالة',
   'UnavailabilityTypes.disable': 'تعطيل',
+  'UnavailabilityTypes.enable': 'إعادة التنشيط',
+  'UnavailabilityTypes.confirmEnable': 'هل تريد إعادة تنشيط نوع عدم التوفر هذا؟',
+  'UnavailabilityTypes.status.DELETED': 'محذوف',
   'UnavailabilityTypes.confirmDisable':
     'هل تريد حقًا تعطيل نوع الإجازة هذا؟ لن يُعرض بعد الآن للمستشارين عند إنشاء إجازة جديدة. لن يتم تغيير الإجازات الموجودة.',
   'UnavailabilityTypes.status.ACTIVE': 'نشط',

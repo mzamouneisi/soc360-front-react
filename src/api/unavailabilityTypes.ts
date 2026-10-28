@@ -17,5 +17,7 @@ export const unavailabilityTypesApi = {
     api.put<UnavailabilityTypeConfigDto>(`/unavailability-types/${id}`, request),
   disable: (id: number) =>
     api.post<UnavailabilityTypeConfigDto>(`/unavailability-types/${id}/disable`),
+  enable: (id: number) =>
+    api.post<UnavailabilityTypeConfigDto>(`/unavailability-types/${id}/enable`),
   remove: (id: number) => api.delete<void>(`/unavailability-types/${id}`),
 }

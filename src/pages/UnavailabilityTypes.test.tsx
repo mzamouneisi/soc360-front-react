@@ -5,12 +5,13 @@ import { UnavailabilityTypes } from './UnavailabilityTypes'
 import { DialogHost } from '../components/dialog'
 import type { UnavailabilityTypeConfigDto, UserDto } from '../api/types'
 
-const { listMock, createMock, updateMock, disableMock, removeMock, userMock, socMock } = vi.hoisted(
+const { listMock, createMock, updateMock, disableMock, enableMock, removeMock, userMock, socMock } = vi.hoisted(
   () => ({
     listMock: vi.fn(),
     createMock: vi.fn(),
     updateMock: vi.fn(),
     disableMock: vi.fn(),
+    enableMock: vi.fn(),
     removeMock: vi.fn(),
     userMock: { value: null as unknown as UserDto },
     socMock: { value: { selectedSocId: 5 as number | null } },
@@ -51,6 +52,7 @@ vi.mock('../api/unavailabilityTypes', () => ({
     create: createMock,
     update: updateMock,
     disable: disableMock,
+    enable: enableMock,
     remove: removeMock,
   },
 }))
@@ -207,6 +209,20 @@ describe('UnavailabilityTypes', () => {
     fireEvent.click(disableButtons[disableButtons.length - 1])
 
     await waitFor(() => expect(disableMock).toHaveBeenCalledWith(1))
+  })
+
+  it('réactive un type désactivé après confirmation', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue([row({ status: 'DISABLED' })])
+    enableMock.mockResolvedValue(row({ status: 'ACTIVE' }))
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Réactiver' }))
+    const enableButtons = await screen.findAllByRole('button', { name: 'Réactiver' })
+    fireEvent.click(enableButtons[enableButtons.length - 1])
+
+    await waitFor(() => expect(enableMock).toHaveBeenCalledWith(1))
   })
 
   it('supprime un type après confirmation', async () => {
