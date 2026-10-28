@@ -4,9 +4,11 @@ import { MemoryRouter } from 'react-router-dom'
 import { Holidays } from './Holidays'
 import type { UserDto } from '../api/types'
 
-const { listMock, publicMock, userMock } = vi.hoisted(() => ({
+const { listMock, publicMock, createMock, updateMock, userMock } = vi.hoisted(() => ({
   listMock: vi.fn(),
   publicMock: vi.fn(),
+  createMock: vi.fn(),
+  updateMock: vi.fn(),
   userMock: { value: null as unknown as UserDto },
 }))
 
@@ -15,7 +17,13 @@ vi.mock('../auth/AuthContext', () => ({
 }))
 
 vi.mock('../api/socHolidays', () => ({
-  socHolidaysApi: { list: listMock, create: vi.fn(), delete: vi.fn(), duplicate: vi.fn() },
+  socHolidaysApi: {
+    list: listMock,
+    create: createMock,
+    update: updateMock,
+    delete: vi.fn(),
+    duplicate: vi.fn(),
+  },
 }))
 
 vi.mock('../api/holidays', () => ({
@@ -105,5 +113,41 @@ describe('Holidays', () => {
     for (let i = 0; i < 12; i++) fireEvent.click(next)
 
     await waitFor(() => expect(publicMock).toHaveBeenCalledWith('FR', year + 1))
+  })
+
+  it('permet de modifier le statut chômé payé / non payé', async () => {
+    userMock.value = { ...baseUser, role: 'RESPONSIBLE_SOC' } as UserDto
+    listMock.mockResolvedValue([
+      { id: 1, socId: 5, date: socDate, label: 'Jour société', isChomePaye: 'CHOME_PAYE' },
+    ])
+    publicMock.mockResolvedValue([])
+    updateMock.mockResolvedValue({
+      id: 1,
+      socId: 5,
+      date: socDate,
+      label: 'Jour société',
+      isChomePaye: 'CHOME_NON_PAYE',
+    })
+
+    render(
+      <MemoryRouter>
+        <Holidays />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(await screen.findByText('Jour société'))
+    fireEvent.change(await screen.findByTitle('Statut'), {
+      target: { value: 'CHOME_NON_PAYE' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() =>
+      expect(updateMock).toHaveBeenCalledWith(
+        1,
+        socDate,
+        'Jour société',
+        'CHOME_NON_PAYE',
+      ),
+    )
   })
 })

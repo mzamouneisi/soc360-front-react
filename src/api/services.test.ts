@@ -287,12 +287,12 @@ describe('services API', () => {
 
   it('socHolidaysApi couvre CRUD et duplication', () => {
     socHolidaysApi.list(2025)
-    socHolidaysApi.create('2025-05-01', 'Fête du travail')
+    socHolidaysApi.create('2025-05-01', 'Fête du travail', 'CHOME_PAYE')
     socHolidaysApi.delete(1)
     socHolidaysApi.duplicate(2025)
 
     expect(api.get).toHaveBeenCalledWith('/soc-holidays/2025')
-    expect(api.post).toHaveBeenNthCalledWith(1, '/soc-holidays', { date: '2025-05-01', label: 'Fête du travail' })
+    expect(api.post).toHaveBeenNthCalledWith(1, '/soc-holidays', { date: '2025-05-01', label: 'Fête du travail', isChomePaye: 'CHOME_PAYE' })
     expect(api.delete).toHaveBeenCalledWith('/soc-holidays/1')
     expect(api.post).toHaveBeenNthCalledWith(2, '/soc-holidays/2025/duplicate')
   })

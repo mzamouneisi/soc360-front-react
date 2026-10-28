@@ -1062,6 +1062,16 @@ export const EXTRACTED_FR: Record<string, string> = {
   "Unavailability.date.passee": "Une indisponibilité ne peut pas être saisie dans le passé.",
   "settings.buttons.disableColor": "Couleur bouton Désactiver",
   "settings.buttons.disableTextColor": "Couleur texte bouton Désactiver",
+  "Holidays.chome.paye": "Chômé payé",
+  "Holidays.chome.non.paye": "Chômé non payé",
+  "Holidays.statut": "Statut",
+  "Holidays.modifier.le.jour.ferie": "Modifier le jour férié",
+  "Holidays.nouveau.jour.ferie": "Nouveau jour férié",
+  "Holidays.libelle": "Libellé",
+  "Holidays.enregistrer": "Enregistrer",
+  "Holidays.supprimer": "Supprimer",
+  "Holidays.date": "Date",
+  "Holidays.jour.ferie.modifie": "Jour férié modifié.",
 
 }
 
@@ -2129,6 +2139,16 @@ export const EXTRACTED_EN: Record<string, string> = {
   "Unavailability.date.passee": "An unavailability cannot be entered in the past.",
   "settings.buttons.disableColor": "Disable button colour",
   "settings.buttons.disableTextColor": "Disable button text colour",
+  "Holidays.chome.paye": "Paid holiday",
+  "Holidays.chome.non.paye": "Unpaid holiday",
+  "Holidays.statut": "Status",
+  "Holidays.modifier.le.jour.ferie": "Edit holiday",
+  "Holidays.nouveau.jour.ferie": "New holiday",
+  "Holidays.libelle": "Label",
+  "Holidays.enregistrer": "Save",
+  "Holidays.supprimer": "Delete",
+  "Holidays.date": "Date",
+  "Holidays.jour.ferie.modifie": "Holiday updated.",
 
 }
 
@@ -3196,4 +3216,14 @@ export const EXTRACTED_AR: Record<string, string> = {
   "Unavailability.date.passee": "لا يمكن إدخال عدم التوفر في الماضي.",
   "settings.buttons.disableColor": "لون زر التعطيل",
   "settings.buttons.disableTextColor": "لون نص زر التعطيل",
+  "Holidays.chome.paye": "عطلة مدفوعة",
+  "Holidays.chome.non.paye": "عطلة غير مدفوعة",
+  "Holidays.statut": "الحالة",
+  "Holidays.modifier.le.jour.ferie": "تعديل العطلة",
+  "Holidays.nouveau.jour.ferie": "عطلة جديدة",
+  "Holidays.libelle": "التسمية",
+  "Holidays.enregistrer": "حفظ",
+  "Holidays.supprimer": "حذف",
+  "Holidays.date": "التاريخ",
+  "Holidays.jour.ferie.modifie": "تم تعديل العطلة.",
 }

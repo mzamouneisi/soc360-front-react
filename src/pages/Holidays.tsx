@@ -4,10 +4,10 @@ import { socHolidaysApi } from '../api/socHolidays'
 import { holidaysApi } from '../api/holidays'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, IconButton, InlineButton, RefreshButton } from '../components/ui'
-import { ErrorBlock, PageHeader } from '../components/data'
+import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
+import { ErrorBlock, Modal, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
-import type { PublicHolidayDto, SocHolidayDto } from '../api/types'
+import type { HolidayPaidStatus, PublicHolidayDto, SocHolidayDto } from '../api/types'
 import { monthLabel, weekdayShortLabels } from '../lib/format'
 
 function toDateString(d: Date): string {
@@ -31,6 +31,12 @@ export function Holidays() {
   const [error, setError] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [tick, setTick] = useState(0)
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editorExisting, setEditorExisting] = useState<SocHolidayDto | null>(null)
+  const [editorDate, setEditorDate] = useState('')
+  const [editorLabel, setEditorLabel] = useState('')
+  const [editorPaid, setEditorPaid] = useState<HolidayPaidStatus>('CHOME_PAYE')
+  const [editorSaving, setEditorSaving] = useState(false)
 
   const year = cursor.getFullYear()
   const month = cursor.getMonth()
@@ -90,27 +96,67 @@ export function Holidays() {
     setCursor(new Date(now.getFullYear(), now.getMonth(), 1))
   }
 
-  async function toggleDay(date: Date) {
+  function toggleDay(date: Date) {
     if (!canEdit) return
     const key = toDateString(date)
-    const existing = byDate.get(key)
-    if (existing) {
-      if (!(await dialog.confirm(tr('Holidays.supprimer.le.jour.ferie', { label: existing.label, date: key }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
-      try {
-        await socHolidaysApi.delete(existing.id)
-        setHolidays((prev) => prev.filter((h) => h.id !== existing.id))
-        setFeedback(tr('Holidays.jour.ferie.supprime'))
-      } catch (err) {
-        setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    const existing = byDate.get(key) ?? null
+    const national = nationalByDate.get(key)
+    setEditorExisting(existing)
+    setEditorDate(key)
+    setEditorLabel(existing?.label ?? national?.label ?? tr('Holidays.jour.ferie'))
+    setEditorPaid(existing?.isChomePaye ?? national?.isChomePaye ?? 'CHOME_PAYE')
+    setEditorOpen(true)
+  }
+
+  async function saveHoliday() {
+    setEditorSaving(true)
+    setError(null)
+    try {
+      const label = editorLabel.trim() || tr('Holidays.jour.ferie')
+      if (editorExisting) {
+        const updated = await socHolidaysApi.update(
+          editorExisting.id,
+          editorDate,
+          label,
+          editorPaid,
+        )
+        setHolidays((prev) => prev.map((h) => (h.id === updated.id ? updated : h)))
+        setFeedback(tr('Holidays.jour.ferie.modifie'))
+      } else {
+        const created = await socHolidaysApi.create(editorDate, label, editorPaid)
+        setHolidays((prev) =>
+          [...prev.filter((h) => h.date !== created.date), created].sort((a, b) =>
+            a.date.localeCompare(b.date),
+          ),
+        )
+        setFeedback(tr('Holidays.jour.ferie.ajoute'))
       }
+      setEditorOpen(false)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setEditorSaving(false)
+    }
+  }
+
+  async function deleteHoliday() {
+    if (!editorExisting) return
+    if (
+      !(await dialog.confirm(
+        tr('Holidays.supprimer.le.jour.ferie', {
+          label: editorExisting.label,
+          date: editorDate,
+        }),
+        { variant: 'warning', danger: true, okLabel: tr('common.delete') },
+      ))
+    ) {
       return
     }
-    const label = await dialog.prompt(tr('Holidays.libelle.du.jour.ferie'), tr('Holidays.jour.ferie'))
-    if (label === null) return
     try {
-      const created = await socHolidaysApi.create(key, label.trim() || tr('Holidays.jour.ferie'))
-      setHolidays((prev) => [...prev, created].sort((a, b) => a.date.localeCompare(b.date)))
-      setFeedback(tr('Holidays.jour.ferie.ajoute'))
+      await socHolidaysApi.delete(editorExisting.id)
+      setHolidays((prev) => prev.filter((h) => h.id !== editorExisting.id))
+      setFeedback(tr('Holidays.jour.ferie.supprime'))
+      setEditorOpen(false)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
@@ -179,7 +225,12 @@ export function Holidays() {
             const holiday = byDate.get(key)
             const national = nationalByDate.get(key)
             const isToday = key === toDateString(today)
-            const title = [holiday?.label, national?.label].filter(Boolean).join(' · ') || key
+            const paid = holiday?.isChomePaye ?? national?.isChomePaye
+            const paidLabel = paid === 'CHOME_NON_PAYE'
+              ? tr('Holidays.chome.non.paye')
+              : tr('Holidays.chome.paye')
+            const title =
+              [holiday?.label, national?.label, paidLabel].filter(Boolean).join(' · ') || key
             const colorClass = holiday
               ? 'border-brand-300 bg-brand-50 text-brand-800'
               : national
@@ -205,6 +256,14 @@ export function Holidays() {
                 {national && (
                   <span id={`Holidays.day.${key}.national`} className="block truncate text-xs text-yellow-600">{national.label}</span>
                 )}
+                {(holiday || national) && (
+                  <span
+                    id={`Holidays.day.${key}.paidStatus`}
+                    className={`block truncate text-[10px] ${paid === 'CHOME_NON_PAYE' ? 'text-red-600' : 'text-green-700'}`}
+                  >
+                    {paidLabel}
+                  </span>
+                )}
               </button>
             )
           })}
@@ -213,6 +272,74 @@ export function Holidays() {
         {error && <ErrorBlock id="Holidays.error" message={error} />}
         {feedback && !error && <p id="Holidays.feedback" className="mt-3 text-sm text-green-600">{feedback}</p>}
       </Card>
+
+      <Modal
+        open={editorOpen}
+        title={editorExisting ? tr('Holidays.modifier.le.jour.ferie') : tr('Holidays.nouveau.jour.ferie')}
+        titleId="Holidays.editor.title"
+        onClose={() => setEditorOpen(false)}
+        footer={
+          <>
+            {editorExisting && (
+              <IconButton
+                id="Holidays.editor.delete"
+                icon="delete"
+                variant="danger"
+                label={tr('Holidays.supprimer')}
+                onClick={() => void deleteHoliday()}
+              />
+            )}
+            <Button
+              id="Holidays.editor.cancel"
+              variant="neutral"
+              className="!w-auto"
+              onClick={() => setEditorOpen(false)}
+            >
+              {tr('common.cancel')}
+            </Button>
+            <Button
+              id="Holidays.editor.save"
+              className="!w-auto"
+              onClick={() => void saveHoliday()}
+              disabled={editorSaving}
+            >
+              {tr('Holidays.enregistrer')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <p id="Holidays.editor.date" className="text-sm font-medium text-gray-700">
+              {tr('Holidays.date')}
+            </p>
+            <p id="Holidays.editor.date.value" className="text-sm text-gray-900">{editorDate}</p>
+          </div>
+          <Field label={tr('Holidays.libelle')} id="Holidays.libelle">
+            <Input
+              id="Holidays.libelle.input"
+              value={editorLabel}
+              title={tr('Holidays.libelle')}
+              onChange={(e) => setEditorLabel(e.target.value)}
+            />
+          </Field>
+          <Field label={tr('Holidays.statut')} id="Holidays.statut">
+            <Select
+              id="Holidays.statut.select"
+              value={editorPaid}
+              title={tr('Holidays.statut')}
+              onChange={(e) => setEditorPaid(e.target.value as HolidayPaidStatus)}
+            >
+              <option id="Holidays.statut.CHOME_PAYE" value="CHOME_PAYE">
+                {tr('Holidays.chome.paye')}
+              </option>
+              <option id="Holidays.statut.CHOME_NON_PAYE" value="CHOME_NON_PAYE">
+                {tr('Holidays.chome.non.paye')}
+              </option>
+            </Select>
+          </Field>
+        </div>
+      </Modal>
     </div>
   )
 }

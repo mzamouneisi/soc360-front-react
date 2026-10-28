@@ -728,11 +728,14 @@ export interface SupportExchangeDto {
   author?: { id: number; firstName: string; lastName: string; username: string } | null
 }
 
+export type HolidayPaidStatus = 'CHOME_PAYE' | 'CHOME_NON_PAYE'
+
 export interface PublicHolidayDto {
   id: number
   country: string
   date: string
   label: string
+  isChomePaye: HolidayPaidStatus
 }
 
 export interface SocHolidayDto {
@@ -740,6 +743,7 @@ export interface SocHolidayDto {
   socId: number
   date: string
   label: string
+  isChomePaye: HolidayPaidStatus
 }
 
 export interface DashboardOverview {
