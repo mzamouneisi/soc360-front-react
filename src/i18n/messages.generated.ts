@@ -1059,6 +1059,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "NoteFraisList.champs.obligatoires": "Nom d'enseigne, catégorie, libellé, adresse, date et montants HT/TTC obligatoires.",
   "NoteFraisList.date": "Date",
   "NoteFraisList.categorie": "Catégorie",
+  "Unavailability.date.passee": "Une indisponibilité ne peut pas être saisie dans le passé.",
 
 }
 
@@ -2123,6 +2124,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "NoteFraisList.champs.obligatoires": "Store name, category, label, address, date and HT/TTC amounts are required.",
   "NoteFraisList.date": "Date",
   "NoteFraisList.categorie": "Category",
+  "Unavailability.date.passee": "An unavailability cannot be entered in the past.",
 
 }
 
@@ -3187,4 +3189,5 @@ export const EXTRACTED_AR: Record<string, string> = {
   "NoteFraisList.champs.obligatoires": "اسم المتجر والفئة والتسمية والعنوان والتاريخ ومبالغ HT/TTC مطلوبة.",
   "NoteFraisList.date": "التاريخ",
   "NoteFraisList.categorie": "الفئة",
+  "Unavailability.date.passee": "لا يمكن إدخال عدم التوفر في الماضي.",
 }

@@ -499,6 +499,52 @@ describe('Unavailability', () => {
     expect(createMock.mock.calls[0][0].consultantId).toBe(1)
   })
 
+  function todayInputValue(): string {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      now.getDate(),
+    ).padStart(2, '0')}`
+  }
+
+  it('pré-remplit la date du jour et le collaborateur connecté', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([
+      { id: 1, fullName: 'M Manager', position: null, email: null },
+    ])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+
+    const today = todayInputValue()
+    const todayDisplay = today.split('-').reverse().join('/')
+    const startInput = document.querySelector('#Unavailability\\.du')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    const endInput = document.querySelector('#Unavailability\\.au')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    expect(startInput.value).toBe(todayDisplay)
+    expect(endInput.value).toBe(todayDisplay)
+    expect(screen.getByTitle('Collaborateur')).toHaveValue('1')
+
+  })
+
+  it('désactive le bouton Créer quand le collaborateur obligatoire manque', async () => {
+    userMock.value = managerUser
+    listMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([
+      { id: 1, fullName: 'M Manager', position: null, email: null },
+    ])
+    findByConsultantMock.mockResolvedValue([])
+
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+
+    fireEvent.change(screen.getByTitle('Collaborateur'), { target: { value: '' } })
+
+    expect(screen.getByRole('button', { name: 'Créer' })).toBeDisabled()
+  })
+
   it('calcule la durée selon le type de décompte (ouvré = hors week-end)', async () => {
     userMock.value = { ...baseUser, hireDate: '2020-01-01' } as UserDto
     listMock.mockResolvedValue([])
@@ -514,8 +560,8 @@ describe('Unavailability', () => {
       ?.parentElement?.querySelector('input') as HTMLInputElement
     const endInput = document.querySelector('#Unavailability\\.au')
       ?.parentElement?.querySelector('input') as HTMLInputElement
-    fireEvent.change(startInput, { target: { value: '2026-09-04' } })
-    fireEvent.change(endInput, { target: { value: '2026-09-07' } })
+    fireEvent.change(startInput, { target: { value: '2026-11-06' } })
+    fireEvent.change(endInput, { target: { value: '2026-11-09' } })
 
     expect(await screen.findByText('Durée : 2 j')).toBeInTheDocument()
   })
@@ -555,6 +601,12 @@ describe('Unavailability', () => {
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    const startDateInput = document.querySelector('#Unavailability\\.du')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    const endDateInput = document.querySelector('#Unavailability\\.au')
+      ?.parentElement?.querySelector('input') as HTMLInputElement
+    fireEvent.change(startDateInput, { target: { value: '2026-11-06' } })
+    fireEvent.change(endDateInput, { target: { value: '2026-11-09' } })
     const startPart = screen.getByText('Début').parentElement
       ?.querySelector('select') as HTMLSelectElement
     const endPart = screen.getByText('Fin').parentElement
@@ -626,8 +678,8 @@ describe('Unavailability', () => {
       ?.parentElement?.querySelector('input') as HTMLInputElement
     const endInput = document.querySelector('#Unavailability\\.au')
       ?.parentElement?.querySelector('input') as HTMLInputElement
-    fireEvent.change(startInput, { target: { value: '2026-09-05' } })
-    fireEvent.change(endInput, { target: { value: '2026-09-07' } })
+    fireEvent.change(startInput, { target: { value: '2026-11-07' } })
+    fireEvent.change(endInput, { target: { value: '2026-11-09' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
     expect(
@@ -654,8 +706,8 @@ describe('Unavailability', () => {
       ?.parentElement?.querySelector('input') as HTMLInputElement
     const endInput = document.querySelector('#Unavailability\\.au')
       ?.parentElement?.querySelector('input') as HTMLInputElement
-    fireEvent.change(startInput, { target: { value: '2026-09-04' } })
-    fireEvent.change(endInput, { target: { value: '2026-09-07' } })
+    fireEvent.change(startInput, { target: { value: '2026-11-06' } })
+    fireEvent.change(endInput, { target: { value: '2026-11-09' } })
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
@@ -675,18 +727,22 @@ describe('Unavailability', () => {
     expect(await screen.findByRole('option', { name: 'Maladie' })).toBeInTheDocument()
   })
 
-  it('exige la sélection d’un consultant pour la création par un manager', async () => {
+  it('crée par défaut pour le manager connecté', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([])
     summariesMock.mockResolvedValue([{ id: 10, fullName: 'Alice Martin', socId: 5 }])
+    createMock.mockResolvedValue(item({ consultantId: 1 }))
 
     renderPage()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouvelle indisponibilité' }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Créer' })).toBeEnabled(),
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
 
-    expect(await screen.findByText('Sélectionnez un consultant.')).toBeInTheDocument()
-    expect(createMock).not.toHaveBeenCalled()
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+    expect(createMock.mock.calls[0][0].consultantId).toBe(1)
   })
 
   it('permet au manager de modifier une indisponibilité validée', async () => {

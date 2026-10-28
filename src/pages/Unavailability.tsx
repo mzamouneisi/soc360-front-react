@@ -63,6 +63,20 @@ function durationFor(
   return days
 }
 
+function todayIso(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    now.getDate(),
+  ).padStart(2, '0')}`
+}
+
+function maxIso(...values: (string | null | undefined)[]): string | undefined {
+  return values
+    .filter((value): value is string => value != null && value !== '')
+    .sort()
+    .at(-1)
+}
+
 export function Unavailability() {
   const { user } = useAuth()
   const dt = useDynamicTranslate()
@@ -258,6 +272,16 @@ export function Unavailability() {
     ? (user?.hireDate ?? null)
     : (consultants.data?.find((c) => c.id === formConsultantId)?.hireDate ?? null)
 
+  const today = todayIso()
+  const formIsValid =
+    (isConsultant || formConsultantId != null) &&
+    formType.trim() !== '' &&
+    formStart !== '' &&
+    formEnd !== '' &&
+    formEnd >= formStart &&
+    (editingId != null || formStart >= today) &&
+    (!formHireDate || formStart >= formHireDate)
+
   function handleRowClick(u: UnavailabilityDto) {
     setSelectedId(u.id)
     if (canEdit(u)) {
@@ -272,14 +296,12 @@ export function Unavailability() {
       void dialog.error(tr('hireDate.required'))
       return
     }
-    const today = new Date()
-    const end = new Date(today)
-    end.setDate(end.getDate() + 7)
+    const today = todayIso()
     setEditingId(null)
-    setFormConsultantId(consultantFilter)
+    setFormConsultantId(user?.consultantId ?? user?.id ?? null)
     setFormType(typeOptions[0] ?? '')
-    setFormStart(today.toISOString().slice(0, 10))
-    setFormEnd(end.toISOString().slice(0, 10))
+    setFormStart(today)
+    setFormEnd(today)
     setFormComment('')
     setFormFirstDay('ALL')
     setFormLastDay('ALL')
@@ -342,6 +364,10 @@ export function Unavailability() {
     }
     if (formStart > formEnd) {
       setFormError('La date de fin doit être postérieure ou égale à la date de début.')
+      return
+    }
+    if (editingId == null && formStart < today) {
+      setFormError(tr('Unavailability.date.passee'))
       return
     }
     if (formHireDate && formStart < formHireDate) {
@@ -762,13 +788,17 @@ export function Unavailability() {
             <div className="flex flex-wrap items-start gap-3">
               <div className="w-44 max-w-full">
                 <Field label={tr('Unavailability.du')} id="Unavailability.du">
-                  <Input id="Unavailability.du.input" type="date" value={formStart} min={formHireDate ?? undefined}
+                  <Input id="Unavailability.du.input" type="date" value={formStart}
+                    title={tr('Unavailability.du')}
+                    min={maxIso(today, formHireDate)}
                     onChange={(e) => changeDates(e.target.value, formEnd)} />
                 </Field>
               </div>
               <div className="w-44 max-w-full">
                 <Field label={tr('Unavailability.au')} id="Unavailability.au">
-                  <Input id="Unavailability.au.input" type="date" value={formEnd} min={formHireDate ?? formStart}
+                  <Input id="Unavailability.au.input" type="date" value={formEnd}
+                    title={tr('Unavailability.au')}
+                    min={maxIso(today, formStart, formHireDate)}
                     onChange={(e) => changeDates(formStart, e.target.value)} />
                 </Field>
               </div>
@@ -879,7 +909,7 @@ export function Unavailability() {
               label={editingId != null ? 'Enregistrer' : 'Créer'}
               variant="primary"
               onClick={() => void handleSave()}
-              disabled={saving}
+              disabled={saving || !formIsValid}
               loading={saving}
             />
           </div>
