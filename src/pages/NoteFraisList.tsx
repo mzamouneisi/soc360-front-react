@@ -686,21 +686,23 @@ export function NoteFraisList() {
                       })
                     }
                   />
-                  <Input
-                    id={`NoteFraisList.line.${i}.date`}
-                    type="date"
-                    title={tr('NoteFraisList.date')}
-                    required
-                    aria-required="true"
-                    className="sm:col-span-4"
-                    value={line.date}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        lines: form.lines.map((l, j) => (j === i ? { ...l, date: e.target.value } : l)),
-                      })
-                    }
-                  />
+                  <div className="sm:col-span-4 min-w-0">
+                    <Input
+                      id={`NoteFraisList.line.${i}.date`}
+                      type="date"
+                      title={tr('NoteFraisList.date')}
+                      required
+                      aria-required="true"
+                      className="w-full"
+                      value={line.date}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lines: form.lines.map((l, j) => (j === i ? { ...l, date: e.target.value } : l)),
+                        })
+                      }
+                    />
+                  </div>
                   <Select
                     id={`NoteFraisList.line.${i}.category`}
                     title={tr('NoteFraisList.categorie')}
