@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { noteFraisApi } from '../api/noteFrais'
 import { consultantsApi } from '../api/consultants'
@@ -156,10 +156,13 @@ export function NoteFraisList() {
   const [ocrPending, setOcrPending] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null)
+  const previewRequest = useRef(0)
 
   if (!user) return null
 
   function openCreate() {
+    previewRequest.current += 1
+    if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
     setForm({
       consultantId: String(selfCollaboratorId ?? ''),
       month: now.getMonth() + 1,
@@ -177,7 +180,10 @@ export function NoteFraisList() {
     setModalOpen(true)
   }
 
-  function openEdit(nf: NoteFraisDto) {
+  async function openEdit(nf: NoteFraisDto) {
+    const requestId = previewRequest.current + 1
+    previewRequest.current = requestId
+    if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
     setForm({
       consultantId: String(nf.consultantId),
       month: nf.month,
@@ -206,6 +212,18 @@ export function NoteFraisList() {
     setOcrPending(false)
     setUploading(false)
     setModalOpen(true)
+    if (nf.documentId) {
+      try {
+        const url = await documentsApi.previewUrl(nf.documentId)
+        if (requestId !== previewRequest.current) {
+          URL.revokeObjectURL(url)
+          return
+        }
+        setAttachmentUrl(url)
+      } catch {
+        // Le bouton de téléchargement reste disponible si l'aperçu échoue.
+      }
+    }
   }
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {

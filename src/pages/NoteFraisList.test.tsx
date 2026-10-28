@@ -21,6 +21,7 @@ const {
   ocrImageTextMock,
   documentUploadMock,
   documentDownloadMock,
+  documentPreviewUrlMock,
 } = vi.hoisted(() => ({
   findBySocYearMock: vi.fn(),
   findByConsultantYearMock: vi.fn(),
@@ -36,6 +37,7 @@ const {
   ocrImageTextMock: vi.fn(),
   documentUploadMock: vi.fn(),
   documentDownloadMock: vi.fn(),
+  documentPreviewUrlMock: vi.fn(),
 }))
 
 vi.mock('../auth/AuthContext', () => ({
@@ -74,6 +76,7 @@ vi.mock('../api/documents', () => ({
   documentsApi: {
     upload: documentUploadMock,
     download: documentDownloadMock,
+    previewUrl: documentPreviewUrlMock,
   },
 }))
 
@@ -159,6 +162,7 @@ afterEach(() => {
   ocrImageTextMock.mockReset()
   documentUploadMock.mockReset()
   documentDownloadMock.mockReset()
+  documentPreviewUrlMock.mockReset()
   userMock.value = null as unknown as UserDto
 })
 
@@ -314,6 +318,28 @@ describe('NoteFraisList', () => {
       expect(document.getElementById('NoteFraisList.justificatif.obligatoire')).toBeNull()
       expect(document.getElementById('NoteFraisList.champs.obligatoires')).toBeNull()
     })
+  })
+
+  it('affiche l’aperçu du document en modification', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock.mockResolvedValue('blob:preview')
+
+    renderList()
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifier' }))
+
+    const dialog = await screen.findByRole('dialog')
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    expect(within(dialog).getByAltText('Aperçu de la facture')).toHaveAttribute(
+      'src',
+      'blob:preview',
+    )
+    expect(within(dialog).getByRole('button', { name: 'Télécharger le justificatif' })).toBeInTheDocument()
   })
 
   it('pré-sélectionne le collaborateur connecté', async () => {
