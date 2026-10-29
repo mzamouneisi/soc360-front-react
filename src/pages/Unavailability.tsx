@@ -21,6 +21,7 @@ import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../comp
 import { dialog } from '../components/dialog'
 import { Alert, Card, Field, IconButton, InlineButton, Input, Select, Textarea } from '../components/ui'
 import { MonthPicker } from '../components/MonthPicker'
+import { DateField, toIsoDate } from '../components/DateField'
 import {
   formatDate,
   formatDateTime,
@@ -137,6 +138,7 @@ export function Unavailability() {
     .filter((label) => label != null && label.trim() !== '')
   const formCountType: CountType =
     (types.data ?? []).find((t) => t.name === formType)?.countType ?? 'CALENDAIRE'
+  const isSelectableDate = (date: Date) => isCountedDate(toIsoDate(date), formCountType)
 
   useEffect(() => {
     setPage(0)
@@ -283,6 +285,8 @@ export function Unavailability() {
     formStart !== '' &&
     formEnd !== '' &&
     formEnd >= formStart &&
+    isCountedDate(formStart, formCountType) &&
+    isCountedDate(formEnd, formCountType) &&
     (editingId != null || formStart >= today) &&
     (!formHireDate || formStart >= formHireDate)
 
@@ -336,6 +340,14 @@ export function Unavailability() {
     setRemovedDocumentIds([])
     setFormError(null)
     setShowForm(true)
+  }
+
+  function changeType(nextType: string) {
+    setFormType(nextType)
+    const countType =
+      (types.data ?? []).find((t) => t.name === nextType)?.countType ?? 'CALENDAIRE'
+    if (formStart && !isCountedDate(formStart, countType)) setFormStart('')
+    if (formEnd && !isCountedDate(formEnd, countType)) setFormEnd('')
   }
 
   function changeDates(nextStart: string, nextEnd: string) {
@@ -786,7 +798,7 @@ export function Unavailability() {
               )}
               <div className="w-56 max-w-full">
                 <Field label={tr('Unavailability.type')} id="Unavailability.type">
-                  <Select id="Unavailability.type.select" value={formType} disabled={formReadOnly} onChange={(e) => setFormType(e.target.value)}>
+                  <Select id="Unavailability.type.select" value={formType} disabled={formReadOnly} onChange={(e) => changeType(e.target.value)}>
                     {!formType && <option id="Unavailability.type.choisir" value="">{tr('Unavailability.choisir')}</option>}
                     {formType && !typeOptions.includes(formType) && (
                       <option id="Unavailability.type.current" value={formType}>{unavailabilityTypeLabel(formType)}</option>
@@ -804,20 +816,24 @@ export function Unavailability() {
             <div className="flex flex-wrap items-start gap-3">
               <div className="w-44 max-w-full">
                 <Field label={tr('Unavailability.du')} id="Unavailability.du">
-                  <Input id="Unavailability.du.input" type="date" value={formStart}
+                  <DateField id="Unavailability.du.input" value={formStart}
                     title={tr('Unavailability.du')}
-                    min={maxIso(today, formHireDate)}
+                    minDate={maxIso(today, formHireDate)}
+                    filterDate={isSelectableDate}
+                    isClearable={false}
                     disabled={formReadOnly}
-                    onChange={(e) => changeDates(e.target.value, formEnd)} />
+                    onChange={(value) => changeDates(value, formEnd)} />
                 </Field>
               </div>
               <div className="w-44 max-w-full">
                 <Field label={tr('Unavailability.au')} id="Unavailability.au">
-                  <Input id="Unavailability.au.input" type="date" value={formEnd}
+                  <DateField id="Unavailability.au.input" value={formEnd}
                     title={tr('Unavailability.au')}
-                    min={maxIso(today, formStart, formHireDate)}
+                    minDate={maxIso(today, formStart, formHireDate)}
+                    filterDate={isSelectableDate}
+                    isClearable={false}
                     disabled={formReadOnly}
-                    onChange={(e) => changeDates(formStart, e.target.value)} />
+                    onChange={(value) => changeDates(formStart, value)} />
                 </Field>
               </div>
             </div>

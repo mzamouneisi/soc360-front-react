@@ -661,7 +661,7 @@ describe('Unavailability', () => {
     expect(updateMock.mock.calls[0][1].lastDay).toBe('AM')
   })
 
-  it('refuse une date de début non comptée pour un type ouvré', async () => {
+  it('désactive les week-ends dans le calendrier pour un type ouvré', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([])
     summariesMock.mockResolvedValue([{ id: 1, fullName: 'Alice Martin', socId: 5 }])
@@ -676,16 +676,11 @@ describe('Unavailability', () => {
     )
     const startInput = document.querySelector('#Unavailability\\.du')
       ?.parentElement?.querySelector('input') as HTMLInputElement
-    const endInput = document.querySelector('#Unavailability\\.au')
-      ?.parentElement?.querySelector('input') as HTMLInputElement
-    fireEvent.change(startInput, { target: { value: '2026-11-07' } })
-    fireEvent.change(endInput, { target: { value: '2026-11-09' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Créer' }))
+    fireEvent.click(startInput)
 
-    expect(
-      await screen.findByText(/date de début doit être un jour compté/i),
-    ).toBeInTheDocument()
-    expect(createMock).not.toHaveBeenCalled()
+    const weekendDays = document.querySelectorAll('.react-datepicker__day--weekend')
+    expect(weekendDays.length).toBeGreaterThan(0)
+    weekendDays.forEach((day) => expect(day.className).toContain('day--disabled'))
   })
 
   it('autorise un intervalle ouvré contenant un week-end', async () => {

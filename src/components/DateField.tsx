@@ -45,6 +45,7 @@ export function DateField({
   className = '',
   disabled = false,
   isClearable = true,
+  filterDate,
 }: {
   value?: string
   onChange: (value: string) => void
@@ -56,6 +57,7 @@ export function DateField({
   className?: string
   disabled?: boolean
   isClearable?: boolean
+  filterDate?: (date: Date) => boolean
 }) {
   const { language } = useI18n()
   const locale = DATE_FNS_LOCALES[language] ?? fr
@@ -76,6 +78,7 @@ export function DateField({
       onChange={(date: Date | null) => onChange(date ? toIsoDate(date) : '')}
       minDate={min ?? undefined}
       maxDate={max ?? undefined}
+      filterDate={filterDate}
       dateFormat={dateFormat}
       locale={locale}
       isClearable={isClearable}
