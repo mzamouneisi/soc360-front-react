@@ -216,7 +216,10 @@ export function ActivityTypes() {
                     <IconButton
                       icon={t.active ? 'toggleOff' : 'toggleOn'}
                       label={t.active ? tr('common.disable') : tr('common.enable')}
-                      onClick={() => handleToggleActive(t)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        void handleToggleActive(t)
+                      }}
                       id={`ActivityTypes.type.${t.id}.toggle`}
                     />
                     <IconButton
