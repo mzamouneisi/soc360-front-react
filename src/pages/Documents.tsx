@@ -47,6 +47,9 @@ export function Documents() {
   const [formError, setFormError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null)
+  const [previewDoc, setPreviewDoc] = useState<HrDocumentDto | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
 
   useEffect(() => {
     if (!file) {
@@ -112,6 +115,29 @@ export function Documents() {
     }
   }
 
+  async function openPreview(doc: HrDocumentDto) {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setPreviewDoc(doc)
+    setPreviewUrl(null)
+    setPreviewLoading(true)
+    try {
+      const url = await documentsApi.previewUrl(doc.id)
+      setPreviewUrl(url)
+    } catch (err) {
+      setPreviewDoc(null)
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
+  function closePreview() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl)
+    setPreviewUrl(null)
+    setPreviewDoc(null)
+    setPreviewLoading(false)
+  }
+
   async function handleDelete(doc: HrDocumentDto) {
     if (!(await dialog.confirm(tr('Documents.supprimer.le.document', { name: doc.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
@@ -172,6 +198,7 @@ export function Documents() {
             paginate
             rowKey={(d) => d.id}
             rows={data}
+            onRowClick={(d) => void openPreview(d)}
             columns={[
               {
                 key: 'name',
@@ -215,9 +242,9 @@ export function Documents() {
                 label: '',
                 render: (d) => (
                   <div className="flex justify-end gap-1">
-                    <InlineButton id={`Documents.document.${d.id}.download`} onClick={() => handleDownload(d)}>{tr('Documents.telecharger')}</InlineButton>
+                    <InlineButton id={`Documents.document.${d.id}.download`} onClick={(e) => { e.stopPropagation(); void handleDownload(d) }}>{tr('Documents.telecharger')}</InlineButton>
                     {canDelete && (
-                      <IconButton id={`Documents.document.${d.id}.delete`} icon="delete" label={tr('common.delete')} variant="danger" onClick={() => handleDelete(d)} />
+                      <IconButton id={`Documents.document.${d.id}.delete`} icon="delete" label={tr('common.delete')} variant="danger" onClick={(e) => { e.stopPropagation(); void handleDelete(d) }} />
                     )}
                   </div>
                 ),
@@ -235,6 +262,17 @@ export function Documents() {
           descriptionId="Documents.partagez.le.premier.document.de.votre.espace"
         />
       )}
+
+      {previewDoc && previewUrl && (
+        <DocumentPreview
+          id="Documents.preview"
+          url={previewUrl}
+          name={previewDoc.name}
+          initialFullOpen
+          onFullClose={closePreview}
+        />
+      )}
+      {previewLoading && <LoadingBlock />}
 
       <Modal
         open={modalOpen}

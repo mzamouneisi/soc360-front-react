@@ -31,14 +31,18 @@ export function DocumentPreview({
   className = '',
   id,
   fill = false,
+  initialFullOpen = false,
+  onFullClose,
 }: {
   url?: string | null
   name?: string | null
   className?: string
   id?: string
   fill?: boolean
+  initialFullOpen?: boolean
+  onFullClose?: () => void
 }) {
-  const [fullOpen, setFullOpen] = useState(false)
+  const [fullOpen, setFullOpen] = useState(initialFullOpen)
   const [text, setText] = useState<string | null>(null)
   const [textError, setTextError] = useState(false)
   const [zoom, setZoom] = useState(1)
@@ -141,7 +145,10 @@ export function DocumentPreview({
           open
           title={name}
           titleId="document.preview.full.title"
-          onClose={() => setFullOpen(false)}
+          onClose={() => {
+            setFullOpen(false)
+            onFullClose?.()
+          }}
           size={fullSize ? 'full' : 'xl'}
         >
           <div className="mb-3 flex flex-wrap items-center justify-end gap-2">

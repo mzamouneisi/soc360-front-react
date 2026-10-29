@@ -786,7 +786,7 @@ describe('Unavailability', () => {
     expect(
       screen.queryByRole('button', { name: 'Enregistrer' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Fermer' })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Fermer' }).length).toBeGreaterThan(0)
     expect(
       screen.getByRole('button', { name: 'Retirer le document' }),
     ).toBeDisabled()

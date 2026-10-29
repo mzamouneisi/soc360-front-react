@@ -518,7 +518,14 @@ export function Tables() {
                           </thead>
                           <tbody className="divide-y divide-gray-100">
                             {pagedRows.map((row, i) => (
-                              <tr key={i} className="even:bg-gray-50 hover:bg-gray-100">
+                              <tr
+                                key={i}
+                                onClick={() => {
+                                  setInserting(false)
+                                  setDraft({ ...row })
+                                }}
+                                className="cursor-pointer even:bg-gray-50 hover:bg-gray-100"
+                              >
                                 <td className="w-12 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
                                   {safePage * pageSize + i + 1}
                                 </td>
@@ -537,7 +544,8 @@ export function Tables() {
                                     label={tr('Tables.modifier')}
                                     variant="primary"
                                     className="mr-1.5"
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                      e.stopPropagation()
                                       setInserting(false)
                                       setDraft({ ...row })
                                     }} id="Tables.modifier" />
@@ -545,7 +553,10 @@ export function Tables() {
                                     icon="delete"
                                     label={tr('Tables.supprimer')}
                                     variant="danger"
-                                    onClick={() => void deleteRow(row)} id="Tables.supprimer" />
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      void deleteRow(row)
+                                    }} id="Tables.supprimer" />
                                 </td>
                               </tr>
                             ))}

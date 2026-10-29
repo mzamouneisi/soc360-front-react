@@ -5,7 +5,7 @@ import { consultantsApi } from '../api/consultants'
 import { crasApi } from '../api/cras'
 import type { ConsultantSummary, CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
 import { Button, Card, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
@@ -400,7 +400,8 @@ export function CraList() {
                     <tr
                       id={`CraList.row.${cra.id}`}
                       key={cra.id}
-                      className={`align-top ${
+                      onClick={() => setOpenCraId(cra.id)}
+                      className={`cursor-pointer align-top ${
                         cra.id === openCraId
                           ? '[&>td]:border-y-2 [&>td]:border-blue-400 [&>td:first-child]:border-l-2 [&>td:last-child]:border-r-2 [&>td]:bg-blue-50'
                           : cra.type === 'CONGE'
@@ -438,20 +439,20 @@ export function CraList() {
                             icon={editable(cra) ? 'edit' : 'view'}
                             label={editable(cra) ? tr('CraList.editer') : tr('CraList.ouvrir')}
                             variant="primary"
-                            onClick={() => setOpenCraId(cra.id)}
+                            onClick={(e) => { e.stopPropagation(); setOpenCraId(cra.id) }}
                             id={`CraList.${editable(cra) ? 'editer' : 'ouvrir'}.${cra.id}`}
                           />
                           <IconButton
                             icon="history"
                             label={tr('CraList.historique')}
                             variant="history"
-                            onClick={() => setHistoryCra(cra)} id={`CraList.historique.${cra.id}`} />
+                            onClick={(e) => { e.stopPropagation(); setHistoryCra(cra) }} id={`CraList.historique.${cra.id}`} />
                           {editable(cra) && (
                             <IconButton
                               icon="delete"
                               label={tr('CraList.supprimer')}
                               variant="danger"
-                              onClick={() => handleDelete(cra)} id={`CraList.supprimer.${cra.id}`} />
+                              onClick={(e) => { e.stopPropagation(); void handleDelete(cra) }} id={`CraList.supprimer.${cra.id}`} />
                           )}
                           {canValidate(cra) && cra.status === 'SUBMITTED' && (
                             <>
@@ -459,12 +460,12 @@ export function CraList() {
                                 icon="check"
                                 label={tr('CraList.valider')}
                                 variant="soft"
-                                onClick={() => changeStatus(cra.id, 'validate')} id={`CraList.valider.${cra.id}`} />
+                                onClick={(e) => { e.stopPropagation(); void changeStatus(cra.id, 'validate') }} id={`CraList.valider.${cra.id}`} />
                               <IconButton
                                 icon="reject"
                                 label={tr('CraList.rejeter')}
                                 variant="danger"
-                                onClick={() => changeStatus(cra.id, 'reject')} id={`CraList.rejeter.${cra.id}`} />
+                                onClick={(e) => { e.stopPropagation(); void changeStatus(cra.id, 'reject') }} id={`CraList.rejeter.${cra.id}`} />
                             </>
                           )}
                         </div>
@@ -496,45 +497,6 @@ export function CraList() {
         </>
       )}
 
-      <Card className="mt-4 flex flex-wrap items-center gap-3 p-4">
-        <label id="CraList.mois" className="flex items-center gap-2 whitespace-nowrap text-sm text-gray-600">
-          <span id="CraList.mois.label" className="min-w-[4.5rem]">{tr('CraList.mois')}</span>
-          <Select
-            id="CraList.mois.select"
-            className="w-auto"
-            value={month}
-            onChange={(e) => void openPeriod(year, Number(e.target.value))}
-          >
-            {allowedMonths.map((m) => (
-              <option id={`CraList.mois.option.${m}`} key={m} value={m}>
-                {monthLabel(m)}
-              </option>
-            ))}
-          </Select>
-          <Select
-            id="CraList.annee.select"
-            className="w-auto"
-            value={year}
-            onChange={(e) => void openPeriod(Number(e.target.value), month)}
-          >
-            {allowedYears.map((y) => (
-              <option id={`CraList.annee.option.${y}`} key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <div className="flex items-center gap-1">
-          <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev}
-            disabled={beforeHirePeriod(shiftMonth(year, month, -1).year, shiftMonth(year, month, -1).month)}
-            id="CraList.mois.precedent" />
-          <InlineButton id="CraList.revenir.au.mois.courant" onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
-            {tr('CraList.mois.courant')}
-          </InlineButton>
-          <IconButton icon="chevronRight" label={tr('CraList.mois.suivant')} onClick={goNext} id="CraList.mois.suivant" />
-        </div>
-      </Card>
-
       {canCreateCra && ownerId && (
         <div className="mt-4 flex items-center justify-center gap-3">
           <Button id="CraList.nouveau.cra" className="w-auto" onClick={() => createCra('CRA')}>
@@ -544,7 +506,56 @@ export function CraList() {
       )}
 
       {openCraId != null && (
-        <div className="mt-6">
+        <Modal
+          open
+          onClose={() => {
+            setOpenCraId(null)
+            reload()
+          }}
+          title={tr('CraList.cra')}
+          titleId="CraList.detail.modal"
+          size="full"
+        >
+          <div className="mb-4">
+            <Card className="flex flex-wrap items-center gap-3 p-4">
+            <label id="CraList.mois" className="flex items-center gap-2 whitespace-nowrap text-sm text-gray-600">
+              <span id="CraList.mois.label" className="min-w-[4.5rem]">{tr('CraList.mois')}</span>
+              <Select
+                id="CraList.mois.select"
+                className="w-auto"
+                value={month}
+                onChange={(e) => void openPeriod(year, Number(e.target.value))}
+              >
+                {allowedMonths.map((m) => (
+                  <option id={`CraList.mois.option.${m}`} key={m} value={m}>
+                    {monthLabel(m)}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                id="CraList.annee.select"
+                className="w-auto"
+                value={year}
+                onChange={(e) => void openPeriod(Number(e.target.value), month)}
+              >
+                {allowedYears.map((y) => (
+                  <option id={`CraList.annee.option.${y}`} key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <div className="flex items-center gap-1">
+              <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev}
+                disabled={beforeHirePeriod(shiftMonth(year, month, -1).year, shiftMonth(year, month, -1).month)}
+                id="CraList.mois.precedent" />
+              <InlineButton id="CraList.revenir.au.mois.courant" onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
+                {tr('CraList.mois.courant')}
+              </InlineButton>
+              <IconButton icon="chevronRight" label={tr('CraList.mois.suivant')} onClick={goNext} id="CraList.mois.suivant" />
+            </div>
+          </Card>
+          </div>
           <CraDetail
             id={openCraId}
             onClose={() => {
@@ -553,7 +564,7 @@ export function CraList() {
             }}
             onChange={reload}
           />
-        </div>
+        </Modal>
       )}
 
       {historyCra && (

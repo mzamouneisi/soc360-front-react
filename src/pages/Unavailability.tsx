@@ -17,7 +17,7 @@ import type {
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
 import { usePagination } from '../lib/usePagination'
-import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
+import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { Alert, Card, Field, IconButton, InlineButton, Input, Select, Textarea } from '../components/ui'
 import { MonthPicker } from '../components/MonthPicker'
@@ -145,13 +145,14 @@ export function Unavailability() {
     setSelectedId(null)
   }, [search, consultantFilter, monthFilter])
 
+  const data = list.data ?? []
+
   useEffect(() => {
     const open = searchParams.get('open')
-    if (open) setSelectedId(Number(open))
-  }, [searchParams])
-
-  const data = list.data ?? []
-  const selected = useMemo(() => data.find((u) => u.id === selectedId) ?? null, [list.data, selectedId])
+    if (!open) return
+    const target = data.find((u) => u.id === Number(open))
+    if (target) handleRowClick(target)
+  }, [searchParams, data])
 
   // Aperçu calendrier pendant la saisie : il met en évidence l'indisponibilité en cours
   // (même non enregistrée) avec ses demi-journées, et affiche les autres indispos, congés et
@@ -292,14 +293,9 @@ export function Unavailability() {
 
   function handleRowClick(u: UnavailabilityDto) {
     setSelectedId(u.id)
-    if (canEdit(u)) {
-      openEdit(u)
-    } else if (u.status === 'VALIDATED' && isOwner(u)) {
-      // Le propriétaire consulte sa propre indisponibilité validée en lecture seule.
-      openEdit(u, true)
-    } else {
-      setShowForm(false)
-    }
+    // Toute ligne ouvre le formulaire dans une popup : éditable si autorisé, sinon en
+    // lecture seule (comme pour les autres tables de l'application).
+    openEdit(u, !canEdit(u))
   }
 
   function openCreate() {
@@ -765,14 +761,26 @@ export function Unavailability() {
       )}
 
       {showForm && (
-        <Card className="mb-4 p-4">
-          <h3 id={formReadOnly ? 'Unavailability.detail.indisponibilite.form' : editingId != null ? 'Unavailability.modifier.l.indisponibilite.form' : 'Unavailability.nouvelle.indisponibilite.form'} className="mb-3 text-sm font-semibold text-gray-900">
-            {formReadOnly
+        <Modal
+          open
+          onClose={() => void closeForm()}
+          title={
+            formReadOnly
               ? tr('Unavailability.detail.indisponibilite')
               : editingId != null
                 ? tr('Unavailability.modifier.l.indisponibilite')
-                : tr('Unavailability.nouvelle.indisponibilite')}
-          </h3>
+                : tr('Unavailability.nouvelle.indisponibilite')
+          }
+          titleId={
+            formReadOnly
+              ? 'Unavailability.detail.indisponibilite.form'
+              : editingId != null
+                ? 'Unavailability.modifier.l.indisponibilite.form'
+                : 'Unavailability.nouvelle.indisponibilite.form'
+          }
+          size="full"
+        >
+        <Card className="border-0 p-4 shadow-none">
           <div className="flex flex-wrap items-start gap-[30px]">
             <div className="w-full max-w-[28.75rem] space-y-3">
             <div className="flex flex-wrap items-start gap-3">
@@ -927,12 +935,6 @@ export function Unavailability() {
             </div>
           </div>
 
-          {editingId == null && previewUnavailability && (
-            <div className="mt-4">
-              <UnavailabilityCalendar selected={previewUnavailability} unavailabilities={data} />
-            </div>
-          )}
-
           {formReadOnly && (
             <p id="Unavailability.lecture.seule" className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
               {tr('Unavailability.lecture.seule')}
@@ -962,12 +964,12 @@ export function Unavailability() {
             )}
           </div>
         </Card>
-      )}
-
-      {selected && (
-        <div className="mt-4">
-          <UnavailabilityCalendar selected={selected} unavailabilities={data} />
-        </div>
+        {previewUnavailability && (
+          <div className="mt-4">
+            <UnavailabilityCalendar selected={previewUnavailability} unavailabilities={data} />
+          </div>
+        )}
+        </Modal>
       )}
       {historyFor && (
         <UnavailabilityHistoryModal

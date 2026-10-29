@@ -100,6 +100,25 @@ describe('Tables', () => {
     expect(document.getElementById('Tables.structure.row.NAME.size')?.textContent).toBe('255')
   })
 
+  it('ouvre la ligne dans une popup au clic', async () => {
+    userMock.value = adminUser
+    listMock.mockResolvedValue(['company'])
+    getRelationsMock.mockResolvedValue([])
+    getLinesMock.mockResolvedValue([{ ID: 1, NAME: 'Acme' }])
+    getColumnsMock.mockResolvedValue([
+      { columnName: 'ID', dataType: 'BIGINT', nullable: false, size: 19, defaultValue: null },
+      { columnName: 'NAME', dataType: 'VARCHAR', nullable: false, size: 255, defaultValue: null },
+    ])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'company' }))
+    fireEvent.click(await screen.findByText('Acme'))
+
+    expect(await screen.findByText('Modifier la ligne — company')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
   it('affiche ou masque la colonne gauche', async () => {
     userMock.value = adminUser
     listMock.mockResolvedValue(['company'])
