@@ -258,6 +258,36 @@ describe('NoteFraisList', () => {
     expect(screen.queryByRole('button', { name: 'Suppr.' })).not.toBeInTheDocument()
   })
 
+  it('ouvre le formulaire en cliquant sur une ligne de la liste', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([nf()])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+
+    const row = (await screen.findByText('Alice Martin')).closest('tr') as HTMLElement
+    fireEvent.click(row)
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeInTheDocument()
+  })
+
+  it('ouvre une note soumise en lecture seule au clic pour le collaborateur', async () => {
+    userMock.value = consultantUser
+    findByConsultantYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
+
+    renderList()
+
+    const row = (await screen.findByText('Alice Martin')).closest('tr') as HTMLElement
+    fireEvent.click(row)
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).queryByRole('button', { name: 'Enregistrer' })).not.toBeInTheDocument()
+    expect(document.getElementById('NoteFraisList.detail.fermer')).not.toBeNull()
+  })
+
   it('permet au manager de modifier une note soumise', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
