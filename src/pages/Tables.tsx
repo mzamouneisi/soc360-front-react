@@ -1,11 +1,18 @@
 import { tr } from '../i18n/translate'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { tablesApi, type ColumnDetails, type TableRelation } from '../api/tables'
+import { tablesApi, type ColumnDetails, type SqlExecutionResult, type TableRelation } from '../api/tables'
 import { useAsync } from '../lib/useAsync'
 import { usePagination } from '../lib/usePagination'
-import { IconButton, InlineButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { IconButton, InlineButton, Input, RefreshButton, Textarea } from '../components/ui'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { RelationsGraph } from '../components/RelationsGraph'
@@ -79,6 +86,20 @@ function idKeyOf(columns: ColumnDetails[]): string | null {
   return columns.find((c) => c.columnName.toUpperCase() === 'ID')?.columnName ?? null
 }
 
+function sqlResultMessage(result: SqlExecutionResult): string {
+  const count = result.affectedRows ?? 0
+  switch (result.command) {
+    case 'INSERT':
+      return tr('Tables.lignes.inserees', { count })
+    case 'UPDATE':
+      return tr('Tables.lignes.mises.a.jour', { count })
+    case 'DELETE':
+      return tr('Tables.lignes.supprimees', { count })
+    default:
+      return tr('Tables.commande.executee')
+  }
+}
+
 export function Tables() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -91,6 +112,11 @@ export function Tables() {
 
   const [tables, setTables] = useState<string[]>([])
   const [selected, setSelected] = useState('')
+  const [search, setSearch] = useState('')
+  const [leftPercent, setLeftPercent] = useState(20)
+  const [leftVisible, setLeftVisible] = useState(true)
+  const containerRef = useRef<HTMLDivElement>(null)
+
   const [rows, setRows] = useState<Record<string, unknown>[]>([])
   const [columns, setColumns] = useState<ColumnDetails[]>([])
   const [tab, setTab] = useState<Tab>('data')
@@ -99,7 +125,7 @@ export function Tables() {
   const [page, setPage] = useState(0)
 
   const [sql, setSql] = useState('')
-  const [sqlResult, setSqlResult] = useState<Record<string, unknown>[] | null>(null)
+  const [sqlResult, setSqlResult] = useState<SqlExecutionResult | null>(null)
   const [sqlError, setSqlError] = useState<string | null>(null)
   const [sqlLoading, setSqlLoading] = useState(false)
 
@@ -124,6 +150,8 @@ export function Tables() {
     setRows([])
     setColumns([])
     setSqlResult(null)
+    setSqlError(null)
+    setSql(`SELECT * FROM ${name};`)
     setTab('data')
     setPage(0)
     try {
@@ -154,11 +182,36 @@ export function Tables() {
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize))
   const safePage = Math.min(page, totalPages - 1)
   const pagedRows = rows.slice(safePage * pageSize, safePage * pageSize + pageSize)
-  const sqlPage = usePagination(sqlResult ?? [], pageSize)
+  const sqlRows = sqlResult?.rows ?? []
+  const sqlPage = usePagination(sqlRows, pageSize)
+  const sqlColumns = sqlRows.length > 0 ? Object.keys(sqlRows[0]) : []
+
+  const filteredTables = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    if (!query) return tables
+    return tables.filter((name) => name.toLowerCase().includes(query))
+  }, [tables, search])
 
   const selectTable = (name: string) => {
     setSelected(name)
-    if (name) loadTable(name)
+    if (name) void loadTable(name)
+  }
+
+  const startResize = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const container = containerRef.current
+    if (!container) return
+    event.preventDefault()
+    const rect = container.getBoundingClientRect()
+    const move = (moveEvent: PointerEvent) => {
+      const percent = ((moveEvent.clientX - rect.left) / rect.width) * 100
+      setLeftPercent(Math.min(45, Math.max(12, percent)))
+    }
+    const stop = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', stop)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', stop)
   }
 
   const openInsert = () => {
@@ -175,10 +228,10 @@ export function Tables() {
     if (!sql.trim()) return
     setSqlLoading(true)
     setSqlError(null)
+    setSqlResult(null)
     try {
       const result = await tablesApi.executeSql(sql)
       setSqlResult(result)
-      if (selected) loadTable(selected)
     } catch (err) {
       setSqlError(err instanceof Error ? err.message : tr('common.unexpectedError'))
     } finally {
@@ -254,237 +307,358 @@ export function Tables() {
     }
   }
 
-  const sqlColumns = sqlResult && sqlResult.length > 0 ? Object.keys(sqlResult[0]) : []
-
   return (
     <div>
       <PageHeader
-        title={selected || tr('Tables.base.de.donnees')}
-        titleId={selected ? undefined : 'Tables.base.de.donnees'}
-        count={selected ? rows.length : undefined}
+        title={tr('Tables.base.de.donnees')}
+        titleId="Tables.base.de.donnees"
         subtitle={tr('Tables.gestion.des.tables.de.la.base.administration')}
         subtitleId="Tables.gestion.des.tables.de.la.base.administration"
-        actions={
-          <RefreshButton onClick={() => loadTables()} disabled={loading} />
-        }
+        actions={<RefreshButton onClick={() => void loadTables()} disabled={loading} />}
       />
-
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Select
-          className="w-auto min-w-56"
-          value={selected}
-          onChange={(e) => selectTable(e.target.value)}
-        >
-          <option value="">{tr('Tables.selectionner.une.table')}</option>
-          {tables.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </Select>
-        {selected && (
-          <>
-            <InlineButton variant="soft" onClick={() => loadTable(selected)} disabled={loading}>
-              {tr('Tables.recharger')}
-            </InlineButton>
-            <IconButton icon="add" label={tr('Tables.ajouter.une.ligne')} variant="new" onClick={openInsert} disabled={loading || columns.length === 0} id="Tables.ajouter.une.ligne" />
-          </>
-        )}
-      </div>
 
       {error && <ErrorBlock message={error} />}
 
-      {selected && (
-        <div className="mb-4 flex gap-1">
-          {(
-            [
-              ['data', 'Données'],
-              ['sql', 'SQL'],
-              ['relations', 'Relations'],
-            ] as [Tab, string][]
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              onClick={() => setTab(value)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                tab === value ? 'text-white hover:brightness-95' : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
-              style={tab === value ? { backgroundColor: 'var(--btn-save-color)' } : undefined}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {selected && tab === 'data' && (
-        <>
-          {loading && <LoadingBlock />}
-          {!loading && rows.length === 0 && (
-            <EmptyState
-              title={tr('Tables.table.vide')}
-              description={tr('Tables.aucune.ligne.dans.cette.table')}
-              action={
-                <IconButton icon="add" label="Ajouter une ligne" variant="new" onClick={openInsert} />
-              }
-            />
-          )}
-          {!loading && rows.length > 0 && (
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead style={{ backgroundColor: 'var(--table-header)' }}>
-                    <tr>
-                      <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                        #
-                      </th>
-                      {columns.map((c) => (
-                        <th
-                          key={c.columnName}
-                          className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
-                        >
-                          {c.columnName}
-                          <span className="ml-1 font-normal normal-case text-gray-400">
-                            {c.dataType}
-                          </span>
-                        </th>
-                      ))}
-                      <th className="px-3 py-2 text-right">{tr('Tables.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {pagedRows.map((row, i) => (
-                      <tr key={i} className="even:bg-gray-50 hover:bg-gray-100">
-                        <td className="w-12 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
-                          {safePage * pageSize + i + 1}
-                        </td>
-                        {columns.map((c) => (
-                          <td
-                            key={c.columnName}
-                            className="max-w-72 truncate px-3 py-2 text-gray-700"
-                            title={displayValue(cellValue(row, c.columnName))}
-                          >
-                            {displayValue(cellValue(row, c.columnName))}
-                          </td>
-                        ))}
-                        <td className="whitespace-nowrap px-3 py-2 text-right">
-                          <IconButton
-                            icon="edit"
-                            label={tr('Tables.modifier')}
-                            variant="primary"
-                            className="mr-1.5"
-                            onClick={() => {
-                              setInserting(false)
-                              setDraft({ ...row })
-                            }} id="Tables.modifier" />
-                          <IconButton
-                            icon="delete"
-                            label={tr('Tables.supprimer')}
-                            variant="danger"
-                            onClick={() => deleteRow(row)} id="Tables.supprimer" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="px-4 pb-3">
-                <Pagination page={safePage} totalPages={totalPages} total={rows.length} onChange={setPage} />
-              </div>
+      <div ref={containerRef} className="mt-4 flex min-h-[600px] items-stretch">
+        {leftVisible && (
+          <>
+        <aside
+          id="Tables.left.panel"
+          className="flex shrink-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+          style={{ width: `${leftPercent}%` }}
+        >
+          <div className="border-b border-gray-200 px-3 py-3">
+            <div className="flex items-start justify-between gap-2">
+              <h2 id="Tables.left.title" className="text-sm font-semibold text-gray-900">
+                {selected || tr('Tables.base.de.donnees')} ({selected ? rows.length : tables.length})
+              </h2>
+              <IconButton
+                icon="chevronLeft"
+                label={tr('Tables.masquer.la.colonne.gauche')}
+                variant="neutral"
+                onClick={() => setLeftVisible(false)}
+                id="Tables.left.toggle"
+              />
             </div>
-          )}
-        </>
-      )}
-
-      {selected && tab === 'sql' && (
-        <div className="space-y-4">
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-              <p className="text-sm font-semibold text-gray-900">{tr('Tables.console.sql')}</p>
-              <InlineButton variant="primary" onClick={runSql} disabled={sqlLoading || !sql.trim()}>
-                {tr('Tables.executer')}
-              </InlineButton>
-            </div>
-            <Textarea
-              className="min-h-40 rounded-none border-0 bg-gray-50 font-mono text-xs focus:ring-0"
-              placeholder={'SELECT * FROM ' + (selected || 'TABLE') + ' ;'}
-              value={sql}
-              onChange={(e) => setSql(e.target.value)}
+            <Input
+              id="Tables.search"
+              className="mt-2"
+              placeholder={tr('Tables.rechercher.une.table')}
+              title={tr('Tables.rechercher.une.table')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {sqlError && <ErrorBlock message={sqlError} />}
-          {sqlLoading && <LoadingBlock />}
-          {!sqlLoading && sqlResult && sqlResult.length > 0 && (
-            <div>
-              <p className="mb-2 text-sm font-semibold text-gray-900">
-                Résultat ({sqlResult.length})
-              </p>
-              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead style={{ backgroundColor: 'var(--table-header)' }}>
-                    <tr>
-                      <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
-                        #
-                      </th>
-                      {sqlColumns.map((col) => (
-                        <th
-                          key={col}
-                          className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
-                        >
-                          {col}
-                        </th>
-                      ))}
+
+          <ol
+            id="Tables.table.list"
+            className="overflow-y-auto py-1"
+            style={{ height: '500px' }}
+          >
+            {filteredTables.map((name) => (
+              <li id={`Tables.table.list.${name}`} key={name}>
+                <button
+                  id={`Tables.table.${name}`}
+                  type="button"
+                  onClick={() => selectTable(name)}
+                  className={`block w-full truncate px-3 py-1.5 text-left text-sm transition ${
+                    selected === name
+                      ? 'bg-brand-50 font-semibold text-brand-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                  title={name}
+                >
+                  {name}
+                </button>
+              </li>
+            ))}
+          </ol>
+
+          {selected && (
+            <div className="min-h-0 flex-1 overflow-y-auto border-t border-gray-200 px-3 py-3">
+              <h3 id="Tables.structure" className="mb-2 text-sm font-semibold text-gray-900">
+                {tr('Tables.structure')}
+              </h3>
+              <table className="w-full table-fixed text-xs">
+                <thead className="text-left text-gray-500">
+                  <tr>
+                    <th id="Tables.structure.colonne" className="py-1 pr-2 font-semibold">{tr('Tables.colonne')}</th>
+                    <th id="Tables.structure.type" className="py-1 pr-2 font-semibold">{tr('Tables.type')}</th>
+                    <th id="Tables.structure.taille" className="py-1 pr-2 font-semibold">{tr('Tables.taille')}</th>
+                    <th id="Tables.structure.defaut" className="py-1 font-semibold">{tr('Tables.valeur.defaut')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {columns.map((column) => (
+                    <tr id={`Tables.structure.row.${column.columnName}`} key={column.columnName}>
+                      <td id={`Tables.structure.row.${column.columnName}.name`} className="truncate py-1 pr-2 font-medium text-gray-800" title={column.columnName}>{column.columnName}</td>
+                      <td id={`Tables.structure.row.${column.columnName}.type`} className="truncate py-1 pr-2 text-gray-600" title={column.dataType}>{column.dataType}</td>
+                      <td id={`Tables.structure.row.${column.columnName}.size`} className="py-1 pr-2 text-gray-600">{column.size ?? '—'}</td>
+                      <td id={`Tables.structure.row.${column.columnName}.default`} className="truncate py-1 text-gray-600" title={column.defaultValue ?? ''}>{column.defaultValue ?? '—'}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {sqlPage.pageItems.map((row, i) => (
-                      <tr key={i} className="even:bg-gray-50">
-                        <td className="w-12 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
-                          {sqlPage.offset + i + 1}
-                        </td>
-                        {sqlColumns.map((col) => (
-                          <td
-                            key={col}
-                            className="max-w-72 truncate px-3 py-2 text-gray-700"
-                            title={displayValue(row[col])}
-                          >
-                            {displayValue(row[col])}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="px-4 pb-3">
-                <Pagination page={sqlPage.page} totalPages={sqlPage.totalPages} total={sqlPage.total} onChange={sqlPage.setPage} />
-              </div>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-          {!sqlLoading && sqlResult && sqlResult.length === 0 && (
-            <EmptyState title={tr('Tables.aucun.resultat')} description={tr('Tables.requete.executee.avec.succes')} />
-          )}
-        </div>
-      )}
+        </aside>
 
-      {selected && tab === 'relations' && (
-        <>
-          {relations.loading && <LoadingBlock />}
-          {relations.error && <ErrorBlock message={relations.error} />}
-          {!relations.loading && !relations.error && (
-            <>
-              {relations.data && relations.data.length === 0 && (
-                <EmptyState title={tr('Tables.aucune.relation')} description={tr('Tables.aucune.cle.etrangere.detectee')} />
+        <div
+          id="Tables.resizer"
+          role="separator"
+          aria-orientation="vertical"
+          title={tr('Tables.redimensionner')}
+          onPointerDown={startResize}
+          className="mx-1 w-1.5 shrink-0 cursor-col-resize rounded bg-gray-200 transition hover:bg-brand-400"
+        />
+          </>
+        )}
+
+        <section className="min-w-0 flex-1">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {!leftVisible && (
+                <IconButton
+                  icon="chevronRight"
+                  label={tr('Tables.afficher.la.colonne.gauche')}
+                  variant="neutral"
+                  onClick={() => setLeftVisible(true)}
+                  id="Tables.left.toggle"
+                />
               )}
-              {relations.data && relations.data.length > 0 && (
-                <RelationsGraph relations={relations.data} focusedTable={selected} />
+              {selected && (
+                <h2 id="Tables.right.title" className="text-sm font-semibold text-gray-900">
+                  {selected} ({rows.length})
+                </h2>
+              )}
+            </div>
+            {selected && (
+              <div className="flex flex-wrap items-center gap-2">
+                <InlineButton variant="soft" onClick={() => void loadTable(selected)} disabled={loading}>
+                  {tr('Tables.recharger')}
+                </InlineButton>
+                <IconButton
+                  icon="add"
+                  label={tr('Tables.ajouter.une.ligne')}
+                  variant="new"
+                  onClick={openInsert}
+                  disabled={loading || columns.length === 0}
+                  id="Tables.ajouter.une.ligne"
+                />
+              </div>
+            )}
+          </div>
+
+          {!selected && (
+            <EmptyState
+              title={tr('Tables.aucune.table.selectionnee')}
+              description={tr('Tables.selectionnez.une.table.pour.la.gerer')}
+            />
+          )}
+
+          {selected && (
+            <>
+
+              <div className="mb-4 flex gap-1">
+                {(
+                  [
+                    ['data', tr('Tables.donnees'), 'Tables.tab.data'],
+                    ['sql', tr('Tables.sql'), 'Tables.tab.sql'],
+                    ['relations', tr('Tables.relations'), 'Tables.tab.relations'],
+                  ] as [Tab, string, string][]
+                ).map(([value, label, id]) => (
+                  <button
+                    key={value}
+                    id={id}
+                    onClick={() => setTab(value)}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                      tab === value ? 'text-white hover:brightness-95' : 'bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    style={tab === value ? { backgroundColor: 'var(--btn-save-color)' } : undefined}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {tab === 'data' && (
+                <>
+                  {loading && <LoadingBlock />}
+                  {!loading && rows.length === 0 && (
+                    <EmptyState
+                      title={tr('Tables.table.vide')}
+                      description={tr('Tables.aucune.ligne.dans.cette.table')}
+                      action={
+                        <IconButton icon="add" label="Ajouter une ligne" variant="new" onClick={openInsert} />
+                      }
+                    />
+                  )}
+                  {!loading && rows.length > 0 && (
+                    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200 text-sm">
+                          <thead style={{ backgroundColor: 'var(--table-header)' }}>
+                            <tr>
+                              <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                                #
+                              </th>
+                              {columns.map((c) => (
+                                <th
+                                  key={c.columnName}
+                                  className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
+                                >
+                                  {c.columnName}
+                                  <span className="ml-1 font-normal normal-case text-gray-400">
+                                    {c.dataType}
+                                  </span>
+                                </th>
+                              ))}
+                              <th className="px-3 py-2 text-right">{tr('Tables.actions')}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {pagedRows.map((row, i) => (
+                              <tr key={i} className="even:bg-gray-50 hover:bg-gray-100">
+                                <td className="w-12 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
+                                  {safePage * pageSize + i + 1}
+                                </td>
+                                {columns.map((c) => (
+                                  <td
+                                    key={c.columnName}
+                                    className="max-w-72 truncate px-3 py-2 text-gray-700"
+                                    title={displayValue(cellValue(row, c.columnName))}
+                                  >
+                                    {displayValue(cellValue(row, c.columnName))}
+                                  </td>
+                                ))}
+                                <td className="whitespace-nowrap px-3 py-2 text-right">
+                                  <IconButton
+                                    icon="edit"
+                                    label={tr('Tables.modifier')}
+                                    variant="primary"
+                                    className="mr-1.5"
+                                    onClick={() => {
+                                      setInserting(false)
+                                      setDraft({ ...row })
+                                    }} id="Tables.modifier" />
+                                  <IconButton
+                                    icon="delete"
+                                    label={tr('Tables.supprimer')}
+                                    variant="danger"
+                                    onClick={() => void deleteRow(row)} id="Tables.supprimer" />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="px-4 pb-3">
+                        <Pagination page={safePage} totalPages={totalPages} total={rows.length} onChange={setPage} />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {tab === 'sql' && (
+                <div className="space-y-4">
+                  <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+                      <p id="Tables.console.sql" className="text-sm font-semibold text-gray-900">{tr('Tables.console.sql')}</p>
+                      <InlineButton variant="primary" onClick={() => void runSql()} disabled={sqlLoading || !sql.trim()}>
+                        {tr('Tables.executer')}
+                      </InlineButton>
+                    </div>
+                    <Textarea
+                      id="Tables.sql.textarea"
+                      className="min-h-40 rounded-none border-0 bg-gray-50 font-mono text-xs focus:ring-0"
+                      placeholder={'SELECT * FROM ' + (selected || 'TABLE') + ' ;'}
+                      value={sql}
+                      onChange={(e) => setSql(e.target.value)}
+                    />
+                  </div>
+                  {sqlError && <ErrorBlock message={sqlError} />}
+                  {sqlLoading && <LoadingBlock />}
+                  {!sqlLoading && sqlResult && !sqlResult.query && (
+                    <div id="Tables.sql.message" className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                      {sqlResultMessage(sqlResult)}
+                    </div>
+                  )}
+                  {!sqlLoading && sqlResult?.query && sqlRows.length > 0 && (
+                    <div>
+                      <p id="Tables.sql.result.title" className="mb-2 text-sm font-semibold text-gray-900">
+                        {tr('Tables.resultat')} ({sqlRows.length})
+                      </p>
+                      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead style={{ backgroundColor: 'var(--table-header)' }}>
+                              <tr>
+                                <th className="w-12 px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-400">
+                                  #
+                                </th>
+                                {sqlColumns.map((col) => (
+                                  <th
+                                    key={col}
+                                    className="whitespace-nowrap px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
+                                  >
+                                    {col}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {sqlPage.pageItems.map((row, i) => (
+                                <tr key={i} className="even:bg-gray-50">
+                                  <td className="w-12 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
+                                    {sqlPage.offset + i + 1}
+                                  </td>
+                                  {sqlColumns.map((col) => (
+                                    <td
+                                      key={col}
+                                      className="max-w-72 truncate px-3 py-2 text-gray-700"
+                                      title={displayValue(row[col])}
+                                    >
+                                      {displayValue(row[col])}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="px-4 pb-3">
+                          <Pagination page={sqlPage.page} totalPages={sqlPage.totalPages} total={sqlPage.total} onChange={sqlPage.setPage} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {!sqlLoading && sqlResult?.query && sqlRows.length === 0 && (
+                    <EmptyState title={tr('Tables.aucun.resultat')} description={tr('Tables.requete.executee.avec.succes')} />
+                  )}
+                </div>
+              )}
+
+              {tab === 'relations' && (
+                <>
+                  {relations.loading && <LoadingBlock />}
+                  {relations.error && <ErrorBlock message={relations.error} />}
+                  {!relations.loading && !relations.error && (
+                    <>
+                      {relations.data && relations.data.length === 0 && (
+                        <EmptyState title={tr('Tables.aucune.relation')} description={tr('Tables.aucune.cle.etrangere.detectee')} />
+                      )}
+                      {relations.data && relations.data.length > 0 && (
+                        <RelationsGraph relations={relations.data} focusedTable={selected} />
+                      )}
+                    </>
+                  )}
+                </>
               )}
             </>
           )}
-        </>
-      )}
+        </section>
+      </div>
 
       {!selected && !loading && tables.length === 0 && (
         <EmptyState title={tr('Tables.aucune.table')} description={tr('Tables.selectionnez.une.table.pour.la.gerer')} />
