@@ -220,11 +220,8 @@ describe('NoteFraisList', () => {
   })
 
   it('soumet une note de frais au statut Brouillon', async () => {
-    userMock.value = managerUser
-    findBySocYearMock.mockResolvedValue([nf()])
-    totalsByMonthMock.mockResolvedValue({})
-    totalsByCategoryMock.mockResolvedValue({})
-    summariesMock.mockResolvedValue([])
+    userMock.value = consultantUser
+    findByConsultantYearMock.mockResolvedValue([nf()])
     submitMock.mockResolvedValue(nf({ status: 'SUBMITTED' }))
 
     renderList()
@@ -253,9 +250,9 @@ describe('NoteFraisList', () => {
     renderList()
 
     expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Modifier' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Soumettre' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Suppr.' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Suppr.' })).toBeDisabled()
   })
 
   it('ouvre le formulaire en cliquant sur une ligne de la liste', async () => {
@@ -284,13 +281,16 @@ describe('NoteFraisList', () => {
     fireEvent.click(row)
 
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).queryByRole('button', { name: 'Enregistrer' })).not.toBeInTheDocument()
-    expect(document.getElementById('NoteFraisList.detail.fermer')).not.toBeNull()
+    expect(within(dialog).getByRole('button', { name: 'Enregistrer' })).toBeDisabled()
+    expect(within(dialog).queryByRole('button', { name: 'Soumettre' })).not.toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Valider' })).not.toBeInTheDocument()
   })
 
   it('permet au manager de modifier une note soumise', async () => {
     userMock.value = managerUser
-    findBySocYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
+    findBySocYearMock.mockResolvedValue([
+      nf({ status: 'SUBMITTED', documentId: 77, documentName: 'facture.pdf' }),
+    ])
     totalsByMonthMock.mockResolvedValue({})
     totalsByCategoryMock.mockResolvedValue({})
     summariesMock.mockResolvedValue([])
@@ -299,6 +299,14 @@ describe('NoteFraisList', () => {
 
     expect(await screen.findByRole('button', { name: 'Modifier' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Annuler la soumission' })).not.toBeInTheDocument()
+
+    const row = (await screen.findByText('Alice Martin')).closest('tr') as HTMLElement
+    fireEvent.click(row)
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('button', { name: 'Valider' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Rejeter' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Enregistrer' })).not.toBeDisabled()
   })
 
   it('affiche l’historique des modifications', async () => {

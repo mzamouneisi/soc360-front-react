@@ -178,16 +178,14 @@ export function NoteFraisList() {
 
   const isOwner = (nf: NoteFraisDto) =>
     selfCollaboratorId != null && nf.consultantId === selfCollaboratorId
-  const canWrite = (nf: NoteFraisDto) =>
-    isOwner(nf)
-      ? nf.status === 'DRAFT' || nf.status === 'REJECTED'
-      : nf.status !== 'PAID'
+  const isReadOnlyForUser = (nf: NoteFraisDto) =>
+    isOwner(nf) && (nf.status === 'SUBMITTED' || nf.status === 'VALIDATED')
+  const canWrite = (nf: NoteFraisDto) => !isReadOnlyForUser(nf)
   const canSubmit = (nf: NoteFraisDto) =>
-    nf.status === 'DRAFT' || nf.status === 'REJECTED'
+    isOwner(nf) && (nf.status === 'DRAFT' || nf.status === 'REJECTED')
   const canCancel = (nf: NoteFraisDto) =>
     isOwner(nf) && nf.status === 'SUBMITTED'
-  const canDelete = (nf: NoteFraisDto) =>
-    nf.status === 'DRAFT' || nf.status === 'REJECTED'
+  const canReview = (nf: NoteFraisDto) => canValidate && !isOwner(nf)
 
   function openCreate() {
     previewRequest.current += 1
@@ -402,17 +400,24 @@ export function NoteFraisList() {
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else if (action === 'reject') {
         const comment = await dialog.prompt(tr('common.rejectionReason'))
-        if (comment === null) return
+        if (comment === null) return false
         const updated = await noteFraisApi.reject(nf.id, comment)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else {
-        if (!(await dialog.confirm(tr('NoteFraisList.supprimer.cette.note.de.frais'), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
+        if (!(await dialog.confirm(tr('NoteFraisList.supprimer.cette.note.de.frais'), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return false
         await noteFraisApi.delete(nf.id)
         setData((prev) => (prev ?? []).filter((x) => x.id !== nf.id))
       }
+      return true
     } catch (err) {
       void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+      return false
     }
+  }
+
+  async function handleFormAction(action: 'submit' | 'validate' | 'reject') {
+    if (!editing) return
+    if (await changeStatus(editing, action)) setModalOpen(false)
   }
 
   const filledLines = form.lines.filter((l) => !isBlankLine(l))
@@ -587,24 +592,20 @@ export function NoteFraisList() {
                 label: '',
                 render: (nf) => (
                   <div className="flex justify-end gap-1">
-                    {canWrite(nf) && (
-                      <IconButton icon="edit" label={tr('common.edit')} onClick={(e) => { e.stopPropagation(); void openEdit(nf) }} id={`common.edit.${nf.id}`} />
-                    )}
+                    <IconButton icon="edit" label={tr('common.edit')} onClick={(e) => { e.stopPropagation(); void openEdit(nf, isReadOnlyForUser(nf)) }} id={`common.edit.${nf.id}`} />
                     {canSubmit(nf) && (
                       <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'submit') }} id={`Unavailability.soumettre.${nf.id}`} />
                     )}
                     {canCancel(nf) && (
                       <IconButton icon="cancel" label={tr('NoteFraisList.annuler.la.soumission')} variant="danger" onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'cancel') }} id={`NoteFraisList.annuler.la.soumission.${nf.id}`} />
                     )}
-                    {canValidate && nf.status === 'SUBMITTED' && (
+                    {canReview(nf) && nf.status === 'SUBMITTED' && (
                       <>
                         <IconButton icon="check" label={tr('Unavailability.valider')} variant="soft" onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'validate') }} id={`Unavailability.valider.${nf.id}`} />
                         <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'reject') }} id={`Unavailability.rejeter.${nf.id}`} />
                       </>
                     )}
-                    {canDelete(nf) && (
-                      <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'delete') }} id={`NoteFraisList.suppr.${nf.id}`} />
-                    )}
+                    <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" disabled={isReadOnlyForUser(nf)} onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'delete') }} id={`NoteFraisList.suppr.${nf.id}`} />
                     <IconButton icon="history" label={tr('NoteFraisList.historique')} variant="history" onClick={(e) => { e.stopPropagation(); setHistoryFor(nf) }} id={`NoteFraisList.historique.${nf.id}`} />
                   </div>
                 ),
@@ -628,14 +629,19 @@ export function NoteFraisList() {
         title={editing ? tr('NoteFraisList.modifier.la.note.de', { name: editing.consultantName }) : tr('NoteFraisList.nouvelle.note.de.frais')}
         size="xl"
         footer={
-          readOnlyForm ? (
-            <IconButton icon="close" label={tr('NoteFraisList.fermer')} onClick={() => setModalOpen(false)} id="NoteFraisList.detail.fermer" />
-          ) : (
-            <>
-              <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
-              <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting || uploading || !formIsValid} loading={submitting || uploading} />
-            </>
-          )
+          <>
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
+            {editing && isOwner(editing) && (editing.status === 'DRAFT' || editing.status === 'REJECTED') && (
+              <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => void handleFormAction('submit')} id="NoteFraisList.form.soumettre" />
+            )}
+            {editing && canReview(editing) && (editing.status === 'SUBMITTED' || editing.status === 'REJECTED') && (
+              <IconButton icon="check" label={tr('Unavailability.valider')} variant="soft" onClick={() => void handleFormAction('validate')} id="NoteFraisList.form.valider" />
+            )}
+            {editing && canReview(editing) && editing.status === 'SUBMITTED' && (
+              <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => void handleFormAction('reject')} id="NoteFraisList.form.rejeter" />
+            )}
+            <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={readOnlyForm || submitting || uploading || !formIsValid} loading={submitting || uploading} />
+          </>
         }
       >
         <form onSubmit={handleSubmit}>
