@@ -920,6 +920,8 @@ export function Unavailability() {
                   socId={typesSocId}
                   consultantId={isConsultant ? (user?.consultantId ?? user?.id ?? null) : formConsultantId}
                   disabled={formReadOnly}
+                  previewSquare
+                  previewClassName="max-w-48"
                 />
               </Field>
             </div>

@@ -44,12 +44,16 @@ export function DocumentAttachment({
   socId,
   consultantId,
   disabled = false,
+  previewSquare = false,
+  previewClassName = '',
 }: {
   value: AttachedDocument | null
   onChange: (document: AttachedDocument | null) => void
   socId?: number | null
   consultantId?: number | null
   disabled?: boolean
+  previewSquare?: boolean
+  previewClassName?: string
 }) {
   const [open, setOpen] = useState(false)
   const [file, setFile] = useState<File | null>(null)
@@ -183,7 +187,13 @@ export function DocumentAttachment({
         )}
       </div>
       {value && (
-        <DocumentPreview id="document.attachment.preview" url={existingPreviewUrl ?? undefined} name={value.name} className="mt-2" />
+        <DocumentPreview
+          id="document.attachment.preview"
+          url={existingPreviewUrl ?? undefined}
+          name={value.name}
+          className={`mt-2 ${previewClassName}`}
+          square={previewSquare}
+        />
       )}
 
       <Modal

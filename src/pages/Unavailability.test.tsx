@@ -288,6 +288,9 @@ describe('Unavailability', () => {
     expect((await screen.findAllByText('justificatif.pdf')).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('button', { name: 'Voir le document' }).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Arrêt/).length).toBeGreaterThan(0)
+    const preview = document.getElementById('document.attachment.preview')
+    expect(preview?.className).toContain('aspect-square')
+    expect(preview?.className).toContain('max-w-48')
   })
 
   it('affiche le motif de rejet lorsqu’on ouvre une indisponibilité rejetée', async () => {

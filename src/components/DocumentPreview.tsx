@@ -30,11 +30,13 @@ export function DocumentPreview({
   name,
   className = '',
   id,
+  square = false,
 }: {
   url?: string | null
   name?: string | null
   className?: string
   id?: string
+  square?: boolean
 }) {
   const [fullOpen, setFullOpen] = useState(false)
   const [text, setText] = useState<string | null>(null)
@@ -88,14 +90,18 @@ export function DocumentPreview({
             openFull()
           }
         }}
-        className={`cursor-zoom-in overflow-hidden rounded-lg border border-gray-200 ${className}`}
+        className={`cursor-zoom-in overflow-hidden rounded-lg border border-gray-200 ${square ? 'aspect-square' : ''} ${className}`}
       >
         {image && (
           <img
             id={id ? `${id}.image` : undefined}
             src={url}
             alt={tr('document.preview.image')}
-            className="max-h-72 w-full object-contain object-left bg-gray-50"
+            className={
+              square
+                ? 'h-full w-full bg-gray-50 object-contain'
+                : 'max-h-72 w-full object-contain object-left bg-gray-50'
+            }
           />
         )}
         {pdf && (
@@ -103,13 +109,13 @@ export function DocumentPreview({
             id={id ? `${id}.pdf` : undefined}
             src={`${url}#page=1&toolbar=0&navpanes=0&view=FitH`}
             title={tr('document.preview.pdf')}
-            className="pointer-events-none h-72 w-full bg-gray-50"
+            className={`pointer-events-none w-full bg-gray-50 ${square ? 'h-full' : 'h-72'}`}
           />
         )}
         {textType && (
           <pre
             id={id ? `${id}.text` : undefined}
-            className="max-h-72 overflow-hidden whitespace-pre-wrap break-words bg-gray-50 px-3 py-2 text-xs text-gray-700"
+            className={`overflow-hidden whitespace-pre-wrap break-words bg-gray-50 px-3 py-2 text-xs text-gray-700 ${square ? 'h-full' : 'max-h-72'}`}
           >
             {textError
               ? tr('document.preview.unavailable')
@@ -121,7 +127,7 @@ export function DocumentPreview({
         {office && (
           <div
             id={id ? `${id}.office` : undefined}
-            className="flex h-40 flex-col items-center justify-center gap-2 bg-gray-50 px-4 text-center text-sm text-gray-600"
+            className={`flex flex-col items-center justify-center gap-2 bg-gray-50 px-4 text-center text-sm text-gray-600 ${square ? 'h-full' : 'h-40'}`}
           >
             <Icon name="view" className="h-8 w-8 text-brand-600" />
             <span className="font-medium text-gray-800">{name}</span>
