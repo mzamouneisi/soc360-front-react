@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { CreateNoteFraisRequest, NoteFraisDto } from './types'
+import type { CreateNoteFraisRequest, NoteFraisDto, NoteFraisHistoryDto } from './types'
 
 export const noteFraisApi = {
   findBySocYear: (socId: number, year: number) =>
@@ -12,6 +12,8 @@ export const noteFraisApi = {
   update: (id: number, request: CreateNoteFraisRequest) =>
     api.put<NoteFraisDto>(`/note-frais/${id}`, request),
   submit: (id: number) => api.post<NoteFraisDto>(`/note-frais/${id}/submit`),
+  cancel: (id: number) => api.post<NoteFraisDto>(`/note-frais/${id}/cancel`),
+  history: (id: number) => api.get<NoteFraisHistoryDto[]>(`/note-frais/${id}/history`),
   validate: (id: number) => api.post<NoteFraisDto>(`/note-frais/${id}/validate`),
   reject: (id: number, comment: string) =>
     api.post<NoteFraisDto>(`/note-frais/${id}/reject`, { comment }),

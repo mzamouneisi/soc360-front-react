@@ -13,10 +13,13 @@ const {
   totalsByCategoryMock,
   createMock,
   submitMock,
+  cancelMock,
+  historyMock,
   validateMock,
   rejectMock,
   deleteMock,
   summariesMock,
+  activitiesMock,
   userMock,
   ocrImageTextMock,
   documentUploadMock,
@@ -29,10 +32,13 @@ const {
   totalsByCategoryMock: vi.fn(),
   createMock: vi.fn(),
   submitMock: vi.fn(),
+  cancelMock: vi.fn(),
+  historyMock: vi.fn(),
   validateMock: vi.fn(),
   rejectMock: vi.fn(),
   deleteMock: vi.fn(),
   summariesMock: vi.fn(),
+  activitiesMock: vi.fn().mockResolvedValue([]),
   userMock: { value: null as unknown as UserDto },
   ocrImageTextMock: vi.fn(),
   documentUploadMock: vi.fn(),
@@ -59,6 +65,8 @@ vi.mock('../api/noteFrais', () => ({
     create: createMock,
     update: vi.fn(),
     submit: submitMock,
+    cancel: cancelMock,
+    history: historyMock,
     validate: validateMock,
     reject: rejectMock,
     delete: deleteMock,
@@ -70,6 +78,10 @@ vi.mock('../api/noteFrais', () => ({
 
 vi.mock('../api/consultants', () => ({
   consultantsApi: { summaries: summariesMock },
+}))
+
+vi.mock('../api/activities', () => ({
+  activitiesApi: { findAll: activitiesMock },
 }))
 
 vi.mock('../api/documents', () => ({
@@ -222,6 +234,74 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(submitMock).toHaveBeenCalledWith(1))
   })
 
+  it('annule la soumission d’une note de frais du collaborateur', async () => {
+    userMock.value = consultantUser
+    findByConsultantYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
+    cancelMock.mockResolvedValue(nf({ status: 'DRAFT' }))
+
+    renderList()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Annuler la soumission' }))
+
+    await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(1))
+  })
+
+  it('met une note soumise en lecture seule pour le collaborateur', async () => {
+    userMock.value = consultantUser
+    findByConsultantYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
+
+    renderList()
+
+    expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Soumettre' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Suppr.' })).not.toBeInTheDocument()
+  })
+
+  it('permet au manager de modifier une note soumise', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+
+    expect(await screen.findByRole('button', { name: 'Modifier' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Annuler la soumission' })).not.toBeInTheDocument()
+  })
+
+  it('affiche l’historique des modifications', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([nf({ status: 'VALIDATED' })])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    historyMock.mockResolvedValue([
+      {
+        id: 7,
+        dateModif: '2026-08-15T10:00:00Z',
+        noteFraisId: 1,
+        modifierId: 2,
+        modifierName: 'M Manager',
+        comment: 'Validation',
+        statusBefore: 'SUBMITTED',
+        statusAfter: 'VALIDATED',
+        totalBefore: 125.5,
+        totalAfter: 125.5,
+      },
+    ])
+
+    renderList()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Historique' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Validation')).toBeInTheDocument()
+    expect(within(dialog).getByText('M Manager')).toBeInTheDocument()
+    expect(historyMock).toHaveBeenCalledWith(1)
+  })
+
   it('valide une note de frais soumise', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
@@ -366,6 +446,21 @@ describe('NoteFraisList', () => {
     summariesMock.mockResolvedValue([
       { id: 10, fullName: 'Alice Martin', position: 'Consultante', email: 'alice@soc.fr' },
     ])
+    activitiesMock.mockResolvedValue([
+      {
+        id: 7,
+        name: 'Mission Acme',
+        description: null,
+        price: 0,
+        currency: 'EUR',
+        startDate: null,
+        endDate: null,
+        active: true,
+        indispo: false,
+        weekendAllowed: false,
+        holidayAllowed: false,
+      },
+    ])
     createMock.mockResolvedValue(nf())
     documentUploadMock.mockResolvedValue({ id: 77, name: 'facture.png' })
     ocrImageTextMock.mockResolvedValue('')
@@ -385,6 +480,8 @@ describe('NoteFraisList', () => {
     await within(dialog).findByText('facture.png')
     const selects = within(dialog).getAllByRole('combobox')
     fireEvent.change(selects[0], { target: { value: '10' } })
+    await within(dialog).findByRole('option', { name: 'Mission Acme' })
+    fireEvent.change(selects[1], { target: { value: '7' } })
     fireEvent.change(within(dialog).getByPlaceholderText('Nom enseigne'), {
       target: { value: 'SNCF' },
     })
@@ -425,6 +522,7 @@ describe('NoteFraisList', () => {
         infosFacture: null,
         documentId: 77,
         documentName: 'facture.png',
+        activityId: 7,
       }),
     )
   })

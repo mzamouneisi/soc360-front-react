@@ -536,6 +536,8 @@ export interface NoteFraisDto {
   consultantId: number
   consultantName: string
   socId: number
+  activityId?: number | null
+  activityName?: string | null
   month: number
   year: number
   status: NoteFraisStatus
@@ -570,6 +572,20 @@ export interface CreateNoteFraisRequest {
   infosFacture?: string | null
   documentId?: number | null
   documentName?: string | null
+  activityId?: number | null
+}
+
+export interface NoteFraisHistoryDto {
+  id: number
+  dateModif: string
+  noteFraisId: number
+  modifierId: number | null
+  modifierName: string | null
+  comment: string | null
+  statusBefore: NoteFraisStatus | null
+  statusAfter: NoteFraisStatus
+  totalBefore: number | null
+  totalAfter: number | null
 }
 
 export interface HrDocumentDto {

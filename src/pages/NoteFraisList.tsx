@@ -2,6 +2,7 @@ import { tr } from '../i18n/translate'
 import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { noteFraisApi } from '../api/noteFrais'
+import { activitiesApi } from '../api/activities'
 import { consultantsApi } from '../api/consultants'
 import { documentsApi } from '../api/documents'
 import { isImageFile, ocrImageText } from '../lib/ocr'
@@ -9,19 +10,21 @@ import { parseReceipt } from '../lib/receipt'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
+import { usePagination } from '../lib/usePagination'
 import { Card, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
-import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination, Table } from '../components/data'
 import { DocumentPreview } from '../components/DocumentPreview'
 import { dialog } from '../components/dialog'
 import {
   NOTE_FRAIS_CATEGORIES,
   NOTE_FRAIS_STATUS_LABELS,
+  formatDateTime,
   formatMoney,
   monthLabel,
   monthShort,
   statusBadge,
 } from '../lib/format'
-import type { NoteFraisDto } from '../api/types'
+import type { NoteFraisDto, NoteFraisHistoryDto } from '../api/types'
 
 interface LineForm {
   date: string
@@ -37,6 +40,7 @@ interface LineForm {
 
 interface FormState {
   consultantId: string
+  activityId: string
   month: number
   year: number
   lines: LineForm[]
@@ -143,12 +147,22 @@ export function NoteFraisList() {
   }, [summaries, selfCollaboratorId, user?.firstName, user?.lastName, user?.email, user?.hireDate])
   const [form, setForm] = useState<FormState>({
     consultantId: String(selfCollaboratorId ?? ''),
+    activityId: '',
     month: now.getMonth() + 1,
     year,
     lines: [newLine()],
     infosFacture: '',
   })
+  const { data: activities } = useAsync(
+    () =>
+      activitiesApi.findAll({
+        socId: user?.socId ?? undefined,
+        consultantId: form.consultantId ? Number(form.consultantId) : undefined,
+      }),
+    [user?.socId, form.consultantId],
+  )
   const [editing, setEditing] = useState<NoteFraisDto | null>(null)
+  const [historyFor, setHistoryFor] = useState<NoteFraisDto | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -161,11 +175,25 @@ export function NoteFraisList() {
 
   if (!user) return null
 
+  const isOwner = (nf: NoteFraisDto) =>
+    selfCollaboratorId != null && nf.consultantId === selfCollaboratorId
+  const canWrite = (nf: NoteFraisDto) =>
+    isOwner(nf)
+      ? nf.status === 'DRAFT' || nf.status === 'REJECTED'
+      : nf.status !== 'PAID'
+  const canSubmit = (nf: NoteFraisDto) =>
+    nf.status === 'DRAFT' || nf.status === 'REJECTED'
+  const canCancel = (nf: NoteFraisDto) =>
+    isOwner(nf) && nf.status === 'SUBMITTED'
+  const canDelete = (nf: NoteFraisDto) =>
+    nf.status === 'DRAFT' || nf.status === 'REJECTED'
+
   function openCreate() {
     previewRequest.current += 1
     if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
     setForm({
       consultantId: String(selfCollaboratorId ?? ''),
+      activityId: '',
       month: now.getMonth() + 1,
       year,
       lines: [newLine()],
@@ -187,6 +215,7 @@ export function NoteFraisList() {
     if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
     setForm({
       consultantId: String(nf.consultantId),
+      activityId: nf.activityId != null ? String(nf.activityId) : '',
       month: nf.month,
       year: nf.year,
       lines:
@@ -329,6 +358,7 @@ export function NoteFraisList() {
         infosFacture: form.infosFacture || null,
         documentId: attachmentDocumentId,
         documentName: attachmentName,
+        activityId: form.activityId ? Number(form.activityId) : null,
       }
       if (request.lines.length === 0) {
         setFormError('Ajoutez au moins une ligne')
@@ -349,10 +379,16 @@ export function NoteFraisList() {
     }
   }
 
-  async function changeStatus(nf: NoteFraisDto, action: 'submit' | 'validate' | 'reject' | 'delete') {
+  async function changeStatus(
+    nf: NoteFraisDto,
+    action: 'submit' | 'cancel' | 'validate' | 'reject' | 'delete',
+  ) {
     try {
       if (action === 'submit') {
         const updated = await noteFraisApi.submit(nf.id)
+        setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
+      } else if (action === 'cancel') {
+        const updated = await noteFraisApi.cancel(nf.id)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else if (action === 'validate') {
         const updated = await noteFraisApi.validate(nf.id)
@@ -497,6 +533,15 @@ export function NoteFraisList() {
                 render: (nf) => <span id={`NoteFraisList.row.${nf.id}.consultant`} className="font-medium text-gray-900">{nf.consultantName}</span>,
               },
               {
+                key: 'mission',
+                label: tr('NoteFraisList.mission'),
+                render: (nf) => (
+                  <span id={`NoteFraisList.row.${nf.id}.mission`} className="text-gray-700">
+                    {nf.activityName ?? '—'}
+                  </span>
+                ),
+              },
+              {
                 key: 'period',
                 label: tr('common.period'),
                 render: (nf) => (
@@ -534,11 +579,14 @@ export function NoteFraisList() {
                 label: '',
                 render: (nf) => (
                   <div className="flex justify-end gap-1">
-                    {(nf.status === 'DRAFT' || nf.status === 'REJECTED') && (
-                      <>
-                        <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} id={`common.edit.${nf.id}`} />
-                        <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => changeStatus(nf, 'submit')} id={`Unavailability.soumettre.${nf.id}`} />
-                      </>
+                    {canWrite(nf) && (
+                      <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(nf)} id={`common.edit.${nf.id}`} />
+                    )}
+                    {canSubmit(nf) && (
+                      <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => changeStatus(nf, 'submit')} id={`Unavailability.soumettre.${nf.id}`} />
+                    )}
+                    {canCancel(nf) && (
+                      <IconButton icon="cancel" label={tr('NoteFraisList.annuler.la.soumission')} variant="danger" onClick={() => changeStatus(nf, 'cancel')} id={`NoteFraisList.annuler.la.soumission.${nf.id}`} />
                     )}
                     {canValidate && nf.status === 'SUBMITTED' && (
                       <>
@@ -546,7 +594,10 @@ export function NoteFraisList() {
                         <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => changeStatus(nf, 'reject')} id={`Unavailability.rejeter.${nf.id}`} />
                       </>
                     )}
-                    <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={() => changeStatus(nf, 'delete')} id={`NoteFraisList.suppr.${nf.id}`} />
+                    {canDelete(nf) && (
+                      <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" onClick={() => changeStatus(nf, 'delete')} id={`NoteFraisList.suppr.${nf.id}`} />
+                    )}
+                    <IconButton icon="history" label={tr('NoteFraisList.historique')} variant="history" onClick={() => setHistoryFor(nf)} id={`NoteFraisList.historique.${nf.id}`} />
                   </div>
                 ),
               },
@@ -674,6 +725,23 @@ export function NoteFraisList() {
                 </Select>
               </Field>
             )}
+            <Field label={tr('NoteFraisList.mission')} id="NoteFraisList.mission">
+              <Select
+                id="NoteFraisList.activity.select"
+                title={tr('NoteFraisList.mission')}
+                value={form.activityId}
+                onChange={(e) => setForm({ ...form, activityId: e.target.value })}
+              >
+                <option id="NoteFraisList.aucune.mission" value="">
+                  {tr('NoteFraisList.aucune.mission')}
+                </option>
+                {(activities ?? []).map((activity) => (
+                  <option id={`NoteFraisList.activity.option.${activity.id}`} key={activity.id} value={activity.id}>
+                    {activity.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
             <Field label={tr('NoteFraisList.mois')} id="NoteFraisList.mois">
               <Select
                 id="NoteFraisList.mois.select"
@@ -891,6 +959,101 @@ export function NoteFraisList() {
           </Field>
         </form>
       </Modal>
+      {historyFor && (
+        <NoteFraisHistoryModal
+          noteFrais={historyFor}
+          onClose={() => setHistoryFor(null)}
+        />
+      )}
     </div>
+  )
+}
+
+function NoteFraisHistoryModal({
+  noteFrais,
+  onClose,
+}: {
+  noteFrais: NoteFraisDto
+  onClose: () => void
+}) {
+  const { user } = useAuth()
+  const dt = useDynamicTranslate()
+  const history = useAsync(() => noteFraisApi.history(noteFrais.id), [noteFrais.id])
+  const historyPage = usePagination(history.data ?? [], user?.pageSize ?? 5)
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      titleId="NoteFraisList.historique.de.la.note.de.frais"
+      title={`${tr('NoteFraisList.historique.de.la.note.de.frais')} (${historyPage.total})`}
+      size="xl"
+      footer={
+        <IconButton icon="close" label={tr('NoteFraisList.fermer')} onClick={onClose} id="NoteFraisList.fermer" />
+      }
+    >
+      <p id="NoteFraisList.historique.subtitle" className="mb-3 text-xs text-gray-500">
+        {noteFrais.consultantName} — {monthLabel(noteFrais.month)} {noteFrais.year}
+      </p>
+      {history.loading && <LoadingBlock />}
+      {history.error && <ErrorBlock message={history.error} />}
+      {!history.loading && !history.error && (history.data?.length ?? 0) === 0 && (
+        <p id="NoteFraisList.aucune.modification.enregistree" className="py-6 text-center text-sm text-gray-500">
+          {tr('NoteFraisList.aucune.modification.enregistree')}
+        </p>
+      )}
+      {!history.loading && (history.data?.length ?? 0) > 0 && (
+        <div className="max-h-96 overflow-y-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead style={{ backgroundColor: 'var(--table-header)' }}>
+              <tr>
+                <th id="NoteFraisList.history.th.index" className="w-10 px-3 py-2 text-right text-xs font-bold uppercase text-gray-400">#</th>
+                <th id="NoteFraisList.history.date" className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('NoteFraisList.date')}</th>
+                <th id="NoteFraisList.history.modifie.par" className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('NoteFraisList.modifie.par')}</th>
+                <th id="NoteFraisList.history.commentaire" className="px-3 py-2 text-left text-xs font-bold uppercase text-gray-500">{tr('NoteFraisList.commentaire')}</th>
+                <th id="NoteFraisList.history.statut.avant" className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('NoteFraisList.avant')}</th>
+                <th id="NoteFraisList.history.statut.apres" className="px-3 py-2 text-center text-xs font-bold uppercase text-gray-500">{tr('NoteFraisList.apres')}</th>
+                <th id="NoteFraisList.history.montant.avant" className="px-3 py-2 text-right text-xs font-bold uppercase text-gray-500">{tr('NoteFraisList.montant.avant')}</th>
+                <th id="NoteFraisList.history.montant.apres" className="px-3 py-2 text-right text-xs font-bold uppercase text-gray-500">{tr('NoteFraisList.montant.apres')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 bg-white">
+              {historyPage.pageItems.map((h: NoteFraisHistoryDto, i) => (
+                <tr id={`NoteFraisList.history.row.${h.id}`} key={h.id}>
+                  <td id={`NoteFraisList.history.row.${h.id}.index`} className="w-10 whitespace-nowrap px-3 py-2 text-right text-sm tabular-nums text-gray-400">
+                    {historyPage.offset + i + 1}
+                  </td>
+                  <td id={`NoteFraisList.history.row.${h.id}.date`} className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">
+                    {formatDateTime(h.dateModif)}
+                  </td>
+                  <td id={`NoteFraisList.history.row.${h.id}.modifier`} className="px-3 py-2 text-sm text-gray-900">{h.modifierName ?? '—'}</td>
+                  <td id={`NoteFraisList.history.row.${h.id}.comment`} className="px-3 py-2 text-sm text-gray-600">{h.comment ? dt(h.comment) : '—'}</td>
+                  <td id={`NoteFraisList.history.row.${h.id}.before`} className="px-3 py-2 text-center text-sm text-gray-600">
+                    {h.statusBefore ? dt(NOTE_FRAIS_STATUS_LABELS[h.statusBefore]) : '—'}
+                  </td>
+                  <td id={`NoteFraisList.history.row.${h.id}.after`} className="px-3 py-2 text-center text-sm text-gray-600">
+                    {dt(NOTE_FRAIS_STATUS_LABELS[h.statusAfter])}
+                  </td>
+                  <td id={`NoteFraisList.history.row.${h.id}.totalBefore`} className="px-3 py-2 text-right text-sm text-gray-600">
+                    {h.totalBefore != null ? formatMoney(h.totalBefore) : '—'}
+                  </td>
+                  <td id={`NoteFraisList.history.row.${h.id}.totalAfter`} className="px-3 py-2 text-right text-sm text-gray-600">
+                    {h.totalAfter != null ? formatMoney(h.totalAfter) : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {!history.loading && (history.data?.length ?? 0) > 0 && (
+        <Pagination
+          page={historyPage.page}
+          totalPages={historyPage.totalPages}
+          total={historyPage.total}
+          onChange={historyPage.setPage}
+        />
+      )}
+    </Modal>
   )
 }
