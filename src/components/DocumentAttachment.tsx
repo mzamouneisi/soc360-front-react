@@ -44,7 +44,7 @@ export function DocumentAttachment({
   socId,
   consultantId,
   disabled = false,
-  previewSquare = false,
+  previewFill = false,
   previewClassName = '',
 }: {
   value: AttachedDocument | null
@@ -52,7 +52,7 @@ export function DocumentAttachment({
   socId?: number | null
   consultantId?: number | null
   disabled?: boolean
-  previewSquare?: boolean
+  previewFill?: boolean
   previewClassName?: string
 }) {
   const [open, setOpen] = useState(false)
@@ -192,7 +192,7 @@ export function DocumentAttachment({
           url={existingPreviewUrl ?? undefined}
           name={value.name}
           className={`mt-2 ${previewClassName}`}
-          square={previewSquare}
+          fill={previewFill}
         />
       )}
 

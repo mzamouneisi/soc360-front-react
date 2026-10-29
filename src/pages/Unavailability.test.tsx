@@ -289,8 +289,8 @@ describe('Unavailability', () => {
     expect(screen.getAllByRole('button', { name: 'Voir le document' }).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Arrêt/).length).toBeGreaterThan(0)
     const preview = document.getElementById('document.attachment.preview')
-    expect(preview?.className).toContain('aspect-square')
-    expect(preview?.className).toContain('max-w-48')
+    expect(preview?.className).toContain('w-96')
+    expect(preview?.className).toContain('h-80')
   })
 
   it('affiche le motif de rejet lorsqu’on ouvre une indisponibilité rejetée', async () => {
