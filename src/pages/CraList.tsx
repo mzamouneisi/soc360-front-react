@@ -8,7 +8,7 @@ import { useAuth } from '../auth/AuthContext'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
-import { Button, Card, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
+import { Card, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
 import { MonthPicker } from '../components/MonthPicker'
 import {
   CRA_STATUS_LABELS,
@@ -34,6 +34,11 @@ export function CraList() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [page, setPage] = useState(0)
   const [openCraId, setOpenCraId] = useState<number | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [detailYear, setDetailYear] = useState(now.getFullYear())
+  const [detailMonth, setDetailMonth] = useState(now.getMonth() + 1)
+  const [detailConsultantId, setDetailConsultantId] = useState<number | null>(null)
+  const [detailType, setDetailType] = useState('CRA')
   const [historyCra, setHistoryCra] = useState<CraDto | null>(null)
   const [search, setSearch] = useState('')
   const [consultantFilter, setConsultantFilter] = useState<number | null>(null)
@@ -154,42 +159,50 @@ export function CraList() {
 
   const editable = (c: CraDto) => c.status !== 'SUBMITTED' && c.status !== 'VALIDATED'
 
-  function openPeriod(newYear: number, newMonth: number) {
-    // soc-72 : impossible de naviguer avant la date d'embauche (liste des mois / années).
-    let y = newYear
-    let m = newMonth
-    if (beforeHirePeriod(y, m) && hirePeriod) {
-      y = hirePeriod.year
-      m = hirePeriod.month
-    }
-    const sameYear = y === year
-    setYear(y)
-    setMonth(m)
-    setOpenCraId(null)
-    if (isConsultant && sameYear) {
-      const cra = (data ?? []).find((c) => c.month === m)
-      if (cra) setOpenCraId(cra.id)
+  function openCraPopup(cra: CraDto) {
+    setOpenCraId(cra.id)
+    setDetailOpen(true)
+    setDetailYear(cra.year)
+    setDetailMonth(cra.month)
+    setDetailConsultantId(cra.consultantId ?? null)
+    setDetailType(cra.type)
+  }
+
+  // Navigation des mois dans la popup : elle ne filtre pas la liste, elle cherche
+  // simplement le CRA du collaborateur pour le mois choisi et l'affiche sans fermer la popup.
+  async function openDetailPeriod(newYear: number, newMonth: number) {
+    if (beforeHirePeriod(newYear, newMonth)) return
+    setDetailYear(newYear)
+    setDetailMonth(newMonth)
+    if (detailConsultantId == null) return
+    try {
+      const cras = await crasApi.findByConsultant(detailConsultantId, newYear)
+      const target = cras.find((c) => c.month === newMonth && c.type === detailType)
+      setOpenCraId(target ? target.id : null)
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+      setOpenCraId(null)
     }
   }
 
   const allowedYears = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]
     .filter((y) => !hirePeriod || y >= hirePeriod.year)
   const allowedMonths = Array.from({ length: 12 }, (_, i) => i + 1)
-    .filter((m) => !hirePeriod || year > hirePeriod.year || m >= hirePeriod.month)
+    .filter((m) => !hirePeriod || detailYear > hirePeriod.year || m >= hirePeriod.month)
 
   function goPrev() {
-    const p = shiftMonth(year, month, -1)
+    const p = shiftMonth(detailYear, detailMonth, -1)
     if (beforeHirePeriod(p.year, p.month)) return
-    void openPeriod(p.year, p.month)
+    void openDetailPeriod(p.year, p.month)
   }
 
   function goToday() {
-    void openPeriod(now.getFullYear(), now.getMonth() + 1)
+    void openDetailPeriod(now.getFullYear(), now.getMonth() + 1)
   }
 
   function goNext() {
-    const p = shiftMonth(year, month, 1)
-    void openPeriod(p.year, p.month)
+    const p = shiftMonth(detailYear, detailMonth, 1)
+    void openDetailPeriod(p.year, p.month)
   }
 
   async function changeStatus(id: number, action: 'validate' | 'reject') {
@@ -226,7 +239,10 @@ export function CraList() {
       return
     try {
       await crasApi.delete(c.id)
-      if (openCraId === c.id) setOpenCraId(null)
+      if (openCraId === c.id) {
+        setOpenCraId(null)
+        setDetailOpen(false)
+      }
       reload()
     } catch (err) {
       void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
@@ -261,7 +277,7 @@ export function CraList() {
     try {
       const period = await findFreePeriod()
       const cra = await crasApi.getOrCreate(ownerId, period.year, period.month, type)
-      setOpenCraId(cra.id)
+      openCraPopup(cra)
       if (period.year !== year || period.month !== month) {
         setYear(period.year)
         setMonth(period.month)
@@ -292,7 +308,18 @@ export function CraList() {
               : 'CraList.comptes.rendus.d.activite.par.consultant.et.par.mois'
         }
         actions={
-          <RefreshButton onClick={reload} />
+          <>
+            <RefreshButton onClick={reload} />
+            {canCreateCra && ownerId && (
+              <IconButton
+                id="CraList.nouveau.cra"
+                icon="add"
+                label={tr('CraList.nouveau.cra')}
+                variant="new"
+                onClick={() => void createCra('CRA')}
+              />
+            )}
+          </>
         }
       />
 
@@ -400,7 +427,7 @@ export function CraList() {
                     <tr
                       id={`CraList.row.${cra.id}`}
                       key={cra.id}
-                      onClick={() => setOpenCraId(cra.id)}
+                      onClick={() => openCraPopup(cra)}
                       className={`cursor-pointer align-top ${
                         cra.id === openCraId
                           ? '[&>td]:border-y-2 [&>td]:border-blue-400 [&>td:first-child]:border-l-2 [&>td:last-child]:border-r-2 [&>td]:bg-blue-50'
@@ -439,7 +466,7 @@ export function CraList() {
                             icon={editable(cra) ? 'edit' : 'view'}
                             label={editable(cra) ? tr('CraList.editer') : tr('CraList.ouvrir')}
                             variant="primary"
-                            onClick={(e) => { e.stopPropagation(); setOpenCraId(cra.id) }}
+                            onClick={(e) => { e.stopPropagation(); openCraPopup(cra) }}
                             id={`CraList.${editable(cra) ? 'editer' : 'ouvrir'}.${cra.id}`}
                           />
                           <IconButton
@@ -497,18 +524,11 @@ export function CraList() {
         </>
       )}
 
-      {canCreateCra && ownerId && (
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <Button id="CraList.nouveau.cra" className="w-auto" onClick={() => createCra('CRA')}>
-            {tr('CraList.nouveau.cra')}
-          </Button>
-        </div>
-      )}
-
-      {openCraId != null && (
+      {detailOpen && (
         <Modal
           open
           onClose={() => {
+            setDetailOpen(false)
             setOpenCraId(null)
             reload()
           }}
@@ -523,8 +543,8 @@ export function CraList() {
               <Select
                 id="CraList.mois.select"
                 className="w-auto"
-                value={month}
-                onChange={(e) => void openPeriod(year, Number(e.target.value))}
+                value={detailMonth}
+                onChange={(e) => void openDetailPeriod(detailYear, Number(e.target.value))}
               >
                 {allowedMonths.map((m) => (
                   <option id={`CraList.mois.option.${m}`} key={m} value={m}>
@@ -535,8 +555,8 @@ export function CraList() {
               <Select
                 id="CraList.annee.select"
                 className="w-auto"
-                value={year}
-                onChange={(e) => void openPeriod(Number(e.target.value), month)}
+                value={detailYear}
+                onChange={(e) => void openDetailPeriod(Number(e.target.value), detailMonth)}
               >
                 {allowedYears.map((y) => (
                   <option id={`CraList.annee.option.${y}`} key={y} value={y}>
@@ -547,7 +567,7 @@ export function CraList() {
             </label>
             <div className="flex items-center gap-1">
               <IconButton icon="chevronLeft" label={tr('CraList.mois.precedent')} onClick={goPrev}
-                disabled={beforeHirePeriod(shiftMonth(year, month, -1).year, shiftMonth(year, month, -1).month)}
+                disabled={beforeHirePeriod(shiftMonth(detailYear, detailMonth, -1).year, shiftMonth(detailYear, detailMonth, -1).month)}
                 id="CraList.mois.precedent" />
               <InlineButton id="CraList.revenir.au.mois.courant" onClick={goToday} title={tr('CraList.revenir.au.mois.courant')}>
                 {tr('CraList.mois.courant')}
@@ -556,14 +576,23 @@ export function CraList() {
             </div>
           </Card>
           </div>
-          <CraDetail
-            id={openCraId}
-            onClose={() => {
-              setOpenCraId(null)
-              reload()
-            }}
-            onChange={reload}
-          />
+          {openCraId != null ? (
+            <CraDetail
+              id={openCraId}
+              onClose={() => {
+                setDetailOpen(false)
+                setOpenCraId(null)
+                reload()
+              }}
+              onChange={reload}
+            />
+          ) : (
+            <Card>
+              <p id="CraList.aucun.cra.pour.ce.mois" className="text-sm font-medium text-gray-900">
+                {tr('CraList.aucun.cra.pour.ce.mois')}
+              </p>
+            </Card>
+          )}
         </Modal>
       )}
 

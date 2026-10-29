@@ -214,6 +214,30 @@ describe('CraList', () => {
     await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(1))
   })
 
+  it('navigue entre les mois dans la popup sans filtrer ni fermer la liste', async () => {
+    userMock.value = managerUser
+    const august = cra({ id: 1, month: 8 })
+    const september = cra({ id: 2, month: 9 })
+    findByManagerMock.mockResolvedValue([august, september])
+    findByConsultantMock.mockResolvedValue([august, september])
+    getByIdMock.mockImplementation((id: number) =>
+      Promise.resolve(id === 2 ? september : august),
+    )
+
+    renderList()
+
+    await waitFor(() => expect(document.getElementById('CraList.row.1')).not.toBeNull())
+    fireEvent.click(document.getElementById('CraList.row.1') as HTMLElement)
+    await screen.findByRole('dialog')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mois suivant' }))
+
+    await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(2))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect((document.getElementById('CraList.mois.select') as HTMLSelectElement).value).toBe('9')
+    expect(findByManagerMock).toHaveBeenCalledTimes(1)
+  })
+
   it('affiche les CRA de l’équipe du manager', async () => {
     userMock.value = managerUser
     findByManagerMock.mockResolvedValue([
