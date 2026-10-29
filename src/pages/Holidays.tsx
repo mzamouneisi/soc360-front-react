@@ -19,8 +19,7 @@ function toDateString(d: Date): string {
 
 export function Holidays() {
   const { user } = useAuth()
-  const canEdit =
-    user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC' || user?.role === 'MANAGER'
+  const canEdit = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
 
   const [cursor, setCursor] = useState(() => {
     const now = new Date()

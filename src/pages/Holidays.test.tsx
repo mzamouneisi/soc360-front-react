@@ -80,8 +80,8 @@ describe('Holidays', () => {
     expect(publicMock).toHaveBeenCalledWith('FR', year)
   })
 
-  it('affiche le sous-titre société pour un manager', async () => {
-    userMock.value = { ...baseUser, role: 'MANAGER' } as UserDto
+  it('affiche le sous-titre société pour un responsable société', async () => {
+    userMock.value = { ...baseUser, role: 'RESPONSIBLE_SOC' } as UserDto
     listMock.mockResolvedValue([])
     publicMock.mockResolvedValue([])
 
@@ -94,6 +94,29 @@ describe('Holidays', () => {
     expect(
       await screen.findByText('Définissez les jours fériés spécifiques de la société'),
     ).toBeInTheDocument()
+  })
+
+  it('ne permet pas au manager de gérer les jours fériés', async () => {
+    userMock.value = { ...baseUser, role: 'MANAGER' } as UserDto
+    listMock.mockResolvedValue([
+      { id: 1, socId: 5, date: socDate, label: 'Jour société', isChomePaye: 'CHOME_PAYE' },
+    ])
+    publicMock.mockResolvedValue([])
+
+    render(
+      <MemoryRouter>
+        <Holidays />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Jour société')).toBeInTheDocument()
+    expect(
+      screen.queryByText('Définissez les jours fériés spécifiques de la société'),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Jour société'))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it("recharge les jours fériés nationaux lorsqu'on change d'année", async () => {
