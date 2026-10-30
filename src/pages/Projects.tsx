@@ -127,7 +127,23 @@ export function Projects() {
     try {
       const dependencies = await projectsApi.dependencies(project.id)
       if (dependencies.length === 0) {
-        if (!(await dialog.confirm(tr('Projects.supprimer.le.projet', { name: project.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
+        const deleteMessageNode = (
+          <div
+            id="Projects.supprimer.le.projet.content"
+            className="leading-relaxed text-gray-700"
+            style={{ fontSize: '14px' }}
+          >
+            <p id="Projects.supprimer.le.projet.message">
+              {tr('Projects.supprimer.le.projet.intro.before')}
+              <strong className="font-bold uppercase">{project.name}</strong>
+              {tr('Projects.supprimer.le.projet.intro.after')}
+            </p>
+          </div>
+        )
+        if (!(await dialog.confirm(
+          tr('Projects.supprimer.le.projet', { name: project.name }),
+          { variant: 'warning', danger: true, okLabel: tr('common.delete'), messageNode: deleteMessageNode },
+        ))) return
         await projectsApi.delete(project.id)
         setData((data ?? []).filter((p) => p.id !== project.id))
         return
@@ -140,7 +156,7 @@ export function Projects() {
         <div
           id="Projects.projet.associe.content"
           className="space-y-3 leading-relaxed text-gray-700"
-          style={{ fontSize: '12px' }}
+          style={{ fontSize: '14px' }}
         >
           <p id="Projects.projet.associe.intro">
             {tr('Projects.projet.associe.intro.before')}

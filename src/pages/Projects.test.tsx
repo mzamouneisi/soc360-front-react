@@ -114,6 +114,15 @@ describe('Projects', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Supprimer' }))
 
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
+
+    const options = confirmMock.mock.calls[0][1] as { messageNode?: React.ReactNode }
+    expect(options.messageNode).toBeTruthy()
+    const content = render(<>{options.messageNode}</>)
+    const root = content.container.firstChild as HTMLElement
+    expect(root.style.fontSize).toBe('14px')
+    const strong = content.container.querySelector('strong')
+    expect(strong?.textContent).toBe('Projet Alpha')
+    expect(strong?.className).toContain('uppercase')
   })
 
   it('propose de désactiver un projet associé à une mission', async () => {
@@ -139,7 +148,7 @@ describe('Projects', () => {
     expect(options.messageNode).toBeTruthy()
     const content = render(<>{options.messageNode}</>)
     const root = content.container.firstChild as HTMLElement
-    expect(root.style.fontSize).toBe('12px')
+    expect(root.style.fontSize).toBe('14px')
     const strongs = content.container.querySelectorAll('strong')
     expect(strongs[0].textContent).toBe('Projet Alpha')
     expect(strongs[0].className).toContain('uppercase')
