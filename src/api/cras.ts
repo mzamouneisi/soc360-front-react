@@ -11,6 +11,8 @@ export const crasApi = {
   getOrCreate: (consultantId: number, year: number, month: number, type = 'CRA') =>
     api.get<CraDto>(`/cras/consultant/${consultantId}/${year}/${month}`, { type }),
   getById: (id: number) => api.get<CraDto>(`/cras/${id}`),
+  preview: (consultantId: number, year: number, month: number, type = 'CRA') =>
+    api.get<CraDto>(`/cras/preview/${consultantId}/${year}/${month}`, { type }),
   exchanges: (id: number) => api.get<CraExchangeDto[]>(`/cras/${id}/exchanges`),
   history: (id: number) => api.get<CraHistoryDto[]>(`/cras/${id}/history`),
   findByConsultant: (consultantId: number, year: number, type = 'CRA') =>

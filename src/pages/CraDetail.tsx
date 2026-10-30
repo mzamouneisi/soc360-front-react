@@ -249,10 +249,12 @@ function ActivityChip({
 
 export function CraDetail({
   id,
+  preview,
   onClose,
   onChange,
 }: {
   id: number
+  preview?: { consultantId: number; year: number; month: number; type: string }
   onClose?: () => void
   onChange?: () => void
 }) {
@@ -262,8 +264,11 @@ export function CraDetail({
   const { language } = useI18n()
 
   const { data: cra, loading, error, setData, reload } = useAsync(
-    () => crasApi.getById(id),
-    [id],
+    () =>
+      preview
+        ? crasApi.preview(preview.consultantId, preview.year, preview.month, preview.type)
+        : crasApi.getById(id),
+    [id, preview?.consultantId, preview?.year, preview?.month, preview?.type],
   )
 
   const { data: activities } = useAsync(
@@ -672,23 +677,27 @@ export function CraDetail({
     }
   }
 
-  async function doSave(): Promise<boolean> {
-    if (!cra) return false
+  async function doSave(): Promise<CraDto | null> {
+    if (!cra) return null
     if (activityRestriction) {
       setRestrictionDialog(activityRestriction)
       setFormError(null)
-      return false
+      return null
     }
     setSaving(true)
     setFormError(null)
     try {
-      const updated = await crasApi.save(cra.id, buildSaveRequest())
+      // CRA non encore enregistré (aperçu) : il n'est créé qu'au moment de l'enregistrement.
+      const targetId = cra.id
+        ? cra.id
+        : (await crasApi.getOrCreate(cra.consultantId, cra.year, cra.month, cra.type)).id
+      const updated = await crasApi.save(targetId, buildSaveRequest())
       setData(updated)
       onChange?.()
-      return true
+      return updated
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
-      return false
+      return null
     } finally {
       setSaving(false)
     }
@@ -709,7 +718,7 @@ export function CraDetail({
     try {
       const saved = await doSave()
       if (!saved) return
-      const updated = await crasApi.submit(cra.id)
+      const updated = await crasApi.submit(saved.id)
       setData(updated)
       onChange?.()
     } catch (err) {
@@ -766,7 +775,7 @@ export function CraDetail({
     if (!saved) return tr('common.unexpectedError')
     setSaving(true)
     try {
-      const updated = await crasApi.declareAbsence(cra.id, request)
+      const updated = await crasApi.declareAbsence(saved.id, request)
       setData(updated)
       onChange?.()
       return null
@@ -787,11 +796,13 @@ export function CraDetail({
       return
     }
     try {
+      let targetId = cra.id
       if (formEditable) {
         const saved = await doSave()
         if (!saved) return
+        targetId = saved.id
       }
-      const updated = await crasApi.validate(cra.id)
+      const updated = await crasApi.validate(targetId)
       setData(updated)
       onChange?.()
     } catch (err) {
@@ -834,14 +845,16 @@ export function CraDetail({
     if (!cra) return
     setFormError(null)
     try {
+      let targetId = cra.id
       if (formEditable) {
         const saved = await doSave()
         if (!saved) return
+        targetId = saved.id
       }
       const mm = String(cra.month).padStart(2, '0')
       const monthStart = `${cra.year}-${mm}-01`
       const monthEnd = `${cra.year}-${mm}-${String(new Date(cra.year, cra.month, 0).getDate()).padStart(2, '0')}`
-      const updated = await crasApi.invalidateRange(cra.id, monthStart, monthEnd)
+      const updated = await crasApi.invalidateRange(targetId, monthStart, monthEnd)
       setData(updated)
       onChange?.()
     } catch (err) {
@@ -872,7 +885,7 @@ export function CraDetail({
     try {
       const saved = await doSave()
       if (!saved) return
-      await crasApi.sendBack(cra.id, comment)
+      await crasApi.sendBack(saved.id, comment)
       setSendBackOpen(false)
       if (onClose) onClose()
       else navigate(cra.type === 'CONGE' ? '/indispos' : '/cras')
@@ -889,12 +902,12 @@ export function CraDetail({
   }
 
   function openHistory() {
-    if (!cra) return
+    if (!cra || !cra.id) return
     setHistoryOpen(true)
   }
 
   function openExportDialog() {
-    if (!cra || !canExportPdf) return
+    if (!cra || !cra.id || !canExportPdf) return
     setExportError(null)
     setExportType(hasMissionDays ? 'client' : 'internal')
     setExportProjectId(exportMissions.length === 1 ? String(exportMissions[0].projectId) : '')

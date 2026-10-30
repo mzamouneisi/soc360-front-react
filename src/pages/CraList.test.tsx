@@ -18,6 +18,8 @@ const {
   findAllYearMock,
   getOrCreateMock,
   getByIdMock,
+  previewMock,
+  saveMock,
   validateMock,
   rejectMock,
   deleteMock,
@@ -31,6 +33,8 @@ const {
   findAllYearMock: vi.fn(),
   getOrCreateMock: vi.fn(),
   getByIdMock: vi.fn(),
+  previewMock: vi.fn(),
+  saveMock: vi.fn(),
   validateMock: vi.fn(),
   rejectMock: vi.fn(),
   deleteMock: vi.fn(),
@@ -60,6 +64,7 @@ vi.mock('../api/cras', () => ({
   crasApi: {
     getOrCreate: getOrCreateMock,
     getById: getByIdMock,
+    preview: previewMock,
     findByConsultant: findByConsultantMock,
     findAllByConsultant: findByConsultantMock,
     findBySocYear: findBySocYearMock,
@@ -68,7 +73,7 @@ vi.mock('../api/cras', () => ({
     findAllByManager: findByManagerMock,
     findAllYear: findAllYearMock,
     findAll: findAllYearMock,
-    save: vi.fn(),
+    save: saveMock,
     submit: vi.fn(),
     validate: validateMock,
     reject: rejectMock,
@@ -251,7 +256,7 @@ describe('CraList', () => {
     getByIdMock.mockImplementation((id: number) =>
       Promise.resolve(id === 2 ? september : august),
     )
-    getOrCreateMock.mockResolvedValue(september)
+    previewMock.mockResolvedValue(cra({ id: 0, month: 9, days: [], status: 'DRAFT' }))
 
     renderList()
 
@@ -264,8 +269,8 @@ describe('CraList', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Créer le CRA de ce mois' }))
 
-    await waitFor(() => expect(getOrCreateMock).toHaveBeenCalledWith(10, 2026, 9, 'CRA'))
-    await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(2))
+    await waitFor(() => expect(previewMock).toHaveBeenCalledWith(10, 2026, 9, 'CRA'))
+    expect(getOrCreateMock).not.toHaveBeenCalled()
   })
 
   it('affiche les CRA de l’équipe du manager', async () => {
@@ -362,8 +367,7 @@ describe('CraList', () => {
   it('affiche l’état vide et crée le CRA du mois pour un consultant', async () => {
     userMock.value = consultantUser
     findByConsultantMock.mockResolvedValue([])
-    getOrCreateMock.mockResolvedValue(cra({ id: 99 }))
-    getByIdMock.mockResolvedValue(cra({ id: 99 }))
+    previewMock.mockResolvedValue(cra({ id: 0, month: 8, days: [], status: 'DRAFT' }))
     stubFixedNow()
 
     renderList()
@@ -373,7 +377,29 @@ describe('CraList', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Nouveau Cra' }))
 
+    await waitFor(() => expect(previewMock).toHaveBeenCalledWith(10, 2026, 8, 'CRA'))
+    expect(getOrCreateMock).not.toHaveBeenCalled()
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('ne crée le CRA qu’à l’enregistrement du brouillon', async () => {
+    userMock.value = consultantUser
+    findByConsultantMock.mockResolvedValue([])
+    previewMock.mockResolvedValue(cra({ id: 0, month: 8, days: [], status: 'DRAFT' }))
+    getOrCreateMock.mockResolvedValue(cra({ id: 99, month: 8 }))
+    saveMock.mockResolvedValue(cra({ id: 99, month: 8 }))
+    stubFixedNow()
+
+    renderList()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nouveau Cra' }))
+    await waitFor(() => expect(previewMock).toHaveBeenCalledWith(10, 2026, 8, 'CRA'))
+    expect(getOrCreateMock).not.toHaveBeenCalled()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Enregistrer' }))
+
     await waitFor(() => expect(getOrCreateMock).toHaveBeenCalledWith(10, 2026, 8, 'CRA'))
+    await waitFor(() => expect(saveMock).toHaveBeenCalledWith(99, expect.anything()))
   })
 
   it('n’autorise pas un consultant sans manager à établir un CRA', async () => {
@@ -463,16 +489,14 @@ describe('CraList', () => {
     userMock.value = managerWithManagerUser
     findByManagerMock.mockResolvedValue([])
     findByConsultantMock.mockResolvedValue([])
-    getOrCreateMock.mockResolvedValue(cra({ id: 99 }))
-    getByIdMock.mockResolvedValue(cra({ id: 99 }))
+    previewMock.mockResolvedValue(cra({ id: 0, consultantId: 1, month: 8, days: [], status: 'DRAFT' }))
     stubFixedNow()
 
     renderList()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nouveau Cra' }))
 
-    await waitFor(() => expect(getOrCreateMock).toHaveBeenCalledWith(1, 2026, 8, 'CRA'))
-    expect(findByConsultantMock).toHaveBeenCalledWith(1, 2026)
+    await waitFor(() => expect(previewMock).toHaveBeenCalledWith(1, 2026, 8, 'CRA'))
   })
 
   it('affiche tous les CRA toutes années confondues', async () => {
