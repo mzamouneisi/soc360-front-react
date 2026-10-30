@@ -687,7 +687,7 @@ export function NoteFraisList() {
         }
       >
         <div id="NoteFraisList.justificatif.apercu.row" className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
-          <div className="space-y-4 lg:flex-1">
+          <div id="NoteFraisList.justificatif.champs.column" className="space-y-[30px] lg:flex-1">
           <div id="NoteFraisList.justificatif" className="rounded-lg border-2 border-brand-200 bg-brand-50/40 p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <p id="NoteFraisList.justificatif.obligatoire.titre" className="text-sm font-semibold text-gray-900">
@@ -751,7 +751,7 @@ export function NoteFraisList() {
             )}
 
           </div>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {!isConsultant && (
               <Field label={tr('NoteFraisList.consultant')} id="NoteFraisList.consultant">
                 <Select

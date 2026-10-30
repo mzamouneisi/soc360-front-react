@@ -559,6 +559,9 @@ describe('NoteFraisList', () => {
         document.getElementById('NoteFraisList.mission'),
       ),
     ).toBe(false)
+    expect(
+      document.getElementById('NoteFraisList.justificatif.champs.column')?.className,
+    ).toContain('space-y-[30px]')
   })
 
   it('demande confirmation avant de retirer le document joint', async () => {
