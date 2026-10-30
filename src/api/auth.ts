@@ -83,6 +83,13 @@ export const authApi = {
     }),
   updateTableHeaderFontSize: (tableHeaderFontSize: number) =>
     api.put<UserDto>('/auth/me/table-header-font-size', { tableHeaderFontSize }),
+  updateFormSettings: (payload: {
+    formHeaderBackgroundColor: string
+    formHeaderTextColor: string
+    formHeaderFontSize: number
+    formLabelTextColor: string
+    formLabelFontSize: number
+  }) => api.put<UserDto>('/auth/me/form-settings', payload),
   updatePageSize: (pageSize: number) =>
     api.put<UserDto>('/auth/me/page-size', { pageSize }),
   updateButtonSettings: (payload: {

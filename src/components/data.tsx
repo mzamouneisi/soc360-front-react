@@ -294,12 +294,26 @@ export function Modal({
         role="dialog"
         aria-modal="true"
       >
-        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-          <h3 id={titleId} className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div
+          className="flex items-center justify-between border-b border-gray-200 px-5 py-4"
+          style={{ backgroundColor: 'var(--form-header-bg, #0ea5e9)' }}
+        >
+          <h3
+            id={titleId}
+            className="font-semibold"
+            style={{
+              color: 'var(--form-header-text, #ffffff)',
+              fontSize: 'var(--form-header-font-size, 15px)',
+              fontWeight: 700,
+            }}
+          >
+            {title}
+          </h3>
           <button
             id="common.close"
             onClick={onClose}
-            className="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-md p-1.5 transition hover:bg-white/20"
+            style={{ color: 'var(--form-header-text, #ffffff)' }}
             aria-label={t('common.close')}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">

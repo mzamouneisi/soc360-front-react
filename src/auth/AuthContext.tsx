@@ -35,6 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.style.setProperty('--table-header-text', user?.tableHeaderTextColor || '#ffffff')
     doc.style.setProperty('--table-border', user?.tableBorderColor || '#000000')
     doc.style.setProperty('--table-header-font-size', `${user?.tableHeaderFontSize ?? 15}px`)
+    doc.style.setProperty('--form-header-bg', user?.formHeaderBackgroundColor || '#0ea5e9')
+    doc.style.setProperty('--form-header-text', user?.formHeaderTextColor || '#ffffff')
+    doc.style.setProperty('--form-header-font-size', `${user?.formHeaderFontSize ?? 15}px`)
+    doc.style.setProperty('--form-label-text', user?.formLabelTextColor || '#0ea5e9')
+    doc.style.setProperty('--form-label-font-size', `${user?.formLabelFontSize ?? 12}px`)
     doc.style.setProperty('--btn-small-width', `${user?.buttonSmallWidth ?? 50}px`)
     doc.style.setProperty('--btn-large-width', `${user?.buttonLargeWidth ?? 100}px`)
     doc.style.setProperty('--btn-save-color', user?.buttonSaveColor || '#1d48eb')
@@ -59,6 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.tableHeaderTextColor,
     user?.tableBorderColor,
     user?.tableHeaderFontSize,
+    user?.formHeaderBackgroundColor,
+    user?.formHeaderTextColor,
+    user?.formHeaderFontSize,
+    user?.formLabelTextColor,
+    user?.formLabelFontSize,
     user?.buttonSmallWidth,
     user?.buttonLargeWidth,
     user?.buttonSaveColor,

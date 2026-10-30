@@ -93,6 +93,11 @@ export interface UserDto {
   tableHeaderTextColor: string
   tableBorderColor: string
   tableHeaderFontSize: number
+  formHeaderBackgroundColor: string
+  formHeaderTextColor: string
+  formHeaderFontSize: number
+  formLabelTextColor: string
+  formLabelFontSize: number
   pageSize: number
   language: string | null
   buttonSmallWidth: number

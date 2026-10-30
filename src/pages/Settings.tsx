@@ -100,6 +100,11 @@ export function Settings() {
   const [headerTextColor, setHeaderTextColor] = useState<string>(user?.tableHeaderTextColor || '#ffffff')
   const [borderColor, setBorderColor] = useState<string>(user?.tableBorderColor || '#000000')
   const [tableHeaderFontSize, setTableHeaderFontSize] = useState<number>(user?.tableHeaderFontSize ?? 15)
+  const [formHeaderBg, setFormHeaderBg] = useState<string>(user?.formHeaderBackgroundColor || '#0ea5e9')
+  const [formHeaderText, setFormHeaderText] = useState<string>(user?.formHeaderTextColor || '#ffffff')
+  const [formHeaderFontSize, setFormHeaderFontSize] = useState<number>(user?.formHeaderFontSize ?? 15)
+  const [formLabelText, setFormLabelText] = useState<string>(user?.formLabelTextColor || '#0ea5e9')
+  const [formLabelFontSize, setFormLabelFontSize] = useState<number>(user?.formLabelFontSize ?? 12)
   const [pageSize, setPageSize] = useState<number>(user?.pageSize ?? 5)
   const [btnSmallWidth, setBtnSmallWidth] = useState<number>(user?.buttonSmallWidth ?? 50)
   const [btnLargeWidth, setBtnLargeWidth] = useState<number>(user?.buttonLargeWidth ?? 100)
@@ -261,6 +266,11 @@ export function Settings() {
     (u.tableHeaderTextColor || '#ffffff') !== headerTextColor ||
     (u.tableBorderColor || '#000000') !== borderColor ||
     (u.tableHeaderFontSize ?? 15) !== tableHeaderFontSize ||
+    (u.formHeaderBackgroundColor || '#0ea5e9') !== formHeaderBg ||
+    (u.formHeaderTextColor || '#ffffff') !== formHeaderText ||
+    (u.formHeaderFontSize ?? 15) !== formHeaderFontSize ||
+    (u.formLabelTextColor || '#0ea5e9') !== formLabelText ||
+    (u.formLabelFontSize ?? 12) !== formLabelFontSize ||
     (u.pageSize ?? 5) !== pageSize ||
     (u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
     (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
@@ -314,6 +324,19 @@ export function Settings() {
       }
       if ((u.tableHeaderFontSize ?? 15) !== tableHeaderFontSize) {
         await authApi.updateTableHeaderFontSize(tableHeaderFontSize)
+      }
+      if ((u.formHeaderBackgroundColor || '#0ea5e9') !== formHeaderBg ||
+          (u.formHeaderTextColor || '#ffffff') !== formHeaderText ||
+          (u.formHeaderFontSize ?? 15) !== formHeaderFontSize ||
+          (u.formLabelTextColor || '#0ea5e9') !== formLabelText ||
+          (u.formLabelFontSize ?? 12) !== formLabelFontSize) {
+        await authApi.updateFormSettings({
+          formHeaderBackgroundColor: formHeaderBg,
+          formHeaderTextColor: formHeaderText,
+          formHeaderFontSize,
+          formLabelTextColor: formLabelText,
+          formLabelFontSize,
+        })
       }
       if ((u.pageSize ?? 5) !== pageSize) {
         await authApi.updatePageSize(pageSize)
@@ -608,6 +631,51 @@ export function Settings() {
           >
             {t('settings.fontSize.preview')}
           </div>
+        </div>
+
+        <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.forms.title">{t('settings.forms.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500" id="settings.forms.description">{t('settings.forms.description')}</p>
+        <div className="mt-4 flex flex-wrap items-end gap-6">
+          <Field label={t('settings.forms.headerBg')} id="settings.forms.headerBg">
+            <div className="flex items-center gap-2">
+              <input type="color" id="settings.forms.headerBg.input" value={formHeaderBg}
+                onChange={(e) => { setFormHeaderBg(e.target.value); setSaved(false) }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1" />
+              <span className="text-sm text-gray-500" id="settings.forms.headerBg.value">{formHeaderBg}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.forms.headerText')} id="settings.forms.headerText">
+            <div className="flex items-center gap-2">
+              <input type="color" id="settings.forms.headerText.input" value={formHeaderText}
+                onChange={(e) => { setFormHeaderText(e.target.value); setSaved(false) }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1" />
+              <span className="text-sm text-gray-500" id="settings.forms.headerText.value">{formHeaderText}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.forms.headerFontSize')} id="settings.forms.headerFontSize">
+            <Select id="settings.forms.headerFontSize.select" className="w-28" value={String(formHeaderFontSize)}
+              onChange={(e) => { setFormHeaderFontSize(Number(e.target.value)); setSaved(false) }}>
+              {FONT_SIZES.map((s) => (
+                <option key={s} value={s} id={`settings.forms.headerFontSize.option.${s}`}>{s} {tr('Settings.px')}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label={t('settings.forms.labelText')} id="settings.forms.labelText">
+            <div className="flex items-center gap-2">
+              <input type="color" id="settings.forms.labelText.input" value={formLabelText}
+                onChange={(e) => { setFormLabelText(e.target.value); setSaved(false) }}
+                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1" />
+              <span className="text-sm text-gray-500" id="settings.forms.labelText.value">{formLabelText}</span>
+            </div>
+          </Field>
+          <Field label={t('settings.forms.labelFontSize')} id="settings.forms.labelFontSize">
+            <Select id="settings.forms.labelFontSize.select" className="w-28" value={String(formLabelFontSize)}
+              onChange={(e) => { setFormLabelFontSize(Number(e.target.value)); setSaved(false) }}>
+              {FONT_SIZES.map((s) => (
+                <option key={s} value={s} id={`settings.forms.labelFontSize.option.${s}`}>{s} {tr('Settings.px')}</option>
+              ))}
+            </Select>
+          </Field>
         </div>
 
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.theme.title">{t('settings.theme.title')}</h3>
