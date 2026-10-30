@@ -687,7 +687,8 @@ export function NoteFraisList() {
         }
       >
         <div id="NoteFraisList.justificatif.apercu.row" className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
-          <div id="NoteFraisList.justificatif" className="rounded-lg border-2 border-brand-200 bg-brand-50/40 p-4 lg:flex-1">
+          <div className="space-y-4 lg:flex-1">
+          <div id="NoteFraisList.justificatif" className="rounded-lg border-2 border-brand-200 bg-brand-50/40 p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <p id="NoteFraisList.justificatif.obligatoire.titre" className="text-sm font-semibold text-gray-900">
                 {tr('NoteFraisList.justificatif.obligatoire.titre')}
@@ -748,6 +749,76 @@ export function NoteFraisList() {
                   : tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}
               </p>
             )}
+
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {!isConsultant && (
+              <Field label={tr('NoteFraisList.consultant')} id="NoteFraisList.consultant">
+                <Select
+                  id="NoteFraisList.consultant.select"
+                  title={tr('NoteFraisList.consultant')}
+                  disabled={readOnlyForm}
+                  value={form.consultantId}
+                  onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
+                >
+                  <option id="NoteFraisList.selectionner" value="">{tr('NoteFraisList.selectionner')}</option>
+                  {collaboratorOptions.map((c) => (
+                    <option id={`NoteFraisList.consultant.option.${c.id}`} key={c.id} value={c.id}>
+                      {c.fullName}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
+            <Field label={tr('NoteFraisList.mission')} id="NoteFraisList.mission">
+              <Select
+                id="NoteFraisList.activity.select"
+                title={tr('NoteFraisList.mission')}
+                disabled={readOnlyForm}
+                value={form.activityId}
+                onChange={(e) => setForm({ ...form, activityId: e.target.value })}
+              >
+                <option id="NoteFraisList.aucune.mission" value="">
+                  {tr('NoteFraisList.aucune.mission')}
+                </option>
+                {(activities ?? []).map((activity) => (
+                  <option id={`NoteFraisList.activity.option.${activity.id}`} key={activity.id} value={activity.id}>
+                    {activity.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={tr('NoteFraisList.mois')} id="NoteFraisList.mois">
+              <Select
+                id="NoteFraisList.mois.select"
+                title={tr('NoteFraisList.mois')}
+                disabled={readOnlyForm}
+                value={form.month}
+                onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option id={`NoteFraisList.mois.option.${m}`} key={m} value={m}>
+                    {monthLabel(m)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={tr('NoteFraisList.annee')} id="NoteFraisList.annee">
+              <Select
+                id="NoteFraisList.annee.select"
+                title={tr('NoteFraisList.annee')}
+                disabled={readOnlyForm}
+                value={form.year}
+                onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
+              >
+                {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
+                  <option id={`NoteFraisList.annee.option.${y}`} key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
           </div>
           {attachmentUrl && attachmentName && (
             <div id="NoteFraisList.document.joint.section" className="lg:flex-1">
@@ -769,71 +840,6 @@ export function NoteFraisList() {
               {formError}
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {!isConsultant && (
-              <Field label={tr('NoteFraisList.consultant')} id="NoteFraisList.consultant">
-                <Select
-                  id="NoteFraisList.consultant.select"
-                  title={tr('NoteFraisList.consultant')}
-                  value={form.consultantId}
-                  onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
-                >
-                  <option id="NoteFraisList.selectionner" value="">{tr('NoteFraisList.selectionner')}</option>
-                  {collaboratorOptions.map((c) => (
-                    <option id={`NoteFraisList.consultant.option.${c.id}`} key={c.id} value={c.id}>
-                      {c.fullName}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            )}
-            <Field label={tr('NoteFraisList.mission')} id="NoteFraisList.mission">
-              <Select
-                id="NoteFraisList.activity.select"
-                title={tr('NoteFraisList.mission')}
-                value={form.activityId}
-                onChange={(e) => setForm({ ...form, activityId: e.target.value })}
-              >
-                <option id="NoteFraisList.aucune.mission" value="">
-                  {tr('NoteFraisList.aucune.mission')}
-                </option>
-                {(activities ?? []).map((activity) => (
-                  <option id={`NoteFraisList.activity.option.${activity.id}`} key={activity.id} value={activity.id}>
-                    {activity.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label={tr('NoteFraisList.mois')} id="NoteFraisList.mois">
-              <Select
-                id="NoteFraisList.mois.select"
-                title={tr('NoteFraisList.mois')}
-                value={form.month}
-                onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option id={`NoteFraisList.mois.option.${m}`} key={m} value={m}>
-                    {monthLabel(m)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label={tr('NoteFraisList.annee')} id="NoteFraisList.annee">
-              <Select
-                id="NoteFraisList.annee.select"
-                title={tr('NoteFraisList.annee')}
-                value={form.year}
-                onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
-              >
-                {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
-                  <option id={`NoteFraisList.annee.option.${y}`} key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          </div>
-
           <div>
             <div className="mb-2 flex items-center justify-between">
               <div>

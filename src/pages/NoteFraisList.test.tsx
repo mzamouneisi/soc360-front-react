@@ -553,6 +553,12 @@ describe('NoteFraisList', () => {
     expect(row?.className).toContain('lg:flex-row')
     expect(row?.contains(document.getElementById('NoteFraisList.justificatif'))).toBe(true)
     expect(row?.contains(document.getElementById('NoteFraisList.apercu'))).toBe(true)
+    expect(row?.contains(document.getElementById('NoteFraisList.mission'))).toBe(true)
+    expect(
+      document.getElementById('NoteFraisList.justificatif')?.contains(
+        document.getElementById('NoteFraisList.mission'),
+      ),
+    ).toBe(false)
   })
 
   it('demande confirmation avant de retirer le document joint', async () => {
