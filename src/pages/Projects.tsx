@@ -124,10 +124,25 @@ export function Projects() {
   }
 
   async function handleDelete(project: ProjectDto) {
-    if (!(await dialog.confirm(tr('Projects.supprimer.le.projet', { name: project.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     try {
-      await projectsApi.delete(project.id)
-      setData((data ?? []).filter((p) => p.id !== project.id))
+      const dependencies = await projectsApi.dependencies(project.id)
+      if (dependencies.length === 0) {
+        if (!(await dialog.confirm(tr('Projects.supprimer.le.projet', { name: project.name }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
+        await projectsApi.delete(project.id)
+        setData((data ?? []).filter((p) => p.id !== project.id))
+        return
+      }
+      // Projet utilisé : il ne peut pas être supprimé, on propose de le désactiver.
+      const objects = dependencies
+        .map((d) => `• ${d.type === 'MISSION' ? tr('Projects.mission.associee', { name: d.label }) : d.label}`)
+        .join('\n')
+      const confirmed = await dialog.confirm(
+        tr('Projects.projet.associe', { name: project.name, objects }),
+        { variant: 'question', okLabel: tr('Projects.desactiver.le.projet') },
+      )
+      if (!confirmed) return
+      const updated = await projectsApi.deactivate(project.id)
+      setData((data ?? []).map((p) => (p.id === updated.id ? updated : p)))
     } catch (err) {
       void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }

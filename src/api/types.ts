@@ -344,6 +344,11 @@ export interface ProjectDto {
   active: boolean
 }
 
+export interface ProjectDependencyDto {
+  type: string
+  label: string
+}
+
 export interface ProjectRequest {
   name: string
   description?: string | null

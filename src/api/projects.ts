@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { ProjectDto, ProjectRequest } from './types'
+import type { ProjectDependencyDto, ProjectDto, ProjectRequest } from './types'
 
 export const projectsApi = {
   findAll: (params?: { socId?: number; clientId?: number }) =>
@@ -9,4 +9,7 @@ export const projectsApi = {
   update: (id: number, request: ProjectRequest) =>
     api.put<ProjectDto>(`/projects/${id}`, request),
   delete: (id: number) => api.delete<void>(`/projects/${id}`),
+  dependencies: (id: number) =>
+    api.get<ProjectDependencyDto[]>(`/projects/${id}/dependencies`),
+  deactivate: (id: number) => api.post<ProjectDto>(`/projects/${id}/deactivate`),
 }
