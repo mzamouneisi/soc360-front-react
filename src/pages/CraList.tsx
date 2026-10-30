@@ -176,15 +176,32 @@ export function CraList() {
     if (beforeHirePeriod(newYear, newMonth)) return
     setDetailYear(newYear)
     setDetailMonth(newMonth)
-    setDetailPreview(null)
     if (detailConsultantId == null) return
     try {
       const cras = await crasApi.findByConsultant(detailConsultantId, newYear)
       const target = cras.find((c) => c.month === newMonth && c.type === detailType)
-      setOpenCraId(target ? target.id : null)
+      if (target) {
+        setDetailPreview(null)
+        setOpenCraId(target.id)
+      } else {
+        // Mois sans CRA : on affiche directement un CRA vide à remplir (non persisté).
+        setOpenCraId(null)
+        setDetailPreview({
+          consultantId: detailConsultantId,
+          year: newYear,
+          month: newMonth,
+          type: detailType,
+        })
+      }
     } catch (err) {
       void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
       setOpenCraId(null)
+      setDetailPreview({
+        consultantId: detailConsultantId,
+        year: newYear,
+        month: newMonth,
+        type: detailType,
+      })
     }
   }
 
@@ -295,16 +312,6 @@ export function CraList() {
     }
     const period = nextFreeCraPeriod(ownerId, type)
     openCraPreview(ownerId, period.year, period.month, type)
-  }
-
-  function createDetailCra() {
-    const targetId = detailConsultantId ?? ownerId
-    if (!targetId) return
-    if (isConsultant && !user.hireDate) {
-      void dialog.error(tr('hireDate.required'))
-      return
-    }
-    openCraPreview(targetId, detailYear, detailMonth, 'CRA')
   }
 
   return (
@@ -618,20 +625,7 @@ export function CraList() {
               }}
               onChange={reload}
             />
-          ) : (
-            <Card className="flex flex-wrap items-center justify-between gap-3">
-              <p id="CraList.aucun.cra.pour.ce.mois" className="text-sm font-medium text-gray-900">
-                {tr('CraList.aucun.cra.pour.ce.mois')}
-              </p>
-              <IconButton
-                icon="add"
-                label={tr('CraList.creer.le.cra.de.ce.mois')}
-                variant="new"
-                onClick={() => void createDetailCra()}
-                id="CraList.detail.creer"
-              />
-            </Card>
-          )}
+          ) : null}
         </Modal>
       )}
 

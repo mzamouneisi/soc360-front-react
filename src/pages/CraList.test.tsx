@@ -247,7 +247,7 @@ describe('CraList', () => {
     expect(findByManagerMock).toHaveBeenCalledTimes(1)
   })
 
-  it('crée un CRA pour un mois sans CRA depuis la popup', async () => {
+  it('affiche un CRA vide à remplir pour un mois sans CRA', async () => {
     userMock.value = managerUser
     const august = cra({ id: 1, month: 8 })
     const september = cra({ id: 2, month: 9 })
@@ -265,11 +265,9 @@ describe('CraList', () => {
     await screen.findByRole('dialog')
 
     fireEvent.click(screen.getByRole('button', { name: 'Mois suivant' }))
-    expect(await screen.findByText('Aucun CRA pour ce mois.')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Créer le CRA de ce mois' }))
 
     await waitFor(() => expect(previewMock).toHaveBeenCalledWith(10, 2026, 9, 'CRA'))
+    expect(screen.queryByText('Aucun CRA pour ce mois.')).not.toBeInTheDocument()
     expect(getOrCreateMock).not.toHaveBeenCalled()
   })
 
