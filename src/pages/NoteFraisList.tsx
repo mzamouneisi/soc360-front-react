@@ -36,6 +36,7 @@ interface LineForm {
   montantTTC: string
   reimbursed: boolean
   comment: string
+  fromDocument: boolean
 }
 
 interface FormState {
@@ -58,6 +59,7 @@ function newLine(): LineForm {
     montantTTC: '',
     reimbursed: false,
     comment: '',
+    fromDocument: false,
   }
 }
 
@@ -88,6 +90,7 @@ function fillLineFromText(lines: LineForm[], text: string, filename: string): Li
     label: base.label.trim() ? base.label : parsed.label ?? '',
     enseigne: parsed.enseigne ?? base.enseigne,
     adresse: parsed.adresse ?? base.adresse,
+    fromDocument: true,
   })
   const first = lines[0] ?? newLine()
   if (isBlankLine(first)) {
@@ -230,6 +233,7 @@ export function NoteFraisList() {
               montantTTC: String(l.montantTTC),
               reimbursed: l.reimbursed,
               comment: l.comment ?? '',
+              fromDocument: nf.documentId != null,
             }))
           : [newLine()],
       infosFacture: nf.infosFacture ?? '',
@@ -276,6 +280,23 @@ export function NoteFraisList() {
     setAttachmentUrl(null)
     setAttachmentName(null)
     setAttachmentDocumentId(null)
+    setForm((prev) => {
+      const kept = prev.lines.filter((line) => !line.fromDocument)
+      return { ...prev, lines: kept.length > 0 ? kept : [newLine()] }
+    })
+  }
+
+  async function removeLine(index: number) {
+    if (
+      !(await dialog.confirm(tr('NoteFraisList.confirmer.supprimer.la.ligne'), {
+        variant: 'warning',
+        danger: true,
+        okLabel: tr('NoteFraisList.supprimer'),
+      }))
+    ) {
+      return
+    }
+    setForm({ ...form, lines: form.lines.filter((_, j) => j !== index) })
   }
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
@@ -972,9 +993,7 @@ export function NoteFraisList() {
                       icon="delete"
                       label={tr('NoteFraisList.supprimer')}
                       variant="danger"
-                      onClick={() =>
-                        setForm({ ...form, lines: form.lines.filter((_, j) => j !== i) })
-                      }
+                      onClick={() => void removeLine(i)}
                     />
                   </div>
                 </div>

@@ -559,6 +559,65 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(document.getElementById('NoteFraisList.retirer')).toBeNull())
   })
 
+  it('supprime les lignes liées au document quand on retire le document', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock.mockResolvedValue('blob:preview')
+
+    renderList()
+    fireEvent.click(await screen.findByText('Alice Martin'))
+    const dialog = await screen.findByRole('dialog')
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    expect(within(dialog).getByDisplayValue('Déjeuner client')).toBeInTheDocument()
+
+    fireEvent.click(document.getElementById('NoteFraisList.retirer') as HTMLElement)
+    const dialogs = await screen.findAllByRole('dialog')
+    fireEvent.click(
+      within(dialogs[dialogs.length - 1]).getByRole('button', { name: 'Retirer' }),
+    )
+
+    await waitFor(() =>
+      expect(within(dialog).queryByDisplayValue('Déjeuner client')).not.toBeInTheDocument(),
+    )
+    expect(
+      (document.getElementById('NoteFraisList.line.0.label') as HTMLInputElement).value,
+    ).toBe('')
+  })
+
+  it('demande confirmation avant de supprimer une ligne de dépense', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([nf()])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+    fireEvent.click(await screen.findByText('Alice Martin'))
+    await screen.findByRole('dialog')
+    expect(document.getElementById('NoteFraisList.line.0.label')).not.toBeNull()
+
+    fireEvent.click(document.getElementById('NoteFraisList.line.0.supprimer') as HTMLElement)
+    const firstDialogs = await screen.findAllByRole('dialog')
+    const firstConfirm = firstDialogs[firstDialogs.length - 1]
+    expect(
+      within(firstConfirm).getByText('Supprimer cette ligne de dépense ?'),
+    ).toBeInTheDocument()
+    fireEvent.click(within(firstConfirm).getByRole('button', { name: 'Annuler' }))
+    await waitFor(() => expect(document.getElementById('NoteFraisList.line.0.label')).not.toBeNull())
+
+    fireEvent.click(document.getElementById('NoteFraisList.line.0.supprimer') as HTMLElement)
+    const dialogs = await screen.findAllByRole('dialog')
+    fireEvent.click(
+      within(dialogs[dialogs.length - 1]).getByRole('button', { name: 'Supprimer' }),
+    )
+    await waitFor(() => expect(document.getElementById('NoteFraisList.line.0.label')).toBeNull())
+  })
+
   it('pré-sélectionne le collaborateur connecté', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
