@@ -47,7 +47,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
   const { data: socs, loading, error, reload, setData } = useAsync(() => socsApi.findAll(), [])
   const [search, setSearch] = useState('')
   const [addOpen, setAddOpen] = useState(false)
-  const [editingForm, setEditingForm] = useState<{ soc: SocDto; form: EditForm } | null>(null)
+  const [editingForm, setEditingForm] = useState<{ soc: SocDto; form: EditForm; readOnly: boolean } | null>(null)
   const [saving, setSaving] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<SocDto | null>(null)
@@ -120,6 +120,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
     setActionError(null)
     setEditingForm({
       soc,
+      readOnly: !canManage(soc),
       form: {
         name: soc.name,
         description: soc.description ?? '',
@@ -283,6 +284,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           paginate
           rowKey={(s) => s.id}
           rows={filtered}
+          onRowClick={openEdit}
           columns={[
             {
               key: 'name',
@@ -360,19 +362,23 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
           title={tr('SocAdmin.modifier.societe', { name: editingForm.soc.name })}
           size="lg"
           footer={
-            <>
-              <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setEditingForm(null)} id="common.cancel" />
-              <IconButton
-                icon="save"
-                label={tr('common.save')}
-                variant="primary"
-                type="button"
-                disabled={saving} loading={saving}
-                onClick={() => void saveEdit()} id="common.save" />
-            </>
+            editingForm.readOnly ? (
+              <IconButton icon="close" label={tr('common.close')} type="button" onClick={() => setEditingForm(null)} id="SocAdmin.detail.fermer" />
+            ) : (
+              <>
+                <IconButton icon="cancel" label={tr('common.cancel')} type="button" onClick={() => setEditingForm(null)} id="common.cancel" />
+                <IconButton
+                  icon="save"
+                  label={tr('common.save')}
+                  variant="primary"
+                  type="button"
+                  disabled={saving} loading={saving}
+                  onClick={() => void saveEdit()} id="common.save" />
+              </>
+            )
           }
         >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <fieldset disabled={editingForm.readOnly} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('SocAdmin.nom.de.la.societe')} id="SocAdmin.nom.de.la.societe">
               <Input id="SocAdmin.nom.de.la.societe.input" value={editingForm.form.name} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, name: e.target.value } })} />
             </Field>
@@ -422,7 +428,7 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                 <Textarea id="SocAdmin.informations.web.textarea" rows={3} value={editingForm.form.infosWeb} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, infosWeb: e.target.value } })} />
               </Field>
             </div>
-          </div>
+          </fieldset>
         </Modal>
       )}
 
