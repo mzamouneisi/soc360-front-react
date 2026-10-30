@@ -268,6 +268,23 @@ export function CraList() {
     return { year, month }
   }
 
+  async function createDetailCra() {
+    const targetId = detailConsultantId ?? ownerId
+    if (!targetId) return
+    if (isConsultant && !user.hireDate) {
+      void dialog.error(tr('hireDate.required'))
+      return
+    }
+    try {
+      const cra = await crasApi.getOrCreate(targetId, detailYear, detailMonth, 'CRA')
+      openCraPopup(cra)
+      if (detailYear !== year) setYear(detailYear)
+      if (detailMonth !== month) setMonth(detailMonth)
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    }
+  }
+
   async function createCra(type: string) {
     if (!ownerId) return
     if (isConsultant && !user.hireDate) {
@@ -587,10 +604,17 @@ export function CraList() {
               onChange={reload}
             />
           ) : (
-            <Card>
+            <Card className="flex flex-wrap items-center justify-between gap-3">
               <p id="CraList.aucun.cra.pour.ce.mois" className="text-sm font-medium text-gray-900">
                 {tr('CraList.aucun.cra.pour.ce.mois')}
               </p>
+              <IconButton
+                icon="add"
+                label={tr('CraList.creer.le.cra.de.ce.mois')}
+                variant="new"
+                onClick={() => void createDetailCra()}
+                id="CraList.detail.creer"
+              />
             </Card>
           )}
         </Modal>
