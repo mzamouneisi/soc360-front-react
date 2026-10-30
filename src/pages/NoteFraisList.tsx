@@ -995,6 +995,7 @@ export function NoteFraisList() {
                   <div className="flex items-center">
                     <IconButton
                       id={`NoteFraisList.line.${i}.supprimer`}
+                      type="button"
                       icon="delete"
                       label={tr('NoteFraisList.supprimer')}
                       variant="danger"

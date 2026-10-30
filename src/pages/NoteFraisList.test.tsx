@@ -620,6 +620,9 @@ describe('NoteFraisList', () => {
     fireEvent.click(await screen.findByText('Alice Martin'))
     await screen.findByRole('dialog')
     expect(document.getElementById('NoteFraisList.line.0.label')).not.toBeNull()
+    expect(
+      (document.getElementById('NoteFraisList.line.0.supprimer') as HTMLButtonElement).type,
+    ).toBe('button')
 
     fireEvent.click(document.getElementById('NoteFraisList.line.0.supprimer') as HTMLElement)
     const firstDialogs = await screen.findAllByRole('dialog')
@@ -636,6 +639,7 @@ describe('NoteFraisList', () => {
       within(dialogs[dialogs.length - 1]).getByRole('button', { name: 'Supprimer' }),
     )
     await waitFor(() => expect(document.getElementById('NoteFraisList.line.0.label')).toBeNull())
+    expect(document.getElementById('NoteFraisList.ajouter.une.ligne')).not.toBeNull()
   })
 
   it('pré-sélectionne le collaborateur connecté', async () => {
