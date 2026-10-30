@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { crasApi } from '../api/cras'
@@ -250,13 +250,11 @@ function ActivityChip({
 export function CraDetail({
   id,
   preview,
-  autoOpenExport = false,
   onClose,
   onChange,
 }: {
   id: number
   preview?: { consultantId: number; year: number; month: number; type: string }
-  autoOpenExport?: boolean
   onClose?: () => void
   onChange?: () => void
 }) {
@@ -306,8 +304,6 @@ export function CraDetail({
   const [exportProjectId, setExportProjectId] = useState('')
   const [exportError, setExportError] = useState<string | null>(null)
   const [exportSubmitting, setExportSubmitting] = useState(false)
-  const exportAutoOpened = useRef(false)
-  const openExportDialogRef = useRef<() => void>(() => {})
 
   useEffect(() => {
     if (cra) setDays(cra.days.map(dayToEditable))
@@ -443,12 +439,6 @@ export function CraDetail({
   const canExportClient = exportStatusAllowed && hasMissionDays
   const canExportInternal = exportStatusAllowed && allWorkingDaysFilled
   const canExportPdf = canExportClient || canExportInternal
-
-  useEffect(() => {
-    if (!autoOpenExport || exportAutoOpened.current || !canExportPdf) return
-    exportAutoOpened.current = true
-    openExportDialogRef.current()
-  }, [autoOpenExport, canExportPdf])
 
   if (!cra) {
     if (loading) return <LoadingBlock />
@@ -923,8 +913,6 @@ export function CraDetail({
     setExportProjectId(exportMissions.length === 1 ? String(exportMissions[0].projectId) : '')
     setExportOpen(true)
   }
-
-  openExportDialogRef.current = openExportDialog
 
   function closeExportDialog() {
     if (exportSubmitting) return

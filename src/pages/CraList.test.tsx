@@ -24,6 +24,8 @@ const {
   rejectMock,
   deleteMock,
   historyMock,
+  exportClientUrlMock,
+  exportCompanyUrlMock,
   filterListMock,
   activitiesFindAllMock,
   userMock,
@@ -40,6 +42,8 @@ const {
   rejectMock: vi.fn(),
   deleteMock: vi.fn(),
   historyMock: vi.fn(),
+  exportClientUrlMock: vi.fn(),
+  exportCompanyUrlMock: vi.fn(),
   filterListMock: vi.fn().mockResolvedValue([]),
   activitiesFindAllMock: vi.fn().mockResolvedValue([]),
   userMock: { value: null as unknown as UserDto },
@@ -82,6 +86,8 @@ vi.mock('../api/cras', () => ({
     delete: deleteMock,
     exchanges: vi.fn(),
     history: historyMock,
+    exportClientUrl: exportClientUrlMock,
+    exportCompanyUrl: exportCompanyUrlMock,
   },
 }))
 
@@ -365,7 +371,7 @@ describe('CraList', () => {
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
   })
 
-  it('affiche un bouton PDF dans la liste et ouvre le dialogue d’export', async () => {
+  it('affiche un bouton PDF et ouvre l’export sans ouvrir le CRA en arrière-plan', async () => {
     userMock.value = managerUser
     const exportable = cra({
       status: 'SUBMITTED',
@@ -421,6 +427,14 @@ describe('CraList', () => {
 
     await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(1))
     expect(await screen.findByText('Export PDF du CRA')).toBeInTheDocument()
+    expect(document.getElementById('CraDetail.total.jours')).toBeNull()
+
+    exportClientUrlMock.mockResolvedValue('blob:client')
+    const target = { location: { href: '' }, close: vi.fn() }
+    vi.spyOn(window, 'open').mockReturnValue(target as unknown as Window)
+    fireEvent.click(screen.getByRole('button', { name: 'Générer le PDF' }))
+    await waitFor(() => expect(exportClientUrlMock).toHaveBeenCalledWith(1, 7, expect.any(String)))
+    expect(target.location.href).toBe('blob:client')
   })
 
   it('n’affiche pas le bouton PDF pour un CRA non exportable', async () => {
