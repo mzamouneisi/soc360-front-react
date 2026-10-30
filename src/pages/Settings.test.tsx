@@ -192,7 +192,7 @@ describe('Settings — couleurs CRA', () => {
     fireEvent.click(saveButtons[saveButtons.length - 1])
 
     await waitFor(() =>
-      expect(updateTableColorsMock).toHaveBeenCalledWith('#1d48eb', '#e5e7eb', '#000000'),
+      expect(updateTableColorsMock).toHaveBeenCalledWith('#1d48eb', '#000000', '#000000'),
     )
   })
 })

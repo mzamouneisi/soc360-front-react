@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     doc.dataset.theme = user?.theme || 'ocean'
     doc.style.setProperty('--table-header', user?.tableHeaderColor || '#1d48eb')
     doc.style.setProperty('--table-header-text', user?.tableHeaderTextColor || '#ffffff')
-    doc.style.setProperty('--table-border', user?.tableBorderColor || '#e5e7eb')
+    doc.style.setProperty('--table-border', user?.tableBorderColor || '#000000')
     doc.style.setProperty('--table-header-font-size', `${user?.tableHeaderFontSize ?? 15}px`)
     doc.style.setProperty('--btn-small-width', `${user?.buttonSmallWidth ?? 50}px`)
     doc.style.setProperty('--btn-large-width', `${user?.buttonLargeWidth ?? 100}px`)

@@ -98,7 +98,7 @@ export function Settings() {
   const [theme, setTheme] = useState<string>(user?.theme || 'ocean')
   const [headerColor, setHeaderColor] = useState<string>(user?.tableHeaderColor || '#1d48eb')
   const [headerTextColor, setHeaderTextColor] = useState<string>(user?.tableHeaderTextColor || '#ffffff')
-  const [borderColor, setBorderColor] = useState<string>(user?.tableBorderColor || '#e5e7eb')
+  const [borderColor, setBorderColor] = useState<string>(user?.tableBorderColor || '#000000')
   const [tableHeaderFontSize, setTableHeaderFontSize] = useState<number>(user?.tableHeaderFontSize ?? 15)
   const [pageSize, setPageSize] = useState<number>(user?.pageSize ?? 5)
   const [btnSmallWidth, setBtnSmallWidth] = useState<number>(user?.buttonSmallWidth ?? 50)
@@ -259,7 +259,7 @@ export function Settings() {
     (u.theme || 'ocean') !== theme ||
     (u.tableHeaderColor || '#1d48eb') !== headerColor ||
     (u.tableHeaderTextColor || '#ffffff') !== headerTextColor ||
-    (u.tableBorderColor || '#e5e7eb') !== borderColor ||
+    (u.tableBorderColor || '#000000') !== borderColor ||
     (u.tableHeaderFontSize ?? 15) !== tableHeaderFontSize ||
     (u.pageSize ?? 5) !== pageSize ||
     (u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
@@ -309,7 +309,7 @@ export function Settings() {
       }
       if ((u.tableHeaderColor || '#1d48eb') !== headerColor ||
           (u.tableHeaderTextColor || '#ffffff') !== headerTextColor ||
-          (u.tableBorderColor || '#e5e7eb') !== borderColor) {
+          (u.tableBorderColor || '#000000') !== borderColor) {
         await authApi.updateTableColors(headerColor, borderColor, headerTextColor)
       }
       if ((u.tableHeaderFontSize ?? 15) !== tableHeaderFontSize) {

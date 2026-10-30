@@ -169,7 +169,7 @@ body {
 :root {
   --table-header: #1d48eb;
   --table-header-text: #ffffff;
-  --table-border: #e5e7eb;
+  --table-border: #000000;
   --table-header-font-size: 15px;
   --btn-small-width: 50px;
   --btn-large-width: 100px;
