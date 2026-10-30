@@ -75,8 +75,12 @@ export const authApi = {
     api.put<UserDto>('/auth/me/font-size', { fontSize }),
   updateTheme: (theme: string) =>
     api.put<UserDto>('/auth/me/theme', { theme }),
-  updateTableColors: (tableHeaderColor: string, tableBorderColor: string) =>
-    api.put<UserDto>('/auth/me/table-colors', { tableHeaderColor, tableBorderColor }),
+  updateTableColors: (tableHeaderColor: string, tableBorderColor: string, tableHeaderTextColor: string) =>
+    api.put<UserDto>('/auth/me/table-colors', {
+      tableHeaderColor,
+      tableBorderColor,
+      tableHeaderTextColor,
+    }),
   updateTableHeaderFontSize: (tableHeaderFontSize: number) =>
     api.put<UserDto>('/auth/me/table-header-font-size', { tableHeaderFontSize }),
   updatePageSize: (pageSize: number) =>

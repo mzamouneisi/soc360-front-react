@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Settings } from './Settings'
 
-const { getByIdMock, updateCraColorsMock, updateTableHeaderFontSizeMock, refreshMeMock, userMock } = vi.hoisted(() => ({
+const { getByIdMock, updateCraColorsMock, updateTableColorsMock, updateTableHeaderFontSizeMock, refreshMeMock, userMock } = vi.hoisted(() => ({
   getByIdMock: vi.fn(),
   updateCraColorsMock: vi.fn(),
+  updateTableColorsMock: vi.fn(),
   updateTableHeaderFontSizeMock: vi.fn(),
   refreshMeMock: vi.fn(),
   userMock: { value: null as unknown },
@@ -73,6 +74,7 @@ vi.mock('../api/i18n', () => ({
 
 vi.mock('../api/auth', () => ({
   authApi: {
+    updateTableColors: updateTableColorsMock,
     updateTableHeaderFontSize: updateTableHeaderFontSizeMock,
   },
 }))
@@ -169,6 +171,28 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() =>
       expect(updateTableHeaderFontSizeMock).toHaveBeenCalledWith(24),
+    )
+  })
+
+  it('enregistre la couleur du texte des en-têtes de tableau', async () => {
+    userMock.value = user('RESPONSIBLE_SOC')
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee' },
+      subscriptions: [],
+      payments: [],
+    })
+    updateTableColorsMock.mockResolvedValue({})
+
+    render(<Settings />)
+
+    await screen.findByText('settings.colors.headerText')
+    const input = document.getElementById('settings.colors.headerText.input') as HTMLInputElement
+    fireEvent.change(input, { target: { value: '#000000' } })
+    const saveButtons = screen.getAllByRole('button', { name: 'common.save' })
+    fireEvent.click(saveButtons[saveButtons.length - 1])
+
+    await waitFor(() =>
+      expect(updateTableColorsMock).toHaveBeenCalledWith('#1d48eb', '#e5e7eb', '#000000'),
     )
   })
 })

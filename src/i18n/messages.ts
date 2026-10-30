@@ -154,6 +154,7 @@ const fr: Messages = {
   'settings.colors.description':
     'Personnalisez la couleur d’en-tête et la bordure des tableaux de l’application.',
   'settings.colors.header': 'Couleur d’en-tête',
+  'settings.colors.headerText': 'Couleur du texte d’en-tête',
   'settings.colors.border': 'Couleur de bordure',
   'settings.tableHeaderFontSize.title': 'En-têtes de tableau',
   'settings.tableHeaderFontSize.description':
@@ -401,6 +402,7 @@ const en: Messages = {
   'settings.colors.description':
     'Customize the header colour and the border of the application tables.',
   'settings.colors.header': 'Header colour',
+  'settings.colors.headerText': 'Header text colour',
   'settings.colors.border': 'Border colour',
   'settings.tableHeaderFontSize.title': 'Table headers',
   'settings.tableHeaderFontSize.description': 'Table header font size (bold).',
@@ -549,6 +551,7 @@ const ar: Messages = {
   'settings.craColors.leave': 'لون يوم الإجازة',
   'settings.craColors.weekend': 'لون نهاية الأسبوع',
   'settings.tableHeaderFontSize.title': 'رؤوس الجداول',
+  'settings.colors.headerText': 'لون نص الرأس',
   'settings.tableHeaderFontSize.description': 'حجم خط رؤوس الجداول (عريض).',
   'settings.tableHeaderFontSize.field': 'حجم الرؤوس',
   'languages.searchRows': 'بحث عن صف',

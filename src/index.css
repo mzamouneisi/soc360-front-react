@@ -167,7 +167,8 @@ body {
 }
 
 :root {
-  --table-header: #f9fafb;
+  --table-header: #1d48eb;
+  --table-header-text: #ffffff;
   --table-border: #e5e7eb;
   --table-header-font-size: 15px;
   --btn-small-width: 50px;
@@ -198,6 +199,7 @@ body {
 thead th {
   font-size: var(--table-header-font-size, 15px) !important;
   font-weight: 700;
+  color: var(--table-header-text, #ffffff) !important;
 }
 
 .font_last_commit {

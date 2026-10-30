@@ -31,7 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const doc = document.documentElement
     doc.style.fontSize = `${user?.fontSize && user.fontSize > 0 ? user.fontSize : 14}px`
     doc.dataset.theme = user?.theme || 'ocean'
-    doc.style.setProperty('--table-header', user?.tableHeaderColor || '#f9fafb')
+    doc.style.setProperty('--table-header', user?.tableHeaderColor || '#1d48eb')
+    doc.style.setProperty('--table-header-text', user?.tableHeaderTextColor || '#ffffff')
     doc.style.setProperty('--table-border', user?.tableBorderColor || '#e5e7eb')
     doc.style.setProperty('--table-header-font-size', `${user?.tableHeaderFontSize ?? 15}px`)
     doc.style.setProperty('--btn-small-width', `${user?.buttonSmallWidth ?? 50}px`)
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user?.fontSize,
     user?.theme,
     user?.tableHeaderColor,
+    user?.tableHeaderTextColor,
     user?.tableBorderColor,
     user?.tableHeaderFontSize,
     user?.buttonSmallWidth,
