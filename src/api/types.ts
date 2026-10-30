@@ -91,6 +91,7 @@ export interface UserDto {
   theme: string
   tableHeaderColor: string
   tableBorderColor: string
+  tableHeaderFontSize: number
   pageSize: number
   language: string | null
   buttonSmallWidth: number

@@ -98,6 +98,7 @@ export function Settings() {
   const [theme, setTheme] = useState<string>(user?.theme || 'ocean')
   const [headerColor, setHeaderColor] = useState<string>(user?.tableHeaderColor || '#f9fafb')
   const [borderColor, setBorderColor] = useState<string>(user?.tableBorderColor || '#e5e7eb')
+  const [tableHeaderFontSize, setTableHeaderFontSize] = useState<number>(user?.tableHeaderFontSize ?? 15)
   const [pageSize, setPageSize] = useState<number>(user?.pageSize ?? 5)
   const [btnSmallWidth, setBtnSmallWidth] = useState<number>(user?.buttonSmallWidth ?? 50)
   const [btnLargeWidth, setBtnLargeWidth] = useState<number>(user?.buttonLargeWidth ?? 100)
@@ -257,6 +258,7 @@ export function Settings() {
     (u.theme || 'ocean') !== theme ||
     (u.tableHeaderColor || '#f9fafb') !== headerColor ||
     (u.tableBorderColor || '#e5e7eb') !== borderColor ||
+    (u.tableHeaderFontSize ?? 15) !== tableHeaderFontSize ||
     (u.pageSize ?? 5) !== pageSize ||
     (u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
     (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
@@ -306,6 +308,9 @@ export function Settings() {
       if ((u.tableHeaderColor || '#f9fafb') !== headerColor ||
           (u.tableBorderColor || '#e5e7eb') !== borderColor) {
         await authApi.updateTableColors(headerColor, borderColor)
+      }
+      if ((u.tableHeaderFontSize ?? 15) !== tableHeaderFontSize) {
+        await authApi.updateTableHeaderFontSize(tableHeaderFontSize)
       }
       if ((u.pageSize ?? 5) !== pageSize) {
         await authApi.updatePageSize(pageSize)
@@ -696,6 +701,28 @@ export function Settings() {
             </div>
           </Field>
         </div>
+        <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.tableHeaderFontSize.title">{t('settings.tableHeaderFontSize.title')}</h3>
+        <p className="mt-1 text-sm text-gray-500" id="settings.tableHeaderFontSize.description">{t('settings.tableHeaderFontSize.description')}</p>
+        <div className="mt-4 flex flex-wrap items-end gap-4">
+          <Field label={t('settings.tableHeaderFontSize.field')} id="settings.tableHeaderFontSize.field">
+            <Select
+              id="settings.tableHeaderFontSize.select"
+              className="w-28"
+              value={String(tableHeaderFontSize)}
+              onChange={(e) => {
+                setTableHeaderFontSize(Number(e.target.value))
+                setSaved(false)
+              }}
+            >
+              {FONT_SIZES.map((s) => (
+                <option key={s} value={s} id={`settings.tableHeaderFontSize.option.${s}`}>
+                  {s} {tr('Settings.px')}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </div>
+
         <div className="mt-4 overflow-hidden rounded-xl border" style={{ borderColor: borderColor }}>
           <table className="min-w-full divide-y" style={{ borderColor: borderColor }} id="settings.colors.preview.table">
             <thead style={{ backgroundColor: headerColor }}>

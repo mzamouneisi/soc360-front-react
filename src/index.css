@@ -169,6 +169,7 @@ body {
 :root {
   --table-header: #f9fafb;
   --table-border: #e5e7eb;
+  --table-header-font-size: 15px;
   --btn-small-width: 50px;
   --btn-large-width: 100px;
   --btn-save-color: #1d48eb;
@@ -192,6 +193,11 @@ body {
   );
   --app-card-bg: color-mix(in srgb, var(--app-bg-color) 30%, white);
   --app-card-border: color-mix(in srgb, var(--app-bg-color) 60%, white);
+}
+
+thead th {
+  font-size: var(--table-header-font-size, 15px) !important;
+  font-weight: 700;
 }
 
 .font_last_commit {
