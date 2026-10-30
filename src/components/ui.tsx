@@ -199,15 +199,17 @@ export function Field({
   label,
   id,
   error,
+  className = '',
   children,
 }: {
   label: string
   id?: string
   error?: string
+  className?: string
   children: ReactNode
 }) {
   return (
-    <div className="space-y-1">
+    <div className={`space-y-1 ${className}`}>
       <label id={id} className="block text-sm font-medium text-gray-700">{label}</label>
       {children}
       {error && <p id={id ? `${id}.error` : undefined} className="text-xs text-red-600">{error}</p>}

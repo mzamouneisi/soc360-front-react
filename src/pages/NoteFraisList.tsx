@@ -807,22 +807,23 @@ export function NoteFraisList() {
               {form.lines.map((line, i) => (
                 <div key={i} className="flex items-stretch gap-2">
                   <div id={`NoteFraisList.line.${i}.frame`} className="grid flex-1 grid-cols-1 gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-12 sm:items-center">
-                  <Input
-                    id={`NoteFraisList.line.${i}.enseigne`}
-                    placeholder={tr('NoteFraisList.nom.enseigne')}
-                    title={tr('NoteFraisList.nom.enseigne')}
-                    required
-                    aria-required="true"
-                    className="sm:col-span-2"
-                    value={line.enseigne}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        lines: form.lines.map((l, j) => (j === i ? { ...l, enseigne: e.target.value } : l)),
-                      })
-                    }
-                  />
-                  <div className="sm:col-span-2 min-w-0">
+                  <Field className="sm:col-span-2" label={tr('NoteFraisList.nom.enseigne')} id={`NoteFraisList.line.${i}.enseigne.label`}>
+                    <Input
+                      id={`NoteFraisList.line.${i}.enseigne`}
+                      placeholder={tr('NoteFraisList.nom.enseigne')}
+                      title={tr('NoteFraisList.nom.enseigne')}
+                      required
+                      aria-required="true"
+                      value={line.enseigne}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lines: form.lines.map((l, j) => (j === i ? { ...l, enseigne: e.target.value } : l)),
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field className="sm:col-span-2 min-w-0" label={tr('NoteFraisList.date')} id={`NoteFraisList.line.${i}.date.label`}>
                     <Input
                       id={`NoteFraisList.line.${i}.date`}
                       type="date"
@@ -838,94 +839,99 @@ export function NoteFraisList() {
                         })
                       }
                     />
-                  </div>
-                  <Select
-                    id={`NoteFraisList.line.${i}.category`}
-                    title={tr('NoteFraisList.categorie')}
-                    required
-                    aria-required="true"
-                    className="sm:col-span-2"
-                    value={line.category}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        lines: form.lines.map((l, j) => (j === i ? { ...l, category: e.target.value } : l)),
-                      })
-                    }
-                  >
-                    {NOTE_FRAIS_CATEGORIES.map((cat, categoryIndex) => (
-                      <option id={`NoteFraisList.line.${i}.category.option.${categoryIndex}`} key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </Select>
-                  <Input
-                    id={`NoteFraisList.line.${i}.label`}
-                    placeholder={tr('NoteFraisList.libelle.action')}
-                    title={tr('NoteFraisList.libelle.action')}
-                    required
-                    aria-required="true"
-                    className="sm:col-span-2"
-                    value={line.label}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        lines: form.lines.map((l, j) => (j === i ? { ...l, label: e.target.value } : l)),
-                      })
-                    }
-                  />
-                  <Input
-                    id={`NoteFraisList.line.${i}.adresse`}
-                    placeholder={tr('NoteFraisList.adresse')}
-                    title={tr('NoteFraisList.adresse')}
-                    required
-                    aria-required="true"
-                    className="sm:col-span-4"
-                    value={line.adresse}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        lines: form.lines.map((l, j) => (j === i ? { ...l, adresse: e.target.value } : l)),
-                      })
-                    }
-                  />
-                  <Input
-                    id={`NoteFraisList.line.${i}.montantHT`}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder={tr('NoteFraisList.montant.ht')}
-                    title={tr('NoteFraisList.montant.ht')}
-                    required
-                    aria-required="true"
-                    className="sm:col-span-2"
-                    value={line.montantHT}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        lines: form.lines.map((l, j) => (j === i ? { ...l, montantHT: e.target.value } : l)),
-                      })
-                    }
-                  />
-                  <Input
-                    id={`NoteFraisList.line.${i}.montantTTC`}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder={tr('NoteFraisList.montant.ttc')}
-                    title={tr('NoteFraisList.montant.ttc')}
-                    required
-                    aria-required="true"
-                    className="sm:col-span-2"
-                    value={line.montantTTC}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        lines: form.lines.map((l, j) => (j === i ? { ...l, montantTTC: e.target.value } : l)),
-                      })
-                    }
-                  />
-                  <label id={`NoteFraisList.line.${i}.remboursee.label`} className="flex items-center gap-2 text-sm text-gray-600 sm:col-span-1">
+                  </Field>
+                  <Field className="sm:col-span-2" label={tr('NoteFraisList.categorie')} id={`NoteFraisList.line.${i}.category.label`}>
+                    <Select
+                      id={`NoteFraisList.line.${i}.category`}
+                      title={tr('NoteFraisList.categorie')}
+                      required
+                      aria-required="true"
+                      value={line.category}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lines: form.lines.map((l, j) => (j === i ? { ...l, category: e.target.value } : l)),
+                        })
+                      }
+                    >
+                      {NOTE_FRAIS_CATEGORIES.map((cat, categoryIndex) => (
+                        <option id={`NoteFraisList.line.${i}.category.option.${categoryIndex}`} key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <Field className="sm:col-span-2" label={tr('NoteFraisList.libelle.action')} id={`NoteFraisList.line.${i}.label.label`}>
+                    <Input
+                      id={`NoteFraisList.line.${i}.label`}
+                      placeholder={tr('NoteFraisList.libelle.action')}
+                      title={tr('NoteFraisList.libelle.action')}
+                      required
+                      aria-required="true"
+                      value={line.label}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lines: form.lines.map((l, j) => (j === i ? { ...l, label: e.target.value } : l)),
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field className="sm:col-span-4" label={tr('NoteFraisList.adresse')} id={`NoteFraisList.line.${i}.adresse.label`}>
+                    <Input
+                      id={`NoteFraisList.line.${i}.adresse`}
+                      placeholder={tr('NoteFraisList.adresse')}
+                      title={tr('NoteFraisList.adresse')}
+                      required
+                      aria-required="true"
+                      value={line.adresse}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lines: form.lines.map((l, j) => (j === i ? { ...l, adresse: e.target.value } : l)),
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field className="sm:col-span-2" label={tr('NoteFraisList.montant.ht')} id={`NoteFraisList.line.${i}.montantHT.label`}>
+                    <Input
+                      id={`NoteFraisList.line.${i}.montantHT`}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder={tr('NoteFraisList.montant.ht')}
+                      title={tr('NoteFraisList.montant.ht')}
+                      required
+                      aria-required="true"
+                      value={line.montantHT}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lines: form.lines.map((l, j) => (j === i ? { ...l, montantHT: e.target.value } : l)),
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field className="sm:col-span-2" label={tr('NoteFraisList.montant.ttc')} id={`NoteFraisList.line.${i}.montantTTC.label`}>
+                    <Input
+                      id={`NoteFraisList.line.${i}.montantTTC`}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder={tr('NoteFraisList.montant.ttc')}
+                      title={tr('NoteFraisList.montant.ttc')}
+                      required
+                      aria-required="true"
+                      value={line.montantTTC}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lines: form.lines.map((l, j) => (j === i ? { ...l, montantTTC: e.target.value } : l)),
+                        })
+                      }
+                    />
+                  </Field>
+                  <label id={`NoteFraisList.line.${i}.remboursee.label`} className="flex items-center gap-2 pt-5 text-sm text-gray-600 sm:col-span-2">
                     <input
                       id={`NoteFraisList.line.${i}.remboursee`}
                       type="checkbox"

@@ -406,6 +406,13 @@ describe('NoteFraisList', () => {
 
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByText('Remboursée')).toBeInTheDocument()
+    expect(within(dialog).getByText('Nom enseigne')).toBeInTheDocument()
+    expect(within(dialog).getByText('Date')).toBeInTheDocument()
+    expect(within(dialog).getByText('Catégorie')).toBeInTheDocument()
+    expect(within(dialog).getByText('Libellé / action')).toBeInTheDocument()
+    expect(within(dialog).getByText('Adresse')).toBeInTheDocument()
+    expect(within(dialog).getByText('Montant HT €')).toBeInTheDocument()
+    expect(within(dialog).getByText('Montant TTC €')).toBeInTheDocument()
     const frame = document.getElementById('NoteFraisList.line.0.frame')
     const remove = document.getElementById('NoteFraisList.line.0.supprimer')
     expect(frame).not.toBeNull()
@@ -478,6 +485,27 @@ describe('NoteFraisList', () => {
       'blob:preview',
     )
     expect(within(dialog).getByRole('button', { name: 'Télécharger le justificatif' })).toBeInTheDocument()
+  })
+
+  it('affiche le document joint dès l’ouverture d’une note', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock.mockResolvedValue('blob:preview')
+
+    renderList()
+    fireEvent.click(await screen.findByText('Alice Martin'))
+
+    const dialog = await screen.findByRole('dialog')
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    expect(within(dialog).getByAltText(/Aperçu de l.image/)).toHaveAttribute(
+      'src',
+      'blob:preview',
+    )
   })
 
   it('pré-sélectionne le collaborateur connecté', async () => {
