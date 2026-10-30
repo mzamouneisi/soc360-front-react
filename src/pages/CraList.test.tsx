@@ -449,6 +449,19 @@ describe('CraList', () => {
     expect(document.getElementById('CraList.pdf.2')).toBeNull()
   })
 
+  it('masque le bouton PDF quand l’export n’est pas possible', async () => {
+    userMock.value = managerUser
+    findByManagerMock.mockResolvedValue([
+      cra({ id: 3, consultantName: 'Bob Vide', status: 'DRAFT', days: [] }),
+    ])
+
+    renderList()
+
+    await screen.findByText('Bob Vide')
+    await waitFor(() => expect(document.getElementById('CraList.row.3')).not.toBeNull())
+    expect(document.getElementById('CraList.pdf.3')).toBeNull()
+  })
+
   it('affiche l’état vide et crée le CRA du mois pour un consultant', async () => {
     userMock.value = consultantUser
     findByConsultantMock.mockResolvedValue([])

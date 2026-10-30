@@ -157,6 +157,12 @@ export function CraList() {
     [isConsultant],
   )
 
+  // Activités de la société pour déterminer, sans ouvrir le CRA, si son export PDF est possible.
+  const allActivities = useAsync(
+    () => activitiesApi.findAll(user?.socId ? { socId: user.socId } : undefined),
+    [user?.socId],
+  )
+
   const { data, loading, error, reload } = isConsultant
     ? ownCras
     : isManager
@@ -213,10 +219,21 @@ export function CraList() {
 
   // Export PDF possible depuis la liste comme depuis le détail : CRA (pas Indispo) dans un
   // statut exportable et comportant au moins une journée d'activité renseignée.
-  const canExportPdf = (c: CraDto) =>
-    c.type === 'CRA' &&
-    (c.status === 'DRAFT' || c.status === 'SUBMITTED' || c.status === 'VALIDATED') &&
-    c.days.some((day) => day.activities.some((a) => Number(a.days) > 0))
+  const canExportPdf = (c: CraDto) => {
+    if (
+      c.type !== 'CRA' ||
+      (c.status !== 'DRAFT' && c.status !== 'SUBMITTED' && c.status !== 'VALIDATED')
+    ) {
+      return false
+    }
+    const missions = computePdfMissions(c, allActivities.data ?? [])
+    const allWorkingDaysFilled =
+      c.days.length > 0 &&
+      c.days.every(
+        (day) => day.dayType !== 'WORKED' || day.activities.some((a) => Number(a.days) > 0),
+      )
+    return missions.length > 0 || allWorkingDaysFilled
+  }
 
   function openCraPopup(cra: CraDto) {
     setOpenCraId(cra.id)
