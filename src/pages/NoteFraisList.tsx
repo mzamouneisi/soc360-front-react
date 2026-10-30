@@ -261,6 +261,23 @@ export function NoteFraisList() {
     await openEdit(nf, !canWrite(nf))
   }
 
+  async function removeAttachment() {
+    if (
+      !(await dialog.confirm(
+        tr('NoteFraisList.confirmer.retirer.le.document.joint', {
+          name: attachmentName ?? '',
+        }),
+        { variant: 'warning', danger: true, okLabel: tr('NoteFraisList.retirer') },
+      ))
+    ) {
+      return
+    }
+    if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
+    setAttachmentUrl(null)
+    setAttachmentName(null)
+    setAttachmentDocumentId(null)
+  }
+
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -708,12 +725,7 @@ export function NoteFraisList() {
                   <button
                     id="NoteFraisList.retirer"
                     type="button"
-                    onClick={() => {
-                      if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
-                      setAttachmentUrl(null)
-                      setAttachmentName(null)
-                      setAttachmentDocumentId(null)
-                    }}
+                    onClick={() => void removeAttachment()}
                     className="text-red-600 hover:text-red-800"
                   >
                     {tr('NoteFraisList.retirer')}

@@ -531,6 +531,34 @@ describe('NoteFraisList', () => {
     expect(document.getElementById('NoteFraisList.apercu')?.closest('fieldset')).toBeNull()
   })
 
+  it('demande confirmation avant de retirer le document joint', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock.mockResolvedValue('blob:preview')
+
+    renderList()
+    fireEvent.click(await screen.findByText('Alice Martin'))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+
+    fireEvent.click(document.getElementById('NoteFraisList.retirer') as HTMLElement)
+    const firstDialogs = await screen.findAllByRole('dialog')
+    const firstConfirm = firstDialogs[firstDialogs.length - 1]
+    expect(within(firstConfirm).getByText(/Retirer le document joint/)).toBeInTheDocument()
+    fireEvent.click(within(firstConfirm).getByRole('button', { name: 'Annuler' }))
+    await waitFor(() => expect(document.getElementById('NoteFraisList.retirer')).not.toBeNull())
+
+    fireEvent.click(document.getElementById('NoteFraisList.retirer') as HTMLElement)
+    const dialogs = await screen.findAllByRole('dialog')
+    const confirm = dialogs[dialogs.length - 1]
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Retirer' }))
+    await waitFor(() => expect(document.getElementById('NoteFraisList.retirer')).toBeNull())
+  })
+
   it('pré-sélectionne le collaborateur connecté', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
