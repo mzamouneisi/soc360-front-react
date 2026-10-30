@@ -34,6 +34,7 @@ export function CraList() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [page, setPage] = useState(0)
   const [openCraId, setOpenCraId] = useState<number | null>(null)
+  const [autoExport, setAutoExport] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
   const [detailYear, setDetailYear] = useState(now.getFullYear())
   const [detailMonth, setDetailMonth] = useState(now.getMonth() + 1)
@@ -160,7 +161,15 @@ export function CraList() {
 
   const editable = (c: CraDto) => c.status !== 'SUBMITTED' && c.status !== 'VALIDATED'
 
-  function openCraPopup(cra: CraDto) {
+  // Export PDF possible depuis la liste comme depuis le détail : CRA (pas Indispo) dans un
+  // statut exportable et comportant au moins une journée d'activité renseignée.
+  const canExportPdf = (c: CraDto) =>
+    c.type === 'CRA' &&
+    (c.status === 'DRAFT' || c.status === 'SUBMITTED' || c.status === 'VALIDATED') &&
+    c.days.some((day) => day.activities.some((a) => Number(a.days) > 0))
+
+  function openCraPopup(cra: CraDto, exportPdf = false) {
+    setAutoExport(exportPdf)
     setOpenCraId(cra.id)
     setDetailPreview(null)
     setDetailOpen(true)
@@ -489,6 +498,18 @@ export function CraList() {
                       </td>
                       <td id={`CraList.row.${cra.id}.actions`} className="px-4 py-3">
                         <div className="flex flex-wrap items-center gap-2">
+                          {canExportPdf(cra) && (
+                            <InlineButton
+                              id={`CraList.pdf.${cra.id}`}
+                              variant="soft"
+                              className="!px-2 !py-1 !text-xs"
+                              title={tr('CraPdf.export')}
+                              aria-label={tr('CraPdf.export')}
+                              onClick={(e) => { e.stopPropagation(); openCraPopup(cra, true) }}
+                            >
+                              PDF
+                            </InlineButton>
+                          )}
                           <IconButton
                             icon={editable(cra) ? 'edit' : 'view'}
                             label={editable(cra) ? tr('CraList.editer') : tr('CraList.ouvrir')}
@@ -558,6 +579,7 @@ export function CraList() {
             setDetailOpen(false)
             setOpenCraId(null)
             setDetailPreview(null)
+            setAutoExport(false)
             reload()
           }}
           title={tr('CraList.cra')}
@@ -611,6 +633,7 @@ export function CraList() {
               onClose={() => {
                 setDetailOpen(false)
                 setDetailPreview(null)
+                setAutoExport(false)
                 reload()
               }}
               onChange={reload}
@@ -618,9 +641,11 @@ export function CraList() {
           ) : openCraId != null ? (
             <CraDetail
               id={openCraId}
+              autoOpenExport={autoExport}
               onClose={() => {
                 setDetailOpen(false)
                 setOpenCraId(null)
+                setAutoExport(false)
                 reload()
               }}
               onChange={reload}

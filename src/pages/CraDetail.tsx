@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { crasApi } from '../api/cras'
@@ -250,11 +250,13 @@ function ActivityChip({
 export function CraDetail({
   id,
   preview,
+  autoOpenExport = false,
   onClose,
   onChange,
 }: {
   id: number
   preview?: { consultantId: number; year: number; month: number; type: string }
+  autoOpenExport?: boolean
   onClose?: () => void
   onChange?: () => void
 }) {
@@ -304,6 +306,8 @@ export function CraDetail({
   const [exportProjectId, setExportProjectId] = useState('')
   const [exportError, setExportError] = useState<string | null>(null)
   const [exportSubmitting, setExportSubmitting] = useState(false)
+  const exportAutoOpened = useRef(false)
+  const openExportDialogRef = useRef<() => void>(() => {})
 
   useEffect(() => {
     if (cra) setDays(cra.days.map(dayToEditable))
@@ -427,6 +431,25 @@ export function CraDetail({
   const hasAnyActivity = days.some((d) => d.activities.length > 0)
   const dayPage = usePagination(days, user?.pageSize ?? 5)
 
+  // Export PDF : un seul bouton. Le CRA Client est possible dès qu'une mission comporte
+  // des jours travaillés ; le CRA Interne exige que tous les jours ouvrés soient renseignés.
+  const exportStatusAllowed =
+    cra?.type === 'CRA' &&
+    (cra.status === 'DRAFT' || cra.status === 'SUBMITTED' || cra.status === 'VALIDATED')
+  const hasMissionDays = exportMissions.length > 0
+  const allWorkingDaysFilled =
+    days.length > 0 &&
+    days.every((d) => d.dayType !== 'WORKED' || d.activities.some((a) => Number(a.days) > 0))
+  const canExportClient = exportStatusAllowed && hasMissionDays
+  const canExportInternal = exportStatusAllowed && allWorkingDaysFilled
+  const canExportPdf = canExportClient || canExportInternal
+
+  useEffect(() => {
+    if (!autoOpenExport || exportAutoOpened.current || !canExportPdf) return
+    exportAutoOpened.current = true
+    openExportDialogRef.current()
+  }, [autoOpenExport, canExportPdf])
+
   if (!cra) {
     if (loading) return <LoadingBlock />
     if (error) return <ErrorBlock message={error} />
@@ -441,19 +464,6 @@ export function CraDetail({
   const canValidate = isAdminOrResp || isManagerOfConsultant
   const ownerId = user?.consultantId ?? user?.id ?? null
   const isOwner = ownerId != null && cra.consultantId === ownerId
-
-  // Export PDF : un seul bouton. Le CRA Client est possible dès qu'une mission comporte
-  // des jours travaillés ; le CRA Interne exige que tous les jours ouvrés soient renseignés.
-  const exportStatusAllowed =
-    cra.type === 'CRA' &&
-    (cra.status === 'DRAFT' || cra.status === 'SUBMITTED' || cra.status === 'VALIDATED')
-  const hasMissionDays = exportMissions.length > 0
-  const allWorkingDaysFilled =
-    days.length > 0 &&
-    days.every((d) => d.dayType !== 'WORKED' || d.activities.some((a) => Number(a.days) > 0))
-  const canExportClient = exportStatusAllowed && hasMissionDays
-  const canExportInternal = exportStatusAllowed && allWorkingDaysFilled
-  const canExportPdf = canExportClient || canExportInternal
 
   const editable = cra.status === 'DRAFT' || cra.status === 'REJECTED' || cra.status === 'CANCELLED'
   // Le propriétaire (quel que soit son rôle) ne peut plus modifier un CRA/Indispo validé : il peut
@@ -913,6 +923,8 @@ export function CraDetail({
     setExportProjectId(exportMissions.length === 1 ? String(exportMissions[0].projectId) : '')
     setExportOpen(true)
   }
+
+  openExportDialogRef.current = openExportDialog
 
   function closeExportDialog() {
     if (exportSubmitting) return
