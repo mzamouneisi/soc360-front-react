@@ -686,26 +686,8 @@ export function NoteFraisList() {
           </>
         }
       >
-        {attachmentUrl && attachmentName && (
-          <div id="NoteFraisList.document.joint.section" className="mb-4">
-            <p id="NoteFraisList.document.joint" className="mb-2 text-sm font-semibold text-gray-900">
-              {tr('NoteFraisList.document.joint')}
-            </p>
-            <DocumentPreview
-              id="NoteFraisList.apercu"
-              url={attachmentUrl}
-              name={attachmentName}
-            />
-          </div>
-        )}
-        <form onSubmit={handleSubmit}>
-          <fieldset disabled={readOnlyForm} className="space-y-4">
-          {formError && (
-            <div id="NoteFraisList.form.error" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-              {formError}
-            </div>
-          )}
-          <div id="NoteFraisList.justificatif" className="rounded-lg border-2 border-brand-200 bg-brand-50/40 p-4">
+        <div id="NoteFraisList.justificatif.apercu.row" className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
+          <div id="NoteFraisList.justificatif" className="rounded-lg border-2 border-brand-200 bg-brand-50/40 p-4 lg:flex-1">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <p id="NoteFraisList.justificatif.obligatoire.titre" className="text-sm font-semibold text-gray-900">
                 {tr('NoteFraisList.justificatif.obligatoire.titre')}
@@ -720,8 +702,8 @@ export function NoteFraisList() {
               <label
                 id="NoteFraisList.joindre.une.facture.image.pdf"
                 title={tr('NoteFraisList.joindre.une.facture.image.pdf')}
-                aria-disabled={attachmentDocumentId != null || uploading}
-                className={`inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-base font-semibold text-gray-700 transition ${attachmentDocumentId != null || uploading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-50'}`}
+                aria-disabled={readOnlyForm || attachmentDocumentId != null || uploading}
+                className={`inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-base font-semibold text-gray-700 transition ${readOnlyForm || attachmentDocumentId != null || uploading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-50'}`}
               >
                 +
                 <input
@@ -729,7 +711,7 @@ export function NoteFraisList() {
                   type="file"
                   accept="image/*,application/pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.rtf"
                   aria-label={tr('NoteFraisList.joindre.une.facture.image.pdf')}
-                  disabled={attachmentDocumentId != null || uploading}
+                  disabled={readOnlyForm || attachmentDocumentId != null || uploading}
                   className="hidden"
                   onChange={handleFile}
                 />
@@ -767,7 +749,26 @@ export function NoteFraisList() {
               </p>
             )}
           </div>
-
+          {attachmentUrl && attachmentName && (
+            <div id="NoteFraisList.document.joint.section" className="lg:flex-1">
+              <p id="NoteFraisList.document.joint" className="mb-2 text-sm font-semibold text-gray-900">
+                {tr('NoteFraisList.document.joint')}
+              </p>
+              <DocumentPreview
+                id="NoteFraisList.apercu"
+                url={attachmentUrl}
+                name={attachmentName}
+              />
+            </div>
+          )}
+        </div>
+        <form onSubmit={handleSubmit}>
+          <fieldset disabled={readOnlyForm} className="space-y-4">
+          {formError && (
+            <div id="NoteFraisList.form.error" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+              {formError}
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {!isConsultant && (
               <Field label={tr('NoteFraisList.consultant')} id="NoteFraisList.consultant">

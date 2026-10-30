@@ -549,6 +549,10 @@ describe('NoteFraisList', () => {
       'blob:preview',
     )
     expect(document.getElementById('NoteFraisList.apercu')?.closest('fieldset')).toBeNull()
+    const row = document.getElementById('NoteFraisList.justificatif.apercu.row')
+    expect(row?.className).toContain('lg:flex-row')
+    expect(row?.contains(document.getElementById('NoteFraisList.justificatif'))).toBe(true)
+    expect(row?.contains(document.getElementById('NoteFraisList.apercu'))).toBe(true)
   })
 
   it('demande confirmation avant de retirer le document joint', async () => {
