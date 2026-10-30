@@ -562,6 +562,9 @@ describe('NoteFraisList', () => {
     expect(
       document.getElementById('NoteFraisList.justificatif.champs.column')?.className,
     ).toContain('space-y-[30px]')
+    const fieldsFrame = document.getElementById('NoteFraisList.justificatif.champs')
+    expect(fieldsFrame?.className).toContain('border')
+    expect(fieldsFrame?.contains(document.getElementById('NoteFraisList.mission'))).toBe(true)
   })
 
   it('demande confirmation avant de retirer le document joint', async () => {
