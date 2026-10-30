@@ -136,9 +136,32 @@ export function Projects() {
       const objects = dependencies
         .map((d) => `• ${d.type === 'MISSION' ? tr('Projects.mission.associee', { name: d.label }) : d.label}`)
         .join('\n')
+      const messageNode = (
+        <div
+          id="Projects.projet.associe.content"
+          className="space-y-3 leading-relaxed text-gray-700"
+          style={{ fontSize: '12px' }}
+        >
+          <p id="Projects.projet.associe.intro">
+            {tr('Projects.projet.associe.intro.before')}
+            <strong className="font-bold uppercase">{project.name}</strong>
+            {tr('Projects.projet.associe.intro.after')}
+          </p>
+          <ol id="Projects.projet.associe.objects" className="list-decimal space-y-1 pl-5">
+            {dependencies.map((d, index) => (
+              <li id={`Projects.projet.associe.object.${index}`} key={`${d.type}-${d.label}-${index}`}>
+                {d.type === 'MISSION' ? `${tr('Projects.mission.label')} : ` : ''}
+                <strong className="font-bold">{d.label}</strong>
+              </li>
+            ))}
+          </ol>
+          <p id="Projects.projet.associe.cannot.delete">{tr('Projects.projet.associe.cannot.delete')}</p>
+          <p id="Projects.projet.associe.confirm.deactivate">{tr('Projects.projet.associe.confirm.deactivate')}</p>
+        </div>
+      )
       const confirmed = await dialog.confirm(
         tr('Projects.projet.associe', { name: project.name, objects }),
-        { variant: 'question', okLabel: tr('Projects.desactiver.le.projet') },
+        { variant: 'question', okLabel: tr('Projects.desactiver.le.projet'), messageNode },
       )
       if (!confirmed) return
       const updated = await projectsApi.deactivate(project.id)

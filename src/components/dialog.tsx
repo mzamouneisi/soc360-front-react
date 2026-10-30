@@ -10,6 +10,8 @@ export type DialogOptions = {
   okLabel?: string
   cancelLabel?: string
   danger?: boolean
+  /** Contenu riche optionnel affiché à la place du message texte. */
+  messageNode?: ReactNode
 }
 
 type DialogMode = 'alert' | 'confirm' | 'prompt'
@@ -195,7 +197,9 @@ export function DialogHost() {
         </div>
 
         <div className="max-h-[500px] overflow-y-auto px-6 py-5">
-          <p id="dialog-message" className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{message}</p>
+          {options.messageNode ?? (
+            <p id="dialog-message" className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{message}</p>
+          )}
           {mode === 'prompt' && (
             <input
               id="dialog-input"

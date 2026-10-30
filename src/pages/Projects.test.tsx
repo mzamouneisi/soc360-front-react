@@ -134,5 +134,16 @@ describe('Projects', () => {
     expect(confirmMock.mock.calls.some((call) => String(call[0]).includes('Mission Alpha'))).toBe(
       true,
     )
+
+    const options = confirmMock.mock.calls[0][1] as { messageNode?: React.ReactNode }
+    expect(options.messageNode).toBeTruthy()
+    const content = render(<>{options.messageNode}</>)
+    const root = content.container.firstChild as HTMLElement
+    expect(root.style.fontSize).toBe('12px')
+    const strongs = content.container.querySelectorAll('strong')
+    expect(strongs[0].textContent).toBe('Projet Alpha')
+    expect(strongs[0].className).toContain('uppercase')
+    expect(content.container.querySelector('ol')).not.toBeNull()
+    expect(content.container.querySelector('li strong')?.textContent).toBe('Mission Alpha')
   })
 })
