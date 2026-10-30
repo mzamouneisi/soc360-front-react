@@ -15,14 +15,21 @@ export const crasApi = {
   history: (id: number) => api.get<CraHistoryDto[]>(`/cras/${id}/history`),
   findByConsultant: (consultantId: number, year: number, type = 'CRA') =>
     api.get<CraDto[]>(`/cras/consultant/${consultantId}/${year}`, { type }),
+  findAllByConsultant: (consultantId: number, type = 'CRA') =>
+    api.get<CraDto[]>(`/cras/consultant/${consultantId}/all`, { type }),
   findByMonth: (year: number, month: number, socId?: number, type = 'CRA') =>
     api.get<CraDto[]>(`/cras/month/${year}/${month}`, { socId, type }),
   findBySocYear: (socId: number, year: number, type = 'CRA') =>
     api.get<CraDto[]>(`/cras/soc/${socId}/${year}`, { type }),
+  findAllBySoc: (socId: number, type = 'CRA') =>
+    api.get<CraDto[]>(`/cras/soc/${socId}/all`, { type }),
   findByManager: (year: number, type = 'CRA') =>
     api.get<CraDto[]>(`/cras/manager/${year}`, { type }),
+  findAllByManager: (type = 'CRA') =>
+    api.get<CraDto[]>(`/cras/manager/all`, { type }),
   findAllYear: (year: number, type = 'CRA') =>
     api.get<CraDto[]>(`/cras/all/${year}`, { type }),
+  findAll: (type = 'CRA') => api.get<CraDto[]>(`/cras/all`, { type }),
   save: (id: number, request: SaveCraRequest) =>
     api.put<CraDto>(`/cras/${id}/days`, request),
   declareAbsence: (id: number, request: DeclareAbsenceRequest) =>

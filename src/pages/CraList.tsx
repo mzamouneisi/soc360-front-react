@@ -62,9 +62,9 @@ export function CraList() {
   const ownCras = useAsync(
     () =>
       canOwnCra && ownerId
-        ? crasApi.findByConsultant(ownerId, year)
+        ? crasApi.findAllByConsultant(ownerId)
         : Promise.resolve([] as CraDto[]),
-    [canOwnCra, ownerId, year],
+    [canOwnCra, ownerId],
   )
 
   const managerCras = useAsync(
@@ -73,28 +73,28 @@ export function CraList() {
         return [] as CraDto[]
       }
       const [team, own] = await Promise.all([
-        crasApi.findByManager(year),
-        canOwnCra ? crasApi.findByConsultant(ownerId, year) : Promise.resolve([] as CraDto[]),
+        crasApi.findAllByManager(),
+        canOwnCra ? crasApi.findAllByConsultant(ownerId) : Promise.resolve([] as CraDto[]),
       ])
       const byId = new Map<number, CraDto>()
       for (const c of own) byId.set(c.id, c)
       for (const c of team) if (!byId.has(c.id)) byId.set(c.id, c)
       return [...byId.values()]
     },
-    [isManager, ownerId, canOwnCra, year],
+    [isManager, ownerId, canOwnCra],
   )
 
   const socCras = useAsync(
     () =>
       !isConsultant && !isManager && !isAdmin && user?.socId
-        ? crasApi.findBySocYear(user.socId, year)
+        ? crasApi.findAllBySoc(user.socId)
         : Promise.resolve([] as CraDto[]),
-    [isConsultant, isManager, isAdmin, user?.socId, year],
+    [isConsultant, isManager, isAdmin, user?.socId],
   )
 
   const allCras = useAsync(
-    () => (isAdmin ? crasApi.findAllYear(year) : Promise.resolve([] as CraDto[])),
-    [isAdmin, year],
+    () => (isAdmin ? crasApi.findAll() : Promise.resolve([] as CraDto[])),
+    [isAdmin],
   )
 
   const consultants = useAsync(

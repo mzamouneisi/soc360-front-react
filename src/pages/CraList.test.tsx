@@ -61,9 +61,13 @@ vi.mock('../api/cras', () => ({
     getOrCreate: getOrCreateMock,
     getById: getByIdMock,
     findByConsultant: findByConsultantMock,
+    findAllByConsultant: findByConsultantMock,
     findBySocYear: findBySocYearMock,
+    findAllBySoc: findBySocYearMock,
     findByManager: findByManagerMock,
+    findAllByManager: findByManagerMock,
     findAllYear: findAllYearMock,
+    findAll: findAllYearMock,
     save: vi.fn(),
     submit: vi.fn(),
     validate: validateMock,
@@ -274,7 +278,7 @@ describe('CraList', () => {
     renderList()
 
     expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
-    expect(findByManagerMock).toHaveBeenCalledWith(2026)
+    expect(findByManagerMock).toHaveBeenCalled()
     expect(screen.getAllByText('Soumis').length).toBeGreaterThan(0)
     expect(screen.getAllByText('21 j').length).toBeGreaterThan(0)
     expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
@@ -365,7 +369,7 @@ describe('CraList', () => {
     renderList()
 
     expect(await screen.findByText('Aucun CRA pour cette année')).toBeInTheDocument()
-    expect(findByConsultantMock).toHaveBeenCalledWith(10, 2026)
+    expect(findByConsultantMock).toHaveBeenCalledWith(10)
 
     fireEvent.click(screen.getByRole('button', { name: 'Nouveau Cra' }))
 
@@ -434,7 +438,7 @@ describe('CraList', () => {
     renderList()
 
     expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
-    expect(findBySocYearMock).toHaveBeenCalledWith(5, 2026)
+    expect(findBySocYearMock).toHaveBeenCalledWith(5)
     expect(findByManagerMock).not.toHaveBeenCalled()
     expect(findAllYearMock).not.toHaveBeenCalled()
   })
@@ -450,7 +454,7 @@ describe('CraList', () => {
 
     expect(await screen.findByText('Alice Martin')).toBeInTheDocument()
     expect(screen.getByText('Bob Dupont')).toBeInTheDocument()
-    expect(findAllYearMock).toHaveBeenCalledWith(2026)
+    expect(findAllYearMock).toHaveBeenCalled()
     expect(findBySocYearMock).not.toHaveBeenCalled()
     expect(findByManagerMock).not.toHaveBeenCalled()
   })
@@ -469,6 +473,20 @@ describe('CraList', () => {
 
     await waitFor(() => expect(getOrCreateMock).toHaveBeenCalledWith(1, 2026, 8, 'CRA'))
     expect(findByConsultantMock).toHaveBeenCalledWith(1, 2026)
+  })
+
+  it('affiche tous les CRA toutes années confondues', async () => {
+    userMock.value = consultantUser
+    findByConsultantMock.mockResolvedValue([
+      cra({ id: 1, consultantName: 'Alice 2025', year: 2025, month: 12 }),
+      cra({ id: 2, consultantName: 'Alice 2026', year: 2026, month: 1 }),
+    ])
+
+    renderList()
+
+    expect(await screen.findByText('Alice 2025')).toBeInTheDocument()
+    expect(screen.getByText('Alice 2026')).toBeInTheDocument()
+    expect(findByConsultantMock).toHaveBeenCalledWith(10)
   })
 
   it('filtre les CRA par mois', async () => {
