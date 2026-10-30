@@ -644,6 +644,18 @@ export function NoteFraisList() {
           </>
         }
       >
+        {attachmentUrl && attachmentName && (
+          <div id="NoteFraisList.document.joint.section" className="mb-4">
+            <p id="NoteFraisList.document.joint" className="mb-2 text-sm font-semibold text-gray-900">
+              {tr('NoteFraisList.document.joint')}
+            </p>
+            <DocumentPreview
+              id="NoteFraisList.apercu"
+              url={attachmentUrl}
+              name={attachmentName}
+            />
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <fieldset disabled={readOnlyForm} className="space-y-4">
           {formError && (
@@ -715,14 +727,6 @@ export function NoteFraisList() {
                   ? tr('NoteFraisList.justificatif.televersement')
                   : tr('NoteFraisList.lecture.de.la.facture.en.cours.ocr')}
               </p>
-            )}
-            {attachmentUrl && attachmentName && (
-              <DocumentPreview
-                id="NoteFraisList.apercu"
-                url={attachmentUrl}
-                name={attachmentName}
-                className="mt-3"
-              />
             )}
           </div>
 

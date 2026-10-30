@@ -508,6 +508,29 @@ describe('NoteFraisList', () => {
     )
   })
 
+  it('affiche aussi le document joint en lecture seule', async () => {
+    userMock.value = consultantUser
+    findByConsultantYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png', status: 'SUBMITTED' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock.mockResolvedValue('blob:preview')
+
+    renderList()
+    fireEvent.click(await screen.findByText('Alice Martin'))
+
+    const dialog = await screen.findByRole('dialog')
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    expect(within(dialog).getByText('Document joint')).toBeInTheDocument()
+    expect(within(dialog).getByAltText(/Aperçu de l.image/)).toHaveAttribute(
+      'src',
+      'blob:preview',
+    )
+    expect(document.getElementById('NoteFraisList.apercu')?.closest('fieldset')).toBeNull()
+  })
+
   it('pré-sélectionne le collaborateur connecté', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
