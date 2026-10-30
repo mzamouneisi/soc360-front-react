@@ -127,6 +127,7 @@ const nf = (overrides: Partial<NoteFraisDto> = {}): NoteFraisDto => ({
   consultantId: 10,
   consultantName: 'Alice Martin',
   socId: 5,
+  managerId: 1,
   month: 8,
   year: 2026,
   status: 'DRAFT',
@@ -307,6 +308,25 @@ describe('NoteFraisList', () => {
     expect(within(dialog).getByRole('button', { name: 'Valider' })).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Rejeter' })).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Enregistrer' })).not.toBeDisabled()
+  })
+
+  it('interdit la suppression de ligne sur une note soumise hors manager du collaborateur', async () => {
+    userMock.value = { ...managerUser, id: 3, role: 'RESPONSIBLE_SOC' } as UserDto
+    findBySocYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+
+    const row = (await screen.findByText('Alice Martin')).closest('tr') as HTMLElement
+    fireEvent.click(row)
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('button', { name: 'Enregistrer' })).toBeDisabled()
+    expect(
+      (document.getElementById('NoteFraisList.line.0.supprimer') as HTMLButtonElement).disabled,
+    ).toBe(true)
   })
 
   it('affiche l’historique des modifications', async () => {

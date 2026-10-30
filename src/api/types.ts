@@ -548,6 +548,7 @@ export interface NoteFraisDto {
   consultantId: number
   consultantName: string
   socId: number
+  managerId?: number | null
   activityId?: number | null
   activityName?: string | null
   month: number

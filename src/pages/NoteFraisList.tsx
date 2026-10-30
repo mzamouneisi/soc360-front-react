@@ -181,8 +181,12 @@ export function NoteFraisList() {
 
   const isOwner = (nf: NoteFraisDto) =>
     selfCollaboratorId != null && nf.consultantId === selfCollaboratorId
+  const isCollaboratorManager = (nf: NoteFraisDto) =>
+    nf.managerId != null && nf.managerId === user?.id
+  // Une note soumise ou validée est verrouillée, sauf pour le manager direct du collaborateur
+  // (qui peut intervenir, l'action étant historisée).
   const isReadOnlyForUser = (nf: NoteFraisDto) =>
-    isOwner(nf) && (nf.status === 'SUBMITTED' || nf.status === 'VALIDATED')
+    (nf.status === 'SUBMITTED' || nf.status === 'VALIDATED') && !isCollaboratorManager(nf)
   const canWrite = (nf: NoteFraisDto) => !isReadOnlyForUser(nf)
   const canSubmit = (nf: NoteFraisDto) =>
     isOwner(nf) && (nf.status === 'DRAFT' || nf.status === 'REJECTED')
@@ -746,6 +750,7 @@ export function NoteFraisList() {
                   <button
                     id="NoteFraisList.retirer"
                     type="button"
+                    disabled={readOnlyForm}
                     onClick={() => void removeAttachment()}
                     className="text-red-600 hover:text-red-800"
                   >
@@ -993,6 +998,7 @@ export function NoteFraisList() {
                       icon="delete"
                       label={tr('NoteFraisList.supprimer')}
                       variant="danger"
+                      disabled={readOnlyForm}
                       onClick={() => void removeLine(i)}
                     />
                   </div>
