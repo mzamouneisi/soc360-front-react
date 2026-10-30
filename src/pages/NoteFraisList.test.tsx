@@ -394,6 +394,26 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
   })
 
+  it('affiche « Remboursée » et place l’icône Supprimer à droite du cadre', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Remboursée')).toBeInTheDocument()
+    const frame = document.getElementById('NoteFraisList.line.0.frame')
+    const remove = document.getElementById('NoteFraisList.line.0.supprimer')
+    expect(frame).not.toBeNull()
+    expect(remove).not.toBeNull()
+    expect(frame?.contains(remove)).toBe(false)
+    expect(remove?.getAttribute('aria-label')).toBe('Supprimer')
+  })
+
   it('masque les libellés obligatoires quand tous les champs sont remplis', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])

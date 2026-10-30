@@ -805,7 +805,8 @@ export function NoteFraisList() {
             </div>
             <div className="space-y-3">
               {form.lines.map((line, i) => (
-                <div key={i} className="grid grid-cols-1 gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-12 sm:items-center">
+                <div key={i} className="flex items-stretch gap-2">
+                  <div id={`NoteFraisList.line.${i}.frame`} className="grid flex-1 grid-cols-1 gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-12 sm:items-center">
                   <Input
                     id={`NoteFraisList.line.${i}.enseigne`}
                     placeholder={tr('NoteFraisList.nom.enseigne')}
@@ -924,11 +925,11 @@ export function NoteFraisList() {
                       })
                     }
                   />
-                  <label id={`NoteFraisList.line.${i}.reimbursed.label`} className="flex items-center gap-2 text-sm text-gray-600 sm:col-span-1">
+                  <label id={`NoteFraisList.line.${i}.remboursee.label`} className="flex items-center gap-2 text-sm text-gray-600 sm:col-span-1">
                     <input
-                      id={`NoteFraisList.line.${i}.reimbursed`}
+                      id={`NoteFraisList.line.${i}.remboursee`}
                       type="checkbox"
-                      title={tr('NoteFraisList.remb')}
+                      title={tr('NoteFraisList.remboursee')}
                       checked={line.reimbursed}
                       onChange={(e) =>
                         setForm({
@@ -940,19 +941,20 @@ export function NoteFraisList() {
                       }
                       className="h-4 w-4 rounded border-gray-300 text-brand-600"
                     />
-                    {tr('NoteFraisList.remb')}
+                    {tr('NoteFraisList.remboursee')}
                   </label>
-                  <button
-                    id={`NoteFraisList.line.${i}.supprimer`}
-                    type="button"
-                    title={tr('NoteFraisList.supprimer')}
-                    onClick={() =>
-                      setForm({ ...form, lines: form.lines.filter((_, j) => j !== i) })
-                    }
-                    className="text-sm text-red-600 hover:text-red-800 sm:col-span-1"
-                  >
-                    {tr('NoteFraisList.supprimer')}
-                  </button>
+                  </div>
+                  <div className="flex items-center">
+                    <IconButton
+                      id={`NoteFraisList.line.${i}.supprimer`}
+                      icon="delete"
+                      label={tr('NoteFraisList.supprimer')}
+                      variant="danger"
+                      onClick={() =>
+                        setForm({ ...form, lines: form.lines.filter((_, j) => j !== i) })
+                      }
+                    />
+                  </div>
                 </div>
               ))}
             </div>
