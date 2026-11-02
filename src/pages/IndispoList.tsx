@@ -15,6 +15,13 @@ import {
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
+import {
+  allowedMonths as allowedMonthsFor,
+  allowedYears as allowedYearsFor,
+  isAfterPeriod,
+  maxPeriod,
+  parseHirePeriod,
+} from '../lib/period'
 import { CraDetail } from './CraDetail'
 import { IndispoCalendar } from './IndispoCalendar'
 
@@ -71,9 +78,7 @@ export function IndispoList() {
 
   if (!user) return null
 
-  const hirePeriod = isConsultant && user.hireDate
-    ? { year: Number(user.hireDate.slice(0, 4)), month: Number(user.hireDate.slice(5, 7)) }
-    : null
+  const hirePeriod = isConsultant ? parseHirePeriod(user?.hireDate) : null
   const beforeHirePeriod = (y: number, m: number) =>
     !!hirePeriod && (y < hirePeriod.year || (y === hirePeriod.year && m < hirePeriod.month))
 
@@ -99,12 +104,17 @@ export function IndispoList() {
   const hasIndispoThisMonth = (data ?? []).some((c) => c.month === month)
 
   function openPeriod(newYear: number, newMonth: number) {
-    // soc-72 : impossible de naviguer avant la date d'embauche (liste des mois / années).
+    // soc-95 : navigation bornée par la date d'embauche et par aujourd'hui + 3 ans.
     let y = newYear
     let m = newMonth
     if (beforeHirePeriod(y, m) && hirePeriod) {
       y = hirePeriod.year
       m = hirePeriod.month
+    }
+    const max = maxPeriod(now)
+    if (isAfterPeriod({ year: y, month: m }, max)) {
+      y = max.year
+      m = max.month
     }
     const sameYear = y === year
     setYear(y)
@@ -117,10 +127,8 @@ export function IndispoList() {
     }
   }
 
-  const allowedYears = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]
-    .filter((y) => !hirePeriod || y >= hirePeriod.year)
-  const allowedMonths = Array.from({ length: 12 }, (_, i) => i + 1)
-    .filter((m) => !hirePeriod || year > hirePeriod.year || m >= hirePeriod.month)
+  const allowedYears = allowedYearsFor(hirePeriod?.year, now)
+  const allowedMonths = allowedMonthsFor(year, hirePeriod, now)
 
   function goPrev() {
     const p = shiftMonth(year, month, -1)
@@ -134,6 +142,7 @@ export function IndispoList() {
 
   function goNext() {
     const p = shiftMonth(year, month, 1)
+    if (isAfterPeriod(p, maxPeriod(now))) return
     void openPeriod(p.year, p.month)
   }
 

@@ -531,6 +531,23 @@ describe('CraList', () => {
     expect(screen.getByRole('option', { name: String(y) })).toBeInTheDocument()
   })
 
+  it('remonte à l’année d’embauche et plafonne le futur à 3 ans', async () => {
+    stubFixedNow()
+    userMock.value = { ...consultantUser, hireDate: '2023-05-10' } as UserDto
+    findByConsultantMock.mockResolvedValue([cra({ consultantName: 'Alice Martin' })])
+    getByIdMock.mockResolvedValue(cra({ consultantName: 'Alice Martin' }))
+
+    renderList()
+
+    fireEvent.click(await screen.findByText('Alice Martin'))
+    await screen.findByRole('dialog')
+
+    expect(await screen.findByRole('option', { name: '2023' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: '2022' })).not.toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '2029' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: '2030' })).not.toBeInTheDocument()
+  })
+
   it('affiche tous les CRA de l’année pour un consultant sans action de validation', async () => {
     userMock.value = consultantUser
     findByConsultantMock.mockResolvedValue([

@@ -11,6 +11,13 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
+import {
+  allowedMonths as allowedMonthsFor,
+  allowedYears as allowedYearsFor,
+  isAfterPeriod,
+  maxPeriod,
+  parseHirePeriod,
+} from '../lib/period'
 import { Card, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination, Table } from '../components/data'
 import { DocumentPreview } from '../components/DocumentPreview'
@@ -156,6 +163,45 @@ export function NoteFraisList() {
     lines: [newLine()],
     infosFacture: '',
   })
+  // soc-95 : période accessible = de la date d'embauche du collaborateur à aujourd'hui + 3 ans.
+  const formHirePeriod = parseHirePeriod(
+    collaboratorOptions.find((c) => String(c.id) === form.consultantId)?.hireDate ?? null,
+  )
+  const listHireYear = useMemo(() => {
+    const years = collaboratorOptions
+      .map((c) => parseHirePeriod(c.hireDate)?.year)
+      .filter((y): y is number => y != null)
+    return years.length > 0 ? Math.min(...years) : null
+  }, [collaboratorOptions])
+  const listYears = useMemo(() => allowedYearsFor(listHireYear, now), [listHireYear, now])
+  const formYears = useMemo(
+    () => allowedYearsFor(formHirePeriod?.year, now),
+    [formHirePeriod?.year, now],
+  )
+  const formMonths = useMemo(
+    () => allowedMonthsFor(form.year, formHirePeriod, now),
+    [form.year, formHirePeriod, now],
+  )
+
+  function changeConsultant(consultantId: string) {
+    const hire = parseHirePeriod(
+      collaboratorOptions.find((c) => String(c.id) === consultantId)?.hireDate ?? null,
+    )
+    setForm((prev) => {
+      let year = prev.year
+      let month = prev.month
+      if (hire && (year < hire.year || (year === hire.year && month < hire.month))) {
+        year = hire.year
+        month = hire.month
+      }
+      const max = maxPeriod(now)
+      if (isAfterPeriod({ year, month }, max)) {
+        year = max.year
+        month = max.month
+      }
+      return { ...prev, consultantId, year, month }
+    })
+  }
   const { data: activities } = useAsync(
     () =>
       activitiesApi.findAll({
@@ -504,7 +550,7 @@ export function NoteFraisList() {
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
-              {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
+              {listYears.map((y) => (
                 <option id={`NoteFraisList.year.option.${y}`} key={y} value={y}>
                   {y}
                 </option>
@@ -762,7 +808,7 @@ export function NoteFraisList() {
                   title={tr('NoteFraisList.consultant')}
                   disabled={readOnlyForm}
                   value={form.consultantId}
-                  onChange={(e) => setForm({ ...form, consultantId: e.target.value })}
+                  onChange={(e) => changeConsultant(e.target.value)}
                 >
                   <option id="NoteFraisList.selectionner" value="">{tr('NoteFraisList.selectionner')}</option>
                   {collaboratorOptions.map((c) => (
@@ -799,7 +845,7 @@ export function NoteFraisList() {
                 value={form.month}
                 onChange={(e) => setForm({ ...form, month: Number(e.target.value) })}
               >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                {formMonths.map((m) => (
                   <option id={`NoteFraisList.mois.option.${m}`} key={m} value={m}>
                     {monthLabel(m)}
                   </option>
@@ -814,7 +860,7 @@ export function NoteFraisList() {
                 value={form.year}
                 onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
               >
-                {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
+                {formYears.map((y) => (
                   <option id={`NoteFraisList.annee.option.${y}`} key={y} value={y}>
                     {y}
                   </option>

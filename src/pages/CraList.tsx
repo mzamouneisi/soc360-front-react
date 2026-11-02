@@ -19,6 +19,13 @@ import {
 } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
+import {
+  allowedMonths as allowedMonthsFor,
+  allowedYears as allowedYearsFor,
+  isAfterPeriod,
+  maxPeriod,
+  parseHirePeriod,
+} from '../lib/period'
 import { useI18n } from '../i18n'
 import { CraDetail } from './CraDetail'
 
@@ -188,11 +195,17 @@ export function CraList() {
 
   if (!user) return null
 
-  const hirePeriod = isConsultant && user.hireDate
-    ? { year: Number(user.hireDate.slice(0, 4)), month: Number(user.hireDate.slice(5, 7)) }
-    : null
+  const selfConsultantId = user?.consultantId ?? user?.id ?? null
+  // soc-95 : la navigation remonte au maximum à la date d'embauche du collaborateur du CRA
+  // (soi-même ou le collaborateur ouvert par un manager/admin).
+  const detailHireDate =
+    detailConsultantId == null || detailConsultantId === selfConsultantId
+      ? user?.hireDate
+      : consultants.data?.find((c) => c.id === detailConsultantId)?.hireDate
+  const hirePeriod = parseHirePeriod(detailHireDate)
   const beforeHirePeriod = (y: number, m: number) =>
-    !!hirePeriod && (y < hirePeriod.year || (y === hirePeriod.year && m < hirePeriod.month))
+    !!hirePeriod &&
+    (y < hirePeriod.year || (y === hirePeriod.year && m < hirePeriod.month))
 
   const list = (data ?? [])
     .filter((c) => {
@@ -248,13 +261,20 @@ export function CraList() {
   // Navigation des mois dans la popup : elle ne filtre pas la liste, elle cherche
   // simplement le CRA du collaborateur pour le mois choisi et l'affiche sans fermer la popup.
   async function openDetailPeriod(newYear: number, newMonth: number) {
-    if (beforeHirePeriod(newYear, newMonth)) return
-    setDetailYear(newYear)
-    setDetailMonth(newMonth)
+    const max = maxPeriod(now)
+    let targetYear = newYear
+    let targetMonth = newMonth
+    if (isAfterPeriod({ year: targetYear, month: targetMonth }, max)) {
+      if (targetYear > max.year) return
+      targetMonth = max.month
+    }
+    if (beforeHirePeriod(targetYear, targetMonth)) return
+    setDetailYear(targetYear)
+    setDetailMonth(targetMonth)
     if (detailConsultantId == null) return
     try {
-      const cras = await crasApi.findByConsultant(detailConsultantId, newYear)
-      const target = cras.find((c) => c.month === newMonth && c.type === detailType)
+      const cras = await crasApi.findByConsultant(detailConsultantId, targetYear)
+      const target = cras.find((c) => c.month === targetMonth && c.type === detailType)
       if (target) {
         setDetailPreview(null)
         setOpenCraId(target.id)
@@ -263,8 +283,8 @@ export function CraList() {
         setOpenCraId(null)
         setDetailPreview({
           consultantId: detailConsultantId,
-          year: newYear,
-          month: newMonth,
+          year: targetYear,
+          month: targetMonth,
           type: detailType,
         })
       }
@@ -273,17 +293,15 @@ export function CraList() {
       setOpenCraId(null)
       setDetailPreview({
         consultantId: detailConsultantId,
-        year: newYear,
-        month: newMonth,
+        year: targetYear,
+        month: targetMonth,
         type: detailType,
       })
     }
   }
 
-  const allowedYears = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1]
-    .filter((y) => !hirePeriod || y >= hirePeriod.year)
-  const allowedMonths = Array.from({ length: 12 }, (_, i) => i + 1)
-    .filter((m) => !hirePeriod || detailYear > hirePeriod.year || m >= hirePeriod.month)
+  const allowedYears = allowedYearsFor(hirePeriod?.year, now)
+  const allowedMonths = allowedMonthsFor(detailYear, hirePeriod, now)
 
   function goPrev() {
     const p = shiftMonth(detailYear, detailMonth, -1)
@@ -297,6 +315,7 @@ export function CraList() {
 
   function goNext() {
     const p = shiftMonth(detailYear, detailMonth, 1)
+    if (isAfterPeriod(p, maxPeriod(now))) return
     void openDetailPeriod(p.year, p.month)
   }
 

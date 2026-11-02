@@ -220,6 +220,42 @@ describe('NoteFraisList', () => {
     expect(screen.queryByText('Montants par mois')).not.toBeInTheDocument()
   })
 
+  it('propose les années depuis l’embauche jusqu’à 3 ans dans le futur', async () => {
+    stubFixedNow()
+    userMock.value = { ...consultantUser, hireDate: '2023-05-10' } as UserDto
+    findByConsultantYearMock.mockResolvedValue([])
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+    await waitFor(() => expect(findByConsultantYearMock).toHaveBeenCalledWith(10, 2026))
+    expect(document.getElementById('NoteFraisList.year.option.2023')).not.toBeNull()
+    expect(document.getElementById('NoteFraisList.year.option.2022')).toBeNull()
+    expect(document.getElementById('NoteFraisList.year.option.2029')).not.toBeNull()
+    expect(document.getElementById('NoteFraisList.year.option.2030')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+    await screen.findByRole('dialog')
+    expect(document.getElementById('NoteFraisList.annee.option.2023')).not.toBeNull()
+    expect(document.getElementById('NoteFraisList.annee.option.2029')).not.toBeNull()
+    expect(document.getElementById('NoteFraisList.annee.option.2030')).toBeNull()
+
+    fireEvent.change(document.getElementById('NoteFraisList.annee.select') as HTMLSelectElement, {
+      target: { value: '2023' },
+    })
+    await waitFor(() =>
+      expect(document.getElementById('NoteFraisList.mois.option.5')).not.toBeNull(),
+    )
+    expect(document.getElementById('NoteFraisList.mois.option.4')).toBeNull()
+
+    fireEvent.change(document.getElementById('NoteFraisList.annee.select') as HTMLSelectElement, {
+      target: { value: '2029' },
+    })
+    await waitFor(() =>
+      expect(document.getElementById('NoteFraisList.mois.option.8')).not.toBeNull(),
+    )
+    expect(document.getElementById('NoteFraisList.mois.option.9')).toBeNull()
+  })
+
   it('soumet une note de frais au statut Brouillon', async () => {
     userMock.value = consultantUser
     findByConsultantYearMock.mockResolvedValue([nf()])

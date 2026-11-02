@@ -78,6 +78,15 @@ function maxIso(...values: (string | null | undefined)[]): string | undefined {
     .at(-1)
 }
 
+/** Ajoute des années à une date ISO `AAAA-MM-JJ`. */
+function plusYearsIso(iso: string, years: number): string {
+  const date = new Date(iso + 'T00:00:00')
+  date.setFullYear(date.getFullYear() + years)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate(),
+  ).padStart(2, '0')}`
+}
+
 export function Unavailability() {
   const { user } = useAuth()
   const dt = useDynamicTranslate()
@@ -280,12 +289,16 @@ export function Unavailability() {
     : (consultants.data?.find((c) => c.id === formConsultantId)?.hireDate ?? null)
 
   const today = todayIso()
+  // soc-95 : le futur est limité à 3 ans à partir d'aujourd'hui.
+  const maxDate = plusYearsIso(today, 3)
   const formIsValid =
     (isConsultant || formConsultantId != null) &&
     formType.trim() !== '' &&
     formStart !== '' &&
     formEnd !== '' &&
     formEnd >= formStart &&
+    formStart <= maxDate &&
+    formEnd <= maxDate &&
     isCountedDate(formStart, formCountType) &&
     isCountedDate(formEnd, formCountType) &&
     (editingId != null || formStart >= today) &&
@@ -827,6 +840,7 @@ export function Unavailability() {
                   <DateField id="Unavailability.du.input" value={formStart}
                     title={tr('Unavailability.du')}
                     minDate={maxIso(today, formHireDate)}
+                    maxDate={maxDate}
                     filterDate={isSelectableDate}
                     isClearable={false}
                     disabled={formReadOnly}
@@ -838,6 +852,7 @@ export function Unavailability() {
                   <DateField id="Unavailability.au.input" value={formEnd}
                     title={tr('Unavailability.au')}
                     minDate={maxIso(today, formStart, formHireDate)}
+                    maxDate={maxDate}
                     filterDate={isSelectableDate}
                     isClearable={false}
                     disabled={formReadOnly}
