@@ -533,9 +533,18 @@ export function NoteFraisList() {
 
   async function downloadMonthPdf(month: number) {
     if (!user?.socId) return
+    // Comme pour le CRA : ouverture immédiate d'un onglet puis chargement du blob PDF.
+    const target = window.open('', '_blank')
     try {
-      await noteFraisApi.exportMonthPdf(user.socId, year, month, language)
+      const url = await noteFraisApi.exportMonthPdfUrl(user.socId, year, month, language)
+      if (target) {
+        target.location.href = url
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      }
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
     } catch (err) {
+      target?.close()
       void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
   }
@@ -598,7 +607,7 @@ export function NoteFraisList() {
                   <button
                     type="button"
                     id={`NoteFraisList.month.${i + 1}.value`}
-                    title={tr('Documents.telecharger')}
+                    title={tr('NoteFraisList.ouvrir.le.pdf.du.mois')}
                     disabled={value <= 0}
                     onClick={() => void downloadMonthPdf(i + 1)}
                     className="text-xs font-medium text-brand-600 hover:underline disabled:cursor-default disabled:text-gray-400 disabled:no-underline"

@@ -34,4 +34,8 @@ export const noteFraisApi = {
       `/note-frais/export/month/${socId}/${year}/${month}?lang=${encodeURIComponent(lang)}`,
       `notes-frais-${year}-${String(month).padStart(2, '0')}.pdf`,
     ),
+  exportMonthPdfUrl: (socId: number, year: number, month: number, lang: string) =>
+    api.blobUrl(
+      `/note-frais/export/month/${socId}/${year}/${month}?lang=${encodeURIComponent(lang)}`,
+    ),
 }

@@ -75,7 +75,7 @@ vi.mock('../api/noteFrais', () => ({
     totalsByMonth: totalsByMonthMock,
     totalsByCategory: totalsByCategoryMock,
     totalsByConsultant: vi.fn(),
-    exportMonthPdf: exportMonthPdfMock,
+    exportMonthPdfUrl: exportMonthPdfMock,
   },
 }))
 
@@ -220,7 +220,9 @@ describe('NoteFraisList', () => {
     totalsByMonthMock.mockResolvedValue({ '8': 125.5 })
     totalsByCategoryMock.mockResolvedValue({ Restaurant: 125.5 })
     summariesMock.mockResolvedValue([])
-    exportMonthPdfMock.mockResolvedValue(undefined)
+    exportMonthPdfMock.mockResolvedValue('blob:month-pdf')
+    const target = { location: { href: '' }, close: vi.fn() }
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(target as unknown as Window)
 
     renderList()
 
@@ -237,6 +239,9 @@ describe('NoteFraisList', () => {
     fireEvent.click(august)
 
     await waitFor(() => expect(exportMonthPdfMock).toHaveBeenCalledWith(5, 2026, 8, 'fr'))
+    expect(openSpy).toHaveBeenCalledWith('', '_blank')
+    await waitFor(() => expect(target.location.href).toBe('blob:month-pdf'))
+    openSpy.mockRestore()
   })
 
   it('affiche l’état vide pour un consultant et appelle l’API avec son identifiant', async () => {

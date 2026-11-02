@@ -1132,6 +1132,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "SocLogo.contenu.invalide": "Le fichier ne contient pas une image PNG ou JPEG valide",
   "SocLogo.apercu": "Aperçu du logo",
   "SocLogo.televersement": "Enregistrement du logo…",
+  "NoteFraisList.ouvrir.le.pdf.du.mois": "Ouvrir le PDF du mois dans un nouvel onglet",
 
 }
 
@@ -2269,6 +2270,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "SocLogo.contenu.invalide": "The file is not a valid PNG or JPEG image",
   "SocLogo.apercu": "Logo preview",
   "SocLogo.televersement": "Saving logo…",
+  "NoteFraisList.ouvrir.le.pdf.du.mois": "Open the month PDF in a new tab",
 
 }
 
@@ -3406,4 +3408,5 @@ export const EXTRACTED_AR: Record<string, string> = {
   "SocLogo.contenu.invalide": "الملف ليس صورة PNG أو JPEG صالحة",
   "SocLogo.apercu": "معاينة الشعار",
   "SocLogo.televersement": "جارٍ حفظ الشعار…",
+  "NoteFraisList.ouvrir.le.pdf.du.mois": "افتح ملف PDF الشهري في علامة تبويب جديدة",
 }
