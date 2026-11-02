@@ -47,7 +47,7 @@ export function SocBrandLogo() {
         alt={selectedSoc?.name ?? tr('MainLayout.soc360')}
         className={
           selectedSoc?.hasLogo
-            ? 'h-20 w-full object-contain'
+            ? 'h-28 w-full object-contain'
             : 'h-10 w-10 object-contain'
         }
       />

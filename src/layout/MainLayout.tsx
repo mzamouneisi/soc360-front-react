@@ -211,7 +211,7 @@ export function MainLayout() {
   return (
     <div className="flex h-full">
       <aside id="app-sidebar" className="flex w-64 shrink-0 flex-col overflow-y-auto bg-gray-900 text-gray-300">
-        <div id="app-brand" className="flex h-24 shrink-0 items-center justify-center gap-2 px-3 text-lg font-bold text-white">
+        <div id="app-brand" className="flex h-32 shrink-0 items-center justify-center gap-2 px-3 text-lg font-bold text-white">
           <SocBrandLogo />
         </div>
 
