@@ -620,9 +620,7 @@ describe('NoteFraisList', () => {
     await waitFor(() =>
       expect(within(dialog).queryByDisplayValue('Déjeuner client')).not.toBeInTheDocument(),
     )
-    expect(
-      (document.getElementById('NoteFraisList.line.0.label') as HTMLInputElement).value,
-    ).toBe('')
+    expect(document.getElementById('NoteFraisList.line.0.label')).toBeNull()
   })
 
   it('retire aussi les lignes saisies manuellement quand on retire le document', async () => {
@@ -657,9 +655,7 @@ describe('NoteFraisList', () => {
       expect(within(dialog).queryByDisplayValue('Déjeuner client')).not.toBeInTheDocument()
       expect(within(dialog).queryByDisplayValue('Taxi manuel')).not.toBeInTheDocument()
     })
-    expect(
-      (document.getElementById('NoteFraisList.line.0.label') as HTMLInputElement).value,
-    ).toBe('')
+    expect(document.getElementById('NoteFraisList.line.0.label')).toBeNull()
   })
 
   it('efface le texte de la facture quand on retire le document', async () => {

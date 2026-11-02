@@ -287,9 +287,9 @@ export function NoteFraisList() {
     setForm((prev) => ({
       ...prev,
       infosFacture: '',
-      // Retirer le document revient à supprimer chaque ligne de dépense : on repart d'une
-      // ligne vide, y compris pour les lignes saisies manuellement.
-      lines: [newLine()],
+      // Retirer le document fait disparaitre les lignes de dépense et tous leurs champs de
+      // saisie, comme si on supprimait chaque ligne.
+      lines: [],
     }))
   }
 
