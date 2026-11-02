@@ -3,7 +3,14 @@ import { render, waitFor } from '@testing-library/react'
 import { SocBrandLogo } from './SocBrandLogo'
 
 const { socMock, logoUrlMock } = vi.hoisted(() => ({
-  socMock: { value: { id: 5, name: 'Acme', hasLogo: false } as { id: number; name: string; hasLogo?: boolean } | null },
+  socMock: {
+    value: { id: 5, name: 'Acme', hasLogo: false, website: null } as {
+      id: number
+      name: string
+      hasLogo?: boolean
+      website?: string | null
+    } | null,
+  },
   logoUrlMock: vi.fn(),
 }))
 
@@ -42,5 +49,38 @@ describe('SocBrandLogo', () => {
       ),
     )
     expect(document.getElementById('MainLayout.soc360')).toBeNull()
+  })
+
+  it('ouvre le site de la société dans un nouvel onglet au clic sur le logo', async () => {
+    socMock.value = {
+      id: 5,
+      name: 'Acme',
+      hasLogo: true,
+      website: 'https://www.acme.fr',
+    }
+    logoUrlMock.mockResolvedValue('blob:company-logo')
+
+    render(<SocBrandLogo />)
+
+    const link = document.getElementById('MainLayout.logo.link') as HTMLAnchorElement
+    expect(link).not.toBeNull()
+    expect(link.getAttribute('href')).toBe('https://www.acme.fr')
+    expect(link.getAttribute('target')).toBe('_blank')
+    await waitFor(() => expect(link.contains(document.getElementById('MainLayout.logo'))).toBe(true))
+  })
+
+  it('ajoute https:// quand le site n’a pas de protocole', () => {
+    socMock.value = {
+      id: 5,
+      name: 'Acme',
+      hasLogo: false,
+      website: 'www.acme.fr',
+    }
+
+    render(<SocBrandLogo />)
+
+    expect(document.getElementById('MainLayout.logo.link')?.getAttribute('href')).toBe(
+      'https://www.acme.fr',
+    )
   })
 })

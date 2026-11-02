@@ -43,6 +43,7 @@ export interface SocLiteDto {
   id: number
   name: string
   hasLogo?: boolean
+  website?: string | null
 }
 
 export interface AddSocPayload {

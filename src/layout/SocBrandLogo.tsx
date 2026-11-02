@@ -39,18 +39,42 @@ export function SocBrandLogo() {
     }
   }, [selectedSoc?.id, selectedSoc?.hasLogo])
 
+  const rawWebsite = selectedSoc?.website?.trim() ?? ''
+  const websiteUrl = rawWebsite
+    ? /^https?:\/\//i.test(rawWebsite)
+      ? rawWebsite
+      : `https://${rawWebsite}`
+    : null
+
+  const logo = (
+    <img
+      id="MainLayout.logo"
+      src={src}
+      alt={selectedSoc?.name ?? tr('MainLayout.soc360')}
+      className={
+        selectedSoc?.hasLogo
+          ? 'h-28 w-full object-contain'
+          : 'h-10 w-10 object-contain'
+      }
+    />
+  )
+
   return (
     <>
-      <img
-        id="MainLayout.logo"
-        src={src}
-        alt={selectedSoc?.name ?? tr('MainLayout.soc360')}
-        className={
-          selectedSoc?.hasLogo
-            ? 'h-28 w-full object-contain'
-            : 'h-10 w-10 object-contain'
-        }
-      />
+      {websiteUrl ? (
+        <a
+          id="MainLayout.logo.link"
+          href={websiteUrl}
+          target="_blank"
+          rel="noreferrer"
+          title={websiteUrl}
+          className="flex max-w-full items-center justify-center"
+        >
+          {logo}
+        </a>
+      ) : (
+        logo
+      )}
       {!selectedSoc?.hasLogo && (
         <span id="MainLayout.soc360">{tr('MainLayout.soc360')}</span>
       )}
