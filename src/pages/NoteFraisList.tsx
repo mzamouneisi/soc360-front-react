@@ -286,7 +286,11 @@ export function NoteFraisList() {
     setAttachmentDocumentId(null)
     setForm((prev) => {
       const kept = prev.lines.filter((line) => !line.fromDocument)
-      return { ...prev, lines: kept.length > 0 ? kept : [newLine()] }
+      return {
+        ...prev,
+        infosFacture: '',
+        lines: kept.length > 0 ? kept : [newLine()],
+      }
     })
   }
 
