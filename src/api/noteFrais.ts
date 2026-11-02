@@ -7,6 +7,10 @@ export const noteFraisApi = {
   findByConsultantYear: (consultantId: number, year: number) =>
     api.get<NoteFraisDto[]>(`/note-frais/consultant/${consultantId}/${year}`),
   getById: (id: number) => api.get<NoteFraisDto>(`/note-frais/${id}`),
+  documentUrl: (id: number) =>
+    api.blobUrl(`/note-frais/${id}/document?inline=true`),
+  downloadDocument: (id: number, name: string) =>
+    api.download(`/note-frais/${id}/document`, name),
   create: (request: CreateNoteFraisRequest) =>
     api.post<NoteFraisDto>('/note-frais', request),
   update: (id: number, request: CreateNoteFraisRequest) =>

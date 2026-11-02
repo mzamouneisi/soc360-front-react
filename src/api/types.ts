@@ -566,6 +566,9 @@ export interface NoteFraisDto {
   infosFacture?: string | null
   documentId?: number | null
   documentName?: string | null
+  hasDocument?: boolean
+  documentContentType?: string | null
+  documentSize?: number | null
   lines: NoteFraisLineDto[]
 }
 

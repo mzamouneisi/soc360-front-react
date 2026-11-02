@@ -66,6 +66,8 @@ vi.mock('../api/noteFrais', () => ({
     findBySocYear: findBySocYearMock,
     findByConsultantYear: findByConsultantYearMock,
     getById: vi.fn(),
+    documentUrl: documentPreviewUrlMock,
+    downloadDocument: documentDownloadMock,
     create: createMock,
     update: vi.fn(),
     submit: submitMock,
@@ -610,7 +612,7 @@ describe('NoteFraisList', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Modifier' }))
 
     const dialog = await screen.findByRole('dialog')
-    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(1))
     expect(within(dialog).getByAltText(/Aperçu de l.image/)).toHaveAttribute(
       'src',
       'blob:preview',
@@ -641,6 +643,49 @@ describe('NoteFraisList', () => {
     )
   })
 
+  it('affiche un lien pour ouvrir l’aperçu dans un nouvel onglet', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock.mockResolvedValue('blob:preview')
+
+    renderList()
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifier' }))
+
+    await screen.findByRole('dialog')
+    const link = await waitFor(() =>
+      document.getElementById('NoteFraisList.apercu.nouvel.onglet'),
+    )
+    expect(link).toHaveAttribute('href', 'blob:preview')
+    expect(link).toHaveAttribute('target', '_blank')
+  })
+
+  it('affiche un message quand l’aperçu reste indisponible', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock.mockRejectedValue(new Error('réseau'))
+
+    renderList()
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifier' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(
+      await within(dialog).findByText(/Aperçu indisponible pour le moment/, undefined, {
+        timeout: 4000,
+      }),
+    ).toBeInTheDocument()
+    expect(documentPreviewUrlMock).toHaveBeenCalledTimes(3)
+  })
+
   it('affiche le document joint dès l’ouverture d’une note', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([
@@ -655,7 +700,7 @@ describe('NoteFraisList', () => {
     fireEvent.click(await screen.findByText('Alice Martin'))
 
     const dialog = await screen.findByRole('dialog')
-    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(1))
     expect(within(dialog).getByAltText(/Aperçu de l.image/)).toHaveAttribute(
       'src',
       'blob:preview',
@@ -676,7 +721,7 @@ describe('NoteFraisList', () => {
     fireEvent.click(await screen.findByText('Alice Martin'))
 
     const dialog = await screen.findByRole('dialog')
-    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(1))
     expect(within(dialog).getByText('Document joint')).toBeInTheDocument()
     expect(within(dialog).getByAltText(/Aperçu de l.image/)).toHaveAttribute(
       'src',
@@ -713,7 +758,7 @@ describe('NoteFraisList', () => {
 
     renderList()
     fireEvent.click(await screen.findByText('Alice Martin'))
-    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(1))
 
     fireEvent.click(document.getElementById('NoteFraisList.retirer') as HTMLElement)
     const firstDialogs = await screen.findAllByRole('dialog')
@@ -742,7 +787,7 @@ describe('NoteFraisList', () => {
     renderList()
     fireEvent.click(await screen.findByText('Alice Martin'))
     const dialog = await screen.findByRole('dialog')
-    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(1))
     expect(within(dialog).getByDisplayValue('Déjeuner client')).toBeInTheDocument()
 
     fireEvent.click(document.getElementById('NoteFraisList.retirer') as HTMLElement)
@@ -770,7 +815,7 @@ describe('NoteFraisList', () => {
     renderList()
     fireEvent.click(await screen.findByText('Alice Martin'))
     const dialog = await screen.findByRole('dialog')
-    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(1))
 
     fireEvent.click(document.getElementById('NoteFraisList.ajouter.une.ligne') as HTMLElement)
     fireEvent.change(
@@ -809,7 +854,7 @@ describe('NoteFraisList', () => {
     renderList()
     fireEvent.click(await screen.findByText('Alice Martin'))
     await screen.findByRole('dialog')
-    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledWith(1))
     const textarea = document.getElementById(
       'NoteFraisList.infos.facture.texte.de.la.facture.textarea',
     ) as HTMLTextAreaElement
