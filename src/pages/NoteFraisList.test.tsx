@@ -595,6 +595,29 @@ describe('NoteFraisList', () => {
     expect(within(dialog).getByRole('button', { name: 'Télécharger le justificatif' })).toBeInTheDocument()
   })
 
+  it('relance l’aperçu du document après un échec transitoire', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.png' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentPreviewUrlMock
+      .mockRejectedValueOnce(new Error('réseau'))
+      .mockResolvedValueOnce('blob:preview-retry')
+
+    renderList()
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifier' }))
+
+    const dialog = await screen.findByRole('dialog')
+    await waitFor(() => expect(documentPreviewUrlMock).toHaveBeenCalledTimes(2))
+    expect(within(dialog).getByAltText(/Aperçu de l.image/)).toHaveAttribute(
+      'src',
+      'blob:preview-retry',
+    )
+  })
+
   it('affiche le document joint dès l’ouverture d’une note', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([

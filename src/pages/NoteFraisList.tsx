@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { noteFraisApi } from '../api/noteFrais'
 import { activitiesApi } from '../api/activities'
@@ -222,6 +222,20 @@ export function NoteFraisList() {
   const [uploading, setUploading] = useState(false)
   const [attachmentDocumentId, setAttachmentDocumentId] = useState<number | null>(null)
   const previewRequest = useRef(0)
+  const attachmentUrlRef = useRef<string | null>(null)
+
+  function replaceAttachmentUrl(url: string | null) {
+    if (attachmentUrlRef.current) {
+      URL.revokeObjectURL(attachmentUrlRef.current)
+      attachmentUrlRef.current = null
+    }
+    if (url) attachmentUrlRef.current = url
+    setAttachmentUrl(url)
+  }
+
+  useEffect(() => () => {
+    if (attachmentUrlRef.current) URL.revokeObjectURL(attachmentUrlRef.current)
+  }, [])
 
   if (!user) return null
 
@@ -243,7 +257,7 @@ export function NoteFraisList() {
 
   function openCreate() {
     previewRequest.current += 1
-    if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
+    replaceAttachmentUrl(null)
     setForm({
       consultantId: String(selfCollaboratorId ?? ''),
       activityId: '',
@@ -255,7 +269,6 @@ export function NoteFraisList() {
     setEditing(null)
     setReadOnlyForm(false)
     setFormError(null)
-    setAttachmentUrl(null)
     setAttachmentName(null)
     setAttachmentDocumentId(null)
     setOcrPending(false)
@@ -266,7 +279,7 @@ export function NoteFraisList() {
   async function openEdit(nf: NoteFraisDto, readOnly = false) {
     const requestId = previewRequest.current + 1
     previewRequest.current = requestId
-    if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
+    replaceAttachmentUrl(null)
     setForm({
       consultantId: String(nf.consultantId),
       activityId: nf.activityId != null ? String(nf.activityId) : '',
@@ -291,23 +304,30 @@ export function NoteFraisList() {
     setEditing(nf)
     setReadOnlyForm(readOnly)
     setFormError(null)
-    setAttachmentUrl(null)
     setAttachmentName(nf.documentName ?? null)
     setAttachmentDocumentId(nf.documentId ?? null)
     setOcrPending(false)
     setUploading(false)
     setModalOpen(true)
     if (nf.documentId) {
-      try {
-        const url = await documentsApi.previewUrl(nf.documentId)
-        if (requestId !== previewRequest.current) {
-          URL.revokeObjectURL(url)
+      // Une relance couvre les échecs transitoires (chargement, jeton, réseau).
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const url = await documentsApi.previewUrl(nf.documentId)
+          if (requestId !== previewRequest.current) {
+            URL.revokeObjectURL(url)
+            return
+          }
+          replaceAttachmentUrl(url)
           return
+        } catch {
+          if (attempt === 0) {
+            await new Promise((resolve) => window.setTimeout(resolve, 300))
+            if (requestId !== previewRequest.current) return
+          }
         }
-        setAttachmentUrl(url)
-      } catch {
-        // Le bouton de téléchargement reste disponible si l'aperçu échoue.
       }
+      // Le bouton de téléchargement reste disponible si l'aperçu échoue.
     }
   }
 
@@ -326,8 +346,9 @@ export function NoteFraisList() {
     ) {
       return
     }
-    if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
-    setAttachmentUrl(null)
+    // Annule tout aperçu encore en cours pour éviter qu'il ne réapparaisse ensuite.
+    previewRequest.current += 1
+    replaceAttachmentUrl(null)
     setAttachmentName(null)
     setAttachmentDocumentId(null)
     setForm((prev) => ({
@@ -365,10 +386,11 @@ export function NoteFraisList() {
         socId: user?.socId ?? undefined,
         description: 'Justificatif de note de frais',
       })
-      if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
+      // Un nouveau fichier remplace tout aperçu précédent encore en cours.
+      previewRequest.current += 1
+      replaceAttachmentUrl(URL.createObjectURL(file))
       setAttachmentDocumentId(document.id)
       setAttachmentName(document.name)
-      setAttachmentUrl(URL.createObjectURL(file))
 
       // 2. Le texte du document est ensuite placé dans la zone de texte prévue.
       const textFile = /\.(txt|csv|md|json|xml|log)$/i.test(file.name)
