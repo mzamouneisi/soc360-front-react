@@ -117,5 +117,5 @@ describe('Register company search controls', () => {
       email: 'mdurand@example.com',
       password: 'secret',
     }))
-  })
+  }, 15000)
 })

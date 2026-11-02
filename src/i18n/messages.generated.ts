@@ -1133,6 +1133,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "SocLogo.apercu": "Aperçu du logo",
   "SocLogo.televersement": "Enregistrement du logo…",
   "NoteFraisList.ouvrir.le.pdf.du.mois": "Ouvrir le PDF du mois dans un nouvel onglet",
+  "NoteFraisList.marquer.payee": "Marquer payée",
 
 }
 
@@ -2271,6 +2272,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "SocLogo.apercu": "Logo preview",
   "SocLogo.televersement": "Saving logo…",
   "NoteFraisList.ouvrir.le.pdf.du.mois": "Open the month PDF in a new tab",
+  "NoteFraisList.marquer.payee": "Mark as paid",
 
 }
 
@@ -3409,4 +3411,5 @@ export const EXTRACTED_AR: Record<string, string> = {
   "SocLogo.apercu": "معاينة الشعار",
   "SocLogo.televersement": "جارٍ حفظ الشعار…",
   "NoteFraisList.ouvrir.le.pdf.du.mois": "افتح ملف PDF الشهري في علامة تبويب جديدة",
+  "NoteFraisList.marquer.payee": "وضع علامة مدفوعة",
 }

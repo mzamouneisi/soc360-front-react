@@ -17,6 +17,7 @@ const {
   historyMock,
   validateMock,
   rejectMock,
+  payMock,
   deleteMock,
   summariesMock,
   activitiesMock,
@@ -37,6 +38,7 @@ const {
   historyMock: vi.fn(),
   validateMock: vi.fn(),
   rejectMock: vi.fn(),
+  payMock: vi.fn(),
   deleteMock: vi.fn(),
   summariesMock: vi.fn(),
   activitiesMock: vi.fn().mockResolvedValue([]),
@@ -71,6 +73,7 @@ vi.mock('../api/noteFrais', () => ({
     history: historyMock,
     validate: validateMock,
     reject: rejectMock,
+    pay: payMock,
     delete: deleteMock,
     totalsByMonth: totalsByMonthMock,
     totalsByCategory: totalsByCategoryMock,
@@ -149,7 +152,6 @@ const nf = (overrides: Partial<NoteFraisDto> = {}): NoteFraisDto => ({
       montantTTC: 125.5,
       enseigne: 'McDonald\'s',
       adresse: '1 rue de Paris',
-      reimbursed: false,
       comment: null,
     },
   ],
@@ -446,6 +448,21 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(validateMock).toHaveBeenCalledWith(1))
   })
 
+  it('marque une note validée comme payée', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([nf({ status: 'VALIDATED', managerId: 1 })])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    payMock.mockResolvedValue(nf({ status: 'PAID', paidAt: '2026-08-20' }))
+
+    renderList()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Marquer payée' }))
+
+    await waitFor(() => expect(payMock).toHaveBeenCalledWith(1))
+  })
+
   it('rejette une note de frais avec le motif saisi', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([nf({ status: 'SUBMITTED' })])
@@ -485,7 +502,7 @@ describe('NoteFraisList', () => {
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(1))
   })
 
-  it('affiche « Remboursée » et place l’icône Supprimer à droite du cadre', async () => {
+  it('affiche les champs de la ligne et place l’icône Supprimer à droite du cadre', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])
     totalsByMonthMock.mockResolvedValue({})
@@ -496,7 +513,7 @@ describe('NoteFraisList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
 
     const dialog = await screen.findByRole('dialog')
-    expect(within(dialog).getByText('Remboursée')).toBeInTheDocument()
+    expect(within(dialog).queryByText('Remboursée')).not.toBeInTheDocument()
     expect(within(dialog).getByText('Nom enseigne')).toBeInTheDocument()
     expect(within(dialog).getByText('Date')).toBeInTheDocument()
     expect(within(dialog).getByText('Catégorie')).toBeInTheDocument()
@@ -887,7 +904,6 @@ describe('NoteFraisList', () => {
             montantTTC: 55,
             enseigne: 'SNCF',
             adresse: '1 rue de Paris',
-            reimbursed: false,
             comment: null,
           },
         ],

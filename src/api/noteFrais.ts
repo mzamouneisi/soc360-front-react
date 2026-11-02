@@ -15,6 +15,7 @@ export const noteFraisApi = {
   cancel: (id: number) => api.post<NoteFraisDto>(`/note-frais/${id}/cancel`),
   history: (id: number) => api.get<NoteFraisHistoryDto[]>(`/note-frais/${id}/history`),
   validate: (id: number) => api.post<NoteFraisDto>(`/note-frais/${id}/validate`),
+  pay: (id: number) => api.post<NoteFraisDto>(`/note-frais/${id}/pay`),
   reject: (id: number, comment: string) =>
     api.post<NoteFraisDto>(`/note-frais/${id}/reject`, { comment }),
   delete: (id: number) => api.delete<void>(`/note-frais/${id}`),

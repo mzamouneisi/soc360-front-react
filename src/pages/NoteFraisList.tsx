@@ -41,8 +41,7 @@ interface LineForm {
   enseigne: string
   adresse: string
   montantHT: string
-  montantTTC: string
-  reimbursed: boolean
+  montantTTC: string
   comment: string
   fromDocument: boolean
 }
@@ -64,8 +63,7 @@ function newLine(): LineForm {
     enseigne: '',
     adresse: '',
     montantHT: '',
-    montantTTC: '',
-    reimbursed: false,
+    montantTTC: '',
     comment: '',
     fromDocument: false,
   }
@@ -234,7 +232,8 @@ export function NoteFraisList() {
   // Une note soumise ou validée est verrouillée, sauf pour le manager direct du collaborateur
   // (qui peut intervenir, l'action étant historisée).
   const isReadOnlyForUser = (nf: NoteFraisDto) =>
-    (nf.status === 'SUBMITTED' || nf.status === 'VALIDATED') && !isCollaboratorManager(nf)
+    nf.status === 'PAID' ||
+    ((nf.status === 'SUBMITTED' || nf.status === 'VALIDATED') && !isCollaboratorManager(nf))
   const canWrite = (nf: NoteFraisDto) => !isReadOnlyForUser(nf)
   const canSubmit = (nf: NoteFraisDto) =>
     isOwner(nf) && (nf.status === 'DRAFT' || nf.status === 'REJECTED')
@@ -282,8 +281,7 @@ export function NoteFraisList() {
               enseigne: l.enseigne ?? '',
               adresse: l.adresse ?? '',
               montantHT: String(l.montantHT),
-              montantTTC: String(l.montantTTC),
-              reimbursed: l.reimbursed,
+              montantTTC: String(l.montantTTC),
               comment: l.comment ?? '',
               fromDocument: nf.documentId != null,
             }))
@@ -450,7 +448,6 @@ export function NoteFraisList() {
             montantTTC: Number(l.montantTTC) || 0,
             enseigne: l.enseigne.trim() || null,
             adresse: l.adresse.trim() || null,
-            reimbursed: l.reimbursed,
             comment: l.comment || null,
           })),
         infosFacture: form.infosFacture || null,
@@ -479,7 +476,7 @@ export function NoteFraisList() {
 
   async function changeStatus(
     nf: NoteFraisDto,
-    action: 'submit' | 'cancel' | 'validate' | 'reject' | 'delete',
+    action: 'submit' | 'cancel' | 'validate' | 'reject' | 'pay' | 'delete',
   ) {
     try {
       if (action === 'submit') {
@@ -490,6 +487,9 @@ export function NoteFraisList() {
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else if (action === 'validate') {
         const updated = await noteFraisApi.validate(nf.id)
+        setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
+      } else if (action === 'pay') {
+        const updated = await noteFraisApi.pay(nf.id)
         setData((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
       } else if (action === 'reject') {
         const comment = await dialog.prompt(tr('common.rejectionReason'))
@@ -508,7 +508,7 @@ export function NoteFraisList() {
     }
   }
 
-  async function handleFormAction(action: 'submit' | 'validate' | 'reject') {
+  async function handleFormAction(action: 'submit' | 'validate' | 'reject' | 'pay') {
     if (!editing) return
     if (await changeStatus(editing, action)) setModalOpen(false)
   }
@@ -723,6 +723,9 @@ export function NoteFraisList() {
                         <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'reject') }} id={`Unavailability.rejeter.${nf.id}`} />
                       </>
                     )}
+                    {canReview(nf) && nf.status === 'VALIDATED' && (
+                      <IconButton icon="check" label={tr('NoteFraisList.marquer.payee')} variant="soft" onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'pay') }} id={`NoteFraisList.marquer.payee.${nf.id}`} />
+                    )}
                     <IconButton icon="delete" label={tr('NoteFraisList.suppr')} variant="danger" disabled={isReadOnlyForUser(nf)} onClick={(e) => { e.stopPropagation(); void changeStatus(nf, 'delete') }} id={`NoteFraisList.suppr.${nf.id}`} />
                     <IconButton icon="history" label={tr('NoteFraisList.historique')} variant="history" onClick={(e) => { e.stopPropagation(); setHistoryFor(nf) }} id={`NoteFraisList.historique.${nf.id}`} />
                   </div>
@@ -757,6 +760,9 @@ export function NoteFraisList() {
             )}
             {editing && canReview(editing) && editing.status === 'SUBMITTED' && (
               <IconButton icon="reject" label={tr('Unavailability.rejeter')} variant="danger" onClick={() => void handleFormAction('reject')} id="NoteFraisList.form.rejeter" />
+            )}
+            {editing && canReview(editing) && editing.status === 'VALIDATED' && (
+              <IconButton icon="check" label={tr('NoteFraisList.marquer.payee')} variant="soft" onClick={() => void handleFormAction('pay')} id="NoteFraisList.form.payer" />
             )}
             <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={readOnlyForm || submitting || uploading || !formIsValid} loading={submitting || uploading} />
           </>
@@ -1056,24 +1062,6 @@ export function NoteFraisList() {
                       }
                     />
                   </Field>
-                  <label id={`NoteFraisList.line.${i}.remboursee.label`} className="flex items-center gap-2 pt-5 text-sm text-gray-600 sm:col-span-2">
-                    <input
-                      id={`NoteFraisList.line.${i}.remboursee`}
-                      type="checkbox"
-                      title={tr('NoteFraisList.remboursee')}
-                      checked={line.reimbursed}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          lines: form.lines.map((l, j) =>
-                            j === i ? { ...l, reimbursed: e.target.checked } : l,
-                          ),
-                        })
-                      }
-                      className="h-4 w-4 rounded border-gray-300 text-brand-600"
-                    />
-                    {tr('NoteFraisList.remboursee')}
-                  </label>
                   </div>
                   <div className="flex items-center">
                     <IconButton

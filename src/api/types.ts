@@ -543,8 +543,7 @@ export interface NoteFraisLineDto {
   montantHT: number
   montantTTC: number
   enseigne: string | null
-  adresse: string | null
-  reimbursed: boolean
+  adresse: string | null
   comment: string | null
 }
 
@@ -577,8 +576,7 @@ export interface NoteFraisLineRequest {
   montantHT: number
   montantTTC: number
   enseigne?: string | null
-  adresse?: string | null
-  reimbursed: boolean
+  adresse?: string | null
   comment?: string | null
 }
 
