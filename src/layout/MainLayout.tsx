@@ -299,7 +299,7 @@ export function MainLayout() {
         </main>
         <footer
           id="app-footer"
-          className="shrink-0 border-t border-gray-200 bg-white px-6 py-2 text-center text-base font-bold text-gray-900"
+          className="shrink-0 border-t border-gray-200 bg-white px-6 py-2 text-center text-base font-bold text-black"
         >
           <span id="app.footer.copyright">
             © Copyright SOC360{' '}
