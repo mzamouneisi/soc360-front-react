@@ -284,14 +284,13 @@ export function NoteFraisList() {
     setAttachmentUrl(null)
     setAttachmentName(null)
     setAttachmentDocumentId(null)
-    setForm((prev) => {
-      const kept = prev.lines.filter((line) => !line.fromDocument)
-      return {
-        ...prev,
-        infosFacture: '',
-        lines: kept.length > 0 ? kept : [newLine()],
-      }
-    })
+    setForm((prev) => ({
+      ...prev,
+      infosFacture: '',
+      // Retirer le document revient à supprimer chaque ligne de dépense : on repart d'une
+      // ligne vide, y compris pour les lignes saisies manuellement.
+      lines: [newLine()],
+    }))
   }
 
   async function removeLine(index: number) {
