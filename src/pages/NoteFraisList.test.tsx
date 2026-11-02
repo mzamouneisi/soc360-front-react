@@ -25,6 +25,7 @@ const {
   documentUploadMock,
   documentDownloadMock,
   documentPreviewUrlMock,
+  exportMonthPdfMock,
 } = vi.hoisted(() => ({
   findBySocYearMock: vi.fn(),
   findByConsultantYearMock: vi.fn(),
@@ -44,6 +45,7 @@ const {
   documentUploadMock: vi.fn(),
   documentDownloadMock: vi.fn(),
   documentPreviewUrlMock: vi.fn(),
+  exportMonthPdfMock: vi.fn(),
 }))
 
 vi.mock('../auth/AuthContext', () => ({
@@ -73,6 +75,7 @@ vi.mock('../api/noteFrais', () => ({
     totalsByMonth: totalsByMonthMock,
     totalsByCategory: totalsByCategoryMock,
     totalsByConsultant: vi.fn(),
+    exportMonthPdf: exportMonthPdfMock,
   },
 }))
 
@@ -176,6 +179,7 @@ afterEach(() => {
   documentUploadMock.mockReset()
   documentDownloadMock.mockReset()
   documentPreviewUrlMock.mockReset()
+  exportMonthPdfMock.mockReset()
   userMock.value = null as unknown as UserDto
 })
 
@@ -207,6 +211,32 @@ describe('NoteFraisList', () => {
     expect(screen.getByText('Montants par catégorie')).toBeInTheDocument()
     expect(screen.getByText('Restaurant · 125,50 €')).toBeInTheDocument()
     expect(screen.getAllByText('125,50 €').length).toBeGreaterThan(0)
+  })
+
+  it('télécharge le PDF interne du mois en cliquant sur son montant', async () => {
+    stubFixedNow()
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([nf()])
+    totalsByMonthMock.mockResolvedValue({ '8': 125.5 })
+    totalsByCategoryMock.mockResolvedValue({ Restaurant: 125.5 })
+    summariesMock.mockResolvedValue([])
+    exportMonthPdfMock.mockResolvedValue(undefined)
+
+    renderList()
+
+    const august = (await waitFor(() => {
+      const button = document.getElementById('NoteFraisList.month.8.value')
+      if (!button) throw new Error('bouton absent')
+      return button
+    })) as HTMLButtonElement
+    expect(august.tagName).toBe('BUTTON')
+    expect(
+      (document.getElementById('NoteFraisList.month.7.value') as HTMLButtonElement).disabled,
+    ).toBe(true)
+
+    fireEvent.click(august)
+
+    await waitFor(() => expect(exportMonthPdfMock).toHaveBeenCalledWith(5, 2026, 8, 'fr'))
   })
 
   it('affiche l’état vide pour un consultant et appelle l’API avec son identifiant', async () => {

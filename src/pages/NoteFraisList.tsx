@@ -10,6 +10,7 @@ import { parseReceipt } from '../lib/receipt'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
+import { useI18n } from '../i18n'
 import { usePagination } from '../lib/usePagination'
 import {
   allowedMonths as allowedMonthsFor,
@@ -109,6 +110,7 @@ function fillLineFromText(lines: LineForm[], text: string, filename: string): Li
 export function NoteFraisList() {
   const { user } = useAuth()
   const dt = useDynamicTranslate()
+  const { language } = useI18n()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
 
@@ -529,6 +531,15 @@ export function NoteFraisList() {
   const formIsValid =
     requiredFieldsCompleted && (isConsultant || form.consultantId.trim() !== '')
 
+  async function downloadMonthPdf(month: number) {
+    if (!user?.socId) return
+    try {
+      await noteFraisApi.exportMonthPdf(user.socId, year, month, language)
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    }
+  }
+
   const totalYear = (data ?? []).reduce((sum, nf) => sum + nf.totalAmount, 0)
   const pendingCount = (data ?? []).filter((nf) => nf.status === 'SUBMITTED').length
 
@@ -584,9 +595,16 @@ export function NoteFraisList() {
               const value = totalsByMonth[String(i + 1)] ?? 0
               return (
                 <div key={i} className="w-10 text-center">
-                  <p id={`NoteFraisList.month.${i + 1}.value`} className="text-xs font-medium text-gray-900">
+                  <button
+                    type="button"
+                    id={`NoteFraisList.month.${i + 1}.value`}
+                    title={tr('Documents.telecharger')}
+                    disabled={value <= 0}
+                    onClick={() => void downloadMonthPdf(i + 1)}
+                    className="text-xs font-medium text-brand-600 hover:underline disabled:cursor-default disabled:text-gray-400 disabled:no-underline"
+                  >
                     {value > 0 ? formatMoney(value) : '—'}
-                  </p>
+                  </button>
                   <div className="mx-auto mt-1 h-20 w-4 overflow-hidden rounded bg-gray-100">
                     <div
                       className="w-full bg-brand-500"

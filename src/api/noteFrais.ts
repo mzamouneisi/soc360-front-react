@@ -29,4 +29,9 @@ export const noteFraisApi = {
     api.get<Record<string, number>>(`/note-frais/stats/by-category/${socId}/${year}`),
   totalsByConsultant: (socId: number, year: number) =>
     api.get<Record<string, number>>(`/note-frais/stats/by-consultant/${socId}/${year}`),
+  exportMonthPdf: (socId: number, year: number, month: number, lang: string) =>
+    api.download(
+      `/note-frais/export/month/${socId}/${year}/${month}?lang=${encodeURIComponent(lang)}`,
+      `notes-frais-${year}-${String(month).padStart(2, '0')}.pdf`,
+    ),
 }
