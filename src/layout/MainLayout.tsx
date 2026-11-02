@@ -2,13 +2,57 @@ import { tr } from '../i18n/translate'
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import type { Role } from '../api/types'
+import { socsApi } from '../api/socs'
 import { useAuth } from '../auth/AuthContext'
 import { ROLE_LABELS, initials } from '../lib/format'
+import { DEFAULT_SOC_LOGO } from '../lib/socLogo'
 import { SocSelector } from '../soc/SocSelector'
+import { useSoc } from '../soc/SocContext'
 import { NotificationBell } from './NotificationBell'
 import { GlobalLoading } from '../components/GlobalLoading'
 import { useI18n } from '../i18n'
 import { LanguageSelector } from '../i18n/LanguageSelector'
+
+/** Logo de la société courante, avec repli automatique sur le logo SOC360 par défaut. */
+function SocBrandLogo() {
+  const { selectedSoc } = useSoc()
+  const [src, setSrc] = useState(DEFAULT_SOC_LOGO)
+
+  useEffect(() => {
+    let active = true
+    let objectUrl: string | null = null
+    if (selectedSoc?.hasLogo) {
+      socsApi
+        .logoUrl(selectedSoc.id)
+        .then((url) => {
+          if (active) {
+            objectUrl = url
+            setSrc(url)
+          } else {
+            URL.revokeObjectURL(url)
+          }
+        })
+        .catch(() => {
+          if (active) setSrc(DEFAULT_SOC_LOGO)
+        })
+    } else {
+      setSrc(DEFAULT_SOC_LOGO)
+    }
+    return () => {
+      active = false
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [selectedSoc?.id, selectedSoc?.hasLogo])
+
+  return (
+    <img
+      id="MainLayout.logo"
+      src={src}
+      alt={selectedSoc?.name ?? tr('MainLayout.soc360')}
+      className="max-h-10 max-w-[10rem] object-contain"
+    />
+  )
+}
 
 interface NavItem {
   to: string
@@ -211,9 +255,7 @@ export function MainLayout() {
     <div className="flex h-full">
       <aside id="app-sidebar" className="flex w-64 shrink-0 flex-col overflow-y-auto bg-gray-900 text-gray-300">
         <div id="app-brand" className="flex h-16 shrink-0 items-center gap-2 px-5 text-lg font-bold text-white">
-          <span id="MainLayout.e" className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-extrabold">
-            {tr('MainLayout.e')}
-          </span>
+          <SocBrandLogo />
           <span id="MainLayout.soc360">{tr('MainLayout.soc360')}</span>
         </div>
 

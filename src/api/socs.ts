@@ -43,6 +43,13 @@ export const socsApi = {
     api.put<SocDto>(`/socs/${id}`, request),
   updateCraColors: (id: number, colors: { leaveDayColor: string; weekendColor: string }) =>
     api.put<SocDto>(`/socs/${id}/cra-colors`, colors),
+  uploadLogo: (id: number, file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.upload<SocDto>(`/socs/${id}/logo`, formData)
+  },
+  removeLogo: (id: number) => api.delete<SocDto>(`/socs/${id}/logo`),
+  logoUrl: (id: number) => api.blobUrl(`/socs/${id}/logo`),
   remove: (id: number) => api.delete<void>(`/socs/${id}`),
   removeWithDependencies: (id: number) => api.delete<void>(`/socs/${id}/all`),
   dependencies: (id: number) => api.get<SocDependency[]>(`/socs/${id}/dependencies`),

@@ -42,6 +42,7 @@ export interface PageResponse<T> {
 export interface SocLiteDto {
   id: number
   name: string
+  hasLogo?: boolean
 }
 
 export interface AddSocPayload {
@@ -165,6 +166,9 @@ export interface SocDto {
   address?: Address | null
   leaveDayColor?: string | null
   weekendColor?: string | null
+  hasLogo?: boolean
+  logoFilename?: string | null
+  logoMimeType?: string | null
 }
 
 export interface SubscriptionDto {

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
 import { AddSocModal } from '../soc/AddSocModal'
+import { SocLogoField } from '../components/SocLogoField'
 import { socsApi, type DemoSocDto, type SocDependency } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { AddSocPayload, SocDto, SocLiteDto } from '../api/types'
@@ -41,7 +42,7 @@ const DEPENDENCY_LABEL_KEYS: Record<string, string> = {
 
 export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
   const { user } = useAuth()
-  const { socs: userSocs } = useSoc()
+  const { socs: userSocs, refreshSocs } = useSoc()
   const isAdmin = user?.role === 'ADMIN'
 
   const { data: socs, loading, error, reload, setData } = useAsync(() => socsApi.findAll(), [])
@@ -427,6 +428,19 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
               <Field label={tr('SocAdmin.informations.web')} id="SocAdmin.informations.web">
                 <Textarea id="SocAdmin.informations.web.textarea" rows={3} value={editingForm.form.infosWeb} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, infosWeb: e.target.value } })} />
               </Field>
+            </div>
+            <div className="sm:col-span-2">
+              <SocLogoField
+                socId={editingForm.soc.id}
+                hasLogo={editingForm.soc.hasLogo ?? false}
+                socName={editingForm.soc.name}
+                disabled={editingForm.readOnly}
+                onChange={(saved) => {
+                  setEditingForm({ ...editingForm, soc: saved })
+                  setData((prev) => (prev ?? []).map((s) => (s.id === saved.id ? saved : s)))
+                  void refreshSocs()
+                }}
+              />
             </div>
           </fieldset>
         </Modal>

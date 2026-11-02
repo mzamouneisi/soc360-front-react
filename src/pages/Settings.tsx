@@ -8,6 +8,7 @@ import { emailTemplatesApi, type EmailTemplateView } from '../api/emailTemplates
 import { i18nApi, type TranslatedEntry } from '../api/i18n'
 import { ApiError } from '../api/client'
 import { Card, Field, IconButton, Input, Select, Spinner, Button, Textarea } from '../components/ui'
+import { SocLogoField } from '../components/SocLogoField'
 import { PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import { languageLabel } from '../i18n/messages'
@@ -92,7 +93,7 @@ function scheduleScrollToRetrad(): void {
 
 export function Settings() {
   const { user, refreshMe } = useAuth()
-  const { selectedSocId } = useSoc()
+  const { selectedSocId, selectedSoc, refreshSocs } = useSoc()
   const { t, preference, languages, setLanguage, language, refresh } = useI18n()
   const [size, setSize] = useState<number>(user?.fontSize ?? 14)
   const [theme, setTheme] = useState<string>(user?.theme || 'ocean')
@@ -125,6 +126,7 @@ export function Settings() {
   const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
   const [leaveDayColor, setLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
   const [weekendColor, setWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
+  const [socHasLogo, setSocHasLogo] = useState<boolean>(selectedSoc?.hasLogo ?? false)
   const [savedLeaveDayColor, setSavedLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
   const [savedWeekendColor, setSavedWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
   const [saving, setSaving] = useState(false)
@@ -152,6 +154,7 @@ export function Settings() {
         setWeekendColor(weekend)
         setSavedLeaveDayColor(leave)
         setSavedWeekendColor(weekend)
+        setSocHasLogo(soc.hasLogo ?? false)
       })
       .catch(() => undefined)
     return () => {
@@ -833,6 +836,20 @@ export function Settings() {
             </tbody>
           </table>
         </div>
+
+        {canEditCraColors && selectedSocId != null && (
+          <div className="mt-8">
+            <SocLogoField
+              socId={selectedSocId}
+              hasLogo={socHasLogo}
+              socName={selectedSoc?.name}
+              onChange={(saved) => {
+                setSocHasLogo(saved.hasLogo ?? false)
+                void refreshSocs()
+              }}
+            />
+          </div>
+        )}
 
         {canEditCraColors && selectedSocId != null && (
           <>

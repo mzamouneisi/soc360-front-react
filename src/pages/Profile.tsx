@@ -10,6 +10,7 @@ import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
 import { Button, Card, Field, IconButton, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
+import { SocLogoField } from '../components/SocLogoField'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { ROLE_LABELS, formatDateTime } from '../lib/format'
@@ -27,7 +28,7 @@ const DEPENDENCY_LABELS: Record<string, string> = {
 export function Profile() {
   const { user, refreshMe } = useAuth()
   const dt = useDynamicTranslate()
-  const { socs, selectedSocId, selectSoc, favoriteSocId, setFavoriteSoc } = useSoc()
+  const { socs, selectedSocId, selectSoc, favoriteSocId, setFavoriteSoc, refreshSocs } = useSoc()
   const [favoriting, setFavoriting] = useState<number | null>(null)
   const [editingSoc, setEditingSoc] = useState<SocDto | null>(null)
   const [socSaving, setSocSaving] = useState(false)
@@ -283,6 +284,19 @@ export function Profile() {
               <Field label={tr('Profile.informations.web')} id="Profile.informations.web"><Textarea id="Profile.informations.web.textarea" rows={2} value={editingSoc.infosWeb ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, infosWeb: e.target.value })} /></Field>
               <Field label={tr('Profile.site.web')} id="Profile.site.web"><Input id="Profile.site.web.input" type="url" value={editingSoc.website ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, website: e.target.value })} /></Field>
               <Field label={tr('Profile.gerant')} id="Profile.gerant"><Input id="Profile.gerant.input" value={editingSoc.gerant ?? ''} onChange={(e) => setEditingSoc({ ...editingSoc, gerant: e.target.value })} /></Field>
+              <div className="sm:col-span-2">
+                <SocLogoField
+                  socId={editingSoc.id}
+                  hasLogo={editingSoc.hasLogo ?? false}
+                  socName={editingSoc.name}
+                  disabled={socSaving}
+                  onChange={(saved) => {
+                    setEditingSoc(saved)
+                    setSocMessage('Logo de la société mis à jour.')
+                    void refreshSocs()
+                  }}
+                />
+              </div>
               <div className="flex gap-2 sm:col-span-2">
                 <IconButton type="button" icon="save" label={tr('Profile.enregistrer')} variant="primary" className="!w-auto" onClick={() => void saveSoc()} disabled={socSaving} loading={socSaving} id="Profile.enregistrer" />
                 <IconButton type="button" icon="cancel" label={tr('Profile.annuler')} className="!w-auto" onClick={() => setEditingSoc(null)} id="Profile.annuler" />
