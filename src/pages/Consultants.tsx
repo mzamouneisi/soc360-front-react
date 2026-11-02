@@ -4,6 +4,8 @@ import { useAuth } from '../auth/AuthContext'
 import { consultantsApi } from '../api/consultants'
 import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
+import { ConsultantAvatar } from '../components/ConsultantAvatar'
+import { ConsultantPhotoField } from '../components/ConsultantPhotoField'
 import { Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import {
   Badge,
@@ -427,11 +429,14 @@ export function Consultants() {
                 key: 'name',
                 label: tr('Consultants.collaborateur'),
                 render: (c) => (
-                  <div>
-                    <p id={`Consultants.row.${c.id}.name`} className="font-medium text-gray-900">
-                      {c.firstName} {c.lastName}
-                    </p>
-                    <p id={`Consultants.row.${c.id}.position`} className="text-xs text-gray-500">{c.position ?? '—'}</p>
+                  <div className="flex items-center gap-2">
+                    <ConsultantAvatar consultant={c} />
+                    <div>
+                      <p id={`Consultants.row.${c.id}.name`} className="font-medium text-gray-900">
+                        {c.firstName} {c.lastName}
+                      </p>
+                      <p id={`Consultants.row.${c.id}.position`} className="text-xs text-gray-500">{c.position ?? '—'}</p>
+                    </div>
                   </div>
                 ),
               },
@@ -594,6 +599,18 @@ export function Consultants() {
               <Input id="Consultants.nom.input" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             </Field>
           </div>
+          {editing && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <ConsultantPhotoField
+                consultantId={editing.id}
+                hasPhoto={Boolean(editing.hasPhoto)}
+                firstName={editing.firstName}
+                lastName={editing.lastName}
+                disabled={!canEdit}
+                onChange={(saved) => setEditing(saved)}
+              />
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.email')} id="Consultants.email">
               <Input id="Consultants.email.input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />

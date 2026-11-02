@@ -281,6 +281,13 @@ const fr: Messages = {
   'UnavailabilityTypes.confirmDelete': 'Supprimer le type « {type} » ?',
   'UnavailabilityTypes.confirmSave':
     'Des modifications n’ont pas été enregistrées. Voulez-vous les enregistrer ?',
+  'Consultants.photo': 'Photo',
+  'Consultants.photo.ajouter': 'Ajouter une photo',
+  'Consultants.photo.supprimer': 'Supprimer la photo',
+  'Consultants.photo.televersement': 'Envoi de la photo…',
+  'Consultants.photo.format.invalide': 'La photo doit être une image PNG ou JPEG.',
+  'Consultants.photo.taille.invalide': 'La photo ne doit pas dépasser 5 Mo.',
+  'Consultants.photo.indisponible': 'Photo indisponible pour le moment. Utilisez le bouton de téléchargement.',
 }
 
 const en: Messages = {
@@ -532,6 +539,13 @@ const en: Messages = {
   'UnavailabilityTypes.form.edit': 'Edit time-off type',
   'UnavailabilityTypes.confirmDelete': 'Delete the type "{type}"?',
   'UnavailabilityTypes.confirmSave': 'There are unsaved changes. Do you want to save them?',
+  'Consultants.photo': 'Photo',
+  'Consultants.photo.ajouter': 'Add a photo',
+  'Consultants.photo.supprimer': 'Remove the photo',
+  'Consultants.photo.televersement': 'Uploading photo…',
+  'Consultants.photo.format.invalide': 'The photo must be a PNG or JPEG image.',
+  'Consultants.photo.taille.invalide': 'The photo must not exceed 5 Mo.',
+  'Consultants.photo.indisponible': 'Photo unavailable for now. Use the download button.',
 }
 
 const ar: Messages = {
@@ -661,6 +675,13 @@ const ar: Messages = {
   'UnavailabilityTypes.form.edit': 'تعديل نوع الإجازة',
   'UnavailabilityTypes.confirmDelete': 'حذف النوع « {type} »؟',
   'UnavailabilityTypes.confirmSave': 'هناك تغييرات غير محفوظة. هل تريد حفظها؟',
+  'Consultants.photo': 'الصورة',
+  'Consultants.photo.ajouter': 'إضافة صورة',
+  'Consultants.photo.supprimer': 'إزالة الصورة',
+  'Consultants.photo.televersement': 'جارٍ رفع الصورة…',
+  'Consultants.photo.format.invalide': 'يجب أن تكون الصورة صورة PNG أو JPEG.',
+  'Consultants.photo.taille.invalide': 'يجب ألا تتجاوز الصورة 5 ميغابايت.',
+  'Consultants.photo.indisponible': 'الصورة غير متاحة حالياً. استخدم زر التنزيل.',
 }
 
 export const MESSAGES: Record<string, Messages> = {

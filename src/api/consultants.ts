@@ -20,6 +20,13 @@ export const consultantsApi = {
   update: (id: number, request: ConsultantRequest) =>
     api.put<ConsultantDto>(`/consultants/${id}`, request),
   delete: (id: number) => api.delete<void>(`/consultants/${id}`),
+  photoUrl: (id: number) => api.blobUrl(`/consultants/${id}/photo`),
+  uploadPhoto: (id: number, file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.upload<ConsultantDto>(`/consultants/${id}/photo`, formData)
+  },
+  removePhoto: (id: number) => api.delete<ConsultantDto>(`/consultants/${id}/photo`),
   history: (id: number) => api.get<HistoConsultantDto[]>(`/consultants/${id}/history`),
   updatePerson: (userId: number, request: { firstName: string; lastName: string; email: string | null; phone: string | null; role?: string }) =>
     api.put<ConsultantDto>(`/consultants/persons/${userId}`, request),

@@ -103,6 +103,7 @@ function consultant(overrides: Partial<ConsultantDto> = {}): ConsultantDto {
     matricule: null,
     modePaiement: null,
     employee: true,
+    hasPhoto: false,
     ...overrides,
   }
 }

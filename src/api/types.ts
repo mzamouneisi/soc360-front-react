@@ -226,6 +226,9 @@ export interface ConsultantDto {
   matricule: string | null
   modePaiement: string | null
   employee: boolean
+  hasPhoto: boolean
+  photoContentType?: string | null
+  photoSize?: number | null
 }
 
 export interface ConsultantRequest {
