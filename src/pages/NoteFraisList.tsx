@@ -6,6 +6,7 @@ import { activitiesApi } from '../api/activities'
 import { consultantsApi } from '../api/consultants'
 import { documentsApi } from '../api/documents'
 import { isImageFile, ocrImageText } from '../lib/ocr'
+import { isAllowedNoteFraisDocument } from '../lib/noteFraisDocument'
 import { parseReceipt } from '../lib/receipt'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
@@ -377,6 +378,11 @@ export function NoteFraisList() {
     const file = e.target.files?.[0]
     if (!file) return
     setFormError(null)
+    if (!isAllowedNoteFraisDocument(file)) {
+      setFormError(tr('NoteFraisList.justificatif.format.invalide'))
+      e.target.value = ''
+      return
+    }
     setUploading(true)
     try {
       // 1. Le justificatif est d'abord téléversé (il est obligatoire).
@@ -392,14 +398,11 @@ export function NoteFraisList() {
       setAttachmentDocumentId(document.id)
       setAttachmentName(document.name)
 
-      // 2. Le texte du document est ensuite placé dans la zone de texte prévue.
-      const textFile = /\.(txt|csv|md|json|xml|log)$/i.test(file.name)
+      // 2. Le texte du document (image via OCR, PDF via extraction) pré-remplit le formulaire.
+      const imageFile = isImageFile(file.name)
       const pdfFile = /\.pdf$/i.test(file.name)
-      const extractable = textFile || isImageFile(file.name) || pdfFile
       let text = ''
-      if (textFile) {
-        text = await file.text()
-      } else if (isImageFile(file.name)) {
+      if (imageFile) {
         setOcrPending(true)
         try {
           text = await ocrImageText(file)
@@ -417,9 +420,9 @@ export function NoteFraisList() {
           infosFacture: text,
           lines: fillLineFromText(prev.lines, text, file.name),
         }))
-      } else if (extractable) {
+      } else {
         setFormError(
-          isImageFile(file.name)
+          imageFile
             ? 'OCR non disponible pour cette image : saisissez les informations manuellement.'
             : 'Aucun texte extrait de ce fichier : saisissez les informations manuellement.',
         )
@@ -814,7 +817,7 @@ export function NoteFraisList() {
                 <input
                   id="NoteFraisList.joindre.une.facture.image.pdf.file"
                   type="file"
-                  accept="image/*,application/pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.rtf"
+                  accept="image/png,image/jpeg,application/pdf,.png,.jpg,.jpeg,.pdf"
                   aria-label={tr('NoteFraisList.joindre.une.facture.image.pdf')}
                   disabled={readOnlyForm || attachmentDocumentId != null || uploading}
                   className="hidden"

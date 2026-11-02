@@ -529,6 +529,29 @@ describe('NoteFraisList', () => {
     expect(remove?.getAttribute('aria-label')).toBe('Supprimer')
   })
 
+  it('refuse un justificatif qui n’est ni une image ni un PDF', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
+      target: { files: [new File(['fake'], 'facture.txt', { type: 'text/plain' })] },
+    })
+
+    expect(
+      await within(dialog).findByText(
+        'Le justificatif doit être une image (PNG, JPG, JPEG) ou un PDF.',
+      ),
+    ).toBeInTheDocument()
+    expect(documentUploadMock).not.toHaveBeenCalled()
+  })
+
   it('masque les libellés obligatoires quand tous les champs sont remplis', async () => {
     userMock.value = managerUser
     findBySocYearMock.mockResolvedValue([])

@@ -1134,6 +1134,7 @@ export const EXTRACTED_FR: Record<string, string> = {
   "SocLogo.televersement": "Enregistrement du logo…",
   "NoteFraisList.ouvrir.le.pdf.du.mois": "Ouvrir le PDF du mois dans un nouvel onglet",
   "NoteFraisList.marquer.payee": "Marquer payée",
+  "NoteFraisList.justificatif.format.invalide": "Le justificatif doit être une image (PNG, JPG, JPEG) ou un PDF.",
 
 }
 
@@ -2273,6 +2274,7 @@ export const EXTRACTED_EN: Record<string, string> = {
   "SocLogo.televersement": "Saving logo…",
   "NoteFraisList.ouvrir.le.pdf.du.mois": "Open the month PDF in a new tab",
   "NoteFraisList.marquer.payee": "Mark as paid",
+  "NoteFraisList.justificatif.format.invalide": "The receipt must be an image (PNG, JPG, JPEG) or a PDF.",
 
 }
 
@@ -3412,4 +3414,5 @@ export const EXTRACTED_AR: Record<string, string> = {
   "SocLogo.televersement": "جارٍ حفظ الشعار…",
   "NoteFraisList.ouvrir.le.pdf.du.mois": "افتح ملف PDF الشهري في علامة تبويب جديدة",
   "NoteFraisList.marquer.payee": "وضع علامة مدفوعة",
+  "NoteFraisList.justificatif.format.invalide": "يجب أن يكون الإيصال صورة (PNG أو JPG أو JPEG) أو ملف PDF.",
 }
