@@ -297,6 +297,23 @@ export function MainLayout() {
         <main id="app-main" className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--app-bg)' }}>
           <Outlet />
         </main>
+        <footer
+          id="app-footer"
+          className="shrink-0 border-t border-gray-200 bg-white px-6 py-2 text-center text-xs text-gray-500"
+        >
+          <span id="app.footer.copyright">
+            Copyright SOC360{' '}
+            <a
+              id="app.footer.website"
+              href="https://www.eisi-consulting.fr"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-brand-600 hover:underline"
+            >
+              www.eisi-consulting.fr
+            </a>
+          </span>
+        </footer>
       </div>
       <GlobalLoading />
     </div>
