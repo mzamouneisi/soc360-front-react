@@ -299,16 +299,16 @@ export function MainLayout() {
         </main>
         <footer
           id="app-footer"
-          className="shrink-0 border-t border-gray-200 bg-white px-6 py-2 text-center text-xs text-gray-500"
+          className="shrink-0 border-t border-gray-200 bg-white px-6 py-2 text-center text-sm text-gray-500"
         >
           <span id="app.footer.copyright">
-            Copyright SOC360{' '}
+            © Copyright SOC360{' '}
             <a
               id="app.footer.website"
               href="https://www.eisi-consulting.fr"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-brand-600 hover:underline"
+              className="text-brand-600 hover:underline"
             >
               www.eisi-consulting.fr
             </a>
