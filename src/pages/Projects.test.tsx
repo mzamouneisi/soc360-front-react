@@ -76,6 +76,7 @@ const project = (overrides: Partial<ProjectDto> = {}): ProjectDto => ({
   id: 1,
   name: 'Projet Alpha',
   description: null,
+  location: null,
   client: { id: 5, name: 'Client 5' },
   soc: { id: 10, name: 'Soc 10' },
   startDate: null,

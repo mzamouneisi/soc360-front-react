@@ -15,6 +15,7 @@ import type { ClientDto } from '../api/types'
 
 interface FormState {
   name: string
+  address: string
   contactName: string
   contactEmail: string
   contactPhone: string
@@ -26,6 +27,7 @@ interface FormState {
 
 const emptyForm: FormState = {
   name: '',
+  address: '',
   contactName: '',
   contactEmail: '',
   contactPhone: '',
@@ -96,6 +98,7 @@ export function Clients() {
   function openEdit(client: ClientDto) {
     setForm({
       name: client.name,
+      address: client.address ?? '',
       contactName: client.contactName ?? '',
       contactEmail: client.contactEmail ?? '',
       contactPhone: client.contactPhone ?? '',
@@ -124,6 +127,7 @@ export function Clients() {
     try {
       const payload = {
         name: form.name.trim(),
+        address: form.address.trim() || null,
         contactName: form.contactName || null,
         contactEmail: form.contactEmail || null,
         contactPhone: form.contactPhone || null,
@@ -298,6 +302,9 @@ export function Clients() {
           </div>
           <Field label={tr('Clients.nom.du.client')} id="Clients.nom.du.client">
             <Input id="Clients.nom.du.client.input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </Field>
+          <Field label="Adresse" id="Clients.adresse">
+            <Input id="Clients.adresse.input" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </Field>
           <Field label={tr('Clients.notes.infos.specifiques.pour.votre.societe')} id="Clients.notes.infos.specifiques.pour.votre.societe">
             <Textarea

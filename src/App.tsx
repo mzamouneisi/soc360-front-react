@@ -4,6 +4,7 @@ import { AdminRoute } from './auth/AdminRoute'
 import { PublicOnlyRoute } from './auth/PublicOnlyRoute'
 import { PasswordGuard } from './auth/PasswordGuard'
 import { NotConsultantRoute } from './auth/NotConsultantRoute'
+import { ResponsibleSocRoute } from './auth/ResponsibleSocRoute'
 import { MainLayout } from './layout/MainLayout'
 import { Dashboard } from './pages/Dashboard'
 import { Login } from './pages/Login'
@@ -28,6 +29,7 @@ import { UnavailabilityTypes } from './pages/UnavailabilityTypes'
 import { NoteFraisList } from './pages/NoteFraisList'
 import { Holidays } from './pages/Holidays'
 import { Facturation } from './pages/Facturation'
+import { Billing } from './pages/Billing'
 import { FichePaie } from './pages/FichePaie'
 import { Documents } from './pages/Documents'
 import { Messages } from './pages/Messages'
@@ -143,6 +145,14 @@ const router = createBrowserRouter(
                 <NotConsultantRoute>
                   <Facturation />
                 </NotConsultantRoute>
+              ),
+            },
+            {
+              path: '/devis-factures',
+              element: (
+                <ResponsibleSocRoute>
+                  <Billing />
+                </ResponsibleSocRoute>
               ),
             },
             { path: '/fiches-paie', element: <FichePaie /> },

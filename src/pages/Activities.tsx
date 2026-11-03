@@ -28,6 +28,7 @@ interface FormState {
   consultantId: string
   socId: string
   active: boolean
+  regie: boolean
   weekendAllowed: boolean
   holidayAllowed: boolean
 }
@@ -44,6 +45,7 @@ const emptyForm: FormState = {
   consultantId: '',
   socId: '',
   active: true,
+  regie: true,
   weekendAllowed: false,
   holidayAllowed: false,
 }
@@ -134,6 +136,7 @@ export function Activities() {
       consultantId: activity.consultant ? String(activity.consultant.id) : '',
       socId: activity.soc ? String(activity.soc.id) : '',
       active: activity.active,
+      regie: activity.regie,
       weekendAllowed: activity.weekendAllowed,
       holidayAllowed: activity.holidayAllowed,
     })
@@ -165,6 +168,16 @@ export function Activities() {
       setFormError(tr('Activities.date.fin.invalide'))
       return
     }
+    if (!form.regie) {
+      if (!form.startDate || !form.endDate) {
+        setFormError('Une mission au forfait doit avoir une date de début et une date de fin')
+        return
+      }
+      if (!form.price || Number(form.price) <= 0) {
+        setFormError('Une mission au forfait doit avoir un prix')
+        return
+      }
+    }
     setSubmitting(true)
     setFormError(null)
     try {
@@ -180,6 +193,7 @@ export function Activities() {
         consultantId: form.consultantId ? Number(form.consultantId) : null,
         socId,
         active: form.active,
+        regie: form.regie,
         weekendAllowed: form.weekendAllowed,
         holidayAllowed: form.holidayAllowed,
       }
@@ -579,6 +593,16 @@ export function Activities() {
               />
             </Field>
           </div>
+          <label id="Activities.activite.regie.label" className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              id="Activities.activite.regie.checkbox"
+              type="checkbox"
+              checked={form.regie}
+              onChange={(e) => setForm({ ...form, regie: e.target.checked })}
+              className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            />
+            Régie
+          </label>
           <label id="Activities.activite.active.label" className="flex items-center gap-2 text-sm text-gray-700">
             <input
               id="Activities.activite.active.checkbox"

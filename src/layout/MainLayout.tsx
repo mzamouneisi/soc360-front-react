@@ -133,7 +133,7 @@ export function MainLayout() {
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
-  const _LAST_COMMIT_ = '2026_11_02_18_11_39'
+  const _LAST_COMMIT_ = '2026_11_03_16_48_24'
 
   const sections: NavSection[] = [
     {
@@ -171,6 +171,7 @@ export function MainLayout() {
       title: t('nav.group.finance'),
       items: [
         { to: '/facturation', id: 'nav.billing', label: t('nav.billing'), icon: ICONS.billing },
+        { to: '/devis-factures', id: 'nav.quotesInvoices', label: 'Devis & Factures', icon: ICONS.billing, roles: ['RESPONSIBLE_SOC'] },
         { to: '/fiches-paie', id: 'nav.payslips', label: t('nav.payslips'), icon: ICONS.payslips },
       ],
     },

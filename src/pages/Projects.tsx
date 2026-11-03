@@ -15,6 +15,7 @@ import type { ProjectDto } from '../api/types'
 interface FormState {
   name: string
   description: string
+  location: string
   clientId: string
   socId: string
   startDate: string
@@ -27,6 +28,7 @@ interface FormState {
 const emptyForm: FormState = {
   name: '',
   description: '',
+  location: '',
   clientId: '',
   socId: '',
   startDate: '',
@@ -68,6 +70,7 @@ export function Projects() {
     setForm({
       name: project.name,
       description: project.description ?? '',
+      location: project.location ?? '',
       clientId: String(project.client?.id ?? ''),
       socId: String(project.soc?.id ?? user?.socId ?? ''),
       startDate: project.startDate ?? '',
@@ -101,6 +104,7 @@ export function Projects() {
       const payload = {
         name: form.name.trim(),
         description: form.description || null,
+        location: form.location || null,
         clientId: Number(form.clientId),
         socId: isAdmin ? Number(form.socId) : user?.socId ?? 0,
         startDate: form.startDate || null,
@@ -318,6 +322,9 @@ export function Projects() {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
+          </Field>
+          <Field label="Lieu" id="Projects.lieu">
+            <Input id="Projects.lieu.input" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Projects.client')} id="Projects.client">

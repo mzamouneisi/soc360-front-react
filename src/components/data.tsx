@@ -264,7 +264,7 @@ export function Modal({
   onClose: () => void
   children: ReactNode
   footer?: ReactNode
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
 }) {
   const { t } = useI18n()
   useEffect(() => {
@@ -283,6 +283,7 @@ export function Modal({
     md: 'max-w-lg',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
+    '2xl': 'max-w-6xl',
     full: 'max-w-[96vw]',
   }
 

@@ -296,6 +296,7 @@ export interface HistoConsultantDto {
 export interface ClientDto {
   id: number
   name: string
+  address: string | null
   contactName: string | null
   contactEmail: string | null
   contactPhone: string | null
@@ -307,6 +308,7 @@ export interface ClientDto {
 
 export interface ClientRequest {
   name: string
+  address?: string | null
   contactName?: string | null
   contactEmail?: string | null
   contactPhone?: string | null
@@ -343,6 +345,7 @@ export interface ProjectDto {
   id: number
   name: string
   description: string | null
+  location: string | null
   client?: { id: number; name: string } | null
   soc?: { id: number; name: string } | null
   startDate: string | null
@@ -360,6 +363,7 @@ export interface ProjectDependencyDto {
 export interface ProjectRequest {
   name: string
   description?: string | null
+  location?: string | null
   clientId: number
   socId: number
   startDate?: string | null
@@ -404,6 +408,7 @@ export interface ActivityDto {
   consultant?: { id: number; firstName: string; lastName: string } | null
   soc?: { id: number; name: string } | null
   active: boolean
+  regie: boolean
   indispo: boolean
   weekendAllowed: boolean
   holidayAllowed: boolean
@@ -421,6 +426,7 @@ export interface ActivityRequest {
   consultantId?: number | null
   socId: number
   active: boolean
+  regie?: boolean | null
   indispo?: boolean
   weekendAllowed?: boolean
   holidayAllowed?: boolean
@@ -805,4 +811,87 @@ export interface DashboardOverview {
   craTotalDays?: number
   noteFraisStatus?: NoteFraisStatus
   noteFraisTotal?: number
+}
+
+export type BillingDocumentType = 'QUOTE' | 'INVOICE'
+export type BillingDocumentStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'PAID' | 'CANCELLED'
+
+export interface BillingLineDto {
+  id: number
+  description: string
+  quantity: number
+  unitPrice: number
+  amount: number
+}
+
+export interface BillingLineRequest {
+  description: string
+  quantity?: number
+  unitPrice?: number
+  amount?: number
+}
+
+export interface BillingDocumentDto {
+  id: number
+  socId: number | null
+  projectId: number | null
+  projectName: string | null
+  clientName: string | null
+  location: string | null
+  activityId: number | null
+  activityName: string | null
+  consultantId: number | null
+  consultantName: string | null
+  parentQuoteId: number | null
+  parentQuoteNumber: string | null
+  type: BillingDocumentType
+  number: string
+  issueDate: string
+  status: BillingDocumentStatus
+  vatRate: number
+  discount: number
+  totalHt: number
+  totalTtc: number
+  notes: string | null
+  sentToClientAt: string | null
+  sendCount: number
+  lines: BillingLineDto[]
+}
+
+export interface BillingSendHistoryDto {
+  id: number
+  recipient: string
+  subject: string | null
+  sentAt: string
+}
+
+export interface CreateBillingDocumentRequest {
+  socId?: number | null
+  projectId?: number | null
+  activityId?: number | null
+  consultantId?: number | null
+  parentQuoteId?: number | null
+  type: BillingDocumentType
+  issueDate?: string
+  status?: BillingDocumentStatus
+  vatRate?: number
+  discount?: number
+  notes?: string
+  lines?: BillingLineRequest[]
+}
+
+export interface UpdateBillingDocumentRequest {
+  projectId?: number | null
+  activityId?: number | null
+  consultantId?: number | null
+  status?: BillingDocumentStatus
+  vatRate?: number
+  discount?: number
+  notes?: string
+  lines?: BillingLineRequest[]
+}
+
+export interface GeneratableMonthDto {
+  period: string
+  alreadyGenerated: boolean
 }
