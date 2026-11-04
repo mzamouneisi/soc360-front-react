@@ -51,6 +51,8 @@ interface FormState {
   matricule: string
   modePaiement: string
   employee: boolean
+  rttEligible: boolean
+  rttEligibleDate: string
 }
 
 const emptyForm: FormState = {
@@ -79,6 +81,8 @@ const emptyForm: FormState = {
   matricule: '',
   modePaiement: 'Virement',
   employee: true,
+  rttEligible: true,
+  rttEligibleDate: '',
 }
 
 const PAYMENT_METHODS = ['Virement', 'Prélèvement', 'Chèque', 'Espèces']
@@ -253,6 +257,8 @@ export function Consultants() {
       matricule: c.matricule ?? '',
       modePaiement: c.modePaiement ?? 'Virement',
       employee: c.employee,
+      rttEligible: c.rttEligible ?? true,
+      rttEligibleDate: c.rttEligibleDate ?? c.hireDate ?? '',
     })
     setEditing(c)
     setFormError(null)
@@ -320,6 +326,8 @@ export function Consultants() {
         matricule: form.employee ? form.matricule.trim() || null : null,
         modePaiement: form.modePaiement.trim() || null,
         employee: form.employee,
+        rttEligible: form.rttEligible,
+        rttEligibleDate: form.rttEligibleDate || null,
       }
       if (editing) {
         await consultantsApi.update(editing.id, payload)
@@ -562,55 +570,60 @@ export function Consultants() {
               {formError}
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {((!editing && canCreateManager) || (editing && canEdit)) && (
-              <Field label={tr('Consultants.type.de.collaborateur')} id="Consultants.type.de.collaborateur">
-                <Select
-                  id="Consultants.type.de.collaborateur.select"
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value, username: '', password: '' })}
-                >
-                  {roleOptions.map((r) => (
-                    <option id={`Consultants.type.de.collaborateur.option.${r}`} key={r} value={r}>
-                      {dt(ROLE_LABELS[r] ?? r)}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            )}
-            <div className="flex items-end">
-              <label id="Consultants.salarie.label.checkbox.label" className="flex items-center gap-2 pb-2 text-sm text-gray-700">
-                <input
-                  id="Consultants.salarie.label.checkbox"
-                  type="checkbox"
-                  checked={form.employee}
-                  onChange={(e) => setForm({ ...form, employee: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            {editing && (
+              <div className="shrink-0 sm:w-[220px]">
+                <ConsultantPhotoField
+                  compact
+                  consultantId={editing.id}
+                  hasPhoto={Boolean(editing.hasPhoto)}
+                  firstName={editing.firstName}
+                  lastName={editing.lastName}
+                  disabled={!canEdit}
+                  onChange={(saved) => setEditing(saved)}
                 />
-                {tr('Consultants.salarie.label')}
-              </label>
+              </div>
+            )}
+            <div className="min-w-0 flex-1 space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {((!editing && canCreateManager) || (editing && canEdit)) && (
+                  <Field label={tr('Consultants.type.de.collaborateur')} id="Consultants.type.de.collaborateur">
+                    <Select
+                      id="Consultants.type.de.collaborateur.select"
+                      value={form.role}
+                      onChange={(e) => setForm({ ...form, role: e.target.value, username: '', password: '' })}
+                    >
+                      {roleOptions.map((r) => (
+                        <option id={`Consultants.type.de.collaborateur.option.${r}`} key={r} value={r}>
+                          {dt(ROLE_LABELS[r] ?? r)}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                )}
+                <div className="flex items-end">
+                  <label id="Consultants.salarie.label.checkbox.label" className="flex items-center gap-2 pb-2 text-sm text-gray-700">
+                    <input
+                      id="Consultants.salarie.label.checkbox"
+                      type="checkbox"
+                      checked={form.employee}
+                      onChange={(e) => setForm({ ...form, employee: e.target.checked })}
+                      className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                    />
+                    {tr('Consultants.salarie.label')}
+                  </label>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label={tr('Consultants.prenom')} id="Consultants.prenom">
+                  <Input id="Consultants.prenom.input" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
+                </Field>
+                <Field label={tr('Consultants.nom')} id="Consultants.nom">
+                  <Input id="Consultants.nom.input" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
+                </Field>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label={tr('Consultants.prenom')} id="Consultants.prenom">
-              <Input id="Consultants.prenom.input" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
-            </Field>
-            <Field label={tr('Consultants.nom')} id="Consultants.nom">
-              <Input id="Consultants.nom.input" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
-            </Field>
-          </div>
-          {editing && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <ConsultantPhotoField
-                consultantId={editing.id}
-                hasPhoto={Boolean(editing.hasPhoto)}
-                firstName={editing.firstName}
-                lastName={editing.lastName}
-                disabled={!canEdit}
-                onChange={(saved) => setEditing(saved)}
-              />
-            </div>
-          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.email')} id="Consultants.email">
               <Input id="Consultants.email.input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
@@ -682,10 +695,45 @@ export function Consultants() {
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label={tr('Consultants.date.d.embauche')} id="Consultants.date.d.embauche">
-              <Input id="Consultants.date.d.embauche.input" type="date" value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })} />
+              <Input
+                id="Consultants.date.d.embauche.input"
+                type="date"
+                value={form.hireDate}
+                onChange={(e) => {
+                  const hireDate = e.target.value
+                  setForm((current) => ({
+                    ...current,
+                    hireDate,
+                    rttEligibleDate: hireDate,
+                  }))
+                }}
+              />
             </Field>
             <Field label={tr('Consultants.date.de.naissance')} id="Consultants.date.de.naissance">
               <Input id="Consultants.date.de.naissance.input" type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex items-end">
+              <label id="Consultants.rtt.eligible" className="flex items-center gap-2 pb-2 text-sm text-gray-700">
+                <input
+                  id="Consultants.rtt.eligible.input"
+                  type="checkbox"
+                  checked={form.rttEligible}
+                  onChange={(e) => setForm({ ...form, rttEligible: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+                {tr('Consultants.rtt.eligible')}
+              </label>
+            </div>
+            <Field label={tr('Consultants.rtt.date')} id="Consultants.rtt.date">
+              <Input
+                id="Consultants.rtt.date.input"
+                type="date"
+                value={form.rttEligibleDate}
+                disabled={!form.rttEligible}
+                onChange={(e) => setForm({ ...form, rttEligibleDate: e.target.value })}
+              />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

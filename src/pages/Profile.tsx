@@ -11,6 +11,7 @@ import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
 import { Button, Card, Field, IconButton, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { SocLogoField } from '../components/SocLogoField'
+import { ConsultantPhotoField } from '../components/ConsultantPhotoField'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { ROLE_LABELS, formatDateTime } from '../lib/format'
@@ -172,6 +173,17 @@ export function Profile() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="p-6">
           <h3 className="text-sm font-semibold text-gray-900" id="Profile.informations">{tr('Profile.informations')}</h3>
+          <div className="mt-4">
+            <ConsultantPhotoField
+              consultantId={user.id}
+              hasPhoto={Boolean(user.hasPhoto)}
+              firstName={user.firstName}
+              lastName={user.lastName}
+              onChange={() => {
+                void refreshMe()
+              }}
+            />
+          </div>
           <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <dt id="Profile.nom.complet" className="text-sm text-gray-500">{tr('Profile.nom.complet')}</dt>

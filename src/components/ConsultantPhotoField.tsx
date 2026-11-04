@@ -17,6 +17,7 @@ interface ConsultantPhotoFieldProps {
   lastName?: string | null
   disabled?: boolean
   onChange?: (saved: ConsultantDto) => void
+  compact?: boolean
 }
 
 export function ConsultantPhotoField({
@@ -26,6 +27,7 @@ export function ConsultantPhotoField({
   lastName,
   disabled = false,
   onChange,
+  compact = false,
 }: ConsultantPhotoFieldProps) {
   const [preview, setPreview] = useState(hasPhoto ? '' : '')
   const [uploading, setUploading] = useState(false)
@@ -131,52 +133,91 @@ export function ConsultantPhotoField({
   const display = preview ?? ''
 
   return (
-    <fieldset id="Consultants.photo.field" className="space-y-3 rounded-lg border border-gray-200 p-4">
+    <fieldset
+      id="Consultants.photo.field"
+      className={`rounded-lg border border-gray-200 ${compact ? 'space-y-2 p-3' : 'space-y-3 p-4'}`}
+    >
       <legend id="Consultants.photo" className="px-1 text-sm font-medium text-gray-700">
         {tr('Consultants.photo')}
       </legend>
-      <div className="flex flex-wrap items-center gap-4">
+      <div className={compact ? 'flex flex-col items-start gap-2' : 'flex flex-wrap items-center gap-4'}>
         {display ? (
           <img
             id="Consultants.photo.apercu.image"
             src={display}
             alt={tr('Consultants.photo')}
-            className="h-24 w-24 rounded-full border border-gray-200 bg-white object-cover"
+            className={`rounded-full border border-gray-200 bg-white object-cover ${compact ? 'h-16 w-16' : 'h-24 w-24'}`}
           />
         ) : (
           <div
             id="Consultants.photo.apercu.placeholder"
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-brand-100 text-brand-800"
+            className={`flex items-center justify-center rounded-full bg-brand-100 text-brand-800 ${compact ? 'h-16 w-16' : 'h-24 w-24'}`}
           >
             <span className="text-sm font-medium">{consultantInitials(firstName, lastName)}</span>
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            ref={inputRef}
-            id="Consultants.photo.choisir.input"
-            type="file"
-            accept=".png,.jpg,.jpeg,image/png,image/jpeg"
-            disabled={disabled || uploading}
-            onChange={choosePhoto}
-            className="text-sm text-gray-600 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700 disabled:opacity-50"
-          />
-          {hasPhoto && (
-            <Button
-              id="Consultants.photo.supprimer"
-              type="button"
-              onClick={() => void removePhoto()}
+        {compact ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              ref={inputRef}
+              id="Consultants.photo.choisir.input"
+              type="file"
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
               disabled={disabled || uploading}
-              className="!w-auto !bg-red-50 !text-red-700 hover:!bg-red-100"
+              onChange={choosePhoto}
+              className="hidden"
+            />
+            <Button
+              id="Consultants.photo.choisir"
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={disabled || uploading}
+              className="!w-auto !px-2 !py-1 !text-xs"
             >
-              {tr('Consultants.photo.supprimer')}
+              {tr('Consultants.photo.choisir')}
             </Button>
-          )}
-        </div>
+            {hasPhoto && (
+              <Button
+                id="Consultants.photo.supprimer"
+                type="button"
+                onClick={() => void removePhoto()}
+                disabled={disabled || uploading}
+                className="!w-auto !bg-red-50 !px-2 !py-1 !text-xs !text-red-700 hover:!bg-red-100"
+              >
+                {tr('Consultants.photo.supprimer')}
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              ref={inputRef}
+              id="Consultants.photo.choisir.input"
+              type="file"
+              accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+              disabled={disabled || uploading}
+              onChange={choosePhoto}
+              className="text-sm text-gray-600 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700 disabled:opacity-50"
+            />
+            {hasPhoto && (
+              <Button
+                id="Consultants.photo.supprimer"
+                type="button"
+                onClick={() => void removePhoto()}
+                disabled={disabled || uploading}
+                className="!w-auto !bg-red-50 !text-red-700 hover:!bg-red-100"
+              >
+                {tr('Consultants.photo.supprimer')}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
-      <p id="Consultants.photo.formats" className="text-xs text-gray-500">
-        {tr('Consultants.photo.format.invalide')}
-      </p>
+      {!compact && (
+        <p id="Consultants.photo.formats" className="text-xs text-gray-500">
+          {tr('Consultants.photo.format.invalide')}
+        </p>
+      )}
       {uploading && (
         <p id="Consultants.photo.televersement" className="text-xs text-gray-500">
           {tr('Consultants.photo.televersement')}

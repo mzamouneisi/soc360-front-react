@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import type { Role } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-import { ROLE_LABELS, initials } from '../lib/format'
+import { ROLE_LABELS } from '../lib/format'
+import { UserAvatar } from '../components/UserAvatar'
 import { SocSelector } from '../soc/SocSelector'
 import { NotificationBell } from './NotificationBell'
 import { GlobalLoading } from '../components/GlobalLoading'
@@ -133,7 +134,7 @@ export function MainLayout() {
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
-  const _LAST_COMMIT_ = '2026_11_03_16_48_24'
+  const _LAST_COMMIT_ = '2026_11_04_18_48_16'
 
   const sections: NavSection[] = [
     {
@@ -163,6 +164,7 @@ export function MainLayout() {
         { to: '/indisponibilites', id: 'nav.unavailability', label: t('nav.unavailability'), icon: ICONS.holiday },
         { to: '/types-indisponibilites', id: 'nav.unavailabilityTypes', label: t('nav.unavailabilityTypes'), icon: ICONS.holiday, roles: ['ADMIN', 'RESPONSIBLE_SOC'] },
         { to: '/notes-frais', id: 'nav.expenses', label: t('nav.expenses'), icon: ICONS.expenses },
+        { to: '/soldes-conges', id: 'nav.leaveBalances', label: 'Soldes de congés', icon: ICONS.holiday },
         { to: '/jours-feries', id: 'nav.holidays', label: t('nav.holidays'), icon: ICONS.holiday },
       ],
     },
@@ -183,6 +185,7 @@ export function MainLayout() {
         { to: '/messages', id: 'nav.messages', label: t('nav.messages'), icon: ICONS.messages },
         { to: '/support', id: 'nav.support', label: t('nav.support'), icon: ICONS.support },
         { to: '/parametres', id: 'nav.settings', label: t('nav.settings'), icon: ICONS.support },
+        { to: '/parametres-conges', id: 'nav.leaveSettings', label: 'Paramètres congés', icon: ICONS.support, roles: ['RESPONSIBLE_SOC'] },
       ],
     },
   ]
@@ -271,9 +274,13 @@ export function MainLayout() {
               title={t('app.viewProfile')}
               className="flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1 pl-1 pr-3 shadow-sm transition hover:border-brand-600 hover:shadow"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
-                {initials(user.firstName, user.lastName)}
-              </div>
+              <UserAvatar
+                id="app.user.avatar"
+                userId={user.id}
+                firstName={user.firstName}
+                lastName={user.lastName}
+                hasPhoto={user.hasPhoto}
+              />
               <div className="leading-tight">
                 <p id="app.user.name" className="text-sm font-semibold text-gray-900">
                   {user.firstName} {user.lastName}

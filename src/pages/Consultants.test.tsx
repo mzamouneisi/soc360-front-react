@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { Consultants } from './Consultants'
 import type { ConsultantDto, UserDto } from '../api/types'
@@ -104,6 +104,8 @@ function consultant(overrides: Partial<ConsultantDto> = {}): ConsultantDto {
     modePaiement: null,
     employee: true,
     hasPhoto: false,
+    rttEligible: true,
+    rttEligibleDate: '2020-01-01',
     ...overrides,
   }
 }
@@ -161,5 +163,56 @@ describe.each([
     expect(await screen.findByText('Saisissez un email valide.')).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(updateMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('Consultants — éligibilité RTT', () => {
+  it('affiche et enregistre les champs RTT de la fiche collaborateur', async () => {
+    userMock.value = responsibleUser
+    findAllMock.mockResolvedValue({
+      items: [consultant({ rttEligible: true, rttEligibleDate: '2020-01-01' })],
+      total: 1,
+      page: 0,
+      size: 5,
+      totalPages: 1,
+    })
+    renderPage()
+    await screen.findByText('Jean Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier' }))
+
+    const checkbox = document.getElementById('Consultants.rtt.eligible.input') as HTMLInputElement
+    const dateInput = document.getElementById('Consultants.rtt.date.input') as HTMLInputElement
+    expect(checkbox.checked).toBe(true)
+    expect(dateInput.value).toBe('01/01/2020')
+
+    fireEvent.click(checkbox)
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+
+    await waitFor(() => expect(updateMock).toHaveBeenCalled())
+    const payload = updateMock.mock.calls[0][1] as { rttEligible: boolean; rttEligibleDate: string }
+    expect(payload.rttEligible).toBe(false)
+    expect(payload.rttEligibleDate).toBe('2020-01-01')
+  })
+
+  it('aligne la date d’éligibilité RTT sur la nouvelle date d’embauche', async () => {
+    userMock.value = responsibleUser
+    findAllMock.mockResolvedValue({
+      items: [consultant({ hireDate: '2020-01-01', rttEligibleDate: '2020-01-01' })],
+      total: 1,
+      page: 0,
+      size: 5,
+      totalPages: 1,
+    })
+    renderPage()
+    await screen.findByText('Jean Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier' }))
+
+    const hireInput = document.getElementById('Consultants.date.d.embauche.input') as HTMLInputElement
+    const rttInput = document.getElementById('Consultants.rtt.date.input') as HTMLInputElement
+
+    fireEvent.change(hireInput, { target: { value: '01/01/2024' } })
+    fireEvent.keyDown(hireInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => expect(rttInput.value).toBe('01/01/2024'))
   })
 })

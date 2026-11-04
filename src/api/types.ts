@@ -120,6 +120,7 @@ export interface UserDto {
   buttonDisableTextColor: string
   backgroundColor: string
   manager: ManagerInfo | null
+  hasPhoto?: boolean
 }
 
 export interface AuthResponse {
@@ -229,6 +230,8 @@ export interface ConsultantDto {
   hasPhoto: boolean
   photoContentType?: string | null
   photoSize?: number | null
+  rttEligible: boolean
+  rttEligibleDate: string | null
 }
 
 export interface ConsultantRequest {
@@ -257,6 +260,8 @@ export interface ConsultantRequest {
   matricule?: string | null
   modePaiement?: string | null
   employee?: boolean | null
+  rttEligible?: boolean | null
+  rttEligibleDate?: string | null
 }
 
 export interface ConsultantSummary {
@@ -894,4 +899,120 @@ export interface UpdateBillingDocumentRequest {
 export interface GeneratableMonthDto {
   period: string
   alreadyGenerated: boolean
+}
+
+export type LeaveType = 'CP' | 'RTT'
+export type LeaveAccrualFrequency = 'MONTHLY' | 'YEARLY' | 'ONCE'
+export type LeaveMovementType = 'ACCRUAL' | 'CONSUMPTION' | 'REGULARIZATION' | 'EXPIRATION' | 'CARRYOVER' | 'ADJUSTMENT' | 'CORRECTION'
+
+export interface LeaveConfigDto {
+  id: number
+  socId: number | null
+  leaveType: LeaveType
+  effectiveDate: string
+  active: boolean
+  accrualAmount: number
+  accrualFrequency: LeaveAccrualFrequency
+  creditMonth: number
+  creditDay: number
+  acquisitionStartMonth: number | null
+  acquisitionStartDay: number | null
+  acquisitionEndMonth: number | null
+  acquisitionEndDay: number | null
+  usageStartMonth: number | null
+  usageStartDay: number | null
+  usageEndMonth: number | null
+  usageEndDay: number | null
+  expirationMonths: number | null
+  carryoverMax: number
+  carryoverExpirationMonths: number | null
+  negativeLimit: number
+}
+
+export interface LeaveConfigRequest {
+  socId?: number | null
+  leaveType: LeaveType
+  effectiveDate: string
+  active?: boolean
+  accrualAmount: number
+  accrualFrequency?: LeaveAccrualFrequency
+  creditMonth?: number
+  creditDay?: number
+  expirationMonths?: number | null
+  carryoverMax?: number
+  carryoverExpirationMonths?: number | null
+  negativeLimit?: number
+}
+
+export interface LeaveEligibilityDto {
+  id: number
+  consultantId: number
+  consultantName: string
+  leaveType: LeaveType
+  eligible: boolean
+  startDate: string | null
+}
+
+export interface LeaveEligibilityRequest {
+  consultantId: number
+  leaveType: LeaveType
+  eligible: boolean
+  startDate?: string | null
+}
+
+export interface LeaveLotDto {
+  id: number
+  leaveType: LeaveType
+  periodKey: string
+  quantity: number
+  remaining: number
+  creditDate: string
+  acquisitionStart: string | null
+  acquisitionEnd: string | null
+  usageStart: string | null
+  usageEnd: string | null
+  expirationDate: string | null
+}
+
+export interface LeaveMovementDto {
+  id: number
+  leaveType: LeaveType
+  movementType: LeaveMovementType
+  quantity: number
+  balanceBefore: number
+  balanceAfter: number
+  movementDate: string
+  lotId: number | null
+  expirationDate: string | null
+  origin: string
+  reason: string | null
+  unavailabilityId: number | null
+  operationKey: string | null
+  parentMovementId: number | null
+  configId: number | null
+  configEffectiveDate: string | null
+}
+
+export interface LeaveBalanceDto {
+  leaveType: LeaveType
+  balance: number
+  accrued: number
+  consumed: number
+  expired: number
+  adjustments: number
+  lots: LeaveLotDto[]
+}
+
+export interface LeaveBalanceResponse {
+  consultantId: number
+  consultantName: string
+  referenceDate: string
+  balances: LeaveBalanceDto[]
+}
+
+export interface AdjustmentRequest {
+  consultantId: number
+  leaveType: LeaveType
+  quantity: number
+  reason?: string
 }
