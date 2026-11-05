@@ -1016,3 +1016,86 @@ export interface AdjustmentRequest {
   quantity: number
   reason?: string
 }
+
+export type NotificationContext = 'CRA' | 'INVOICE' | 'ORDER' | 'DOCUMENT' | 'VALIDATION' | 'OTHER'
+export type NotificationChannel = 'IN_APP' | 'EMAIL'
+export type NotificationScheduleType = 'ONCE' | 'RECURRING'
+export type NotificationRecurrence = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+export type NotificationConfigStatus = 'ACTIVE' | 'DISABLED'
+export type NotificationTriggerType = 'SCHEDULED' | 'BUSINESS'
+export type NotificationExecutionStatus = 'SUCCESS' | 'PARTIAL' | 'FAILED'
+export type NotificationDeliveryStatus = 'SENT' | 'FAILED'
+
+export interface NotificationConfigDto {
+  id: number
+  socId: number | null
+  name: string
+  subject: string
+  contextType: NotificationContext
+  message: string
+  channelInApp: boolean
+  channelEmail: boolean
+  scheduleType: NotificationScheduleType
+  executionAt: string | null
+  recurrence: NotificationRecurrence
+  recurrenceEndDate: string | null
+  status: NotificationConfigStatus
+  referenceType: string | null
+  referenceId: string | null
+  recipientIds: number[]
+  recipientNames: string[]
+  nextRunAt: string | null
+  lastRunAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NotificationConfigRequest {
+  id?: number | null
+  socId?: number | null
+  name: string
+  subject: string
+  contextType: NotificationContext
+  message: string
+  channelInApp: boolean
+  channelEmail: boolean
+  scheduleType: NotificationScheduleType
+  executionAt: string | null
+  recurrence: NotificationRecurrence
+  recurrenceEndDate: string | null
+  status: NotificationConfigStatus
+  referenceType?: string | null
+  referenceId?: string | null
+  recipientIds: number[]
+}
+
+export interface NotificationDeliveryDto {
+  id: number
+  recipientId: number | null
+  recipientName: string | null
+  recipientEmail: string | null
+  channel: NotificationChannel
+  status: NotificationDeliveryStatus
+  errorMessage: string | null
+  sentAt: string | null
+}
+
+export interface NotificationExecutionDto {
+  id: number
+  configId: number | null
+  socId: number | null
+  contextType: NotificationContext
+  triggerType: NotificationTriggerType
+  status: NotificationExecutionStatus
+  title: string
+  message: string
+  referenceType: string | null
+  referenceId: string | null
+  scheduledFor: string | null
+  startedAt: string
+  finishedAt: string | null
+  totalRecipients: number
+  successCount: number
+  failureCount: number
+  deliveries: NotificationDeliveryDto[]
+}

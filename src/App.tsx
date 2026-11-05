@@ -32,6 +32,7 @@ import { Facturation } from './pages/Facturation'
 import { Billing } from './pages/Billing'
 import { LeaveBalances } from './pages/LeaveBalances'
 import { LeaveSettings } from './pages/LeaveSettings'
+import { NotificationSettings } from './pages/NotificationSettings'
 import { FichePaie } from './pages/FichePaie'
 import { Documents } from './pages/Documents'
 import { Messages } from './pages/Messages'
@@ -164,6 +165,14 @@ const router = createBrowserRouter(
                 <ResponsibleSocRoute>
                   <Billing />
                 </ResponsibleSocRoute>
+              ),
+            },
+            {
+              path: '/parametres-notifications',
+              element: (
+                <NotConsultantRoute>
+                  <NotificationSettings />
+                </NotConsultantRoute>
               ),
             },
             { path: '/fiches-paie', element: <FichePaie /> },

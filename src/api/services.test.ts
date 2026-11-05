@@ -26,6 +26,7 @@ import { holidaysApi } from './holidays'
 import { logsApi } from './logs'
 import { messagesApi } from './messages'
 import { noteFraisApi } from './noteFrais'
+import { notificationConfigsApi } from './notificationConfigs'
 import { notificationsApi } from './notifications'
 import { projectsApi } from './projects'
 import { socHolidaysApi } from './socHolidays'
@@ -423,6 +424,27 @@ describe('services API', () => {
     expect(api.put).toHaveBeenCalledWith('/unavailability-types/2', request)
     expect(api.post).toHaveBeenNthCalledWith(2, '/unavailability-types/2/disable')
     expect(api.delete).toHaveBeenCalledWith('/unavailability-types/2')
+  })
+
+  it('notificationConfigsApi couvre la configuration et les exécutions', () => {
+    const request = { name: 'Rappel CRA', subject: 'CRA', message: 'Merci', recipientIds: [2] } as never
+    notificationConfigsApi.list(1)
+    notificationConfigsApi.get(2)
+    notificationConfigsApi.save(request)
+    notificationConfigsApi.setStatus(2, 'DISABLED')
+    notificationConfigsApi.run(2)
+    notificationConfigsApi.executions(1)
+    notificationConfigsApi.executionsByConfig(2)
+    notificationConfigsApi.remove(2)
+
+    expect(api.get).toHaveBeenNthCalledWith(1, '/notification-configs', { socId: 1 })
+    expect(api.get).toHaveBeenNthCalledWith(2, '/notification-configs/2')
+    expect(api.post).toHaveBeenNthCalledWith(1, '/notification-configs', request)
+    expect(api.post).toHaveBeenNthCalledWith(2, '/notification-configs/2/status?status=DISABLED', {})
+    expect(api.post).toHaveBeenNthCalledWith(3, '/notification-configs/2/run', {})
+    expect(api.get).toHaveBeenNthCalledWith(3, '/notification-configs/executions', { socId: 1 })
+    expect(api.get).toHaveBeenNthCalledWith(4, '/notification-configs/2/executions')
+    expect(api.delete).toHaveBeenCalledWith('/notification-configs/2')
   })
 
   it('usersApi couvre CRUD', () => {

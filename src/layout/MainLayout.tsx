@@ -134,7 +134,7 @@ export function MainLayout() {
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
-  const _LAST_COMMIT_ = '2026_11_04_18_48_16'
+  const _LAST_COMMIT_ = '2026_11_05_11_33_09'
 
   const sections: NavSection[] = [
     {
@@ -186,6 +186,7 @@ export function MainLayout() {
         { to: '/support', id: 'nav.support', label: t('nav.support'), icon: ICONS.support },
         { to: '/parametres', id: 'nav.settings', label: t('nav.settings'), icon: ICONS.support },
         { to: '/parametres-conges', id: 'nav.leaveSettings', label: 'Paramètres congés', icon: ICONS.support, roles: ['RESPONSIBLE_SOC'] },
+        { to: '/parametres-notifications', id: 'nav.notificationSettings', label: t('nav.notificationSettings'), icon: ICONS.support, roles: ['ADMIN', 'RESPONSIBLE_SOC', 'MANAGER'] },
       ],
     },
   ]
