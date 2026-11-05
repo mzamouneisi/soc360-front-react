@@ -290,6 +290,9 @@ const fr: Messages = {
   'Consultants.photo.indisponible': 'Photo indisponible pour le moment. Utilisez le bouton de téléchargement.',
   'Prospects.note.converted.client': 'Prospect converti en client',
   'Prospects.note.converted.supplier': 'Prospect converti en fournisseur',
+  'Facturation.chevauchement.confirm': 'Des abonnements se chevauchent sur le même mois. Un abonnement de durée plus grande remplace l’ancien : l’ancien abonnement et son ancienne facture seront supprimés. Continuer ?',
+  'Facturation.meme.duree.mois': 'Vous ne pouvez pas faire plusieurs abonnements de même durée le même mois.',
+  'Facturation.remplacer.abonnement.confirm': 'Un abonnement existe déjà ce mois-ci. Remplacer l’ancien abonnement et son ancienne facture par cette durée plus longue ?',
 }
 
 const en: Messages = {
@@ -550,6 +553,9 @@ const en: Messages = {
   'Consultants.photo.indisponible': 'Photo unavailable for now. Use the download button.',
   'Prospects.note.converted.client': 'Prospect converted to client',
   'Prospects.note.converted.supplier': 'Prospect converted to supplier',
+  'Facturation.chevauchement.confirm': 'Subscriptions overlap in the same month. A longer subscription replaces the old one: the old subscription and its old invoice will be deleted. Continue?',
+  'Facturation.meme.duree.mois': 'You cannot take out several subscriptions of the same duration in the same month.',
+  'Facturation.remplacer.abonnement.confirm': 'A subscription already exists this month. Replace the old subscription and its old invoice with this longer duration?',
 }
 
 const ar: Messages = {
@@ -688,6 +694,9 @@ const ar: Messages = {
   'Consultants.photo.indisponible': 'الصورة غير متاحة حالياً. استخدم زر التنزيل.',
   'Prospects.note.converted.client': 'تم تحويل العميل المحتمل إلى عميل',
   'Prospects.note.converted.supplier': 'تم تحويل العميل المحتمل إلى مورد',
+  'Facturation.chevauchement.confirm': 'هناك اشتراكات متداخلة في نفس الشهر. سيحل الاشتراك الأطول محل القديم: سيتم حذف الاشتراك القديم وفاتورته القديمة. هل تريد المتابعة؟',
+  'Facturation.meme.duree.mois': 'لا يمكنك إنشاء عدة اشتراكات بنفس المدة في نفس الشهر.',
+  'Facturation.remplacer.abonnement.confirm': 'يوجد اشتراك بالفعل هذا الشهر. هل تريد استبدال الاشتراك القديم وفاتورته القديمة بهذه المدة الأطول؟',
 }
 
 export const MESSAGES: Record<string, Messages> = {

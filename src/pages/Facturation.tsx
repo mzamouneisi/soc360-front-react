@@ -1,13 +1,14 @@
 import { tr } from '../i18n/translate'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { socsApi } from '../api/socs'
 import { projectsApi } from '../api/projects'
 import { crasApi } from '../api/cras'
+import { subscriptionBillingApi } from '../api/subscriptionBilling'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
-import { Card, InlineButton, RefreshButton, Select, Spinner } from '../components/ui'
+import { Button, Card, InlineButton, RefreshButton, Select, Spinner } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import {
@@ -18,7 +19,7 @@ import {
   monthShort,
   statusBadge,
 } from '../lib/format'
-import type { SocDto } from '../api/types'
+import type { PaymentMethod, SocDto } from '../api/types'
 
 export function Facturation() {
   const { user } = useAuth()
@@ -28,6 +29,10 @@ export function Facturation() {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [exporting, setExporting] = useState<null | 'csv' | 'pdf'>(null)
+  const [months, setMonths] = useState(1)
+  const [paying, setPaying] = useState<PaymentMethod | null>(null)
+  const [paymentsPage, setPaymentsPage] = useState(0)
+  const overlapPrompted = useRef<number | null>(null)
 
   const { data: socs } = useAsync(() => (isAdmin ? socsApi.findAll() : Promise.resolve([])), [isAdmin])
   const [selectedSoc, setSelectedSoc] = useState<number | null>(user?.socId ?? null)
@@ -36,6 +41,12 @@ export function Facturation() {
 
   const { data: detail, loading: detailLoading, error: detailError, reload } = useAsync(
     () => (socId ? socsApi.getById(socId) : Promise.resolve(null)),
+    [socId],
+  )
+
+  const { data: paymentConfig } = useAsync(() => subscriptionBillingApi.config(), [])
+  const { data: overlaps, reload: reloadOverlaps } = useAsync(
+    () => (socId ? subscriptionBillingApi.overlaps(socId) : Promise.resolve(null)),
     [socId],
   )
 
@@ -49,6 +60,27 @@ export function Facturation() {
     [socId, year, month],
   )
 
+  useEffect(() => {
+    if (!socId || !overlaps?.hasOverlaps || overlapPrompted.current === socId) {
+      return
+    }
+    overlapPrompted.current = socId
+    void (async () => {
+      const confirmed = await dialog.confirm(tr('Facturation.chevauchement.confirm'), {
+        variant: 'warning',
+        danger: true,
+      })
+      if (!confirmed) return
+      try {
+        await subscriptionBillingApi.resolveOverlaps(socId)
+        reload()
+        reloadOverlaps()
+      } catch (err) {
+        void dialog.error(err instanceof ApiError ? err.message : tr('Facturation.chevauchement.impossible'))
+      }
+    })()
+  }, [socId, overlaps, reload, reloadOverlaps])
+
   if (!user) return null
 
   const activeProjects = (projects ?? []).filter((p) => p.active)
@@ -56,7 +88,54 @@ export function Facturation() {
   const validatedCras = (monthCras ?? []).filter((c) => c.status === 'VALIDATED')
   const validatedHours = validatedCras.reduce((sum, c) => sum + c.totalHours, 0)
   const subscription = detail?.subscriptions?.[0]
-  const totalPaid = (detail?.payments ?? []).reduce((sum, p) => sum + p.amount, 0)
+  const paymentRows = detail?.payments ?? []
+  const totalPaid = paymentRows.reduce((sum, p) => sum + p.amount, 0)
+  const paymentsPageSize = user?.pageSize ?? 5
+  const paymentsTotalPages = Math.max(1, Math.ceil(paymentRows.length / paymentsPageSize))
+  const paymentsSafePage = Math.min(paymentsPage, paymentsTotalPages - 1)
+  const visiblePayments = paymentRows.slice(
+    paymentsSafePage * paymentsPageSize,
+    paymentsSafePage * paymentsPageSize + paymentsPageSize,
+  )
+
+  async function handlePay(method: PaymentMethod) {
+    if (!socId) return
+    const monthKey = new Date().toISOString().slice(0, 7)
+    const latestThisMonth = paymentRows.find((p) => (p.paymentDate ?? '').slice(0, 7) === monthKey)
+    let confirmReplace = false
+    if (latestThisMonth) {
+      const existingMonths = latestThisMonth.periodMonths ?? 1
+      if (months <= existingMonths) {
+        void dialog.info(tr('Facturation.meme.duree.mois'))
+        return
+      }
+      const confirmed = await dialog.confirm(tr('Facturation.remplacer.abonnement.confirm'), {
+        variant: 'question',
+      })
+      if (!confirmed) return
+      confirmReplace = true
+    }
+    setPaying(method)
+    try {
+      const result = await subscriptionBillingApi.pay(months, method, socId, confirmReplace)
+      reload()
+      void dialog.success(`${tr('Facturation.paiement.reussi')} ${result.invoiceNumber}`)
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('Facturation.paiement.impossible'))
+    } finally {
+      setPaying(null)
+    }
+  }
+
+  async function openInvoice(paymentId: number) {
+    try {
+      const url = await subscriptionBillingApi.invoiceUrl(paymentId)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    }
+  }
 
   async function handleExport(kind: 'csv' | 'pdf') {
     if (!socId) return
@@ -153,7 +232,10 @@ export function Facturation() {
                 <p id="Facturation.subscription.details" className="mt-1 text-sm text-gray-500">
                   {formatMoney(subscription.monthlyPrice)} {tr('Facturation.mois.debut')}{' '}
                   {formatDate(subscription.startDate)}
-                  {subscription.trialEndDate && ` · ${tr('Facturation.essai.jusqu.au', { date: formatDate(subscription.trialEndDate) })}`}
+                  {subscription.trialEndDate && subscription.status === 'TRIAL'
+                    && ` · ${tr('Facturation.essai.jusqu.au', { date: formatDate(subscription.trialEndDate) })}`}
+                  {subscription.endDate && subscription.status === 'ACTIVE'
+                    && ` · ${tr('Facturation.prochaine.echeance')} ${formatDate(subscription.endDate)}`}
                 </p>
               )}
             </Card>
@@ -175,6 +257,42 @@ export function Facturation() {
               <p id="Facturation.payments.count" className="mt-1 text-xs text-gray-500">{(detail.payments ?? []).length} {tr('Facturation.paiement.s')}</p>
             </Card>
           </div>
+
+          <Card id="Facturation.payCard" className="mt-6 p-5">
+            <h3 id="Facturation.payer" className="text-lg font-semibold text-gray-900">{tr('Facturation.payer')}</h3>
+            <div className="mt-3 flex flex-wrap items-end gap-3">
+              <label id="Facturation.duree.label" className="text-sm font-medium text-gray-700">
+                <span className="mb-1 block">{tr('Facturation.duree')}</span>
+                <Select id="Facturation.duree" className="w-40" value={months} onChange={(e) => setMonths(Number(e.target.value))}>
+                  <option id="Facturation.duree.1" value={1}>{tr('Facturation.mois1')}</option>
+                  <option id="Facturation.duree.3" value={3}>{tr('Facturation.mois3')}</option>
+                  <option id="Facturation.duree.6" value={6}>{tr('Facturation.mois6')}</option>
+                  <option id="Facturation.duree.12" value={12}>{tr('Facturation.mois12')}</option>
+                </Select>
+              </label>
+              <InlineButton
+                id="Facturation.payer.cb"
+                variant="primary"
+                disabled={!paymentConfig?.cardEnabled || paying !== null}
+                onClick={() => void handlePay('CARD')}
+              >
+                {paying === 'CARD' ? <Spinner /> : tr('Facturation.par.cb')}
+              </InlineButton>
+              <InlineButton
+                id="Facturation.payer.paypal"
+                variant="soft"
+                disabled={!paymentConfig?.paypalEnabled || paying !== null}
+                onClick={() => void handlePay('PAYPAL')}
+              >
+                {paying === 'PAYPAL' ? <Spinner /> : tr('Facturation.par.paypal')}
+              </InlineButton>
+            </div>
+            {paymentConfig && !paymentConfig.cardEnabled && !paymentConfig.paypalEnabled && (
+              <p id="Facturation.moyens.paiement.desactives" className="mt-2 text-sm text-red-600">
+                {tr('Facturation.moyens.paiement.desactives')}
+              </p>
+            )}
+          </Card>
 
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card id="Facturation.card.missions" className="p-5">
@@ -216,7 +334,7 @@ export function Facturation() {
             <Card id="Facturation.card.payments" className="p-5">
               <h3 className="text-lg font-semibold text-gray-900" id="Facturation.paiements">{tr('Facturation.paiements')}</h3>
               <div className="mt-4 divide-y divide-gray-100">
-                {(detail.payments ?? []).map((p) => (
+                {visiblePayments.map((p) => (
                   <div id={`Facturation.payment.${p.id}`} key={p.id} className="flex items-center justify-between py-3">
                     <div>
                       <p id={`Facturation.payment.${p.id}.amount`} className="font-medium text-gray-900">{formatMoney(p.amount)}</p>
@@ -224,13 +342,50 @@ export function Facturation() {
                         {formatDate(p.paymentDate)} · {p.method}
                       </p>
                     </div>
-                    <span id={`Facturation.payment.${p.id}.reference`} className="text-xs text-gray-400">{p.reference ?? '—'}</span>
+                    <div className="flex items-center gap-2">
+                      <span id={`Facturation.payment.${p.id}.reference`} className="text-xs text-gray-400">
+                        {p.invoiceNumber ?? p.reference ?? '—'}
+                      </span>
+                      {p.invoiceNumber && (
+                        <InlineButton id={`Facturation.payment.${p.id}.invoice`} onClick={() => void openInvoice(p.id)}>
+                          {tr('Facturation.facture.telecharger')}
+                        </InlineButton>
+                      )}
+                    </div>
                   </div>
                 ))}
-                {(detail.payments ?? []).length === 0 && (
+                {paymentRows.length === 0 && (
                   <p id="Facturation.aucun.paiement.enregistre" className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucun.paiement.enregistre')}</p>
                 )}
               </div>
+              {paymentsTotalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+                  <span id="Facturation.payments.total">
+                    {paymentRows.length} {tr('Facturation.paiements.total')}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      id="Facturation.payments.previous"
+                      variant="neutral"
+                      disabled={paymentsSafePage <= 0}
+                      onClick={() => setPaymentsPage(paymentsSafePage - 1)}
+                    >
+                      {tr('common.previous')}
+                    </Button>
+                    <span id="Facturation.payments.page">
+                      {tr('common.page')} {paymentsSafePage + 1} / {paymentsTotalPages}
+                    </span>
+                    <Button
+                      id="Facturation.payments.next"
+                      variant="neutral"
+                      disabled={paymentsSafePage >= paymentsTotalPages - 1}
+                      onClick={() => setPaymentsPage(paymentsSafePage + 1)}
+                    >
+                      {tr('common.next')}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           </div>
         </>

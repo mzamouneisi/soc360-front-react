@@ -21,7 +21,7 @@ export type UnavailabilityStatus = 'DRAFT' | 'SUBMITTED' | 'VALIDATED' | 'REJECT
  */
 export type UnavailabilityType = string
 
-export type PaymentMethod = 'CARD' | 'TRANSFER' | 'CHECK' | 'OTHER'
+export type PaymentMethod = 'CARD' | 'PAYPAL' | 'TRANSFER' | 'CHECK' | 'OTHER'
 
 export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'EXPIRED' | 'CANCELLED'
 
@@ -189,6 +189,56 @@ export interface PaymentDto {
   paymentDate: string
   method: PaymentMethod
   reference?: string | null
+  periodMonths?: number | null
+  invoiceNumber?: string | null
+  invoiceSentAt?: string | null
+}
+
+export interface PaymentConfigDto {
+  id: number
+  cardEnabled: boolean
+  paypalEnabled: boolean
+  paypalClientId: string | null
+  currency: string
+  monthlyPrice: number
+  updatedAt: string
+}
+
+export interface PaymentConfigRequest {
+  cardEnabled: boolean
+  paypalEnabled: boolean
+  paypalClientId: string | null
+  currency: string
+  monthlyPrice: number
+}
+
+export interface PaymentConfigHistoryDto {
+  id: number
+  changedBy: string | null
+  beforeState: string | null
+  afterState: string | null
+  changedAt: string
+}
+
+export interface OverlapGroupDto {
+  keepId: number
+  removeIds: number[]
+}
+
+export interface OverlapInfoDto {
+  hasOverlaps: boolean
+  groups: OverlapGroupDto[]
+}
+
+export interface SubscriptionPaymentResultDto {
+  id: number
+  amount: number
+  paymentDate: string
+  method: PaymentMethod
+  reference: string | null
+  periodMonths: number
+  invoiceNumber: string
+  invoiceSentAt: string | null
 }
 
 export interface SocDetailDto {

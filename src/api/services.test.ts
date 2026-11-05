@@ -9,6 +9,7 @@ const { api } = vi.hoisted(() => ({
     upload: vi.fn(),
     download: vi.fn(),
     postText: vi.fn(),
+    blobUrl: vi.fn(),
   },
 }))
 
@@ -32,6 +33,7 @@ import { projectsApi } from './projects'
 import { prospectsApi } from './prospects'
 import { socHolidaysApi } from './socHolidays'
 import { socsApi } from './socs'
+import { subscriptionBillingApi } from './subscriptionBilling'
 import { suppliersApi } from './suppliers'
 import { supportApi } from './support'
 import { tablesApi } from './tables'
@@ -467,6 +469,42 @@ describe('services API', () => {
     expect(api.delete).toHaveBeenNthCalledWith(1, '/prospects/2/notes/9')
     expect(api.post).toHaveBeenNthCalledWith(3, '/prospects/2/convert?target=CLIENT', {})
     expect(api.delete).toHaveBeenNthCalledWith(2, '/prospects/2')
+  })
+
+  it('subscriptionBillingApi couvre config, paiement et facture', () => {
+    subscriptionBillingApi.config()
+    subscriptionBillingApi.updateConfig({
+      cardEnabled: true,
+      paypalEnabled: false,
+      paypalClientId: 'id',
+      currency: 'EUR',
+      monthlyPrice: 49,
+    })
+    subscriptionBillingApi.configHistory()
+    subscriptionBillingApi.pay(3, 'CARD', 5)
+    subscriptionBillingApi.pay(3, 'CARD', 5, true)
+    subscriptionBillingApi.invoiceUrl(9)
+
+    expect(api.get).toHaveBeenNthCalledWith(1, '/subscription-billing/config')
+    expect(api.put).toHaveBeenCalledWith('/subscription-billing/config', {
+      cardEnabled: true,
+      paypalEnabled: false,
+      paypalClientId: 'id',
+      currency: 'EUR',
+      monthlyPrice: 49,
+    })
+    expect(api.get).toHaveBeenNthCalledWith(2, '/subscription-billing/config/history')
+    expect(api.post).toHaveBeenNthCalledWith(1, '/subscription-billing/pay?months=3&method=CARD&socId=5', {})
+    expect(api.post).toHaveBeenNthCalledWith(2, '/subscription-billing/pay?months=3&method=CARD&socId=5&confirmReplace=true', {})
+    expect(api.blobUrl).toHaveBeenCalledWith('/subscription-billing/payments/9/invoice')
+  })
+
+  it('subscriptionBillingApi gère les chevauchements d’abonnements', () => {
+    subscriptionBillingApi.overlaps(5)
+    subscriptionBillingApi.resolveOverlaps(5)
+
+    expect(api.get).toHaveBeenCalledWith('/subscription-billing/overlaps', { socId: 5 })
+    expect(api.post).toHaveBeenCalledWith('/subscription-billing/overlaps/resolve?socId=5', {})
   })
 
   it('usersApi couvre CRUD', () => {

@@ -31,6 +31,7 @@ import { NoteFraisList } from './pages/NoteFraisList'
 import { Holidays } from './pages/Holidays'
 import { Facturation } from './pages/Facturation'
 import { Billing } from './pages/Billing'
+import { PaymentSettings } from './pages/PaymentSettings'
 import { LeaveBalances } from './pages/LeaveBalances'
 import { LeaveSettings } from './pages/LeaveSettings'
 import { NotificationSettings } from './pages/NotificationSettings'
@@ -163,9 +164,9 @@ const router = createBrowserRouter(
             {
               path: '/facturation',
               element: (
-                <NotConsultantRoute>
+                <ResponsibleSocRoute>
                   <Facturation />
-                </NotConsultantRoute>
+                </ResponsibleSocRoute>
               ),
             },
             {
@@ -198,6 +199,14 @@ const router = createBrowserRouter(
               element: (
                 <AdminRoute>
                   <DemoSoc />
+                </AdminRoute>
+              ),
+            },
+            {
+              path: '/parametres-paiement',
+              element: (
+                <AdminRoute>
+                  <PaymentSettings />
                 </AdminRoute>
               ),
             },

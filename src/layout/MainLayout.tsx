@@ -134,7 +134,7 @@ export function MainLayout() {
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
-  const _LAST_COMMIT_ = '2026_11_05_16_22_51'
+  const _LAST_COMMIT_ = '2026_11_05_23_06_14'
 
   const sections: NavSection[] = [
     {
@@ -173,7 +173,7 @@ export function MainLayout() {
       id: 'nav.group.finance',
       title: t('nav.group.finance'),
       items: [
-        { to: '/facturation', id: 'nav.billing', label: t('nav.billing'), icon: ICONS.billing },
+        { to: '/facturation', id: 'nav.billing', label: t('nav.billing'), icon: ICONS.billing, roles: ['RESPONSIBLE_SOC'] },
         { to: '/devis-factures', id: 'nav.quotesInvoices', label: 'Devis & Factures', icon: ICONS.billing, roles: ['RESPONSIBLE_SOC'] },
         { to: '/fiches-paie', id: 'nav.payslips', label: t('nav.payslips'), icon: ICONS.payslips },
       ],
@@ -207,6 +207,7 @@ export function MainLayout() {
       id: 'nav.group.admin',
       title: t('nav.group.admin'),
       items: [
+        { to: '/parametres-paiement', id: 'nav.paymentSettings', label: t('PaymentSettings.title'), icon: ICONS.support },
         { to: '/tables', id: 'nav.tables', label: t('nav.tables'), icon: ICONS.tables },
         { to: '/langues', id: 'nav.languages', label: t('nav.languages'), icon: ICONS.languages },
         { to: '/logs', id: 'nav.logs', label: t('nav.logs'), icon: ICONS.logs },
