@@ -288,6 +288,8 @@ const fr: Messages = {
   'Consultants.photo.format.invalide': 'La photo doit être une image PNG ou JPEG.',
   'Consultants.photo.taille.invalide': 'La photo ne doit pas dépasser 5 Mo.',
   'Consultants.photo.indisponible': 'Photo indisponible pour le moment. Utilisez le bouton de téléchargement.',
+  'Prospects.note.converted.client': 'Prospect converti en client',
+  'Prospects.note.converted.supplier': 'Prospect converti en fournisseur',
 }
 
 const en: Messages = {
@@ -546,6 +548,8 @@ const en: Messages = {
   'Consultants.photo.format.invalide': 'The photo must be a PNG or JPEG image.',
   'Consultants.photo.taille.invalide': 'The photo must not exceed 5 Mo.',
   'Consultants.photo.indisponible': 'Photo unavailable for now. Use the download button.',
+  'Prospects.note.converted.client': 'Prospect converted to client',
+  'Prospects.note.converted.supplier': 'Prospect converted to supplier',
 }
 
 const ar: Messages = {
@@ -682,6 +686,8 @@ const ar: Messages = {
   'Consultants.photo.format.invalide': 'يجب أن تكون الصورة صورة PNG أو JPEG.',
   'Consultants.photo.taille.invalide': 'يجب ألا تتجاوز الصورة 5 ميغابايت.',
   'Consultants.photo.indisponible': 'الصورة غير متاحة حالياً. استخدم زر التنزيل.',
+  'Prospects.note.converted.client': 'تم تحويل العميل المحتمل إلى عميل',
+  'Prospects.note.converted.supplier': 'تم تحويل العميل المحتمل إلى مورد',
 }
 
 export const MESSAGES: Record<string, Messages> = {

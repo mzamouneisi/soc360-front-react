@@ -29,6 +29,7 @@ import { noteFraisApi } from './noteFrais'
 import { notificationConfigsApi } from './notificationConfigs'
 import { notificationsApi } from './notifications'
 import { projectsApi } from './projects'
+import { prospectsApi } from './prospects'
 import { socHolidaysApi } from './socHolidays'
 import { socsApi } from './socs'
 import { suppliersApi } from './suppliers'
@@ -445,6 +446,27 @@ describe('services API', () => {
     expect(api.get).toHaveBeenNthCalledWith(3, '/notification-configs/executions', { socId: 1 })
     expect(api.get).toHaveBeenNthCalledWith(4, '/notification-configs/2/executions')
     expect(api.delete).toHaveBeenCalledWith('/notification-configs/2')
+  })
+
+  it('prospectsApi couvre CRUD, notes et conversion', () => {
+    const request = { name: 'Prospect', kind: 'COMPANY' } as never
+    prospectsApi.findAll(1)
+    prospectsApi.get(2)
+    prospectsApi.create(request)
+    prospectsApi.update(2, request)
+    prospectsApi.addNote(2, { noteDate: '2026-11-05', content: 'Note' })
+    prospectsApi.deleteNote(2, 9)
+    prospectsApi.convert(2, 'CLIENT')
+    prospectsApi.delete(2)
+
+    expect(api.get).toHaveBeenNthCalledWith(1, '/prospects', { socId: 1 })
+    expect(api.get).toHaveBeenNthCalledWith(2, '/prospects/2')
+    expect(api.post).toHaveBeenNthCalledWith(1, '/prospects', request)
+    expect(api.put).toHaveBeenCalledWith('/prospects/2', request)
+    expect(api.post).toHaveBeenNthCalledWith(2, '/prospects/2/notes', { noteDate: '2026-11-05', content: 'Note' })
+    expect(api.delete).toHaveBeenNthCalledWith(1, '/prospects/2/notes/9')
+    expect(api.post).toHaveBeenNthCalledWith(3, '/prospects/2/convert?target=CLIENT', {})
+    expect(api.delete).toHaveBeenNthCalledWith(2, '/prospects/2')
   })
 
   it('usersApi couvre CRUD', () => {

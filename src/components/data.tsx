@@ -118,6 +118,7 @@ export function Table<T>({
   onRowClick,
   paginate = false,
   startIndex = 0,
+  paginationId,
 }: {
   columns: { key: string; label: string; className?: string; render: (row: T) => ReactNode }[]
   rows: T[]
@@ -127,6 +128,7 @@ export function Table<T>({
   onRowClick?: (row: T) => void
   paginate?: boolean
   startIndex?: number
+  paginationId?: string
 }) {
   const { user } = useAuth()
   const { t } = useI18n()
@@ -198,7 +200,7 @@ export function Table<T>({
         </table>
       </div>
       {paginate && totalPages > 1 && (
-        <Pagination page={safePage} totalPages={totalPages} total={rows.length} onChange={setPage} />
+        <Pagination page={safePage} totalPages={totalPages} total={rows.length} onChange={setPage} idPrefix={paginationId} />
       )}
     </div>
   )
@@ -209,35 +211,37 @@ export function Pagination({
   totalPages,
   onChange,
   total,
+  idPrefix,
 }: {
   page: number
   totalPages: number
   total?: number
   onChange: (page: number) => void
+  idPrefix?: string
 }) {
   const { t } = useI18n()
   if (totalPages <= 1) return null
   return (
     <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
       {total !== undefined && (
-        <span id="pagination.total">
+        <span id={idPrefix ? `${idPrefix}.total` : 'pagination.total'}>
           {total} {total > 1 ? t('common.items') : t('common.item')}
         </span>
       )}
       <div className="flex items-center gap-1">
         <button
-          id="common.previous"
+          id={idPrefix ? `${idPrefix}.previous` : 'common.previous'}
           className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           disabled={page <= 0}
           onClick={() => onChange(page - 1)}
         >
           {t('common.previous')}
         </button>
-        <span id="pagination.page" className="px-3">
+        <span id={idPrefix ? `${idPrefix}.page` : 'pagination.page'} className="px-3">
           {t('common.page')} {page + 1} / {totalPages}
         </span>
         <button
-          id="common.next"
+          id={idPrefix ? `${idPrefix}.next` : 'common.next'}
           className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           disabled={page >= totalPages - 1}
           onClick={() => onChange(page + 1)}

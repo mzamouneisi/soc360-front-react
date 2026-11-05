@@ -134,7 +134,7 @@ export function MainLayout() {
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
-  const _LAST_COMMIT_ = '2026_11_05_11_33_09'
+  const _LAST_COMMIT_ = '2026_11_05_16_22_51'
 
   const sections: NavSection[] = [
     {
@@ -146,6 +146,7 @@ export function MainLayout() {
       id: 'nav.group.management',
       title: t('nav.group.management'),
       items: [
+        { to: '/prospects', id: 'nav.prospects', label: t('nav.prospects'), icon: ICONS.clients, roles: ['ADMIN', 'RESPONSIBLE_SOC', 'MANAGER'] },
         { to: '/clients', id: 'nav.clients', label: t('nav.clients'), icon: ICONS.clients },
         { to: '/fournisseurs', id: 'nav.suppliers', label: t('nav.suppliers'), icon: ICONS.suppliers },
         { to: '/projets', id: 'nav.projects', label: t('nav.projects'), icon: ICONS.projects },
@@ -186,7 +187,7 @@ export function MainLayout() {
         { to: '/support', id: 'nav.support', label: t('nav.support'), icon: ICONS.support },
         { to: '/parametres', id: 'nav.settings', label: t('nav.settings'), icon: ICONS.support },
         { to: '/parametres-conges', id: 'nav.leaveSettings', label: 'Paramètres congés', icon: ICONS.support, roles: ['RESPONSIBLE_SOC'] },
-        { to: '/parametres-notifications', id: 'nav.notificationSettings', label: t('nav.notificationSettings'), icon: ICONS.support, roles: ['ADMIN', 'RESPONSIBLE_SOC', 'MANAGER'] },
+        { to: '/parametres-notifications', id: 'nav.notificationSettings', label: t('nav.notificationSettings'), icon: ICONS.support, roles: ['RESPONSIBLE_SOC'] },
       ],
     },
   ]

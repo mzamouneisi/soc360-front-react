@@ -145,6 +145,13 @@ describe('Pagination', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Suivant' }))
     expect(onChange).toHaveBeenCalledWith(1)
   })
+
+  it('préfixe les ids pour plusieurs paginations sur une page', () => {
+    render(<Pagination page={0} totalPages={3} onChange={vi.fn()} idPrefix="LeaveBalances.CP.lots" />)
+    expect(document.getElementById('LeaveBalances.CP.lots.previous')).toBeInTheDocument()
+    expect(document.getElementById('LeaveBalances.CP.lots.page')).toHaveTextContent('Page 1 / 3')
+    expect(document.getElementById('LeaveBalances.CP.lots.next')).toBeInTheDocument()
+  })
 })
 
 describe('Modal', () => {

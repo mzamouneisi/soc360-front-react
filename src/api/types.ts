@@ -557,7 +557,8 @@ export interface NoteFraisLineDto {
   montantHT: number
   montantTTC: number
   enseigne: string | null
-  adresse: string | null
+  adresse: string | null
+
   comment: string | null
 }
 
@@ -593,7 +594,8 @@ export interface NoteFraisLineRequest {
   montantHT: number
   montantTTC: number
   enseigne?: string | null
-  adresse?: string | null
+  adresse?: string | null
+
   comment?: string | null
 }
 
@@ -1098,4 +1100,54 @@ export interface NotificationExecutionDto {
   successCount: number
   failureCount: number
   deliveries: NotificationDeliveryDto[]
+}
+
+export type ProspectKind = 'PERSON' | 'COMPANY'
+export type ProspectStatus = 'ACTIVE' | 'ARCHIVED'
+export type ProspectTarget = 'CLIENT' | 'SUPPLIER'
+
+export interface ProspectNoteDto {
+  id: number
+  noteDate: string
+  content: string
+  color: string | null
+  eventType: string | null
+  author: string | null
+  createdAt: string
+}
+
+export interface ProspectDto {
+  id: number
+  name: string
+  kind: ProspectKind
+  contactName: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  address: string | null
+  soc?: { id: number; name: string } | null
+  socParent?: { id: number; name: string } | null
+  status: ProspectStatus
+  convertedTo: ProspectTarget | null
+  convertedAt: string | null
+  clientId: number | null
+  supplierId: number | null
+  lastNoteDate: string | null
+  notes: ProspectNoteDto[]
+}
+
+export interface ProspectRequest {
+  name: string
+  kind: ProspectKind
+  contactName?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  address?: string | null
+  socId?: number | null
+  socParentId?: number | null
+  status?: ProspectStatus | null
+}
+
+export interface ProspectNoteRequest {
+  noteDate: string | null
+  content: string
 }

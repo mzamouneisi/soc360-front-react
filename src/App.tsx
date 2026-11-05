@@ -14,6 +14,7 @@ import { ForgotPassword } from './pages/ForgotPassword'
 import { ResetPassword } from './pages/ResetPassword'
 import { ChangePassword } from './pages/ChangePassword'
 import { Clients } from './pages/Clients'
+import { Prospects } from './pages/Prospects'
 import { Suppliers } from './pages/Suppliers'
 import { Projects } from './pages/Projects'
 import { Missions } from './pages/Missions'
@@ -70,6 +71,14 @@ const router = createBrowserRouter(
           ),
           children: [
             { path: '/', element: <Dashboard /> },
+            {
+              path: '/prospects',
+              element: (
+                <NotConsultantRoute>
+                  <Prospects />
+                </NotConsultantRoute>
+              ),
+            },
             {
               path: '/clients',
               element: (
@@ -170,9 +179,9 @@ const router = createBrowserRouter(
             {
               path: '/parametres-notifications',
               element: (
-                <NotConsultantRoute>
+                <ResponsibleSocRoute>
                   <NotificationSettings />
-                </NotConsultantRoute>
+                </ResponsibleSocRoute>
               ),
             },
             { path: '/fiches-paie', element: <FichePaie /> },

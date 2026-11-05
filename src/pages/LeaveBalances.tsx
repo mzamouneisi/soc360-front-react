@@ -97,6 +97,8 @@ export function LeaveBalances() {
                   Lots de droits {balance.leaveType}
                 </h3>
                 <Table
+                  paginate
+                  paginationId={`LeaveBalances.${balance.leaveType}.lots`}
                   rowKey={(lot) => lot.id}
                   rows={balance.lots}
                   columns={[
