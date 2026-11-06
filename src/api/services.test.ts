@@ -485,6 +485,8 @@ describe('services API', () => {
       paypalClientId: 'id',
       paypalSecret: null,
       paypalMode: 'SANDBOX',
+      trialEnabled: true,
+      billingEnabled: true,
       currency: 'EUR',
       monthlyPrice: 49,
     })
@@ -505,6 +507,8 @@ describe('services API', () => {
       paypalClientId: 'id',
       paypalSecret: null,
       paypalMode: 'SANDBOX',
+      trialEnabled: true,
+      billingEnabled: true,
       currency: 'EUR',
       monthlyPrice: 49,
     })

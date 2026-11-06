@@ -210,6 +210,8 @@ export interface PaymentConfigDto {
   bankIban: string | null
   bankBic: string | null
   bankSheetUrl: string | null
+  trialEnabled: boolean
+  billingEnabled: boolean
   currency: string
   monthlyPrice: number
   updatedAt: string
@@ -229,6 +231,8 @@ export interface PaymentConfigRequest {
   bankRib?: string | null
   bankIban?: string | null
   bankBic?: string | null
+  trialEnabled: boolean
+  billingEnabled: boolean
   currency: string
   monthlyPrice: number
 }

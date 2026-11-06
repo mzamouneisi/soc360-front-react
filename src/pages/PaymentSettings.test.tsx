@@ -32,6 +32,8 @@ const config = {
   bankIban: null,
   bankBic: null,
   bankSheetUrl: 'https://docs.google.com/spreadsheets/d/test',
+  trialEnabled: true,
+  billingEnabled: true,
   currency: 'EUR',
   monthlyPrice: 49,
   updatedAt: '2026-11-05T08:00:00Z',

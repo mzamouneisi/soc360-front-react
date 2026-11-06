@@ -21,6 +21,8 @@ export function PaymentSettings() {
     paypalClientId: '',
     paypalSecret: '',
     paypalMode: 'SANDBOX',
+    trialEnabled: true,
+    billingEnabled: true,
     currency: 'EUR',
     monthlyPrice: '49.00',
   })
@@ -39,6 +41,8 @@ export function PaymentSettings() {
       paypalClientId: config.paypalClientId ?? '',
       paypalSecret: '',
       paypalMode: config.paypalMode,
+      trialEnabled: config.trialEnabled,
+      billingEnabled: config.billingEnabled,
       currency: config.currency,
       monthlyPrice: String(config.monthlyPrice),
     })
@@ -59,6 +63,8 @@ export function PaymentSettings() {
         paypalClientId: form.paypalClientId.trim() || null,
         paypalSecret: form.paypalSecret.trim() || null,
         paypalMode: form.paypalMode,
+        trialEnabled: form.trialEnabled,
+        billingEnabled: form.billingEnabled,
         currency: form.currency.trim().toUpperCase() || 'EUR',
         monthlyPrice: Number(form.monthlyPrice) || 0,
       })
@@ -107,6 +113,30 @@ export function PaymentSettings() {
               />
               {tr('PaymentSettings.paypal')}
             </label>
+            <label id="PaymentSettings.trialEnabled" className="flex items-center gap-2">
+              <input
+                id="PaymentSettings.trialEnabled.input"
+                type="checkbox"
+                checked={form.trialEnabled}
+                onChange={(event) => setForm({ ...form, trialEnabled: event.target.checked })}
+              />
+              {tr('PaymentSettings.trialEnabled')}
+            </label>
+            <p id="PaymentSettings.trialHint" className="ml-6 text-xs text-gray-500">
+              {tr('PaymentSettings.trialHint')}
+            </p>
+            <label id="PaymentSettings.billingEnabled" className="flex items-center gap-2">
+              <input
+                id="PaymentSettings.billingEnabled.input"
+                type="checkbox"
+                checked={form.billingEnabled}
+                onChange={(event) => setForm({ ...form, billingEnabled: event.target.checked })}
+              />
+              {tr('PaymentSettings.billingEnabled')}
+            </label>
+            <p id="PaymentSettings.billingHint" className="ml-6 text-xs text-gray-500">
+              {tr('PaymentSettings.billingHint')}
+            </p>
           </div>
           <h3 id="PaymentSettings.realConfig" className="text-sm font-semibold text-gray-700">
             {tr('PaymentSettings.realConfig')}
