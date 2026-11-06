@@ -16,6 +16,7 @@ interface AuthState {
   user: UserDto | null
   initializing: boolean
   login: (username: string, password: string) => Promise<UserDto>
+  googleLogin: (username: string, credential: string) => Promise<UserDto>
   logout: () => void
   setUser: (user: UserDto | null) => void
   refreshMe: () => Promise<UserDto | null>
@@ -118,6 +119,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return response.user
   }, [])
 
+  const googleLogin = useCallback(async (username: string, credential: string) => {
+    const response = await authApi.googleLogin(username, credential)
+    setToken(response.token)
+    setUser(response.user)
+    return response.user
+  }, [])
+
   const logout = useCallback(() => {
     clearToken()
     setUser(null)
@@ -130,8 +138,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ user, initializing, login, logout, setUser, refreshMe }),
-    [user, initializing, login, logout, refreshMe],
+    () => ({ user, initializing, login, googleLogin, logout, setUser, refreshMe }),
+    [user, initializing, login, googleLogin, logout, refreshMe],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

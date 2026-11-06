@@ -1,14 +1,16 @@
 import { tr } from '../i18n/translate'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { authApi } from '../api/auth'
 import { Alert, Button, Card, Field, Input, Spinner } from '../components/ui'
 import { useI18n } from '../i18n'
 import { LanguageSelector } from '../i18n/LanguageSelector'
+import { googleClientId, loadGoogleScript } from '../lib/google'
 
 export function Login() {
-  const { login } = useAuth()
+  const { login, googleLogin } = useAuth()
   const { t } = useI18n()
   const navigate = useNavigate()
   const location = useLocation()
@@ -19,6 +21,51 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const googleButton = useRef<HTMLDivElement>(null)
+  const usernameRef = useRef(username)
+  usernameRef.current = username
+  const [clientId, setClientId] = useState(googleClientId())
+
+  useEffect(() => {
+    authApi.googleConfig()
+      .then((config) => {
+        if (config.enabled && config.clientId) {
+          setClientId(config.clientId)
+        }
+      })
+      .catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    if (!clientId) return
+    let cancelled = false
+    loadGoogleScript()
+      .then(() => {
+        if (cancelled || !window.google || !googleButton.current) return
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response) => {
+            setError(null)
+            try {
+              await googleLogin(usernameRef.current, response.credential)
+              navigate(from, { replace: true })
+            } catch (err) {
+              setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+            }
+          },
+        })
+        window.google.accounts.id.renderButton(googleButton.current, {
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          width: 320,
+        })
+      })
+      .catch(() => setError(tr('login.googleScriptError')))
+    return () => {
+      cancelled = true
+    }
+  }, [clientId, googleLogin, navigate, from])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -104,6 +151,20 @@ export function Login() {
             {t('login.submit')}
           </Button>
         </form>
+
+        {clientId && (
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <p id="login.googleAdmin" className="mb-2 text-center text-xs font-medium text-gray-500">
+              {t('login.googleAdmin')}
+            </p>
+            <div id="login.google" ref={googleButton} className="flex justify-center" />
+            {username.trim().toLowerCase() !== 'admin' && (
+              <p id="login.googleAdminUsername" className="mt-2 text-center text-xs text-amber-600">
+                {t('login.googleAdminUsername')}
+              </p>
+            )}
+          </div>
+        )}
 
         <p id="login.noAccount" className="mt-6 text-center text-sm text-gray-600">
           {t('login.noAccount')}{' '}

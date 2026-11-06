@@ -6,11 +6,18 @@ import { Login } from './Login'
 
 const { loginMock } = vi.hoisted(() => ({ loginMock: vi.fn() }))
 
+vi.mock('../api/auth', () => ({
+  authApi: {
+    googleConfig: vi.fn().mockResolvedValue({ enabled: false, clientId: null }),
+  },
+}))
+
 vi.mock('../auth/AuthContext', () => ({
   useAuth: () => ({
     user: null,
     initializing: false,
     login: loginMock,
+    googleLogin: vi.fn(),
     logout: vi.fn(),
     setUser: vi.fn(),
     refreshMe: vi.fn(),

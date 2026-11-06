@@ -293,6 +293,9 @@ const fr: Messages = {
   'Facturation.chevauchement.confirm': 'Des abonnements se chevauchent sur le même mois. Un abonnement de durée plus grande remplace l’ancien : l’ancien abonnement et son ancienne facture seront supprimés. Continuer ?',
   'Facturation.meme.duree.mois': 'Vous ne pouvez pas faire plusieurs abonnements de même durée le même mois.',
   'Facturation.remplacer.abonnement.confirm': 'Un abonnement existe déjà ce mois-ci. Remplacer l’ancien abonnement et son ancienne facture par cette durée plus longue ?',
+  'login.googleAdmin': 'Connexion du compte admin via Google',
+  'login.googleScriptError': 'Impossible de charger l’authentification Google.',
+  'login.googleAdminUsername': 'Saisissez le username admin pour utiliser la connexion Google.',
 }
 
 const en: Messages = {
@@ -556,6 +559,9 @@ const en: Messages = {
   'Facturation.chevauchement.confirm': 'Subscriptions overlap in the same month. A longer subscription replaces the old one: the old subscription and its old invoice will be deleted. Continue?',
   'Facturation.meme.duree.mois': 'You cannot take out several subscriptions of the same duration in the same month.',
   'Facturation.remplacer.abonnement.confirm': 'A subscription already exists this month. Replace the old subscription and its old invoice with this longer duration?',
+  'login.googleAdmin': 'Admin account sign-in with Google',
+  'login.googleScriptError': 'Unable to load Google authentication.',
+  'login.googleAdminUsername': 'Enter the admin username to use Google sign-in.',
 }
 
 const ar: Messages = {
@@ -697,6 +703,9 @@ const ar: Messages = {
   'Facturation.chevauchement.confirm': 'هناك اشتراكات متداخلة في نفس الشهر. سيحل الاشتراك الأطول محل القديم: سيتم حذف الاشتراك القديم وفاتورته القديمة. هل تريد المتابعة؟',
   'Facturation.meme.duree.mois': 'لا يمكنك إنشاء عدة اشتراكات بنفس المدة في نفس الشهر.',
   'Facturation.remplacer.abonnement.confirm': 'يوجد اشتراك بالفعل هذا الشهر. هل تريد استبدال الاشتراك القديم وفاتورته القديمة بهذه المدة الأطول؟',
+  'login.googleAdmin': 'تسجيل دخول حساب المسؤول عبر Google',
+  'login.googleScriptError': 'تعذر تحميل مصادقة Google.',
+  'login.googleAdminUsername': 'أدخل اسم مستخدم المسؤول لاستخدام تسجيل الدخول عبر Google.',
 }
 
 export const MESSAGES: Record<string, Messages> = {

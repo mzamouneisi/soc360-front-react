@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { ApiError } from '../api/client'
 import { subscriptionBillingApi } from '../api/subscriptionBilling'
 import { useAsync } from '../lib/useAsync'
-import { Button, Card, Field, Input, RefreshButton } from '../components/ui'
+import { Button, Card, Field, Input, RefreshButton, Select } from '../components/ui'
 import { ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 
@@ -14,7 +14,13 @@ export function PaymentSettings() {
   const [form, setForm] = useState({
     cardEnabled: true,
     paypalEnabled: true,
+    cardProvider: 'STRIPE',
+    cardPublicKey: '',
+    cardSecretKey: '',
+    cardWebhookSecret: '',
     paypalClientId: '',
+    paypalSecret: '',
+    paypalMode: 'SANDBOX',
     currency: 'EUR',
     monthlyPrice: '49.00',
   })
@@ -26,7 +32,13 @@ export function PaymentSettings() {
     setForm({
       cardEnabled: config.cardEnabled,
       paypalEnabled: config.paypalEnabled,
+      cardProvider: config.cardProvider,
+      cardPublicKey: config.cardPublicKey ?? '',
+      cardSecretKey: '',
+      cardWebhookSecret: '',
       paypalClientId: config.paypalClientId ?? '',
+      paypalSecret: '',
+      paypalMode: config.paypalMode,
       currency: config.currency,
       monthlyPrice: String(config.monthlyPrice),
     })
@@ -40,7 +52,13 @@ export function PaymentSettings() {
       await subscriptionBillingApi.updateConfig({
         cardEnabled: form.cardEnabled,
         paypalEnabled: form.paypalEnabled,
+        cardProvider: form.cardProvider,
+        cardPublicKey: form.cardPublicKey.trim() || null,
+        cardSecretKey: form.cardSecretKey.trim() || null,
+        cardWebhookSecret: form.cardWebhookSecret.trim() || null,
         paypalClientId: form.paypalClientId.trim() || null,
+        paypalSecret: form.paypalSecret.trim() || null,
+        paypalMode: form.paypalMode,
         currency: form.currency.trim().toUpperCase() || 'EUR',
         monthlyPrice: Number(form.monthlyPrice) || 0,
       })
@@ -90,6 +108,96 @@ export function PaymentSettings() {
               {tr('PaymentSettings.paypal')}
             </label>
           </div>
+          <h3 id="PaymentSettings.realConfig" className="text-sm font-semibold text-gray-700">
+            {tr('PaymentSettings.realConfig')}
+          </h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 id="PaymentSettings.bankDetails" className="text-sm font-semibold text-gray-700">
+              {tr('PaymentSettings.bankDetails')}
+            </h3>
+            {config?.bankSheetUrl && (
+              <a
+                id="PaymentSettings.bankSheetOpen"
+                href={config.bankSheetUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-medium text-brand-600 hover:underline"
+              >
+                {tr('PaymentSettings.bankSheetOpen')}
+              </a>
+            )}
+          </div>
+          <p id="PaymentSettings.bankSheetSource" className="text-xs text-gray-500">
+            {tr('PaymentSettings.bankSheetSource')}
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label={tr('PaymentSettings.bankAccountHolder')} id="PaymentSettings.bankAccountHolder">
+              <Input
+                id="PaymentSettings.bankAccountHolder.input"
+                value={config?.bankAccountHolder ?? ''}
+                disabled
+              />
+            </Field>
+            <Field label={tr('PaymentSettings.bankBic')} id="PaymentSettings.bankBic">
+              <Input
+                id="PaymentSettings.bankBic.input"
+                value={config?.bankBic ?? ''}
+                disabled
+              />
+            </Field>
+            <Field label={tr('PaymentSettings.bankRib')} id="PaymentSettings.bankRib">
+              <Input
+                id="PaymentSettings.bankRib.input"
+                value={config?.bankRib ?? ''}
+                disabled
+              />
+            </Field>
+            <Field label={tr('PaymentSettings.bankIban')} id="PaymentSettings.bankIban">
+              <Input
+                id="PaymentSettings.bankIban.input"
+                value={config?.bankIban ?? ''}
+                disabled
+              />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field label={tr('PaymentSettings.provider')} id="PaymentSettings.provider">
+              <Select
+                id="PaymentSettings.provider.input"
+                value={form.cardProvider}
+                onChange={(event) => setForm({ ...form, cardProvider: event.target.value })}
+              >
+                <option value="STRIPE">Stripe</option>
+                <option value="PAYBOX">Paybox</option>
+                <option value="OTHER">Autre</option>
+              </Select>
+            </Field>
+            <Field label={tr('PaymentSettings.cardPublicKey')} id="PaymentSettings.cardPublicKey">
+              <Input
+                id="PaymentSettings.cardPublicKey.input"
+                value={form.cardPublicKey}
+                onChange={(event) => setForm({ ...form, cardPublicKey: event.target.value })}
+              />
+            </Field>
+            <Field label={tr('PaymentSettings.cardSecretKey')} id="PaymentSettings.cardSecretKey">
+              <Input
+                id="PaymentSettings.cardSecretKey.input"
+                type="password"
+                placeholder={config?.cardSecretConfigured ? tr('PaymentSettings.configured') : tr('PaymentSettings.notConfigured')}
+                value={form.cardSecretKey}
+                onChange={(event) => setForm({ ...form, cardSecretKey: event.target.value })}
+              />
+            </Field>
+            <Field label={tr('PaymentSettings.cardWebhookSecret')} id="PaymentSettings.cardWebhookSecret">
+              <Input
+                id="PaymentSettings.cardWebhookSecret.input"
+                type="password"
+                placeholder={config?.cardWebhookConfigured ? tr('PaymentSettings.configured') : tr('PaymentSettings.notConfigured')}
+                value={form.cardWebhookSecret}
+                onChange={(event) => setForm({ ...form, cardWebhookSecret: event.target.value })}
+              />
+            </Field>
+          </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Field label={tr('PaymentSettings.paypalClientId')} id="PaymentSettings.paypalClientId">
               <Input
@@ -97,6 +205,25 @@ export function PaymentSettings() {
                 value={form.paypalClientId}
                 onChange={(event) => setForm({ ...form, paypalClientId: event.target.value })}
               />
+            </Field>
+            <Field label={tr('PaymentSettings.paypalSecret')} id="PaymentSettings.paypalSecret">
+              <Input
+                id="PaymentSettings.paypalSecret.input"
+                type="password"
+                placeholder={config?.paypalSecretConfigured ? tr('PaymentSettings.configured') : tr('PaymentSettings.notConfigured')}
+                value={form.paypalSecret}
+                onChange={(event) => setForm({ ...form, paypalSecret: event.target.value })}
+              />
+            </Field>
+            <Field label={tr('PaymentSettings.paypalMode')} id="PaymentSettings.paypalMode">
+              <Select
+                id="PaymentSettings.paypalMode.input"
+                value={form.paypalMode}
+                onChange={(event) => setForm({ ...form, paypalMode: event.target.value })}
+              >
+                <option value="SANDBOX">Sandbox</option>
+                <option value="LIVE">Live</option>
+              </Select>
             </Field>
             <Field label={tr('PaymentSettings.currency')} id="PaymentSettings.currency">
               <Input

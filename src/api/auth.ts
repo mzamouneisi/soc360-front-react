@@ -56,6 +56,9 @@ export interface CompanyLookup {
 
 export const authApi = {
   login: (payload: LoginPayload) => api.post<AuthResponse>('/auth/login', payload),
+  googleLogin: (username: string, credential: string) =>
+    api.post<AuthResponse>('/auth/google', { username, credential }),
+  googleConfig: () => api.get<{ enabled: boolean; clientId: string | null }>('/auth/google-config'),
   registerSoc: (payload: RegisterSocPayload) =>
     api.post<EmailSentResponse>('/auth/register-soc', payload),
   searchSoc: (name?: string, siret?: string) =>

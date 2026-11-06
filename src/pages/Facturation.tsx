@@ -44,7 +44,7 @@ export function Facturation() {
     [socId],
   )
 
-  const { data: paymentConfig } = useAsync(() => subscriptionBillingApi.config(), [])
+  const { data: paymentConfig } = useAsync(() => subscriptionBillingApi.paymentOptions(), [])
   const { data: overlaps, reload: reloadOverlaps } = useAsync(
     () => (socId ? subscriptionBillingApi.overlaps(socId) : Promise.resolve(null)),
     [socId],

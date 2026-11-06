@@ -16,6 +16,7 @@ const { api } = vi.hoisted(() => ({
 vi.mock('./client', () => ({ api }))
 
 import { activitiesApi, activityTypesApi } from './activities'
+import { authApi } from './auth'
 import { clientsApi } from './clients'
 import { consultantsApi } from './consultants'
 import { crasApi } from './cras'
@@ -473,10 +474,17 @@ describe('services API', () => {
 
   it('subscriptionBillingApi couvre config, paiement et facture', () => {
     subscriptionBillingApi.config()
+    subscriptionBillingApi.paymentOptions()
     subscriptionBillingApi.updateConfig({
       cardEnabled: true,
       paypalEnabled: false,
+      cardProvider: 'STRIPE',
+      cardPublicKey: null,
+      cardSecretKey: null,
+      cardWebhookSecret: null,
       paypalClientId: 'id',
+      paypalSecret: null,
+      paypalMode: 'SANDBOX',
       currency: 'EUR',
       monthlyPrice: 49,
     })
@@ -486,14 +494,21 @@ describe('services API', () => {
     subscriptionBillingApi.invoiceUrl(9)
 
     expect(api.get).toHaveBeenNthCalledWith(1, '/subscription-billing/config')
+    expect(api.get).toHaveBeenNthCalledWith(2, '/subscription-billing/payment-options')
     expect(api.put).toHaveBeenCalledWith('/subscription-billing/config', {
       cardEnabled: true,
       paypalEnabled: false,
+      cardProvider: 'STRIPE',
+      cardPublicKey: null,
+      cardSecretKey: null,
+      cardWebhookSecret: null,
       paypalClientId: 'id',
+      paypalSecret: null,
+      paypalMode: 'SANDBOX',
       currency: 'EUR',
       monthlyPrice: 49,
     })
-    expect(api.get).toHaveBeenNthCalledWith(2, '/subscription-billing/config/history')
+    expect(api.get).toHaveBeenNthCalledWith(3, '/subscription-billing/config/history')
     expect(api.post).toHaveBeenNthCalledWith(1, '/subscription-billing/pay?months=3&method=CARD&socId=5', {})
     expect(api.post).toHaveBeenNthCalledWith(2, '/subscription-billing/pay?months=3&method=CARD&socId=5&confirmReplace=true', {})
     expect(api.blobUrl).toHaveBeenCalledWith('/subscription-billing/payments/9/invoice')
@@ -505,6 +520,14 @@ describe('services API', () => {
 
     expect(api.get).toHaveBeenCalledWith('/subscription-billing/overlaps', { socId: 5 })
     expect(api.post).toHaveBeenCalledWith('/subscription-billing/overlaps/resolve?socId=5', {})
+  })
+
+  it('authApi.googleLogin envoie le jeton Google', () => {
+    authApi.googleLogin('admin', 'google-credential')
+    authApi.googleConfig()
+
+    expect(api.post).toHaveBeenCalledWith('/auth/google', { username: 'admin', credential: 'google-credential' })
+    expect(api.get).toHaveBeenCalledWith('/auth/google-config')
   })
 
   it('usersApi couvre CRUD', () => {

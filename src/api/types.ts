@@ -198,7 +198,18 @@ export interface PaymentConfigDto {
   id: number
   cardEnabled: boolean
   paypalEnabled: boolean
+  cardProvider: string
+  cardPublicKey: string | null
+  cardSecretConfigured: boolean
+  cardWebhookConfigured: boolean
   paypalClientId: string | null
+  paypalSecretConfigured: boolean
+  paypalMode: string
+  bankAccountHolder: string | null
+  bankRib: string | null
+  bankIban: string | null
+  bankBic: string | null
+  bankSheetUrl: string | null
   currency: string
   monthlyPrice: number
   updatedAt: string
@@ -207,9 +218,25 @@ export interface PaymentConfigDto {
 export interface PaymentConfigRequest {
   cardEnabled: boolean
   paypalEnabled: boolean
+  cardProvider: string
+  cardPublicKey: string | null
+  cardSecretKey: string | null
+  cardWebhookSecret: string | null
   paypalClientId: string | null
+  paypalSecret: string | null
+  paypalMode: string
+  bankAccountHolder?: string | null
+  bankRib?: string | null
+  bankIban?: string | null
+  bankBic?: string | null
   currency: string
   monthlyPrice: number
+}
+
+export interface PaymentOptionsDto {
+  cardEnabled: boolean
+  paypalEnabled: boolean
+  currency: string
 }
 
 export interface PaymentConfigHistoryDto {

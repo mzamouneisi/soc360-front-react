@@ -4,11 +4,13 @@ import type {
   PaymentConfigHistoryDto,
   PaymentConfigRequest,
   PaymentMethod,
+  PaymentOptionsDto,
   SubscriptionPaymentResultDto,
 } from './types'
 
 export const subscriptionBillingApi = {
   config: () => api.get<PaymentConfigDto>('/subscription-billing/config'),
+  paymentOptions: () => api.get<PaymentOptionsDto>('/subscription-billing/payment-options'),
   updateConfig: (request: PaymentConfigRequest) =>
     api.put<PaymentConfigDto>('/subscription-billing/config', request),
   configHistory: () =>

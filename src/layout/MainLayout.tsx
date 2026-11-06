@@ -19,6 +19,7 @@ interface NavItem {
   icon: string
   end?: boolean
   roles?: Role[]
+  usernames?: string[]
 }
 
 interface NavSection {
@@ -62,9 +63,10 @@ const ICONS = {
   profile: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z',
 }
 
-function NavSection({ section, role }: { section: NavSection; role: Role }) {
+function NavSection({ section, role, username }: { section: NavSection; role: Role; username: string }) {
   const items = section.items.filter((item) => {
     if (item.roles && !item.roles.includes(role)) return false
+    if (item.usernames && !item.usernames.includes(username)) return false
     if (role === 'CONSULTANT' && HIDDEN_FOR_CONSULTANT.has(item.to)) return false
     return true
   })
@@ -134,7 +136,7 @@ export function MainLayout() {
   if (!user) return null
 
   const isAdmin = user.role === 'ADMIN'
-  const _LAST_COMMIT_ = '2026_11_05_23_06_14'
+  const _LAST_COMMIT_ = '2026_11_06_10_18_03'
 
   const sections: NavSection[] = [
     {
@@ -207,7 +209,7 @@ export function MainLayout() {
       id: 'nav.group.admin',
       title: t('nav.group.admin'),
       items: [
-        { to: '/parametres-paiement', id: 'nav.paymentSettings', label: t('PaymentSettings.title'), icon: ICONS.support },
+        { to: '/parametres-paiement', id: 'nav.paymentSettings', label: t('PaymentSettings.title'), icon: ICONS.support, usernames: ['admin'] },
         { to: '/tables', id: 'nav.tables', label: t('nav.tables'), icon: ICONS.tables },
         { to: '/langues', id: 'nav.languages', label: t('nav.languages'), icon: ICONS.languages },
         { to: '/logs', id: 'nav.logs', label: t('nav.logs'), icon: ICONS.logs },
@@ -232,7 +234,7 @@ export function MainLayout() {
 
         <nav className="flex-1 space-y-0.5 px-3 pb-4">
           {sections.map((section, i) => (
-            <NavSection key={i} section={section} role={user.role} />
+            <NavSection key={i} section={section} role={user.role} username={user.username} />
           ))}
         </nav>
 

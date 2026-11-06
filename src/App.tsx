@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AdminRoute } from './auth/AdminRoute'
+import { AdminAccountRoute } from './auth/AdminAccountRoute'
 import { PublicOnlyRoute } from './auth/PublicOnlyRoute'
 import { PasswordGuard } from './auth/PasswordGuard'
 import { NotConsultantRoute } from './auth/NotConsultantRoute'
@@ -205,9 +206,9 @@ const router = createBrowserRouter(
             {
               path: '/parametres-paiement',
               element: (
-                <AdminRoute>
+                <AdminAccountRoute>
                   <PaymentSettings />
-                </AdminRoute>
+                </AdminAccountRoute>
               ),
             },
             {
