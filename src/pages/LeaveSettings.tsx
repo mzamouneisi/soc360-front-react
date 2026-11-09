@@ -5,9 +5,17 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useSoc } from '../soc/SocContext'
 import { Button, Card, Field, Input, RefreshButton, Select } from '../components/ui'
-import { ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
+import { Icon } from '../components/icons'
 import { dialog } from '../components/dialog'
-import type { LeaveAccrualFrequency, LeaveType } from '../api/types'
+import { formatDateTime } from '../lib/format'
+import type {
+  LeaveAccrualFrequency,
+  LeaveConfigDto,
+  LeaveType,
+} from '../api/types'
+
+const HISTORY_PAGE_SIZE = 5
 
 export function LeaveSettings() {
   const { user } = useAuth()
@@ -31,6 +39,9 @@ export function LeaveSettings() {
   })
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<number | null>(null)
+  const [historyOpen, setHistoryOpen] = useState<Record<number, boolean>>({})
+  const [historyPages, setHistoryPages] = useState<Record<number, number>>({})
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -55,6 +66,18 @@ export function LeaveSettings() {
       setFormError(err instanceof ApiError ? err.message : 'Erreur')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function toggleActive(config: LeaveConfigDto) {
+    setTogglingId(config.id)
+    try {
+      await leaveApi.setConfigActive(config.id, !config.active)
+      reload()
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur')
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -101,6 +124,17 @@ export function LeaveSettings() {
             <Field label="Seuil négatif" id="LeaveSettings.config.negative.label">
               <Input id="LeaveSettings.config.negative" type="number" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
             </Field>
+            <Field label="Active" id="LeaveSettings.config.active.label">
+              <label id="LeaveSettings.config.active.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
+                <input
+                  id="LeaveSettings.config.active"
+                  type="checkbox"
+                  checked={form.active}
+                  onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                />
+                {form.active ? 'Oui' : 'Non'}
+              </label>
+            </Field>
           </div>
           <Button type="submit" id="LeaveSettings.config.submit" disabled={saving}>{saving ? '...' : 'Enregistrer'}</Button>
         </form>
@@ -108,16 +142,105 @@ export function LeaveSettings() {
 
       <Card id="LeaveSettings.configs" className="mb-6 p-5">
         <h3 id="LeaveSettings.configs.title" className="mb-3 text-sm font-semibold text-gray-700">Configurations existantes</h3>
-        <div className="space-y-2 text-sm text-gray-700">
-          {(configs ?? []).map((config) => (
-            <div id={`LeaveSettings.configs.${config.id}`} key={config.id} className="flex flex-wrap gap-4 rounded border border-gray-100 px-3 py-2">
-              <span className="font-medium">{config.leaveType}</span>
-              <span>effet {config.effectiveDate}</span>
-              <span>{config.accrualAmount} / {config.accrualFrequency}</span>
-              <span>seuil négatif {config.negativeLimit}</span>
-              <span>{config.active ? 'actif' : 'inactif'}</span>
-            </div>
-          ))}
+        <div className="space-y-3 text-sm text-gray-700">
+          {(configs ?? []).map((config) => {
+            const totalPages = Math.max(1, Math.ceil(config.activations.length / HISTORY_PAGE_SIZE))
+            const page = Math.min(historyPages[config.id] ?? 0, totalPages - 1)
+            const pageItems = config.activations.slice(
+              page * HISTORY_PAGE_SIZE,
+              page * HISTORY_PAGE_SIZE + HISTORY_PAGE_SIZE,
+            )
+            const open = historyOpen[config.id] ?? false
+            return (
+              <div id={`LeaveSettings.configs.${config.id}`} key={config.id} className="rounded border border-gray-100 px-3 py-2">
+                <div className="flex flex-wrap items-center gap-4">
+                  <span className="font-medium">{config.leaveType}</span>
+                  <span>effet {config.effectiveDate}</span>
+                  <span>{config.accrualAmount} / {config.accrualFrequency}</span>
+                  <span>seuil négatif {config.negativeLimit}</span>
+                  <span id={`LeaveSettings.configs.${config.id}.statut`}>{config.active ? 'actif' : 'inactif'}</span>
+                  <Button
+                    id={`LeaveSettings.configs.${config.id}.toggle`}
+                    type="button"
+                    disabled={togglingId === config.id}
+                    className="!w-auto !px-2 !py-1 !text-xs"
+                    onClick={() => void toggleActive(config)}
+                  >
+                    {config.active ? 'Désactiver' : 'Activer'}
+                  </Button>
+                  <Button
+                    id={`LeaveSettings.configs.${config.id}.historique.toggle`}
+                    type="button"
+                    className="!w-auto !px-2 !py-1 !text-xs"
+                    aria-label="Historique"
+                    title={open ? "Masquer l'historique" : "Afficher l'historique"}
+                    onClick={() => setHistoryOpen((prev) => ({ ...prev, [config.id]: !open }))}
+                  >
+                    <Icon name="history" className="h-4 w-4" />
+                    Historique
+                  </Button>
+                </div>
+
+                {open && (
+                  <div className="mt-3">
+                    <p id={`LeaveSettings.configs.${config.id}.historique.titre`} className="text-xs font-semibold text-gray-600">
+                      Historique d'activation / désactivation
+                    </p>
+                    {config.activations.length > 0 ? (
+                      <>
+                        <table
+                          id={`LeaveSettings.configs.${config.id}.historique.table`}
+                          className="mt-1 text-xs"
+                          style={{ width: '440px', maxWidth: '100%' }}
+                        >
+                          <colgroup>
+                            <col style={{ width: '150px' }} />
+                            <col style={{ width: '110px' }} />
+                            <col style={{ width: '180px' }} />
+                          </colgroup>
+                          <thead>
+                            <tr className="text-left text-gray-500">
+                              <th id={`LeaveSettings.configs.${config.id}.historique.date.titre`} className="px-2 py-1">Date</th>
+                              <th id={`LeaveSettings.configs.${config.id}.historique.statut.titre`} className="px-2 py-1">Statut</th>
+                              <th id={`LeaveSettings.configs.${config.id}.historique.user.titre`} className="px-2 py-1">Utilisateur</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pageItems.map((activation) => (
+                              <tr id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}`} key={activation.id}>
+                                <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.date`} className="px-2 py-1">
+                                  {formatDateTime(activation.actionDate)}
+                                </td>
+                                <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.statut`} className="px-2 py-1">
+                                  {activation.action === 'ACTIVATION' ? 'Activation' : 'Désactivation'}
+                                </td>
+                                <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.user`} className="px-2 py-1">
+                                  {activation.userName ?? '—'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div style={{ width: '440px', maxWidth: '100%' }}>
+                          <Pagination
+                            page={page}
+                            totalPages={totalPages}
+                            total={config.activations.length}
+                            onChange={(next) =>
+                              setHistoryPages((prev) => ({ ...prev, [config.id]: next }))
+                            }
+                            idPrefix={`LeaveSettings.configs.${config.id}.historique.pagination`}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <p id={`LeaveSettings.configs.${config.id}.historique.vide`} className="text-xs text-gray-400">Aucun historique</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
           {(configs ?? []).length === 0 && <p id="LeaveSettings.configs.empty" className="text-gray-400">Aucune configuration</p>}
         </div>
       </Card>

@@ -15,6 +15,8 @@ import type {
 export const leaveApi = {
   configs: (socId?: number | null) => api.get<LeaveConfigDto[]>('/leave/configs', { socId }),
   saveConfig: (request: LeaveConfigRequest) => api.post<LeaveConfigDto>('/leave/configs', request),
+  setConfigActive: (id: number, active: boolean) =>
+    api.post<LeaveConfigDto>(`/leave/configs/${id}/active`, { active }),
   eligibilities: (socId: number | null | undefined, leaveType: LeaveType) =>
     api.get<LeaveEligibilityDto[]>('/leave/eligibilities', { socId, leaveType }),
   saveEligibility: (request: LeaveEligibilityRequest) =>
