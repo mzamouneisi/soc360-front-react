@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'r
 import { authApi, type CompanyLookup } from '../api/auth'
 import { socsApi } from '../api/socs'
 import type { AddSocPayload, SocLiteDto } from '../api/types'
+import { useAuth } from '../auth/AuthContext'
 import { Modal } from '../components/data'
 import { Button, Field, Input, Textarea } from '../components/ui'
 import { dialog } from '../components/dialog'
@@ -23,6 +24,8 @@ interface AddSocModalProps {
 
 export function AddSocModal({ open, onClose, onCreated, submit, defaultMine = true }: AddSocModalProps) {
   const { addSoc, refreshSocs } = useSoc()
+  const { user } = useAuth()
+  const canManageLogo = user?.role === 'RESPONSIBLE_SOC'
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [infosWeb, setInfosWeb] = useState('')
@@ -152,7 +155,7 @@ export function AddSocModal({ open, onClose, onCreated, submit, defaultMine = tr
         mine,
       }
       const created = submit ? await submit(payload) : await addSoc(payload)
-      if (logoFile) {
+      if (logoFile && canManageLogo) {
         try {
           await socsApi.uploadLogo(created.id, logoFile)
           await refreshSocs()
@@ -368,45 +371,47 @@ setWebsite(ensureHttps(company.website))
           </div>
         </fieldset>
 
-        <fieldset id="SocLogo.fieldset" className="space-y-3 rounded-lg border border-gray-200 p-4">
-          <legend id="SocLogo.logo" className="px-1 text-sm font-medium text-gray-700">
-            {tr('SocLogo.logo')}
-          </legend>
-          <div className="flex flex-wrap items-center gap-4">
-            <img
-              id="SocLogo.apercu.image"
-              src={logoPreview ?? DEFAULT_SOC_LOGO}
-              alt={tr('SocLogo.apercu')}
-              className="h-16 w-28 rounded border border-gray-200 bg-white object-contain p-1"
-            />
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                ref={logoInputRef}
-                id="SocLogo.choisir.input"
-                type="file"
-                accept=".png,.jpg,.jpeg,image/png,image/jpeg"
-                onChange={chooseLogo}
-                className="text-sm text-gray-600 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
+        {canManageLogo && (
+          <fieldset id="SocLogo.fieldset" className="space-y-3 rounded-lg border border-gray-200 p-4">
+            <legend id="SocLogo.logo" className="px-1 text-sm font-medium text-gray-700">
+              {tr('SocLogo.logo')}
+            </legend>
+            <div className="flex flex-wrap items-center gap-4">
+              <img
+                id="SocLogo.apercu.image"
+                src={logoPreview ?? DEFAULT_SOC_LOGO}
+                alt={tr('SocLogo.apercu')}
+                className="h-16 w-28 rounded border border-gray-200 bg-white object-contain p-1"
               />
-              {logoFile && (
-                <Button
-                  id="SocLogo.supprimer"
-                  type="button"
-                  onClick={removeLogo}
-                  className="!w-auto !bg-red-50 !text-red-700 hover:!bg-red-100"
-                >
-                  {tr('SocLogo.supprimer')}
-                </Button>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  ref={logoInputRef}
+                  id="SocLogo.choisir.input"
+                  type="file"
+                  accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                  onChange={chooseLogo}
+                  className="text-sm text-gray-600 file:mr-2 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
+                />
+                {logoFile && (
+                  <Button
+                    id="SocLogo.supprimer"
+                    type="button"
+                    onClick={removeLogo}
+                    className="!w-auto !bg-red-50 !text-red-700 hover:!bg-red-100"
+                  >
+                    {tr('SocLogo.supprimer')}
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-          <p id="SocLogo.formats" className="text-xs text-gray-500">{tr('SocLogo.formats')}</p>
-          {logoError && (
-            <p id="SocLogo.erreur" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {logoErrorMessage(logoError)}
-            </p>
-          )}
-        </fieldset>
+            <p id="SocLogo.formats" className="text-xs text-gray-500">{tr('SocLogo.formats')}</p>
+            {logoError && (
+              <p id="SocLogo.erreur" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {logoErrorMessage(logoError)}
+              </p>
+            )}
+          </fieldset>
+        )}
       </form>
       {searchResults.length > 1 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">

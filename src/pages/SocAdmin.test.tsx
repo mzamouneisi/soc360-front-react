@@ -78,4 +78,39 @@ describe('SocAdmin', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Modifier Acme')).toBeInTheDocument()
   })
+
+  it("ne propose pas la gestion du logo à l'administrateur", async () => {
+    userMock.value = adminUser
+    findAllMock.mockResolvedValue([soc()])
+
+    render(
+      <MemoryRouter>
+        <SocAdmin />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Acme')).toBeInTheDocument()
+    fireEvent.click(document.getElementById('table.row.1') as HTMLElement)
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+
+    expect(document.getElementById('SocLogo.fieldset')).toBeNull()
+  })
+
+  it('propose la gestion du logo au responsable de la société', async () => {
+    userMock.value = { ...adminUser, role: 'RESPONSIBLE_SOC', socId: 1 }
+    socsMock.value = [{ id: 1, name: 'Acme' }]
+    findAllMock.mockResolvedValue([soc()])
+
+    render(
+      <MemoryRouter>
+        <SocAdmin />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Acme')).toBeInTheDocument()
+    fireEvent.click(document.getElementById('table.row.1') as HTMLElement)
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+
+    expect(document.getElementById('SocLogo.fieldset')).not.toBeNull()
+  })
 })

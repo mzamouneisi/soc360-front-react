@@ -429,19 +429,21 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
                 <Textarea id="SocAdmin.informations.web.textarea" rows={3} value={editingForm.form.infosWeb} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, infosWeb: e.target.value } })} />
               </Field>
             </div>
-            <div className="sm:col-span-2">
-              <SocLogoField
-                socId={editingForm.soc.id}
-                hasLogo={editingForm.soc.hasLogo ?? false}
-                socName={editingForm.soc.name}
-                disabled={editingForm.readOnly}
-                onChange={(saved) => {
-                  setEditingForm({ ...editingForm, soc: saved })
-                  setData((prev) => (prev ?? []).map((s) => (s.id === saved.id ? saved : s)))
-                  void refreshSocs()
-                }}
-              />
-            </div>
+            {user?.role === 'RESPONSIBLE_SOC' && (
+              <div className="sm:col-span-2">
+                <SocLogoField
+                  socId={editingForm.soc.id}
+                  hasLogo={editingForm.soc.hasLogo ?? false}
+                  socName={editingForm.soc.name}
+                  disabled={editingForm.readOnly}
+                  onChange={(saved) => {
+                    setEditingForm({ ...editingForm, soc: saved })
+                    setData((prev) => (prev ?? []).map((s) => (s.id === saved.id ? saved : s)))
+                    void refreshSocs()
+                  }}
+                />
+              </div>
+            )}
           </fieldset>
         </Modal>
       )}

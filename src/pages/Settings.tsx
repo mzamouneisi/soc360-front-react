@@ -127,6 +127,7 @@ export function Settings() {
   const [leaveDayColor, setLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
   const [weekendColor, setWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
   const [socHasLogo, setSocHasLogo] = useState<boolean>(selectedSoc?.hasLogo ?? false)
+  const [logoChanged, setLogoChanged] = useState(false)
   const [savedLeaveDayColor, setSavedLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
   const [savedWeekendColor, setSavedWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
   const [saving, setSaving] = useState(false)
@@ -155,6 +156,7 @@ export function Settings() {
         setSavedLeaveDayColor(leave)
         setSavedWeekendColor(weekend)
         setSocHasLogo(soc.hasLogo ?? false)
+        setLogoChanged(false)
       })
       .catch(() => undefined)
     return () => {
@@ -292,6 +294,7 @@ export function Settings() {
     (u.buttonDisableColor || '#f97316') !== btnDisableColor ||
     (u.buttonDisableTextColor || '#ffffff') !== btnDisableTextColor ||
     (u.backgroundColor || '#bae6fd') !== bgColor ||
+    logoChanged ||
     (canEditCraColors && selectedSocId != null &&
       (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor))
 
@@ -389,6 +392,7 @@ export function Settings() {
         setSavedWeekendColor(weekendColor)
       }
       await refreshMe()
+      setLogoChanged(false)
       setSaved(true)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
@@ -845,6 +849,7 @@ export function Settings() {
               socName={selectedSoc?.name}
               onChange={(saved) => {
                 setSocHasLogo(saved.hasLogo ?? false)
+                setLogoChanged(true)
                 void refreshSocs()
               }}
             />

@@ -2,13 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Settings } from './Settings'
 
-const { getByIdMock, updateCraColorsMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, userMock } = vi.hoisted(() => ({
+const { getByIdMock, updateCraColorsMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, userMock } = vi.hoisted(() => ({
   getByIdMock: vi.fn(),
   updateCraColorsMock: vi.fn(),
   updateTableColorsMock: vi.fn(),
   updateTableHeaderFontSizeMock: vi.fn(),
   updateFormSettingsMock: vi.fn(),
   refreshMeMock: vi.fn(),
+  uploadLogoMock: vi.fn(),
   userMock: { value: null as unknown },
 }))
 
@@ -54,6 +55,7 @@ vi.mock('../api/socs', () => ({
   socsApi: {
     getById: getByIdMock,
     updateCraColors: updateCraColorsMock,
+    uploadLogo: uploadLogoMock,
   },
 }))
 
@@ -143,6 +145,30 @@ describe('Settings — couleurs CRA', () => {
         weekendColor: '#eefcee',
       }),
     )
+  })
+
+  it('active le bouton Enregistrer après l’import d’un logo', async () => {
+    userMock.value = user('RESPONSIBLE_SOC')
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee' },
+      subscriptions: [],
+      payments: [],
+    })
+    uploadLogoMock.mockResolvedValue({ id: 5, name: 'Soc Test', hasLogo: true })
+
+    render(<Settings />)
+
+    await waitFor(() => expect(document.getElementById('SocLogo.fieldset')).not.toBeNull())
+    const saveButton = document.getElementById('common.save.button') as HTMLButtonElement
+    expect(saveButton).toBeDisabled()
+
+    const input = document.getElementById('SocLogo.choisir.input') as HTMLInputElement
+    fireEvent.change(input, {
+      target: { files: [new File(['x'], 'logo.png', { type: 'image/png' })] },
+    })
+
+    await waitFor(() => expect(uploadLogoMock).toHaveBeenCalledWith(5, expect.any(File)))
+    await waitFor(() => expect(saveButton).not.toBeDisabled())
   })
 
   it('ne montre pas les couleurs CRA à un consultant', async () => {
