@@ -18,6 +18,8 @@ interface SocState {
   selectedSoc: SocLiteDto | null
   favoriteSocId: number | null
   favoriteSoc: SocLiteDto | null
+  /** Incrémenté à chaque rafraîchissement : force le rechargement du logo (ex. remplacement). */
+  socRevision: number
   loading: boolean
   refreshSocs: () => Promise<void>
   selectSoc: (id: number) => void
@@ -38,6 +40,7 @@ export function SocProvider({ children }: { children: ReactNode }) {
     return raw ? Number(raw) : null
   })
   const [loading, setLoading] = useState(false)
+  const [socRevision, setSocRevision] = useState(0)
 
   const applySelection = useCallback((id: number | null) => {
     setSelectedSocIdState(id)
@@ -60,6 +63,7 @@ export function SocProvider({ children }: { children: ReactNode }) {
     try {
       const list = await authApi.mySocs()
       setSocs(list)
+      setSocRevision((value) => value + 1)
       const favoriteId = user.socId
       const favoriteValid = favoriteId != null && list.some((e) => e.id === favoriteId)
       const stored = getCurrentSocId()
@@ -121,6 +125,7 @@ export function SocProvider({ children }: { children: ReactNode }) {
       selectedSoc,
       favoriteSocId,
       favoriteSoc,
+      socRevision,
       loading,
       refreshSocs,
       selectSoc,
@@ -134,6 +139,7 @@ export function SocProvider({ children }: { children: ReactNode }) {
       selectedSoc,
       favoriteSocId,
       favoriteSoc,
+      socRevision,
       loading,
       refreshSocs,
       selectSoc,

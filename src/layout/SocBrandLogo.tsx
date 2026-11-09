@@ -10,7 +10,7 @@ import { useSoc } from '../soc/SocContext'
  * apparaître que le logo de la société.
  */
 export function SocBrandLogo() {
-  const { selectedSoc } = useSoc()
+  const { selectedSoc, socRevision } = useSoc()
   const [src, setSrc] = useState(DEFAULT_SOC_LOGO)
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export function SocBrandLogo() {
       active = false
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [selectedSoc?.id, selectedSoc?.hasLogo])
+  }, [selectedSoc?.id, selectedSoc?.hasLogo, socRevision])
 
   const rawWebsite = selectedSoc?.website?.trim() ?? ''
   const websiteUrl = rawWebsite

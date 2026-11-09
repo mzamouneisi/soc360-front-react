@@ -49,7 +49,8 @@ export const socsApi = {
     return api.upload<SocDto>(`/socs/${id}/logo`, formData)
   },
   removeLogo: (id: number) => api.delete<SocDto>(`/socs/${id}/logo`),
-  logoUrl: (id: number) => api.blobUrl(`/socs/${id}/logo`),
+  // `v` évite que le navigateur réutilise l'ancien logo après un remplacement.
+  logoUrl: (id: number) => api.blobUrl(`/socs/${id}/logo?v=${Date.now()}`),
   remove: (id: number) => api.delete<void>(`/socs/${id}`),
   removeWithDependencies: (id: number) => api.delete<void>(`/socs/${id}/all`),
   dependencies: (id: number) => api.get<SocDependency[]>(`/socs/${id}/dependencies`),

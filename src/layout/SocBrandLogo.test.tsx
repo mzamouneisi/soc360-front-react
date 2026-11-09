@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, waitFor } from '@testing-library/react'
 import { SocBrandLogo } from './SocBrandLogo'
 
-const { socMock, logoUrlMock } = vi.hoisted(() => ({
+const { socMock, logoUrlMock, revision } = vi.hoisted(() => ({
   socMock: {
     value: { id: 5, name: 'Acme', hasLogo: false, website: null } as {
       id: number
@@ -12,10 +12,11 @@ const { socMock, logoUrlMock } = vi.hoisted(() => ({
     } | null,
   },
   logoUrlMock: vi.fn(),
+  revision: { value: 0 },
 }))
 
 vi.mock('../soc/SocContext', () => ({
-  useSoc: () => ({ selectedSoc: socMock.value }),
+  useSoc: () => ({ selectedSoc: socMock.value, socRevision: revision.value }),
 }))
 
 vi.mock('../api/socs', () => ({
@@ -24,6 +25,7 @@ vi.mock('../api/socs', () => ({
 
 afterEach(() => {
   vi.clearAllMocks()
+  revision.value = 0
 })
 
 describe('SocBrandLogo', () => {
@@ -67,6 +69,28 @@ describe('SocBrandLogo', () => {
     expect(link.getAttribute('href')).toBe('https://www.acme.fr')
     expect(link.getAttribute('target')).toBe('_blank')
     await waitFor(() => expect(link.contains(document.getElementById('MainLayout.logo'))).toBe(true))
+  })
+
+  it('recharge le logo quand la société est rafraîchie après un remplacement', async () => {
+    socMock.value = { id: 5, name: 'Acme', hasLogo: true }
+    logoUrlMock.mockResolvedValueOnce('blob:ancien-logo').mockResolvedValueOnce('blob:nouveau-logo')
+
+    const { rerender } = render(<SocBrandLogo />)
+    await waitFor(() =>
+      expect((document.getElementById('MainLayout.logo') as HTMLImageElement).src).toBe(
+        'blob:ancien-logo',
+      ),
+    )
+
+    revision.value = 1
+    rerender(<SocBrandLogo />)
+
+    await waitFor(() =>
+      expect((document.getElementById('MainLayout.logo') as HTMLImageElement).src).toBe(
+        'blob:nouveau-logo',
+      ),
+    )
+    expect(logoUrlMock).toHaveBeenCalledTimes(2)
   })
 
   it('ajoute https:// quand le site n’a pas de protocole', () => {
