@@ -1021,6 +1021,7 @@ export interface LeaveConfigDto {
   carryoverExpirationMonths: number | null
   negativeLimit: number
   activations: LeaveConfigActivationDto[]
+  deletable: boolean
 }
 
 export interface LeaveConfigRequest {

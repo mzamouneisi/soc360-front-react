@@ -40,6 +40,7 @@ export function LeaveSettings() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const [historyOpen, setHistoryOpen] = useState<Record<number, boolean>>({})
   const [historyPages, setHistoryPages] = useState<Record<number, number>>({})
 
@@ -78,6 +79,26 @@ export function LeaveSettings() {
       void dialog.error(err instanceof ApiError ? err.message : 'Erreur')
     } finally {
       setTogglingId(null)
+    }
+  }
+
+  async function removeConfig(config: LeaveConfigDto) {
+    if (
+      !(await dialog.confirm(
+        `Supprimer la configuration ${config.leaveType} du ${config.effectiveDate} ?`,
+        { variant: 'warning', danger: true, okLabel: 'Supprimer' },
+      ))
+    ) {
+      return
+    }
+    setDeletingId(config.id)
+    try {
+      await leaveApi.deleteConfig(config.id)
+      reload()
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -159,6 +180,18 @@ export function LeaveSettings() {
                   <span>{config.accrualAmount} / {config.accrualFrequency}</span>
                   <span>seuil négatif {config.negativeLimit}</span>
                   <span id={`LeaveSettings.configs.${config.id}.statut`}>{config.active ? 'actif' : 'inactif'}</span>
+                  {config.deletable && (
+                    <Button
+                      id={`LeaveSettings.configs.${config.id}.supprimer`}
+                      type="button"
+                      variant="danger"
+                      disabled={deletingId === config.id}
+                      className="!w-auto !px-2 !py-1 !text-xs"
+                      onClick={() => void removeConfig(config)}
+                    >
+                      Supprimer
+                    </Button>
+                  )}
                   <Button
                     id={`LeaveSettings.configs.${config.id}.toggle`}
                     type="button"

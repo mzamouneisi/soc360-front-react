@@ -17,6 +17,7 @@ export const leaveApi = {
   saveConfig: (request: LeaveConfigRequest) => api.post<LeaveConfigDto>('/leave/configs', request),
   setConfigActive: (id: number, active: boolean) =>
     api.post<LeaveConfigDto>(`/leave/configs/${id}/active`, { active }),
+  deleteConfig: (id: number) => api.delete<void>(`/leave/configs/${id}`),
   eligibilities: (socId: number | null | undefined, leaveType: LeaveType) =>
     api.get<LeaveEligibilityDto[]>('/leave/eligibilities', { socId, leaveType }),
   saveEligibility: (request: LeaveEligibilityRequest) =>

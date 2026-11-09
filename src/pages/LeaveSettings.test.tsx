@@ -3,11 +3,14 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { LeaveSettings } from './LeaveSettings'
 import type { LeaveConfigDto } from '../api/types'
 
-const { configsMock, saveConfigMock, setConfigActiveMock } = vi.hoisted(() => ({
-  configsMock: vi.fn(),
-  saveConfigMock: vi.fn(),
-  setConfigActiveMock: vi.fn(),
-}))
+const { configsMock, saveConfigMock, setConfigActiveMock, deleteConfigMock, confirmMock } =
+  vi.hoisted(() => ({
+    configsMock: vi.fn(),
+    saveConfigMock: vi.fn(),
+    setConfigActiveMock: vi.fn(),
+    deleteConfigMock: vi.fn(),
+    confirmMock: vi.fn(),
+  }))
 
 vi.mock('../auth/AuthContext', () => ({
   useAuth: () => ({ user: { id: 1, role: 'RESPONSIBLE_SOC', socId: 10 } }),
@@ -22,11 +25,12 @@ vi.mock('../api/leave', () => ({
     configs: configsMock,
     saveConfig: saveConfigMock,
     setConfigActive: setConfigActiveMock,
+    deleteConfig: deleteConfigMock,
   },
 }))
 
 vi.mock('../components/dialog', () => ({
-  dialog: { success: vi.fn(), error: vi.fn() },
+  dialog: { success: vi.fn(), error: vi.fn(), confirm: confirmMock },
 }))
 
 function config(overrides: Partial<LeaveConfigDto> = {}): LeaveConfigDto {
@@ -61,6 +65,7 @@ function config(overrides: Partial<LeaveConfigDto> = {}): LeaveConfigDto {
         userName: 'Alice Martin',
       },
     ],
+    deletable: true,
     ...overrides,
   }
 }
@@ -172,5 +177,27 @@ describe('LeaveSettings — activation / désactivation', () => {
     await waitFor(() =>
       expect(saveConfigMock).toHaveBeenCalledWith(expect.objectContaining({ active: false })),
     )
+  })
+
+  it('supprime une configuration supprimable après confirmation', async () => {
+    configsMock.mockResolvedValue([config()])
+    confirmMock.mockResolvedValue(true)
+    deleteConfigMock.mockResolvedValue(undefined)
+
+    render(<LeaveSettings />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Supprimer' }))
+
+    await waitFor(() => expect(deleteConfigMock).toHaveBeenCalledWith(1))
+    expect(confirmMock).toHaveBeenCalled()
+  })
+
+  it('ne propose pas la suppression d’une configuration référencée', async () => {
+    configsMock.mockResolvedValue([config({ deletable: false })])
+
+    render(<LeaveSettings />)
+
+    await screen.findByText('CP')
+    expect(screen.queryByRole('button', { name: 'Supprimer' })).toBeNull()
   })
 })

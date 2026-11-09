@@ -201,8 +201,9 @@ crée une nouvelle version. Avec la même date + même type, la ligne est modifi
   la nouvelle `effective_date`.
 - Pour neutraliser une version, on peut la passer `active = false` ; elle est alors ignorée par
   `activeConfig`, mais les lots/mouvements déjà produits restent.
-- Si une config est référencée par des lots/mouvements (`config_id`), la supprimer en base
-  échouerait (contraintes de clé étrangère) ; il n'y a de toute façon pas d'API de suppression.
+- Si une config est référencée par des lots/mouvements (`config_id`), sa suppression est
+  **refusée** (409) ; elle peut en revanche être supprimée si aucun lot ni mouvement ne la
+  référence (`DELETE /api/leave/configs/{id}`, historique d'activation supprimé avec elle).
 
 ### Points d'attention
 
@@ -245,6 +246,7 @@ l'historique complet est dans cette table (affiché dans `LeaveSettings` sous fo
 | `GET` | `/api/leave/configs?socId=` | lecture (membre de la société) |
 | `POST` | `/api/leave/configs` | `RESPONSIBLE_SOC` |
 | `POST` | `/api/leave/configs/{id}/active` | `RESPONSIBLE_SOC` (active/désactive) |
+| `DELETE` | `/api/leave/configs/{id}` | `RESPONSIBLE_SOC` (si `deletable = true`) |
 | `GET` | `/api/leave/eligibilities?leaveType=RTT` | lecture |
 | `POST` | `/api/leave/eligibilities` | `RESPONSIBLE_SOC` |
 | `GET` | `/api/leave/balance?consultantId=&date=` | membre / consultant lui-même |
