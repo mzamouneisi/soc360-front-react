@@ -1,12 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { Consultants } from './Consultants'
+import { DialogHost } from '../components/dialog'
 import type { ConsultantDto, UserDto } from '../api/types'
 
-const { findAllMock, updateMock, userMock } = vi.hoisted(() => ({
+const { findAllMock, updateMock, deleteMock, dependenciesMock, deleteDependencyMock, userMock } = vi.hoisted(() => ({
   findAllMock: vi.fn(),
   updateMock: vi.fn(),
+  deleteMock: vi.fn(),
+  dependenciesMock: vi.fn(),
+  deleteDependencyMock: vi.fn(),
   userMock: { value: null as unknown as UserDto },
 }))
 
@@ -43,7 +47,9 @@ vi.mock('../api/consultants', () => ({
     managers: vi.fn().mockResolvedValue([]),
     update: updateMock,
     create: vi.fn(),
-    delete: vi.fn(),
+    delete: deleteMock,
+    dependencies: dependenciesMock,
+    deleteDependency: deleteDependencyMock,
     history: vi.fn().mockResolvedValue([]),
     importCsv: vi.fn(),
   },
@@ -71,6 +77,7 @@ const responsibleUser = {
 } as UserDto
 
 const managerUser = { ...responsibleUser, id: 2, role: 'MANAGER' } as UserDto
+const adminUser = { ...responsibleUser, id: 9, username: 'admin', role: 'ADMIN', socId: null } as UserDto
 
 function consultant(overrides: Partial<ConsultantDto> = {}): ConsultantDto {
   return {
@@ -114,6 +121,7 @@ function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/consultants']}>
       <Consultants />
+      <DialogHost />
     </MemoryRouter>,
   )
 }
@@ -163,6 +171,101 @@ describe.each([
     expect(await screen.findByText('Saisissez un email valide.')).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(updateMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('Consultants — supprimer un utilisateur', () => {
+  it('liste les objets liés, puis permet de supprimer l’utilisateur une fois la liste vide', async () => {
+    userMock.value = adminUser
+    findAllMock.mockResolvedValue({
+      items: [consultant()],
+      total: 1,
+      page: 0,
+      size: 5,
+      totalPages: 1,
+    })
+    dependenciesMock.mockResolvedValue([
+      { type: 'timesheet', id: 7, label: 'CRA 11/2026' },
+    ])
+    deleteDependencyMock.mockResolvedValue(undefined)
+    deleteMock.mockResolvedValue(undefined)
+
+    renderPage()
+    await screen.findByText('Jean Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
+
+    const dependencyModal = await screen.findByRole('dialog')
+    expect(within(dependencyModal).getByText('CRA 11/2026')).toBeInTheDocument()
+    expect(within(dependencyModal).getByText('CRA')).toBeInTheDocument()
+    expect(within(dependencyModal).getByRole('button', { name: 'Supprimer l’utilisateur' })).toBeDisabled()
+
+    dependenciesMock.mockResolvedValue([])
+    fireEvent.click(document.getElementById('Consultants.dependances.timesheet.7.delete')!)
+    await waitFor(() => expect(document.getElementById('dialog-confirm')).toBeTruthy())
+    fireEvent.click(document.getElementById('dialog-confirm')!)
+
+    await waitFor(() =>
+      expect(deleteDependencyMock).toHaveBeenCalledWith(10, 'timesheet', 7),
+    )
+    await waitFor(() =>
+      expect(document.getElementById('Consultants.dependances.empty')).toBeInTheDocument(),
+    )
+    const userDeleteButton = document.getElementById(
+      'Consultants.dependances.supprimer.utilisateur',
+    ) as HTMLButtonElement
+    expect(userDeleteButton.disabled).toBe(false)
+
+    fireEvent.click(userDeleteButton)
+    await waitFor(() => expect(document.getElementById('dialog-confirm')).toBeTruthy())
+    fireEvent.click(document.getElementById('dialog-confirm')!)
+
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(10))
+  })
+
+  it('propose le bouton Supprimer dans le formulaire d’édition', async () => {
+    userMock.value = adminUser
+    findAllMock.mockResolvedValue({
+      items: [consultant()],
+      total: 1,
+      page: 0,
+      size: 5,
+      totalPages: 1,
+    })
+    dependenciesMock.mockResolvedValue([
+      { type: 'timesheet', id: 7, label: 'CRA 11/2026' },
+    ])
+
+    renderPage()
+    await screen.findByText('Jean Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier' }))
+
+    const deleteButton = document.getElementById('Consultants.form.supprimer')
+    expect(deleteButton).toBeInTheDocument()
+    fireEvent.click(deleteButton!)
+
+    expect(await screen.findByText('CRA 11/2026')).toBeInTheDocument()
+  })
+
+  it('demande directement confirmation quand aucun objet n’est lié', async () => {
+    userMock.value = adminUser
+    findAllMock.mockResolvedValue({
+      items: [consultant()],
+      total: 1,
+      page: 0,
+      size: 5,
+      totalPages: 1,
+    })
+    dependenciesMock.mockResolvedValue([])
+    deleteMock.mockResolvedValue(undefined)
+
+    renderPage()
+    await screen.findByText('Jean Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
+
+    await waitFor(() => expect(document.getElementById('dialog-confirm')).toBeTruthy())
+    fireEvent.click(document.getElementById('dialog-confirm')!)
+
+    await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(10))
   })
 })
 

@@ -94,6 +94,8 @@ describe('services API', () => {
     consultantsApi.create({} as ConsultantRequest)
     consultantsApi.update(2, {} as ConsultantRequest)
     consultantsApi.delete(2)
+    consultantsApi.dependencies(2)
+    consultantsApi.deleteDependency(2, 'timesheet', 3)
     consultantsApi.history(2)
     consultantsApi.updatePerson(3, { firstName: 'A', lastName: 'B', email: null, phone: null })
     consultantsApi.deletePerson(3)
@@ -105,14 +107,16 @@ describe('services API', () => {
     expect(api.post).toHaveBeenCalledWith('/consultants', {})
     expect(api.put).toHaveBeenNthCalledWith(1, '/consultants/2', {})
     expect(api.delete).toHaveBeenNthCalledWith(1, '/consultants/2')
-    expect(api.get).toHaveBeenNthCalledWith(5, '/consultants/2/history')
+    expect(api.get).toHaveBeenNthCalledWith(5, '/consultants/2/dependencies')
+    expect(api.delete).toHaveBeenNthCalledWith(2, '/consultants/2/dependencies/timesheet/3')
+    expect(api.get).toHaveBeenNthCalledWith(6, '/consultants/2/history')
     expect(api.put).toHaveBeenNthCalledWith(2, '/consultants/persons/3', {
       firstName: 'A',
       lastName: 'B',
       email: null,
       phone: null,
     })
-    expect(api.delete).toHaveBeenNthCalledWith(2, '/consultants/persons/3')
+    expect(api.delete).toHaveBeenNthCalledWith(3, '/consultants/persons/3')
   })
 
   it('consultantsApi.importCsv envoie un FormData', () => {

@@ -1,12 +1,12 @@
 import { tr } from '../i18n/translate'
 import { useMemo, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
-import { consultantsApi } from '../api/consultants'
+import { consultantsApi, type ConsultantDependency } from '../api/consultants'
 import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
 import { ConsultantAvatar } from '../components/ConsultantAvatar'
 import { ConsultantPhotoField } from '../components/ConsultantPhotoField'
-import { Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
+import { Button, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
 import {
   Badge,
   EmptyState,
@@ -101,6 +101,94 @@ const ROLE_LABELS: Record<string, string> = {
   RESPONSIBLE_SOC: 'Responsable société',
 }
 
+const DEPENDENCY_LABEL_KEYS: Record<string, string> = {
+  timesheet: 'Consultants.dep.cra',
+  expense_report: 'Consultants.dep.note.frais',
+  payslip: 'Consultants.dep.fiche.paie',
+  activity: 'Consultants.dep.activite',
+  unavailability: 'Consultants.dep.indisponibilite',
+  hr_document: 'Consultants.dep.document',
+  leave_lot: 'Consultants.dep.solde.conges',
+  leave_movement: 'Consultants.dep.mouvement.conges',
+  billing_document: 'Consultants.dep.document.facturation',
+}
+
+interface DependencyTreeNodeData {
+  id: string
+  label: string
+  depth: number
+  item?: ConsultantDependency
+  children?: DependencyTreeNodeData[]
+}
+
+function DependencyTreeNode({
+  node,
+  onDelete,
+  disabled,
+}: {
+  node: DependencyTreeNodeData
+  onDelete: (item: ConsultantDependency) => void
+  disabled: boolean
+}) {
+  const [open, setOpen] = useState(true)
+  const hasChildren = (node.children?.length ?? 0) > 0
+  return (
+    <li id={`Consultants.dependances.node.${node.id}`} className="list-none">
+      <div
+        className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50"
+        style={{ paddingLeft: `${8 + node.depth * 20}px` }}
+      >
+        {hasChildren ? (
+          <button
+            id={`Consultants.dependances.node.${node.id}.toggle`}
+            type="button"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-gray-500 hover:bg-gray-200"
+            aria-expanded={open}
+            aria-label={open ? tr('Consultants.dependances.reduire') : tr('Consultants.dependances.developper')}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span className={open ? 'rotate-90' : ''}>
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12l-4.58 4.59Z" />
+              </svg>
+            </span>
+          </button>
+        ) : (
+          <span className="h-5 w-5 shrink-0" aria-hidden="true" />
+        )}
+        <span
+          id={`Consultants.dependances.node.${node.id}.label`}
+          className={hasChildren ? 'truncate text-sm font-medium text-gray-800' : 'truncate text-sm text-gray-700'}
+        >
+          {node.label}
+        </span>
+        {node.item && (
+          <span id={`Consultants.dependances.node.${node.id}.type`} className="ml-auto shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+            {tr(DEPENDENCY_LABEL_KEYS[node.item.type] ?? node.item.type)}
+          </span>
+        )}
+        {node.item && (
+          <IconButton
+            icon="delete"
+            label={tr('common.delete')}
+            variant="danger"
+            onClick={() => onDelete(node.item!)}
+            disabled={disabled}
+            id={`Consultants.dependances.${node.item.type}.${node.item.id}.delete`}
+          />
+        )}
+      </div>
+      {hasChildren && open && (
+        <ul className="space-y-0.5">
+          {node.children!.map((child) => (
+            <DependencyTreeNode key={child.id} node={child} onDelete={onDelete} disabled={disabled} />
+          ))}
+        </ul>
+      )}
+    </li>
+  )
+}
+
 export function Consultants() {
   const { user } = useAuth()
   const dt = useDynamicTranslate()
@@ -154,6 +242,31 @@ export function Consultants() {
   const [historyItems, setHistoryItems] = useState<HistoConsultantDto[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+
+  const [dependencyFor, setDependencyFor] = useState<ConsultantDto | null>(null)
+  const [dependencies, setDependencies] = useState<ConsultantDependency[]>([])
+  const [dependencyLoading, setDependencyLoading] = useState(false)
+  const [dependencyError, setDependencyError] = useState<string | null>(null)
+
+  const dependencyTree: DependencyTreeNodeData[] = (() => {
+    const groups = new Map<string, ConsultantDependency[]>()
+    for (const item of dependencies) {
+      const list = groups.get(item.type) ?? []
+      list.push(item)
+      groups.set(item.type, list)
+    }
+    return Array.from(groups.entries()).map(([type, items]) => ({
+      id: `groupe.${type}`,
+      label: `${tr(DEPENDENCY_LABEL_KEYS[type] ?? type)} (${items.length})`,
+      depth: 0,
+      children: items.map((item) => ({
+        id: `${item.type}.${item.id}`,
+        label: item.label,
+        depth: 1,
+        item,
+      })),
+    }))
+  })()
 
   const selectedSocId = form.socId ? Number(form.socId) : null
   const { data: managers } = useAsync(
@@ -344,12 +457,68 @@ export function Consultants() {
   }
 
   async function handleDelete(c: ConsultantDto) {
-    if (!(await dialog.confirm(tr('Consultants.supprimer.le.collaborateur', { name: `${c.firstName} ${c.lastName}` }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
+    setDependencyError(null)
+    setDependencyLoading(true)
     try {
+      const linked = await consultantsApi.dependencies(c.id)
+      if (linked.length > 0) {
+        setDependencyFor(c)
+        setDependencies(linked)
+        return
+      }
+      if (!(await confirmDeleteUser(c))) return
       await consultantsApi.delete(c.id)
-      setData({ ...data!, items: data?.items.filter((x) => x.id !== c.id) ?? [] })
+      setData((prev) => (prev ? { ...prev, items: prev.items.filter((x) => x.id !== c.id) } : prev))
     } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+      void dialog.error(err instanceof ApiError ? err.message : tr('Consultants.suppression.impossible'))
+    } finally {
+      setDependencyLoading(false)
+    }
+  }
+
+  function confirmDeleteUser(c: ConsultantDto) {
+    const name = `${c.firstName} ${c.lastName}`
+    return dialog.confirm(tr('Consultants.supprimer.le.collaborateur', { name }), {
+      variant: 'warning',
+      danger: true,
+      okLabel: tr('common.delete'),
+    })
+  }
+
+  async function handleDeleteDependency(item: ConsultantDependency) {
+    if (!dependencyFor) return
+    if (!(await dialog.confirm(tr('Consultants.supprimer.objet.confirmation', { label: item.label }), {
+      variant: 'warning',
+      danger: true,
+      okLabel: tr('common.delete'),
+    }))) return
+    setDependencyLoading(true)
+    setDependencyError(null)
+    try {
+      await consultantsApi.deleteDependency(dependencyFor.id, item.type, item.id)
+      setDependencies(await consultantsApi.dependencies(dependencyFor.id))
+    } catch (err) {
+      setDependencyError(err instanceof ApiError ? err.message : tr('Consultants.suppression.impossible'))
+    } finally {
+      setDependencyLoading(false)
+    }
+  }
+
+  async function handleDeleteUserAfterDependencies() {
+    if (!dependencyFor || dependencies.length > 0) return
+    if (!(await confirmDeleteUser(dependencyFor))) return
+    setDependencyLoading(true)
+    setDependencyError(null)
+    try {
+      await consultantsApi.delete(dependencyFor.id)
+      setData((prev) => (prev
+        ? { ...prev, items: prev.items.filter((x) => x.id !== dependencyFor.id) }
+        : prev))
+      setDependencyFor(null)
+    } catch (err) {
+      setDependencyError(err instanceof ApiError ? err.message : tr('Consultants.suppression.impossible'))
+    } finally {
+      setDependencyLoading(false)
     }
   }
 
@@ -559,6 +728,20 @@ export function Consultants() {
         size="lg"
         footer={
           <>
+            {editing && !(user != null && editing.id === user.id) && editing.role !== 'ADMIN' && (
+              <IconButton
+                icon="delete"
+                label={tr('common.delete')}
+                variant="danger"
+                type="button"
+                onClick={() => {
+                  const target = editing
+                  setModalOpen(false)
+                  void handleDelete(target)
+                }}
+                id="Consultants.form.supprimer"
+              />
+            )}
             <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
             <IconButton id={editing ? 'common.save' : 'common.create'} icon={editing ? 'save' : 'add'} label={editing ? tr('common.save') : tr('common.create')} variant="primary" className="w-auto" onClick={handleSubmit as never} disabled={submitting} loading={submitting} />
           </>
@@ -943,6 +1126,67 @@ export function Consultants() {
               </li>
             ))}
           </ul>
+        )}
+      </Modal>
+      <Modal
+        open={dependencyFor != null}
+        onClose={() => setDependencyFor(null)}
+        titleId="Consultants.dependances.title"
+        title={dependencyFor
+          ? tr('Consultants.dependances.title', { name: `${dependencyFor.firstName} ${dependencyFor.lastName}` })
+          : tr('Consultants.dependances.title')}
+        footer={
+          <>
+            <IconButton icon="close" label={tr('common.close')} type="button" onClick={() => setDependencyFor(null)} disabled={dependencyLoading} id="Consultants.dependances.close" />
+            <Button
+              id="Consultants.dependances.supprimer.utilisateur"
+              type="button"
+              variant="danger"
+              className="!w-auto"
+              onClick={() => void handleDeleteUserAfterDependencies()}
+              disabled={dependencyLoading || dependencies.length > 0}
+            >
+              {tr('Consultants.supprimer.l.utilisateur')}
+            </Button>
+          </>
+        }
+      >
+        {dependencyError && (
+          <div id="Consultants.dependances.error" className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {dependencyError}
+          </div>
+        )}
+        {dependencies.length > 0 && (
+          <div id="Consultants.dependances.avertissement" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {tr('Consultants.dependances.description')}
+          </div>
+        )}
+        <p id="Consultants.dependances.count" className="mt-3 text-sm font-medium text-gray-700">
+          {tr('Consultants.dependances.count', { count: dependencies.length })}
+        </p>
+        {dependencyLoading && <LoadingBlock />}
+        {!dependencyLoading && dependencies.length === 0 && (
+          <p id="Consultants.dependances.empty" className="mt-2 text-sm text-green-700">
+            {tr('Consultants.dependances.empty')}
+          </p>
+        )}
+        {!dependencyLoading && dependencies.length > 0 && (
+          <div
+            id="Consultants.dependances.tree"
+            role="tree"
+            className="mt-2 max-h-72 overflow-y-auto rounded-lg border border-gray-200 p-2"
+          >
+            <ul className="space-y-0.5">
+              {dependencyTree.map((node) => (
+                <DependencyTreeNode
+                  key={node.id}
+                  node={node}
+                  onDelete={(item) => void handleDeleteDependency(item)}
+                  disabled={dependencyLoading}
+                />
+              ))}
+            </ul>
+          </div>
         )}
       </Modal>
     </div>

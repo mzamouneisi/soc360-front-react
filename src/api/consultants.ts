@@ -2,6 +2,12 @@ import { api } from './client'
 import type { PageResponse } from './types'
 import type { CollaboratorSummary, ConsultantDto, ConsultantRequest, ConsultantSummary, ManagerSummary, HistoConsultantDto } from './types'
 
+export interface ConsultantDependency {
+  type: string
+  id: number
+  label: string
+}
+
 export const consultantsApi = {
   findAll: (params: {
     socId?: number
@@ -20,6 +26,10 @@ export const consultantsApi = {
   update: (id: number, request: ConsultantRequest) =>
     api.put<ConsultantDto>(`/consultants/${id}`, request),
   delete: (id: number) => api.delete<void>(`/consultants/${id}`),
+  dependencies: (id: number) =>
+    api.get<ConsultantDependency[]>(`/consultants/${id}/dependencies`),
+  deleteDependency: (id: number, type: string, objectId: number) =>
+    api.delete<void>(`/consultants/${id}/dependencies/${type}/${objectId}`),
   photoUrl: (id: number) => api.blobUrl(`/consultants/${id}/photo`),
   uploadPhoto: (id: number, file: File) => {
     const formData = new FormData()
