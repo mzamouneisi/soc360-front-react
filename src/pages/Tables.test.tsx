@@ -5,7 +5,7 @@ import { Tables } from './Tables'
 import { DialogHost } from '../components/dialog'
 import type { UserDto } from '../api/types'
 
-const { listMock, getLinesMock, getColumnsMock, executeSqlMock, getRelationsMock, userMock, dependenciesMock, deleteDependencyMock, deleteUserMock } =
+const { listMock, getLinesMock, getColumnsMock, executeSqlMock, getRelationsMock, userMock, dependenciesMock, deleteDependencyMock, deleteAllDependenciesMock, deleteUserMock } =
   vi.hoisted(() => ({
     listMock: vi.fn(),
     getLinesMock: vi.fn(),
@@ -14,6 +14,7 @@ const { listMock, getLinesMock, getColumnsMock, executeSqlMock, getRelationsMock
     getRelationsMock: vi.fn(),
     dependenciesMock: vi.fn(),
     deleteDependencyMock: vi.fn(),
+    deleteAllDependenciesMock: vi.fn(),
     deleteUserMock: vi.fn(),
     userMock: { value: null as unknown as UserDto },
   }))
@@ -43,6 +44,7 @@ vi.mock('../api/consultants', () => ({
   consultantsApi: {
     dependencies: dependenciesMock,
     deleteDependency: deleteDependencyMock,
+    deleteAllDependencies: deleteAllDependenciesMock,
     delete: deleteUserMock,
   },
 }))

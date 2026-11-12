@@ -30,6 +30,8 @@ export const consultantsApi = {
     api.get<ConsultantDependency[]>(`/consultants/${id}/dependencies`),
   deleteDependency: (id: number, type: string, objectId: number) =>
     api.delete<void>(`/consultants/${id}/dependencies/${type}/${objectId}`),
+  deleteAllDependencies: (id: number) =>
+    api.delete<void>(`/consultants/${id}/dependencies`),
   photoUrl: (id: number) => api.blobUrl(`/consultants/${id}/photo`),
   uploadPhoto: (id: number, file: File) => {
     const formData = new FormData()

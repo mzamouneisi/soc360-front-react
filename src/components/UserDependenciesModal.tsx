@@ -181,6 +181,24 @@ export function UserDependenciesModal({
     }
   }
 
+  async function handleDeleteAllDependencies() {
+    if (!user || dependencies.length === 0) return
+    if (!(await dialog.confirm(
+      tr('Consultants.dependances.tout.supprimer.confirmation', { name: userLabel(user) }),
+      { variant: 'warning', danger: true, okLabel: tr('common.delete') },
+    ))) return
+    setLoading(true)
+    setError(null)
+    try {
+      await consultantsApi.deleteAllDependencies(user.id)
+      setDependencies(await consultantsApi.dependencies(user.id))
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : tr('Consultants.suppression.impossible'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleDeleteUser() {
     if (!user || dependencies.length > 0) return
     if (!(await dialog.confirm(tr('Consultants.supprimer.le.collaborateur', { name: userLabel(user) }), {
@@ -212,6 +230,16 @@ export function UserDependenciesModal({
       footer={
         <>
           <IconButton icon="close" label={tr('common.close')} type="button" onClick={onClose} disabled={loading} id="Consultants.dependances.close" />
+          <Button
+            id="Consultants.dependances.tout.supprimer"
+            type="button"
+            variant="danger"
+            className="!w-auto"
+            onClick={() => void handleDeleteAllDependencies()}
+            disabled={loading || dependencies.length === 0}
+          >
+            {tr('Consultants.dependances.tout.supprimer')}
+          </Button>
           <Button
             id="Consultants.dependances.supprimer.utilisateur"
             type="button"

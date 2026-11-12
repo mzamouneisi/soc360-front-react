@@ -5,12 +5,13 @@ import { Consultants } from './Consultants'
 import { DialogHost } from '../components/dialog'
 import type { ConsultantDto, UserDto } from '../api/types'
 
-const { findAllMock, updateMock, deleteMock, dependenciesMock, deleteDependencyMock, userMock } = vi.hoisted(() => ({
+const { findAllMock, updateMock, deleteMock, dependenciesMock, deleteDependencyMock, deleteAllDependenciesMock, userMock } = vi.hoisted(() => ({
   findAllMock: vi.fn(),
   updateMock: vi.fn(),
   deleteMock: vi.fn(),
   dependenciesMock: vi.fn(),
   deleteDependencyMock: vi.fn(),
+  deleteAllDependenciesMock: vi.fn(),
   userMock: { value: null as unknown as UserDto },
 }))
 
@@ -50,6 +51,7 @@ vi.mock('../api/consultants', () => ({
     delete: deleteMock,
     dependencies: dependenciesMock,
     deleteDependency: deleteDependencyMock,
+    deleteAllDependencies: deleteAllDependenciesMock,
     history: vi.fn().mockResolvedValue([]),
     importCsv: vi.fn(),
   },
@@ -220,6 +222,37 @@ describe('Consultants — supprimer un utilisateur', () => {
     fireEvent.click(document.getElementById('dialog-confirm')!)
 
     await waitFor(() => expect(deleteMock).toHaveBeenCalledWith(10))
+  })
+
+  it('supprime tous les objets liés après confirmation', async () => {
+    userMock.value = adminUser
+    findAllMock.mockResolvedValue({
+      items: [consultant()],
+      total: 1,
+      page: 0,
+      size: 5,
+      totalPages: 1,
+    })
+    dependenciesMock.mockResolvedValue([
+      { type: 'timesheet', id: 7, label: 'CRA 11/2026' },
+      { type: 'unavailability', id: 8, label: 'Indisponibilité du 2026-11-02' },
+    ])
+    deleteAllDependenciesMock.mockResolvedValue(undefined)
+
+    renderPage()
+    await screen.findByText('Jean Dupont')
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
+
+    expect(await screen.findByText('CRA 11/2026')).toBeInTheDocument()
+    dependenciesMock.mockResolvedValue([])
+    fireEvent.click(document.getElementById('Consultants.dependances.tout.supprimer')!)
+    await waitFor(() => expect(document.getElementById('dialog-confirm')).toBeTruthy())
+    fireEvent.click(document.getElementById('dialog-confirm')!)
+
+    await waitFor(() => expect(deleteAllDependenciesMock).toHaveBeenCalledWith(10))
+    await waitFor(() =>
+      expect(document.getElementById('Consultants.dependances.empty')).toBeInTheDocument(),
+    )
   })
 
   it('propose le bouton Supprimer dans le formulaire d’édition', async () => {
