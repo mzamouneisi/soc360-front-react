@@ -2,15 +2,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { Tables } from './Tables'
+import { DialogHost } from '../components/dialog'
 import type { UserDto } from '../api/types'
 
-const { listMock, getLinesMock, getColumnsMock, executeSqlMock, getRelationsMock, userMock } =
+const { listMock, getLinesMock, getColumnsMock, executeSqlMock, getRelationsMock, userMock, dependenciesMock, deleteDependencyMock, deleteUserMock } =
   vi.hoisted(() => ({
     listMock: vi.fn(),
     getLinesMock: vi.fn(),
     getColumnsMock: vi.fn(),
     executeSqlMock: vi.fn(),
     getRelationsMock: vi.fn(),
+    dependenciesMock: vi.fn(),
+    deleteDependencyMock: vi.fn(),
+    deleteUserMock: vi.fn(),
     userMock: { value: null as unknown as UserDto },
   }))
 
@@ -32,6 +36,14 @@ vi.mock('../api/tables', () => ({
     getColumns: getColumnsMock,
     executeSql: executeSqlMock,
     getRelations: getRelationsMock,
+  },
+}))
+
+vi.mock('../api/consultants', () => ({
+  consultantsApi: {
+    dependencies: dependenciesMock,
+    deleteDependency: deleteDependencyMock,
+    delete: deleteUserMock,
   },
 }))
 
@@ -61,6 +73,7 @@ function renderPage() {
   return render(
     <MemoryRouter>
       <Tables />
+      <DialogHost />
     </MemoryRouter>,
   )
 }
@@ -164,5 +177,59 @@ describe('Tables', () => {
       expect(executeSqlMock).toHaveBeenCalledWith("UPDATE company SET name = 'x';"),
     )
     expect(await screen.findByText('3 ligne(s) mise(s) à jour')).toBeInTheDocument()
+  })
+
+  it('supprime un utilisateur via l arborescence des objets lies', async () => {
+    userMock.value = adminUser
+    listMock.mockResolvedValue(['user_account'])
+    getRelationsMock.mockResolvedValue([])
+    getLinesMock.mockResolvedValue([
+      { ID: 262, USERNAME: 'jdoe', FIRST_NAME: 'Jean', LAST_NAME: 'Dupont' },
+    ])
+    getColumnsMock.mockResolvedValue([
+      { columnName: 'ID', dataType: 'BIGINT', nullable: false, size: 19, defaultValue: null },
+      { columnName: 'USERNAME', dataType: 'VARCHAR', nullable: false, size: 50, defaultValue: null },
+      { columnName: 'FIRST_NAME', dataType: 'VARCHAR', nullable: false, size: 60, defaultValue: null },
+      { columnName: 'LAST_NAME', dataType: 'VARCHAR', nullable: false, size: 60, defaultValue: null },
+    ])
+    dependenciesMock.mockResolvedValue([
+      { type: 'unavailability', id: 5, label: 'Indisponibilité du 2026-11-02' },
+    ])
+
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'user_account' }))
+    await screen.findByText('jdoe')
+    fireEvent.click(document.getElementById('Tables.supprimer')!)
+
+    expect(await screen.findByText('Indisponibilité du 2026-11-02')).toBeInTheDocument()
+    expect(dependenciesMock).toHaveBeenCalledWith(262)
+    expect(document.getElementById('Consultants.dependances.supprimer.utilisateur')).toBeDisabled()
+  })
+
+  it('propose le bouton Supprimer dans le formulaire d edition d un utilisateur', async () => {
+    userMock.value = adminUser
+    listMock.mockResolvedValue(['user_account'])
+    getRelationsMock.mockResolvedValue([])
+    getLinesMock.mockResolvedValue([
+      { ID: 262, USERNAME: 'jdoe', FIRST_NAME: 'Jean', LAST_NAME: 'Dupont' },
+    ])
+    getColumnsMock.mockResolvedValue([
+      { columnName: 'ID', dataType: 'BIGINT', nullable: false, size: 19, defaultValue: null },
+      { columnName: 'USERNAME', dataType: 'VARCHAR', nullable: false, size: 50, defaultValue: null },
+      { columnName: 'FIRST_NAME', dataType: 'VARCHAR', nullable: false, size: 60, defaultValue: null },
+      { columnName: 'LAST_NAME', dataType: 'VARCHAR', nullable: false, size: 60, defaultValue: null },
+    ])
+    dependenciesMock.mockResolvedValue([])
+
+    renderPage()
+    fireEvent.click(await screen.findByRole('button', { name: 'user_account' }))
+    fireEvent.click(await screen.findByText('jdoe'))
+
+    const deleteButton = document.getElementById('Tables.supprimer.utilisateur')
+    expect(deleteButton).toBeInTheDocument()
+    fireEvent.click(deleteButton!)
+
+    expect(await screen.findByText('Aucun objet lié. Vous pouvez supprimer l’utilisateur.')).toBeInTheDocument()
+    expect(dependenciesMock).toHaveBeenCalledWith(262)
   })
 })

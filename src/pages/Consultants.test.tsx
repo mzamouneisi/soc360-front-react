@@ -195,7 +195,7 @@ describe('Consultants — supprimer un utilisateur', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
 
     const dependencyModal = await screen.findByRole('dialog')
-    expect(within(dependencyModal).getByText('CRA 11/2026')).toBeInTheDocument()
+    expect(await within(dependencyModal).findByText('CRA 11/2026')).toBeInTheDocument()
     expect(within(dependencyModal).getByText('CRA')).toBeInTheDocument()
     expect(within(dependencyModal).getByRole('button', { name: 'Supprimer l’utilisateur' })).toBeDisabled()
 
@@ -246,7 +246,7 @@ describe('Consultants — supprimer un utilisateur', () => {
     expect(await screen.findByText('CRA 11/2026')).toBeInTheDocument()
   })
 
-  it('demande directement confirmation quand aucun objet n’est lié', async () => {
+  it('demande confirmation quand aucun objet n’est lié', async () => {
     userMock.value = adminUser
     findAllMock.mockResolvedValue({
       items: [consultant()],
@@ -262,6 +262,13 @@ describe('Consultants — supprimer un utilisateur', () => {
     await screen.findByText('Jean Dupont')
     fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }))
 
+    const userDeleteButton = await waitFor(() => {
+      const button = document.getElementById('Consultants.dependances.supprimer.utilisateur') as HTMLButtonElement | null
+      expect(button).not.toBeNull()
+      expect(button!.disabled).toBe(false)
+      return button!
+    })
+    fireEvent.click(userDeleteButton)
     await waitFor(() => expect(document.getElementById('dialog-confirm')).toBeTruthy())
     fireEvent.click(document.getElementById('dialog-confirm')!)
 

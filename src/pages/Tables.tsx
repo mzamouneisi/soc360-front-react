@@ -16,6 +16,7 @@ import { IconButton, InlineButton, Input, RefreshButton, Textarea } from '../com
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { RelationsGraph } from '../components/RelationsGraph'
+import { UserDependenciesModal, type UserRef } from '../components/UserDependenciesModal'
 
 type Tab = 'data' | 'sql' | 'relations'
 
@@ -29,6 +30,17 @@ function displayValue(value: unknown): string {
   if (value === null || value === undefined) return '—'
   if (typeof value === 'boolean') return value ? 'true' : 'false'
   return String(value)
+}
+
+function userRefFromRow(row: Record<string, unknown>, idColumn: string): UserRef | null {
+  const id = Number(cellValue(row, idColumn))
+  if (!Number.isFinite(id)) return null
+  return {
+    id,
+    firstName: cellValue(row, 'first_name') as string | null,
+    lastName: cellValue(row, 'last_name') as string | null,
+    username: cellValue(row, 'username') as string | null,
+  }
 }
 
 function inputTypeFor(column: ColumnDetails): string {
@@ -132,6 +144,7 @@ export function Tables() {
   const [draft, setDraft] = useState<Record<string, unknown> | null>(null)
   const [inserting, setInserting] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<UserRef | null>(null)
 
   const relations = useAsync<TableRelation[]>(() => tablesApi.getRelations(), [])
 
@@ -289,6 +302,13 @@ export function Tables() {
 
   const deleteRow = async (row: Record<string, unknown>) => {
     if (!selected || !idKey || !idColumn) return
+    if (selected === 'user_account') {
+      const user = userRefFromRow(row, idKey)
+      if (user) {
+        setUserToDelete(user)
+        return
+      }
+    }
     const idValue = cellValue(row, idKey)
     if (!(await dialog.confirm(tr('Tables.supprimer.la.ligne', { key: idKey, value: displayValue(idValue) }), { variant: 'warning', danger: true, okLabel: tr('common.delete') }))) return
     setSaving(true)
@@ -685,6 +705,23 @@ export function Tables() {
           size="lg"
           footer={
             <>
+              {!inserting && selected === 'user_account' && idKey && (() => {
+                const user = userRefFromRow(draft, idKey)
+                if (!user) return null
+                return (
+                  <IconButton
+                    icon="delete"
+                    label={tr('common.delete')}
+                    variant="danger"
+                    onClick={() => {
+                      setUserToDelete(user)
+                      setDraft(null)
+                    }}
+                    disabled={saving}
+                    id="Tables.supprimer.utilisateur"
+                  />
+                )
+              })()}
               <IconButton
                 icon="cancel"
                 label="Annuler"
@@ -736,6 +773,14 @@ export function Tables() {
           </div>
         </Modal>
       )}
+
+      <UserDependenciesModal
+        user={userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onDeleted={() => {
+          if (selected) void loadTable(selected)
+        }}
+      />
     </div>
   )
 }
