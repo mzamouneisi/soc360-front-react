@@ -13,6 +13,7 @@ import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useI18n } from '../i18n'
 import { usePagination } from '../lib/usePagination'
+import { useTableSearch } from '../lib/tableSearch'
 import {
   allowedMonths as allowedMonthsFor,
   allowedYears as allowedYearsFor,
@@ -1207,7 +1208,12 @@ function NoteFraisHistoryModal({
   const { user } = useAuth()
   const dt = useDynamicTranslate()
   const history = useAsync(() => noteFraisApi.history(noteFrais.id), [noteFrais.id])
-  const historyPage = usePagination(history.data ?? [], user?.pageSize ?? 5)
+  const historyRows = history.data ?? []
+  const historySearch = useTableSearch(
+    historyRows,
+    (h) => `${h.modifierName ?? ''} ${h.comment ?? ''} ${h.statusBefore ?? ''} ${h.statusAfter ?? ''}`,
+  )
+  const historyPage = usePagination(historySearch.filtered, user?.pageSize ?? 5)
 
   return (
     <Modal
@@ -1223,6 +1229,23 @@ function NoteFraisHistoryModal({
       <p id="NoteFraisList.historique.subtitle" className="mb-3 text-xs text-gray-500">
         {noteFrais.consultantName} — {monthLabel(noteFrais.month)} {noteFrais.year}
       </p>
+      {!history.loading && historyRows.length > 0 && (
+        <div className="mb-3">
+          <Input
+            id="NoteFraisList.history.search"
+            type="search"
+            placeholder={tr('common.searchPlaceholder')}
+            aria-label={tr('common.searchPlaceholder')}
+            value={historySearch.search}
+            onChange={(e) => historySearch.setSearch(e.target.value)}
+          />
+        </div>
+      )}
+      {!history.loading && historyRows.length > 0 && historySearch.filtered.length === 0 && (
+        <p id="NoteFraisList.history.search.empty" className="py-6 text-center text-sm text-gray-500">
+          {tr('common.noResults')}
+        </p>
+      )}
       {history.loading && <LoadingBlock />}
       {history.error && <ErrorBlock message={history.error} />}
       {!history.loading && !history.error && (history.data?.length ?? 0) === 0 && (
@@ -1230,7 +1253,7 @@ function NoteFraisHistoryModal({
           {tr('NoteFraisList.aucune.modification.enregistree')}
         </p>
       )}
-      {!history.loading && (history.data?.length ?? 0) > 0 && (
+      {!history.loading && historySearch.filtered.length > 0 && (
         <div className="max-h-96 overflow-y-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead style={{ backgroundColor: 'var(--table-header)' }}>

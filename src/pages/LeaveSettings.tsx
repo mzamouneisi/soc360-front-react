@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { tr } from '../i18n/translate'
 import { useAuth } from '../auth/AuthContext'
 import { leaveApi } from '../api/leave'
 import { ApiError } from '../api/client'
@@ -9,6 +10,7 @@ import { ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/
 import { Icon } from '../components/icons'
 import { dialog } from '../components/dialog'
 import { formatDateTime } from '../lib/format'
+import { filterRows } from '../lib/tableSearch'
 import type {
   LeaveAccrualFrequency,
   LeaveConfigDto,
@@ -16,6 +18,13 @@ import type {
 } from '../api/types'
 
 const HISTORY_PAGE_SIZE = 5
+
+const FREQUENCY_LABELS: Record<LeaveAccrualFrequency, string> = {
+  MONTHLY: 'Mensuelle',
+  QUARTERLY: 'Trimestrielle',
+  YEARLY: 'Annuelle',
+  ONCE: 'Unique',
+}
 
 export function LeaveSettings() {
   const { user } = useAuth()
@@ -43,23 +52,52 @@ export function LeaveSettings() {
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [historyOpen, setHistoryOpen] = useState<Record<number, boolean>>({})
   const [historyPages, setHistoryPages] = useState<Record<number, number>>({})
+  const [historySearches, setHistorySearches] = useState<Record<number, string>>({})
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setSaving(true)
     setFormError(null)
+
+    const needsMonth = form.accrualFrequency === 'YEARLY' || form.accrualFrequency === 'QUARTERLY'
+    const needsDay = form.accrualFrequency !== 'ONCE'
+    const amount = Number(form.accrualAmount)
+    const negativeLimit = Number(form.negativeLimit)
+    const expirationMonths = form.expirationMonths === '' ? null : Number(form.expirationMonths)
+    const creditMonth = Number(form.creditMonth)
+    const creditDay = Number(form.creditDay)
+
+    if (
+      Number.isNaN(amount) ||
+      Number.isNaN(negativeLimit) ||
+      amount < 0 ||
+      negativeLimit < 0 ||
+      (expirationMonths !== null && (Number.isNaN(expirationMonths) || expirationMonths < 0))
+    ) {
+      setFormError('Les valeurs ne peuvent pas être négatives.')
+      return
+    }
+    if (needsMonth && (!Number.isInteger(creditMonth) || creditMonth < 1 || creditMonth > 12)) {
+      setFormError('Le mois de crédit doit être compris entre 1 et 12.')
+      return
+    }
+    if (needsDay && (!Number.isInteger(creditDay) || creditDay < 1 || creditDay > 31)) {
+      setFormError('Le jour de crédit doit être compris entre 1 et 31.')
+      return
+    }
+
+    setSaving(true)
     try {
       await leaveApi.saveConfig({
         socId,
         leaveType: form.leaveType,
         effectiveDate: form.effectiveDate,
         active: form.active,
-        accrualAmount: Number(form.accrualAmount) || 0,
+        accrualAmount: amount,
         accrualFrequency: form.accrualFrequency,
-        creditMonth: Number(form.creditMonth) || 1,
-        creditDay: Number(form.creditDay) || 1,
-        expirationMonths: form.expirationMonths ? Number(form.expirationMonths) : null,
-        negativeLimit: Number(form.negativeLimit) || 0,
+        creditMonth: needsMonth ? creditMonth : 1,
+        creditDay: needsDay ? creditDay : 1,
+        expirationMonths,
+        negativeLimit,
       })
       reload()
       dialog.success('Configuration enregistrée')
@@ -102,6 +140,9 @@ export function LeaveSettings() {
     }
   }
 
+  const needsMonth = form.accrualFrequency === 'YEARLY' || form.accrualFrequency === 'QUARTERLY'
+  const needsDay = form.accrualFrequency !== 'ONCE'
+
   return (
     <div>
       <PageHeader title="Paramètres congés" titleId="LeaveSettings.title" actions={<RefreshButton onClick={reload} />} />
@@ -124,26 +165,34 @@ export function LeaveSettings() {
               <Input id="LeaveSettings.config.effectiveDate" type="date" value={form.effectiveDate} onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })} />
             </Field>
             <Field label="Quantité acquise" id="LeaveSettings.config.amount.label">
-              <Input id="LeaveSettings.config.amount" type="number" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
+              <Input id="LeaveSettings.config.amount" type="number" min="0" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
             </Field>
             <Field label="Fréquence" id="LeaveSettings.config.frequency.label">
               <Select id="LeaveSettings.config.frequency" value={form.accrualFrequency} onChange={(e) => setForm({ ...form, accrualFrequency: e.target.value as LeaveAccrualFrequency })}>
-                <option value="MONTHLY">Mensuelle</option>
-                <option value="YEARLY">Annuelle</option>
-                <option value="ONCE">Unique</option>
+                <option id="LeaveSettings.config.frequency.monthly" value="MONTHLY">Mensuelle</option>
+                <option id="LeaveSettings.config.frequency.quarterly" value="QUARTERLY">Trimestrielle</option>
+                <option id="LeaveSettings.config.frequency.yearly" value="YEARLY">Annuelle</option>
+                <option id="LeaveSettings.config.frequency.once" value="ONCE">Unique</option>
               </Select>
             </Field>
-            <Field label="Mois de crédit" id="LeaveSettings.config.creditMonth.label">
-              <Input id="LeaveSettings.config.creditMonth" type="number" value={form.creditMonth} onChange={(e) => setForm({ ...form, creditMonth: e.target.value })} />
-            </Field>
-            <Field label="Jour de crédit" id="LeaveSettings.config.creditDay.label">
-              <Input id="LeaveSettings.config.creditDay" type="number" value={form.creditDay} onChange={(e) => setForm({ ...form, creditDay: e.target.value })} />
-            </Field>
+            {needsMonth && (
+              <Field label="Mois de crédit" id="LeaveSettings.config.creditMonth.label">
+                <Input id="LeaveSettings.config.creditMonth" type="number" min="1" max="12" value={form.creditMonth} onChange={(e) => setForm({ ...form, creditMonth: e.target.value })} />
+              </Field>
+            )}
+            {needsDay && (
+              <Field
+                label={form.accrualFrequency === 'MONTHLY' ? 'Jour du mois' : 'Jour de crédit'}
+                id="LeaveSettings.config.creditDay.label"
+              >
+                <Input id="LeaveSettings.config.creditDay" type="number" min="1" max="31" value={form.creditDay} onChange={(e) => setForm({ ...form, creditDay: e.target.value })} />
+              </Field>
+            )}
             <Field label="Expiration (mois)" id="LeaveSettings.config.expiration.label">
-              <Input id="LeaveSettings.config.expiration" type="number" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
+              <Input id="LeaveSettings.config.expiration" type="number" min="0" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
             </Field>
             <Field label="Seuil négatif" id="LeaveSettings.config.negative.label">
-              <Input id="LeaveSettings.config.negative" type="number" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
+              <Input id="LeaveSettings.config.negative" type="number" min="0" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
             </Field>
             <Field label="Active" id="LeaveSettings.config.active.label">
               <label id="LeaveSettings.config.active.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
@@ -157,6 +206,9 @@ export function LeaveSettings() {
               </label>
             </Field>
           </div>
+          <p id="LeaveSettings.config.hireDateHint" className="text-xs text-gray-500">
+            Les droits sont calculés à partir de la date d'embauche du salarié (ou de la date d'effet si elle est postérieure).
+          </p>
           <Button type="submit" id="LeaveSettings.config.submit" disabled={saving}>{saving ? '...' : 'Enregistrer'}</Button>
         </form>
       </Card>
@@ -165,9 +217,15 @@ export function LeaveSettings() {
         <h3 id="LeaveSettings.configs.title" className="mb-3 text-sm font-semibold text-gray-700">Configurations existantes</h3>
         <div className="space-y-3 text-sm text-gray-700">
           {(configs ?? []).map((config) => {
-            const totalPages = Math.max(1, Math.ceil(config.activations.length / HISTORY_PAGE_SIZE))
+            const search = historySearches[config.id] ?? ''
+            const filteredActivations = filterRows(
+              config.activations,
+              search,
+              (a) => `${a.actionDate} ${a.action} ${a.userName ?? ''}`,
+            )
+            const totalPages = Math.max(1, Math.ceil(filteredActivations.length / HISTORY_PAGE_SIZE))
             const page = Math.min(historyPages[config.id] ?? 0, totalPages - 1)
-            const pageItems = config.activations.slice(
+            const pageItems = filteredActivations.slice(
               page * HISTORY_PAGE_SIZE,
               page * HISTORY_PAGE_SIZE + HISTORY_PAGE_SIZE,
             )
@@ -177,7 +235,9 @@ export function LeaveSettings() {
                 <div className="flex flex-wrap items-center gap-4">
                   <span className="font-medium">{config.leaveType}</span>
                   <span>effet {config.effectiveDate}</span>
-                  <span>{config.accrualAmount} / {config.accrualFrequency}</span>
+                  <span id={`LeaveSettings.configs.${config.id}.frequence`}>
+                    {config.accrualAmount} / {FREQUENCY_LABELS[config.accrualFrequency]}
+                  </span>
                   <span>seuil négatif {config.negativeLimit}</span>
                   <span id={`LeaveSettings.configs.${config.id}.statut`}>{config.active ? 'actif' : 'inactif'}</span>
                   {config.deletable && (
@@ -219,6 +279,26 @@ export function LeaveSettings() {
                     <p id={`LeaveSettings.configs.${config.id}.historique.titre`} className="text-xs font-semibold text-gray-600">
                       Historique d'activation / désactivation
                     </p>
+                    {config.activations.length > 0 && (
+                      <div className="mt-1 max-w-xs">
+                        <Input
+                          id={`LeaveSettings.configs.${config.id}.historique.search`}
+                          type="search"
+                          className="!py-1 !text-xs"
+                          placeholder={tr('common.searchPlaceholder')}
+                          aria-label={tr('common.searchPlaceholder')}
+                          value={search}
+                          onChange={(e) =>
+                            setHistorySearches((prev) => ({ ...prev, [config.id]: e.target.value }))
+                          }
+                        />
+                      </div>
+                    )}
+                    {config.activations.length > 0 && filteredActivations.length === 0 && (
+                      <p id={`LeaveSettings.configs.${config.id}.historique.search.empty`} className="mt-1 text-xs text-gray-400">
+                        {tr('common.noResults')}
+                      </p>
+                    )}
                     {config.activations.length > 0 ? (
                       <>
                         <table
@@ -258,7 +338,7 @@ export function LeaveSettings() {
                           <Pagination
                             page={page}
                             totalPages={totalPages}
-                            total={config.activations.length}
+                            total={filteredActivations.length}
                             onChange={(next) =>
                               setHistoryPages((prev) => ({ ...prev, [config.id]: next }))
                             }

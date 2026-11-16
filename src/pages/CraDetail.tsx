@@ -13,6 +13,7 @@ import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { useI18n } from '../i18n'
 import { usePagination } from '../lib/usePagination'
+import { useTableSearch } from '../lib/tableSearch'
 import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
@@ -425,7 +426,14 @@ export function CraDetail({
   }, [days, cra])
   const craValid = incompleteDays.length === 0
   const hasAnyActivity = days.some((d) => d.activities.length > 0)
-  const dayPage = usePagination(days, user?.pageSize ?? 5)
+  const dayEntries = useMemo(() => days.map((day, index) => ({ day, index })), [days])
+  const daySearch = useTableSearch(dayEntries, ({ day }) => {
+    const activityNames = day.activities
+      .map((a) => activityMap.get(a.activityId)?.name ?? '')
+      .join(' ')
+    return `${day.date} ${day.comment ?? ''} ${activityNames}`
+  })
+  const dayPage = usePagination(daySearch.filtered, user?.pageSize ?? 5)
 
   // Export PDF : un seul bouton. Le CRA Client est possible dès qu'une mission comporte
   // des jours travaillés ; le CRA Interne exige que tous les jours ouvrés soient renseignés.
@@ -1325,6 +1333,24 @@ export function CraDetail({
         </Card>
       ) : (
         <Card className="overflow-hidden">
+          {days.length > 0 && (
+            <div className="border-b border-gray-200 px-4 py-3">
+              <Input
+                id="CraDetail.days.search"
+                type="search"
+                className="max-w-sm"
+                placeholder={tr('common.searchPlaceholder')}
+                aria-label={tr('common.searchPlaceholder')}
+                value={daySearch.search}
+                onChange={(e) => daySearch.setSearch(e.target.value)}
+              />
+            </div>
+          )}
+          {days.length > 0 && dayPage.total === 0 && (
+            <p id="CraDetail.days.search.empty" className="px-4 py-6 text-center text-sm text-gray-400">
+              {tr('common.noResults')}
+            </p>
+          )}
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -1347,8 +1373,7 @@ export function CraDetail({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
-                {dayPage.pageItems.map((day, idx) => {
-                  const i = dayPage.offset + idx
+                {dayPage.pageItems.map(({ day, index: i }, idx) => {
                   const total = dayTotal(day)
                   return (
                     <tr
@@ -1358,7 +1383,7 @@ export function CraDetail({
                       style={isWeekendDay(day) ? { backgroundColor: weekendColor } : undefined}
                     >
                       <td id={`CraDetail.row.${day.date}.index`} className="whitespace-nowrap px-4 py-3 text-right text-sm tabular-nums text-gray-400">
-                        {i + 1}
+                        {dayPage.offset + idx + 1}
                       </td>
                       <td id={`CraDetail.row.${day.date}.date`} className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
                         {new Date(day.date + 'T00:00:00').toLocaleDateString(getFormatLocale(), {
@@ -2475,6 +2500,10 @@ function PendingAbsencesModal({
   onReject: (absence: LinkedUnavailabilityDto) => void
   onClose: () => void
 }) {
+  const searched = useTableSearch(
+    absences,
+    (a) => `${a.startDate} ${a.endDate} ${a.type} ${a.status}`,
+  )
   return (
     <Modal
       open
@@ -2489,6 +2518,24 @@ function PendingAbsencesModal({
       }
     >
       <p id="CraDetail.indispos.a.valider.info" className="mb-3 text-sm text-gray-600">{tr('CraDetail.indispos.a.valider.info')}</p>
+      {absences.length > 0 && (
+        <div className="mb-3">
+          <Input
+            id="CraDetail.indispos.search"
+            type="search"
+            placeholder={tr('common.searchPlaceholder')}
+            aria-label={tr('common.searchPlaceholder')}
+            value={searched.search}
+            onChange={(e) => searched.setSearch(e.target.value)}
+          />
+        </div>
+      )}
+      {absences.length > 0 && searched.filtered.length === 0 && (
+        <p id="CraDetail.indispos.search.empty" className="py-4 text-center text-sm text-gray-400">
+          {tr('common.noResults')}
+        </p>
+      )}
+      {searched.filtered.length > 0 && (
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead style={{ backgroundColor: 'var(--table-header)' }}>
@@ -2511,7 +2558,7 @@ function PendingAbsencesModal({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {absences.map((absence) => (
+            {searched.filtered.map((absence) => (
               <tr key={absence.id} id={`CraDetail.pending.${absence.id}`}>
                 <td id={`CraDetail.pending.${absence.id}.start`} className="px-3 py-2 text-sm text-gray-700">{absence.startDate}</td>
                 <td id={`CraDetail.pending.${absence.id}.end`} className="px-3 py-2 text-sm text-gray-700">{absence.endDate}</td>
@@ -2554,6 +2601,7 @@ function PendingAbsencesModal({
           </tbody>
         </table>
       </div>
+      )}
     </Modal>
   )
 }

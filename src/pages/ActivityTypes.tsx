@@ -163,6 +163,7 @@ export function ActivityTypes() {
       {!loading && data && data.length > 0 && (
         <Table
           paginate
+          searchable={false}
           rowKey={(t) => t.id}
           rows={filtered}
           onRowClick={canEdit ? openEdit : undefined}

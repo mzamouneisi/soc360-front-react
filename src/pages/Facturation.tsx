@@ -8,8 +8,8 @@ import { subscriptionBillingApi } from '../api/subscriptionBilling'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
-import { Button, Card, InlineButton, RefreshButton, Select, Spinner } from '../components/ui'
-import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { Card, InlineButton, RefreshButton, Select, Spinner } from '../components/ui'
+import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import {
   SUBSCRIPTION_STATUS_LABELS,
@@ -358,34 +358,13 @@ export function Facturation() {
                   <p id="Facturation.aucun.paiement.enregistre" className="py-6 text-center text-sm text-gray-400">{tr('Facturation.aucun.paiement.enregistre')}</p>
                 )}
               </div>
-              {paymentsTotalPages > 1 && (
-                <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-                  <span id="Facturation.payments.total">
-                    {paymentRows.length} {tr('Facturation.paiements.total')}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      id="Facturation.payments.previous"
-                      variant="neutral"
-                      disabled={paymentsSafePage <= 0}
-                      onClick={() => setPaymentsPage(paymentsSafePage - 1)}
-                    >
-                      {tr('common.previous')}
-                    </Button>
-                    <span id="Facturation.payments.page">
-                      {tr('common.page')} {paymentsSafePage + 1} / {paymentsTotalPages}
-                    </span>
-                    <Button
-                      id="Facturation.payments.next"
-                      variant="neutral"
-                      disabled={paymentsSafePage >= paymentsTotalPages - 1}
-                      onClick={() => setPaymentsPage(paymentsSafePage + 1)}
-                    >
-                      {tr('common.next')}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <Pagination
+                page={paymentsSafePage}
+                totalPages={paymentsTotalPages}
+                total={paymentRows.length}
+                onChange={setPaymentsPage}
+                idPrefix="Facturation.payments"
+              />
             </Card>
           </div>
         </>

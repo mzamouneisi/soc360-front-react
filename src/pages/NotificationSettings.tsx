@@ -243,19 +243,54 @@ export function NotificationSettings() {
               label: '',
               render: (row) => (
                 <div id={`NotificationSettings.row.${row.id}.actions`} className="flex flex-wrap gap-2">
-                  <InlineButton id={`NotificationSettings.row.${row.id}.edit`} variant="primary" onClick={() => openEdit(row)}>
+                  <InlineButton
+                    id={`NotificationSettings.row.${row.id}.edit`}
+                    variant="primary"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEdit(row)
+                    }}
+                  >
                     {t('common.edit')}
                   </InlineButton>
-                  <InlineButton id={`NotificationSettings.row.${row.id}.run`} variant="ok" onClick={() => runNow(row)}>
+                  <InlineButton
+                    id={`NotificationSettings.row.${row.id}.run`}
+                    variant="ok"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      runNow(row)
+                    }}
+                  >
                     {t('NotificationSettings.runNow')}
                   </InlineButton>
-                  <InlineButton id={`NotificationSettings.row.${row.id}.history`} variant="history" onClick={() => openHistory(row)}>
+                  <InlineButton
+                    id={`NotificationSettings.row.${row.id}.history`}
+                    variant="history"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openHistory(row)
+                    }}
+                  >
                     {t('NotificationSettings.history')}
                   </InlineButton>
-                  <InlineButton id={`NotificationSettings.row.${row.id}.toggle`} variant="disable" onClick={() => toggleStatus(row)}>
+                  <InlineButton
+                    id={`NotificationSettings.row.${row.id}.toggle`}
+                    variant="disable"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      toggleStatus(row)
+                    }}
+                  >
                     {row.status === 'ACTIVE' ? t('NotificationSettings.disable') : t('NotificationSettings.enable')}
                   </InlineButton>
-                  <InlineButton id={`NotificationSettings.row.${row.id}.delete`} variant="danger" onClick={() => remove(row)}>
+                  <InlineButton
+                    id={`NotificationSettings.row.${row.id}.delete`}
+                    variant="danger"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      remove(row)
+                    }}
+                  >
                     {t('common.delete')}
                   </InlineButton>
                 </div>
@@ -264,6 +299,7 @@ export function NotificationSettings() {
           ]}
           rows={configs ?? []}
           rowKey={(row) => row.id}
+          onRowClick={openEdit}
           empty={<p id="NotificationSettings.empty" className="text-gray-500">{t('NotificationSettings.empty')}</p>}
         />
       )}

@@ -47,13 +47,26 @@ Colonnes principales :
 | `effective_date` | date d'effet de cette version de configuration |
 | `active` | version active ou non |
 | `accrual_amount` | **« Quantité acquise »** (montant par période) |
-| `accrual_frequency` | `MONTHLY`, `YEARLY`, `ONCE` |
-| `credit_month` / `credit_day` | date de crédit (YEARLY/MONTHLY) |
+| `accrual_frequency` | `MONTHLY`, `QUARTERLY`, `YEARLY`, `ONCE` |
+| `credit_month` / `credit_day` | date de crédit (QUARTERLY/YEARLY) ; seul `credit_day` sert en MONTHLY |
 | `acquisition_start/end_month/day` | fenêtre pendant laquelle le droit est acquis |
 | `usage_start/end_month/day` | fenêtre d'utilisation |
 | `expiration_months` | expiration d'un lot, en mois après le crédit |
 | `carryover_max`, `carryover_expiration_months` | report (stockés, **non générés** par le moteur actuel) |
 | `negative_limit` | seuil de solde négatif autorisé |
+
+### Contrôles de saisie
+
+- Toutes les valeurs numériques (`accrual_amount`, `expiration_months`, `carryover_max`,
+  `carryover_expiration_months`, `negative_limit`, composantes mois/jour) doivent être
+  **positives ou nulles** ; une valeur négative est refusée (HTTP 400).
+- `credit_month` ∈ [1..12] et `credit_day` ∈ [1..31]. Les couples mois/jour d'acquisition et
+  d'utilisation sont validés dans les mêmes bornes. Pour le calcul, le jour est ramené au
+  dernier jour du mois concerné (février 28/29, avril/juin/septembre/novembre 30).
+- L'IHM n'affiche que les champs utiles à la fréquence : `MONTHLY` → « Jour du mois » seul ;
+  `QUARTERLY`/`YEARLY` → « Mois de crédit » + « Jour de crédit » ; `ONCE` → aucun.
+- Le calcul démarre à `max(effective_date, hire_date)` : la **date d'embauche** du salarié est
+  donc prise en compte (ainsi que la date d'éligibilité RTT pour le type RTT).
 
 ### Versionnement
 
@@ -100,8 +113,11 @@ Clé d'unicité : **`(consultant_id, leave_type, config_id, period_key)`**.
 1. prend la config active à `dateReference` ;
 2. part de `max(effective_date, hire_date)` (et de la date d'éligibilité RTT pour `RTT`) ;
 3. génère les lots manquants jusqu'à `dateReference` :
-   - `MONTHLY` : un lot par mois (`period_key = yyyy-MM`, crédit à `credit_day`) ;
-   - `YEARLY` : un lot par an (`period_key = yyyy`) ;
+   - `MONTHLY` : un lot par mois (`period_key = yyyy-MM`, crédit à `credit_day`) ; le jour est
+     ramené au dernier jour du mois quand il n'existe pas (28/29 février, 30 avril, etc.) ;
+   - `QUARTERLY` : un lot tous les 3 mois à partir de `(credit_month, credit_day)`, aligné sur
+     la date de début (`max(effective_date, hire_date)`) ; `period_key = yyyy-MM-dd` ;
+   - `YEARLY` : un lot par an (`period_key = yyyy`, crédit à `credit_month`/`credit_day`) ;
    - `ONCE` : un seul lot.
 4. N'insère que si le lot n'existe pas déjà (idempotent via la clé unique) et écrit un
    mouvement `ACCRUAL` associé.
@@ -320,6 +336,8 @@ ORDER BY l.credit_date, l.id;
 ## 9. Tests
 
 - `SocServiceTest` / `LeaveServiceTest` (moteur, lots, mouvements, ajustements) — voir
-  `src/test/java/com/soc360/leave/`.
+  `src/test/java/com/soc360/leave/`. Couvre désormais le refus des valeurs négatives, la
+  fréquence `QUARTERLY`, le jour mensuel ramené à la longueur du mois et le démarrage à la
+  date d'embauche.
 - Règle workspace : toute modification du service ou d'une règle doit mettre à jour ses tests
   unitaires et les exécuter (`c:/pgm/apache-maven-3.9.9/bin/mvn test`).

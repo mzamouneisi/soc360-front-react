@@ -5,8 +5,9 @@ import { ApiError } from '../api/client'
 import type { SocDto } from '../api/types'
 import { useAsync } from '../lib/useAsync'
 import { usePagination } from '../lib/usePagination'
+import { useTableSearch } from '../lib/tableSearch'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, RefreshButton, Spinner } from '../components/ui'
+import { Button, Card, Input, RefreshButton, Spinner } from '../components/ui'
 import { ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 
 function InfoRow({ label, value, id }: { label: string; value: string; id?: string }) {
@@ -29,7 +30,11 @@ export function DemoSoc() {
     () => (socs ?? []).filter((s) => s.name.toLowerCase().startsWith('demo ')),
     [socs],
   )
-  const demoPage = usePagination(demoList, user?.pageSize ?? 5)
+  const demoSearched = useTableSearch(
+    demoList,
+    (s) => `${s.name} ${s.gerant ?? ''} ${s.siret ?? ''}`,
+  )
+  const demoPage = usePagination(demoSearched.filtered, user?.pageSize ?? 5)
 
   async function createDemo() {
     setActionError(null)
@@ -81,6 +86,26 @@ export function DemoSoc() {
       )}
 
       {!loading && demoList.length > 0 && (
+        <div className="mb-4 max-w-sm">
+          <Input
+            id="DemoSoc.search"
+            type="search"
+            placeholder={tr('common.searchPlaceholder')}
+            aria-label={tr('common.searchPlaceholder')}
+            value={demoSearched.search}
+            onChange={(e) => demoSearched.setSearch(e.target.value)}
+          />
+        </div>
+      )}
+
+      {!loading && demoList.length > 0 && demoSearched.searching && demoSearched.filtered.length === 0 && (
+        <Card className="flex flex-col items-center justify-center py-12 text-sm text-gray-500">
+          <p id="DemoSoc.search.empty">{tr('common.noResults')}</p>
+          <p id="DemoSoc.search.empty.hint" className="mt-1 text-xs text-gray-400">{tr('common.noResultsHint')}</p>
+        </Card>
+      )}
+
+      {!loading && demoPage.total > 0 && (
         <Card id="DemoSoc.list" className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

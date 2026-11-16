@@ -83,4 +83,31 @@ describe('NotificationSettings', () => {
     expect(document.getElementById('NotificationSettings.name.input')).toBeInTheDocument()
     expect(document.getElementById('NotificationSettings.recipients.input')).toBeInTheDocument()
   })
+
+  it('ouvre la popup d’édition au clic sur une ligne', async () => {
+    listMock.mockResolvedValue([config])
+    collaboratorsMock.mockResolvedValue([])
+
+    render(<NotificationSettings />)
+
+    await screen.findByText('Rappel CRA mensuel')
+    fireEvent.click(document.getElementById('table.row.1') as HTMLElement)
+
+    expect(document.getElementById('NotificationSettings.form')).toBeInTheDocument()
+    expect((document.getElementById('NotificationSettings.name.input') as HTMLInputElement).value).toBe(
+      'Rappel CRA mensuel',
+    )
+  })
+
+  it('les boutons d’action n’ouvrent pas la popup d’édition', async () => {
+    listMock.mockResolvedValue([config])
+    collaboratorsMock.mockResolvedValue([])
+
+    render(<NotificationSettings />)
+
+    await screen.findByText('Rappel CRA mensuel')
+    fireEvent.click(document.getElementById('NotificationSettings.row.1.toggle') as HTMLElement)
+
+    expect(document.getElementById('NotificationSettings.form')).not.toBeInTheDocument()
+  })
 })

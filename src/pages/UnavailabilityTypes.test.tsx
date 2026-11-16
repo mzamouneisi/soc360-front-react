@@ -279,4 +279,29 @@ describe('UnavailabilityTypes', () => {
     expect(screen.getByText('Statut')).toBeInTheDocument()
     expect(screen.getByText('Type Décompte')).toBeInTheDocument()
   })
+
+  it('ouvre la popup d’édition au clic sur une ligne', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue([row()])
+
+    renderPage()
+
+    await screen.findByText('Congés payés')
+    fireEvent.click(document.getElementById('table.row.1') as HTMLElement)
+
+    expect(await screen.findByText('Modifier le type d’indisponibilité')).toBeInTheDocument()
+    expect((screen.getByLabelText('Type indispo') as HTMLInputElement).value).toBe('Congés payés')
+  })
+
+  it('les boutons d’action n’ouvrent pas la popup d’édition', async () => {
+    userMock.value = responsibleUser
+    listMock.mockResolvedValue([row()])
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Supprimer la ligne' }))
+    await screen.findByRole('button', { name: 'Supprimer' })
+
+    expect(screen.queryByText('Modifier le type d’indisponibilité')).not.toBeInTheDocument()
+  })
 })

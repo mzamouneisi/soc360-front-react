@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { Spinner } from './ui'
+import { Input, Spinner } from './ui'
+import { Icon } from './icons'
 import { badgeClasses } from '../lib/format'
+import { useTableSearch } from '../lib/tableSearch'
 import { useAuth } from '../auth/AuthContext'
 import { useI18n } from '../i18n'
 
@@ -119,6 +121,9 @@ export function Table<T>({
   paginate = false,
   startIndex = 0,
   paginationId,
+  searchable = true,
+  searchableText,
+  searchId,
 }: {
   columns: { key: string; label: string; className?: string; render: (row: T) => ReactNode }[]
   rows: T[]
@@ -129,10 +134,14 @@ export function Table<T>({
   paginate?: boolean
   startIndex?: number
   paginationId?: string
+  searchable?: boolean
+  searchableText?: (row: T) => string
+  searchId?: string
 }) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [page, setPage] = useState(0)
+  const { search, setSearch, filtered } = useTableSearch(rows, searchableText)
 
   if (loading) return <LoadingBlock />
   if (rows.length === 0) {
@@ -140,67 +149,104 @@ export function Table<T>({
   }
 
   const pageSize = paginate ? (user?.pageSize ?? 5) : 0
-  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1
+  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1
   const safePage = Math.min(page, totalPages - 1)
-  const visibleRows = pageSize > 0 ? rows.slice(safePage * pageSize, safePage * pageSize + pageSize) : rows
+  const visibleRows =
+    pageSize > 0 ? filtered.slice(safePage * pageSize, safePage * pageSize + pageSize) : filtered
   const firstIndex = startIndex + (pageSize > 0 ? safePage * pageSize : 0)
+  const inputId = searchId ?? (paginationId ? `${paginationId}.search` : 'table.search')
 
   return (
     <div
       className="overflow-hidden rounded-xl border bg-white shadow-sm"
       style={{ borderColor: 'var(--table-border)' }}
     >
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead style={{ backgroundColor: 'var(--table-header)' }}>
-            <tr>
-              <th
-                id="table.header.index"
-                className="w-12 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400"
-              >
-                #
-              </th>
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  id={col.key}
-                  className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
-                >
-                  {col.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {visibleRows.map((row, rowIndex) => (
-              <tr
-                key={rowKey(row)}
-                id={`table.row.${rowKey(row)}`}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={`even:bg-gray-50 ${onRowClick ? 'cursor-pointer transition hover:bg-gray-100' : ''}`}
-              >
-                <td
-                  id={`table.row.${rowKey(row)}.index`}
-                  className="w-12 px-3 py-3 text-right text-sm tabular-nums text-gray-400"
-                >
-                  {firstIndex + rowIndex + 1}
-                </td>
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    id={`table.row.${rowKey(row)}.${col.key}`}
-                    className="px-4 py-3 text-sm text-gray-700"
+      {searchable && (
+        <div className="border-b border-gray-200 px-3 py-2">
+          <Input
+            id={inputId}
+            type="search"
+            className="max-w-sm"
+            placeholder={t('common.searchPlaceholder')}
+            aria-label={t('common.searchPlaceholder')}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(0)
+            }}
+          />
+        </div>
+      )}
+      {filtered.length === 0 ? (
+        <div className="p-4">
+          <EmptyState
+            title={t('common.noResults')}
+            titleId={`${inputId}.empty`}
+            description={t('common.noResultsHint')}
+            descriptionId={`${inputId}.empty.hint`}
+          />
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead style={{ backgroundColor: 'var(--table-header)' }}>
+                <tr>
+                  <th
+                    id="table.header.index"
+                    className="w-12 px-3 py-3 text-right text-xs font-bold uppercase tracking-wide text-gray-400"
                   >
-                    {col.render(row)}
-                  </td>
+                    #
+                  </th>
+                  {columns.map((col) => (
+                    <th
+                      key={col.key}
+                      id={col.key}
+                      className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-500"
+                    >
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {visibleRows.map((row, rowIndex) => (
+                  <tr
+                    key={rowKey(row)}
+                    id={`table.row.${rowKey(row)}`}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                    className={`even:bg-gray-50 ${onRowClick ? 'cursor-pointer transition hover:bg-gray-100' : ''}`}
+                  >
+                    <td
+                      id={`table.row.${rowKey(row)}.index`}
+                      className="w-12 px-3 py-3 text-right text-sm tabular-nums text-gray-400"
+                    >
+                      {firstIndex + rowIndex + 1}
+                    </td>
+                    {columns.map((col) => (
+                      <td
+                        key={col.key}
+                        id={`table.row.${rowKey(row)}.${col.key}`}
+                        className="px-4 py-3 text-sm text-gray-700"
+                      >
+                        {col.render(row)}
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {paginate && totalPages > 1 && (
-        <Pagination page={safePage} totalPages={totalPages} total={rows.length} onChange={setPage} idPrefix={paginationId} />
+              </tbody>
+            </table>
+          </div>
+          {paginate && totalPages > 1 && (
+            <Pagination
+              page={safePage}
+              totalPages={totalPages}
+              total={filtered.length}
+              onChange={setPage}
+              idPrefix={paginationId}
+            />
+          )}
+        </>
       )}
     </div>
   )
@@ -230,6 +276,16 @@ export function Pagination({
       )}
       <div className="flex items-center gap-1">
         <button
+          id={idPrefix ? `${idPrefix}.first` : 'common.firstPage'}
+          title={t('common.firstPage')}
+          aria-label={t('common.firstPage')}
+          className="rounded-md border border-gray-300 bg-white px-1.5 py-1.5 text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
+          disabled={page <= 0}
+          onClick={() => onChange(0)}
+        >
+          <Icon name="firstPage" />
+        </button>
+        <button
           id={idPrefix ? `${idPrefix}.previous` : 'common.previous'}
           className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
           disabled={page <= 0}
@@ -247,6 +303,16 @@ export function Pagination({
           onClick={() => onChange(page + 1)}
         >
           {t('common.next')}
+        </button>
+        <button
+          id={idPrefix ? `${idPrefix}.last` : 'common.lastPage'}
+          title={t('common.lastPage')}
+          aria-label={t('common.lastPage')}
+          className="rounded-md border border-gray-300 bg-white px-1.5 py-1.5 text-gray-700 transition hover:bg-gray-50 disabled:opacity-40"
+          disabled={page >= totalPages - 1}
+          onClick={() => onChange(totalPages - 1)}
+        >
+          <Icon name="lastPage" />
         </button>
       </div>
     </div>

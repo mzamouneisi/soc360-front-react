@@ -17,9 +17,10 @@ import type {
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
 import { usePagination } from '../lib/usePagination'
+import { useTableSearch } from '../lib/tableSearch'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
-import { Alert, Card, Field, IconButton, InlineButton, Input, Select, Textarea } from '../components/ui'
+import { Alert, Card, Field, IconButton, Input, Select, Textarea } from '../components/ui'
 import { MonthPicker } from '../components/MonthPicker'
 import { DateField, toIsoDate } from '../components/DateField'
 import {
@@ -756,19 +757,13 @@ export function Unavailability() {
             </div>
           </Card>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <InlineButton id="Unavailability.precedent" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
-                {tr('Unavailability.precedent')}
-              </InlineButton>
-              <span id="Unavailability.page" className="text-sm text-gray-500">
-                {tr('Unavailability.page')} {safePage + 1} / {totalPages}
-              </span>
-              <InlineButton id="Unavailability.suivant" disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)}>
-                {tr('Unavailability.suivant')}
-              </InlineButton>
-            </div>
-          )}
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            total={filtered.length}
+            onChange={setPage}
+            idPrefix="Unavailability"
+          />
 
         </>
       )}
@@ -1009,7 +1004,12 @@ function UnavailabilityHistoryModal({
   )
   const { user } = useAuth()
   const dt = useDynamicTranslate()
-  const historyPage = usePagination(history.data ?? [], user?.pageSize ?? 5)
+  const historyRows = history.data ?? []
+  const historySearch = useTableSearch(
+    historyRows,
+    (h) => `${h.modifierName ?? ''} ${h.comment ?? ''} ${h.nbEventsBefore} ${h.nbEventsAfter}`,
+  )
+  const historyPage = usePagination(historySearch.filtered, user?.pageSize ?? 5)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
@@ -1035,7 +1035,23 @@ function UnavailabilityHistoryModal({
           <p id="Unavailability.aucune.modification.enregistree" className="py-6 text-center text-sm text-gray-500">{tr('Unavailability.aucune.modification.enregistree')}</p>
         )}
 
-        {!history.loading && (history.data?.length ?? 0) > 0 && (
+        {!history.loading && historyRows.length > 0 && (
+          <div className="mb-3">
+            <Input
+              id="Unavailability.history.search"
+              type="search"
+              placeholder={tr('common.searchPlaceholder')}
+              aria-label={tr('common.searchPlaceholder')}
+              value={historySearch.search}
+              onChange={(e) => historySearch.setSearch(e.target.value)}
+            />
+          </div>
+        )}
+        {!history.loading && historyRows.length > 0 && historySearch.filtered.length === 0 && (
+          <p id="Unavailability.history.search.empty" className="py-6 text-center text-sm text-gray-500">{tr('common.noResults')}</p>
+        )}
+
+        {!history.loading && historySearch.filtered.length > 0 && (
           <div className="max-h-96 overflow-y-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead style={{ backgroundColor: 'var(--table-header)' }}>

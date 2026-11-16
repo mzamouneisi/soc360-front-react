@@ -4,7 +4,7 @@ import { ApiError } from '../api/client'
 import { crasApi } from '../api/cras'
 import type { CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-import { Badge, ErrorBlock, LoadingBlock, PageHeader } from '../components/data'
+import { Badge, ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { Button, Card, IconButton, InlineButton, Input, RefreshButton, Select } from '../components/ui'
 import {
@@ -322,23 +322,13 @@ export function IndispoList() {
             </div>
           </Card>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <InlineButton id="IndispoList.precedent" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
-                {tr('IndispoList.precedent')}
-              </InlineButton>
-              <span id="IndispoList.page" className="text-sm text-gray-500">
-                {tr('IndispoList.page')} {safePage + 1} / {totalPages}
-              </span>
-              <InlineButton
-                id="IndispoList.suivant"
-                disabled={safePage >= totalPages - 1}
-                onClick={() => setPage(safePage + 1)}
-              >
-                {tr('IndispoList.suivant')}
-              </InlineButton>
-            </div>
-          )}
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            total={list.length}
+            onChange={setPage}
+            idPrefix="IndispoList"
+          />
 
           {selectedId != null &&
             (() => {

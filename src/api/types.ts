@@ -985,7 +985,7 @@ export interface GeneratableMonthDto {
 }
 
 export type LeaveType = 'CP' | 'RTT'
-export type LeaveAccrualFrequency = 'MONTHLY' | 'YEARLY' | 'ONCE'
+export type LeaveAccrualFrequency = 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'ONCE'
 export type LeaveMovementType = 'ACCRUAL' | 'CONSUMPTION' | 'REGULARIZATION' | 'EXPIRATION' | 'CARRYOVER' | 'ADJUSTMENT' | 'CORRECTION'
 
 export type LeaveConfigActivationAction = 'ACTIVATION' | 'DESACTIVATION'

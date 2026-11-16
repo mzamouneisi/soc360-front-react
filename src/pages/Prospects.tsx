@@ -4,8 +4,8 @@ import { useAuth } from '../auth/AuthContext'
 import { prospectsApi } from '../api/prospects'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
-import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { useSoc } from '../soc/SocContext'
 import type { ProspectDto, ProspectKind, ProspectNoteDto, ProspectTarget } from '../api/types'
@@ -60,10 +60,12 @@ export function Prospects() {
   const { user } = useAuth()
   const { selectedSocId } = useSoc()
   const socId = selectedSocId ?? user?.socId ?? undefined
+  const isAdmin = user?.role === 'ADMIN'
+  const listSocId = isAdmin ? undefined : socId
 
   const { data, loading, error, reload, setData } = useAsync(
-    () => prospectsApi.findAll(socId),
-    [socId],
+    () => prospectsApi.findAll(listSocId),
+    [listSocId],
   )
 
   const [editing, setEditing] = useState<ProspectDto | null>(null)
@@ -260,6 +262,17 @@ export function Prospects() {
                 </div>
               ),
             },
+            ...(isAdmin
+              ? [{
+                  key: 'Prospects.societe',
+                  label: tr('Prospects.societe'),
+                  render: (prospect: ProspectDto) => (
+                    <span id={`Prospects.row.${prospect.id}.soc`}>
+                      {prospect.socParent?.name ?? prospect.soc?.name ?? '—'}
+                    </span>
+                  ),
+                }]
+              : []),
             {
               key: 'Prospects.contactName',
               label: tr('Prospects.contactName'),
@@ -503,34 +516,15 @@ export function Prospects() {
             ))}
           </div>
         )}
-        {noteProspect && noteTotalPages > 1 ? (
-          <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-            <span id="Prospects.notes.total">
-              {noteProspect.notes.length} {noteProspect.notes.length > 1 ? tr('common.items') : tr('common.item')}
-            </span>
-            <div className="flex items-center gap-1">
-              <Button
-                id="Prospects.notes.previous"
-                variant="neutral"
-                disabled={safeNotePage <= 0}
-                onClick={() => setNotePage(safeNotePage - 1)}
-              >
-                {tr('common.previous')}
-              </Button>
-              <span id="Prospects.notes.page">
-                {tr('common.page')} {safeNotePage + 1} / {noteTotalPages}
-              </span>
-              <Button
-                id="Prospects.notes.next"
-                variant="neutral"
-                disabled={safeNotePage >= noteTotalPages - 1}
-                onClick={() => setNotePage(safeNotePage + 1)}
-              >
-                {tr('common.next')}
-              </Button>
-            </div>
-          </div>
-        ) : null}
+        {noteProspect && (
+          <Pagination
+            page={safeNotePage}
+            totalPages={noteTotalPages}
+            total={noteProspect.notes.length}
+            onChange={setNotePage}
+            idPrefix="Prospects.notes"
+          />
+        )}
       </Modal>
     </div>
   )

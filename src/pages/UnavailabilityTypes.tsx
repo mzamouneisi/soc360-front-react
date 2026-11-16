@@ -294,13 +294,24 @@ export function UnavailabilityTypes() {
       label: '',
       render: (r: UnavailabilityTypeConfigDto) => (
         <div className="flex justify-end gap-1">
-          <IconButton icon="edit" label={tr('common.edit')} onClick={() => openEdit(r)} id={`common.edit.${r.id}`} />
+          <IconButton
+            icon="edit"
+            label={tr('common.edit')}
+            onClick={(e) => {
+              e.stopPropagation()
+              openEdit(r)
+            }}
+            id={`common.edit.${r.id}`}
+          />
           {r.status === 'ACTIVE' && (
             <IconButton
               icon="cancel"
               label={tr('UnavailabilityTypes.disable')}
               variant="disable"
-              onClick={() => void handleDisable(r)}
+              onClick={(e) => {
+                e.stopPropagation()
+                void handleDisable(r)
+              }}
               id={`UnavailabilityTypes.disable.${r.id}`}
             />
           )}
@@ -309,7 +320,10 @@ export function UnavailabilityTypes() {
               icon="refresh"
               label={tr('UnavailabilityTypes.enable')}
               variant="soft"
-              onClick={() => void handleEnable(r)}
+              onClick={(e) => {
+                e.stopPropagation()
+                void handleEnable(r)
+              }}
               id={`UnavailabilityTypes.enable.${r.id}`}
             />
           )}
@@ -317,7 +331,10 @@ export function UnavailabilityTypes() {
             icon="delete"
             label={tr('UnavailabilityTypes.deleteRow')}
             variant="danger"
-            onClick={() => void handleDelete(r)}
+            onClick={(e) => {
+              e.stopPropagation()
+              void handleDelete(r)
+            }}
             id={`UnavailabilityTypes.deleteRow.${r.id}`}
           />
         </div>
@@ -356,6 +373,7 @@ export function UnavailabilityTypes() {
           rowKey={(r) => String(r.id)}
           rows={rows}
           columns={columns}
+          onRowClick={canEdit ? openEdit : undefined}
           empty={<EmptyState titleId="UnavailabilityTypes.empty" title={tr('UnavailabilityTypes.empty')} />}
         />
       )}

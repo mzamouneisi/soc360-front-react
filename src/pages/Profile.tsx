@@ -9,6 +9,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
+import { useTableSearch } from '../lib/tableSearch'
 import { Button, Card, Field, IconButton, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { SocLogoField } from '../components/SocLogoField'
 import { ConsultantPhotoField } from '../components/ConsultantPhotoField'
@@ -51,7 +52,11 @@ export function Profile() {
     [],
   )
   const connList = connections ?? []
-  const connPage = usePagination(connList, user?.pageSize ?? 5)
+  const connSearch = useTableSearch(
+    connList,
+    (c) => `${formatDateTime(c.loginTime)} ${c.ipAddress ?? ''} ${c.userAgent ?? ''}`,
+  )
+  const connPage = usePagination(connSearch.filtered, user?.pageSize ?? 5)
 
   if (!user) return null
 
@@ -396,6 +401,18 @@ export function Profile() {
 
       <Card className="mt-6 p-6">
         <h3 className="text-sm font-semibold text-gray-900" id="Profile.historique.des.connexions">{tr('Profile.historique.des.connexions')} ({connPage.total})</h3>
+        {!connectionsLoading && connList.length > 0 && (
+          <div className="mt-3 max-w-sm">
+            <Input
+              id="Profile.connections.search"
+              type="search"
+              placeholder={tr('common.searchPlaceholder')}
+              aria-label={tr('common.searchPlaceholder')}
+              value={connSearch.search}
+              onChange={(e) => connSearch.setSearch(e.target.value)}
+            />
+          </div>
+        )}
         {connectionsLoading ? (
           <LoadingBlock />
         ) : (
@@ -436,10 +453,10 @@ export function Profile() {
                     </td>
                   </tr>
                 ))}
-                {connList.length === 0 && (
+                {connPage.total === 0 && (
                   <tr>
-                    <td id="Profile.aucune.connexion.enregistree" colSpan={5} className="px-4 py-6 text-center text-sm text-gray-400">
-                      {tr('Profile.aucune.connexion.enregistree')}
+                    <td id={connSearch.searching ? 'Profile.connections.search.empty' : 'Profile.aucune.connexion.enregistree'} colSpan={5} className="px-4 py-6 text-center text-sm text-gray-400">
+                      {connSearch.searching ? tr('common.noResults') : tr('Profile.aucune.connexion.enregistree')}
                     </td>
                   </tr>
                 )}

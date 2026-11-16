@@ -426,6 +426,7 @@ export function Consultants() {
         <>
           <Table
             rowKey={(c) => `${c.role}-${c.id}`}
+            searchable={false}
             onRowClick={canEdit ? (c) => openEdit(c) : undefined}
             rows={data.items}
             startIndex={data.page * size}

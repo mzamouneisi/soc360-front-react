@@ -3,10 +3,18 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { Prospects } from './Prospects'
 import type { ProspectDto } from '../api/types'
 
-const { findAllMock } = vi.hoisted(() => ({ findAllMock: vi.fn() }))
+const { findAllMock, userMock } = vi.hoisted(() => {
+  const initialUser: { id: number; role: string; socId: number | null; pageSize: number } = {
+    id: 1,
+    role: 'MANAGER',
+    socId: 5,
+    pageSize: 3,
+  }
+  return { findAllMock: vi.fn(), userMock: { value: initialUser } }
+})
 
 vi.mock('../auth/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 1, role: 'MANAGER', socId: 5, pageSize: 3 } }),
+  useAuth: () => ({ user: userMock.value }),
 }))
 
 vi.mock('../soc/SocContext', () => ({
@@ -46,6 +54,7 @@ const prospect: ProspectDto = {
 
 afterEach(() => {
   vi.clearAllMocks()
+  userMock.value = { id: 1, role: 'MANAGER', socId: 5, pageSize: 3 }
 })
 
 describe('Prospects', () => {
@@ -126,5 +135,16 @@ describe('Prospects', () => {
     expect(document.getElementById('Prospects.form')).toBeInTheDocument()
     expect(document.getElementById('Prospects.name.input')).toBeInTheDocument()
     expect(document.getElementById('Prospects.kind.input')).toBeInTheDocument()
+  })
+
+  it('admin charge tous les prospects sans filtre société et affiche la société', async () => {
+    userMock.value = { id: 1, role: 'ADMIN', socId: null, pageSize: 3 }
+    findAllMock.mockResolvedValue([prospect])
+
+    render(<Prospects />)
+
+    expect(await screen.findByText('Société Prospective')).toBeInTheDocument()
+    expect(findAllMock).toHaveBeenCalledWith(undefined)
+    expect(document.getElementById('Prospects.row.1.soc')).toHaveTextContent('SOC')
   })
 })

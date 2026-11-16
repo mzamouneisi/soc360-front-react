@@ -6,7 +6,7 @@ import { consultantsApi } from '../api/consultants'
 import { crasApi } from '../api/cras'
 import type { ActivityDto, ConsultantSummary, CraDto } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader } from '../components/data'
+import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination } from '../components/data'
 import { dialog } from '../components/dialog'
 import { CraHistoryModal } from '../components/CraHistoryModal'
 import { Button, Card, Field, IconButton, InlineButton, Input, RefreshButton, Select, Spinner } from '../components/ui'
@@ -719,23 +719,13 @@ export function CraList() {
             </div>
           </Card>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <IconButton
-                icon="chevronLeft"
-                label={tr('CraList.precedent')}
-                disabled={safePage === 0}
-                onClick={() => setPage(safePage - 1)} id="CraList.precedent" />
-              <span id="CraList.page" className="text-sm text-gray-500">
-                {tr('CraList.page')} {safePage + 1} / {totalPages}
-              </span>
-              <IconButton
-                icon="chevronRight"
-                label={tr('CraList.suivant')}
-                disabled={safePage >= totalPages - 1}
-                onClick={() => setPage(safePage + 1)} id="CraList.suivant" />
-            </div>
-          )}
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            total={list.length}
+            onChange={setPage}
+            idPrefix="CraList"
+          />
         </>
       )}
 

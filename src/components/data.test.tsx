@@ -99,6 +99,28 @@ describe('Table', () => {
     expect(onRowClick).toHaveBeenCalledWith(rows[0])
   })
 
+  it('filtre les lignes via le champ de recherche libre', () => {
+    render(<Table rowKey={(r) => r.id} rows={rows} columns={columns} />)
+    fireEvent.change(document.getElementById('table.search') as HTMLElement, {
+      target: { value: 'Ali' },
+    })
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+    expect(screen.queryByText('Bob')).not.toBeInTheDocument()
+  })
+
+  it('affiche un message quand la recherche ne retourne rien', () => {
+    render(<Table rowKey={(r) => r.id} rows={rows} columns={columns} />)
+    fireEvent.change(document.getElementById('table.search') as HTMLElement, {
+      target: { value: 'zzz' },
+    })
+    expect(screen.getByText('Aucun résultat')).toBeInTheDocument()
+  })
+
+  it('masque le champ de recherche quand searchable est false', () => {
+    render(<Table rowKey={(r) => r.id} rows={rows} columns={columns} searchable={false} />)
+    expect(document.getElementById('table.search')).toBeNull()
+  })
+
   it('affiche un état vide par défaut', () => {
     render(<Table rowKey={(r) => r.id} rows={[]} columns={columns} />)
     expect(screen.getByText('Aucun élément')).toBeInTheDocument()
@@ -146,11 +168,31 @@ describe('Pagination', () => {
     expect(onChange).toHaveBeenCalledWith(1)
   })
 
+  it('navigue vers la première et la dernière page', () => {
+    const onChange = vi.fn()
+    render(<Pagination page={1} totalPages={3} onChange={onChange} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Première page' }))
+    expect(onChange).toHaveBeenCalledWith(0)
+    fireEvent.click(screen.getByRole('button', { name: 'Dernière page' }))
+    expect(onChange).toHaveBeenCalledWith(2)
+  })
+
+  it('désactive les boutons de première et dernière page aux extrémités', () => {
+    const { rerender } = render(<Pagination page={0} totalPages={3} onChange={vi.fn()} />)
+    expect(screen.getByRole('button', { name: 'Première page' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Dernière page' })).not.toBeDisabled()
+    rerender(<Pagination page={2} totalPages={3} onChange={vi.fn()} />)
+    expect(screen.getByRole('button', { name: 'Première page' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Dernière page' })).toBeDisabled()
+  })
+
   it('préfixe les ids pour plusieurs paginations sur une page', () => {
     render(<Pagination page={0} totalPages={3} onChange={vi.fn()} idPrefix="LeaveBalances.CP.lots" />)
+    expect(document.getElementById('LeaveBalances.CP.lots.first')).toBeInTheDocument()
     expect(document.getElementById('LeaveBalances.CP.lots.previous')).toBeInTheDocument()
     expect(document.getElementById('LeaveBalances.CP.lots.page')).toHaveTextContent('Page 1 / 3')
     expect(document.getElementById('LeaveBalances.CP.lots.next')).toBeInTheDocument()
+    expect(document.getElementById('LeaveBalances.CP.lots.last')).toBeInTheDocument()
   })
 })
 

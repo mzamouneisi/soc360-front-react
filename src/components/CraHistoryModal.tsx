@@ -5,9 +5,10 @@ import { CRA_STATUS_LABELS, formatDateTime } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import { useDynamicTranslate } from '../lib/useDynamicTranslate'
 import { usePagination } from '../lib/usePagination'
+import { useTableSearch } from '../lib/tableSearch'
 import { useAuth } from '../auth/AuthContext'
 import { ErrorBlock, LoadingBlock, Modal, Pagination } from './data'
-import { IconButton } from './ui'
+import { IconButton, Input } from './ui'
 
 export function CraHistoryModal({
   craId,
@@ -22,7 +23,11 @@ export function CraHistoryModal({
   const { user } = useAuth()
   const dt = useDynamicTranslate()
   const rows = history.data ?? []
-  const page = usePagination(rows, user?.pageSize ?? 5)
+  const searched = useTableSearch(
+    rows,
+    (h) => `${h.modifierName ?? ''} ${h.comment ?? ''} ${h.statusBefore ?? ''} ${h.statusAfter ?? ''}`,
+  )
+  const page = usePagination(searched.filtered, user?.pageSize ?? 5)
   const statusLabel = (status: CraStatus | null) =>
     status == null ? '—' : dt(CRA_STATUS_LABELS[status] ?? status)
 
@@ -43,6 +48,23 @@ export function CraHistoryModal({
         </p>
       )}
       {!history.loading && rows.length > 0 && (
+        <div className="mb-3">
+          <Input
+            id="CraHistoryModal.search"
+            type="search"
+            placeholder={tr('common.searchPlaceholder')}
+            aria-label={tr('common.searchPlaceholder')}
+            value={searched.search}
+            onChange={(e) => searched.setSearch(e.target.value)}
+          />
+        </div>
+      )}
+      {!history.loading && rows.length > 0 && searched.filtered.length === 0 && (
+        <p id="CraHistoryModal.search.empty" className="rounded-lg border border-dashed border-gray-300 px-3 py-6 text-center text-sm text-gray-400">
+          {tr('common.noResults')}
+        </p>
+      )}
+      {!history.loading && searched.filtered.length > 0 && (
         <div className="max-h-96 overflow-x-auto overflow-y-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead style={{ backgroundColor: 'var(--table-header)' }}>
