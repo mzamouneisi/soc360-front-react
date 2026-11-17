@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { LeaveBalances } from './LeaveBalances'
 import type { LeaveBalanceResponse, LeaveLotDto, LeaveType } from '../api/types'
 
@@ -92,15 +92,84 @@ describe('LeaveBalances', () => {
 
   it('masque les soldes et les droits d’un consultant non salarié', async () => {
     userMock.value = { ...consultantUser, employee: false }
+    balanceMock.mockResolvedValue({
+      consultantId: 10,
+      consultantName: 'Alice Martin',
+      referenceDate: '2026-11-05',
+      balances: [],
+      employee: false,
+    })
 
     render(<LeaveBalances />)
 
     expect(
-      await screen.findByText(/ne concernent que les collaborateurs salariés/),
+      await screen.findByText('Pas de soldes de congés pour les non salariés.'),
     ).toBeInTheDocument()
     expect(document.getElementById('LeaveBalances.non.salarie')).not.toBeNull()
     expect(document.getElementById('LeaveBalances.CP.balance')).toBeNull()
-    expect(balanceMock).not.toHaveBeenCalled()
+    expect(balanceMock).toHaveBeenCalledWith(10, expect.any(String))
+  })
+
+  it('un manager non salarié voit le message mais garde l’accès aux soldes de ses salariés', async () => {
+    userMock.value = { ...responsibleUser, role: 'MANAGER', employee: false }
+    collaboratorsMock.mockResolvedValue([{ id: 2, fullName: 'Jean Dupont' }])
+    balanceMock.mockImplementation((id: number) =>
+      Promise.resolve(
+        id === 1
+          ? {
+              consultantId: 1,
+              consultantName: 'Moi Même',
+              referenceDate: '2026-11-05',
+              balances: [],
+              employee: false,
+            }
+          : {
+              consultantId: 2,
+              consultantName: 'Jean Dupont',
+              referenceDate: '2026-11-05',
+              balances: [
+                { leaveType: 'CP', balance: 8, accrued: 10, consumed: 2, expired: 0, adjustments: 0, lots: [] },
+              ],
+              employee: true,
+            },
+      ),
+    )
+
+    render(<LeaveBalances />)
+
+    expect(
+      await screen.findByText('Pas de soldes de congés pour les non salariés.'),
+    ).toBeInTheDocument()
+    expect(balanceMock).toHaveBeenCalledWith(1, expect.any(String))
+
+    const select = document.getElementById('LeaveBalances.consultant') as HTMLSelectElement
+    expect(select).not.toBeNull()
+    await within(select).findByRole('option', { name: 'Jean Dupont' })
+    fireEvent.change(select, { target: { value: '2' } })
+
+    expect(await screen.findByText('Solde CP')).toBeInTheDocument()
+    expect(document.getElementById('LeaveBalances.non.salarie')).toBeNull()
+    expect(document.getElementById('LeaveBalances.CP.balance.value')).toHaveTextContent('8')
+  })
+
+  it('affiche le message quand le collaborateur sélectionné n’est pas salarié', async () => {
+    userMock.value = responsibleUser
+    collaboratorsMock.mockResolvedValue([{ id: 2, fullName: 'Jean Dupont' }])
+    balanceMock.mockResolvedValue({
+      consultantId: 2,
+      consultantName: 'Jean Dupont',
+      referenceDate: '2026-11-05',
+      balances: [],
+      employee: false,
+    })
+
+    render(<LeaveBalances />)
+
+    expect(
+      await screen.findByText('Pas de soldes de congés pour les non salariés.'),
+    ).toBeInTheDocument()
+    expect(document.getElementById('LeaveBalances.non.salarie')).not.toBeNull()
+    expect(document.getElementById('LeaveBalances.CP.balance')).toBeNull()
   })
 
   it('affiche les soldes d’un consultant salarié', async () => {
@@ -112,6 +181,7 @@ describe('LeaveBalances', () => {
       balances: [
         { leaveType: 'CP', balance: 10, accrued: 20, consumed: 10, expired: 0, adjustments: 0, lots: [] },
       ],
+      employee: true,
     })
 
     render(<LeaveBalances />)

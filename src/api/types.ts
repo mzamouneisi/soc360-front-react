@@ -1104,6 +1104,7 @@ export interface LeaveBalanceResponse {
   consultantName: string
   referenceDate: string
   balances: LeaveBalanceDto[]
+  employee?: boolean
 }
 
 export interface AdjustmentRequest {

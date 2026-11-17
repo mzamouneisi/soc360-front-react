@@ -12,10 +12,13 @@ export function LeaveBalances() {
   const { selectedSocId } = useSoc()
   const socId = selectedSocId ?? user?.socId ?? null
   const isConsultant = user?.role === 'CONSULTANT'
-  // Un consultant non salarié n'a ni solde de congés ni acquisition de droits (CP/RTT).
-  const isNonEmployeeConsultant = isConsultant && user?.employee === false
+  // Un collaborateur non salarié n'a pas de solde : il est sélectionné par défaut, mais un
+  // manager/responsable non salarié peut toujours consulter les soldes de ses collaborateurs.
+  const nonEmployeeUser = user?.employee === false
   const ownId = user?.consultantId ?? user?.id ?? null
-  const [consultantId, setConsultantId] = useState<number | null>(isConsultant ? ownId : null)
+  const [consultantId, setConsultantId] = useState<number | null>(
+    isConsultant || nonEmployeeUser ? ownId : null,
+  )
   const [referenceDate, setReferenceDate] = useState(new Date().toISOString().slice(0, 10))
 
   const { data: collaborators } = useAsync(
@@ -24,27 +27,12 @@ export function LeaveBalances() {
   )
   const selectedId = consultantId ?? (isConsultant ? ownId : (collaborators ?? [])[0]?.id ?? null)
 
+  // Le statut salarié vient du consultant dont on consulte le solde (soi-même ou un collaborateur).
   const { data, loading, error, reload } = useAsync(
-    () =>
-      isNonEmployeeConsultant
-        ? Promise.resolve(null)
-        : selectedId
-          ? leaveApi.balance(selectedId, referenceDate)
-          : Promise.resolve(null),
-    [isNonEmployeeConsultant, selectedId, referenceDate],
+    () => (selectedId ? leaveApi.balance(selectedId, referenceDate) : Promise.resolve(null)),
+    [selectedId, referenceDate],
   )
-
-  if (isNonEmployeeConsultant) {
-    return (
-      <div>
-        <PageHeader title="Soldes de congés" titleId="LeaveBalances.title" />
-        <Card id="LeaveBalances.non.salarie" className="p-5 text-sm text-gray-600">
-          Les soldes de congés et l'acquisition de droits (CP/RTT) ne concernent que les
-          collaborateurs salariés.
-        </Card>
-      </div>
-    )
-  }
+  const nonEmployee = data?.employee === false
 
   return (
     <div>
@@ -84,7 +72,13 @@ export function LeaveBalances() {
       {error && <ErrorBlock id="LeaveBalances.error" message={error} />}
       {loading && <LoadingBlock />}
 
-      {data && (
+      {nonEmployee && (
+        <Card id="LeaveBalances.non.salarie" className="p-5 text-sm text-gray-600">
+          Pas de soldes de congés pour les non salariés.
+        </Card>
+      )}
+
+      {data && !nonEmployee && (
         <div className="space-y-6">
           {data.balances.map((balance) => (
             <div key={balance.leaveType}>
