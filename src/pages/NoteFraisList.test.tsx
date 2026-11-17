@@ -25,6 +25,7 @@ const {
   ocrImageTextMock,
   documentUploadMock,
   documentDownloadMock,
+  documentDeleteMock,
   documentPreviewUrlMock,
   exportMonthPdfMock,
 } = vi.hoisted(() => ({
@@ -46,6 +47,7 @@ const {
   ocrImageTextMock: vi.fn(),
   documentUploadMock: vi.fn(),
   documentDownloadMock: vi.fn(),
+  documentDeleteMock: vi.fn(),
   documentPreviewUrlMock: vi.fn(),
   exportMonthPdfMock: vi.fn(),
 }))
@@ -96,6 +98,7 @@ vi.mock('../api/documents', () => ({
   documentsApi: {
     upload: documentUploadMock,
     download: documentDownloadMock,
+    delete: documentDeleteMock,
     previewUrl: documentPreviewUrlMock,
   },
 }))
@@ -182,6 +185,7 @@ afterEach(() => {
   ocrImageTextMock.mockReset()
   documentUploadMock.mockReset()
   documentDownloadMock.mockReset()
+  documentDeleteMock.mockReset()
   documentPreviewUrlMock.mockReset()
   exportMonthPdfMock.mockReset()
   userMock.value = null as unknown as UserDto
@@ -1061,6 +1065,104 @@ describe('NoteFraisList', () => {
     })
     fireEvent.click(download)
     await waitFor(() => expect(documentDownloadMock).toHaveBeenCalledWith(77, 'facture.png'))
+  })
+
+  it('supprime le justificatif téléversé quand on annule la création', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentUploadMock.mockResolvedValue({ id: 77, name: 'facture.png' })
+    documentDeleteMock.mockResolvedValue(undefined)
+    ocrImageTextMock.mockResolvedValue('')
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
+      target: { files: [new File(['fake'], 'facture.png', { type: 'image/png' })] },
+    })
+    await within(dialog).findByText('facture.png')
+    await waitFor(() => expect(documentUploadMock).toHaveBeenCalled())
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Fermer' }))
+
+    await waitFor(() => expect(documentDeleteMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  })
+
+  it('supprime le justificatif téléversé quand on le retire du brouillon', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    documentUploadMock.mockResolvedValue({ id: 77, name: 'facture.png' })
+    documentDeleteMock.mockResolvedValue(undefined)
+    ocrImageTextMock.mockResolvedValue('')
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
+      target: { files: [new File(['fake'], 'facture.png', { type: 'image/png' })] },
+    })
+    await within(dialog).findByText('facture.png')
+    await waitFor(() => expect(documentUploadMock).toHaveBeenCalled())
+
+    fireEvent.click(document.getElementById('NoteFraisList.retirer') as HTMLElement)
+    const dialogs = await screen.findAllByRole('dialog')
+    const confirm = dialogs[dialogs.length - 1]
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Retirer' }))
+
+    await waitFor(() => expect(documentDeleteMock).toHaveBeenCalledWith(77))
+    await waitFor(() => expect(document.getElementById('NoteFraisList.retirer')).toBeNull())
+  })
+
+  it('ne supprime pas le justificatif rattaché à une note enregistrée', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+    createMock.mockResolvedValue(nf())
+    documentUploadMock.mockResolvedValue({ id: 77, name: 'facture.png' })
+    documentDeleteMock.mockResolvedValue(undefined)
+    ocrImageTextMock.mockResolvedValue('')
+    stubFixedNow()
+
+    renderList()
+    fireEvent.click(screen.getByRole('button', { name: 'Nouvelle note de frais' }))
+
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText(/Joindre une facture/), {
+      target: { files: [new File(['fake'], 'facture.png', { type: 'image/png' })] },
+    })
+    await within(dialog).findByText('facture.png')
+    fireEvent.change(within(dialog).getByPlaceholderText('Nom enseigne'), {
+      target: { value: 'SNCF' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Libellé / action'), {
+      target: { value: 'Train' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Adresse'), {
+      target: { value: '1 rue de Paris' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Montant HT €'), {
+      target: { value: '45' },
+    })
+    fireEvent.change(within(dialog).getByPlaceholderText('Montant TTC €'), {
+      target: { value: '55' },
+    })
+    const createButton = within(dialog).getByRole('button', { name: 'Créer' })
+    await waitFor(() => expect(createButton).toBeEnabled())
+    fireEvent.click(createButton)
+
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+    expect(documentDeleteMock).not.toHaveBeenCalled()
   })
 
   it('désactive la création si une ligne est incomplète', async () => {

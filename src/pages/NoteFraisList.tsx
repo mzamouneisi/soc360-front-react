@@ -243,6 +243,24 @@ export function NoteFraisList() {
 
   const attachmentPresent = attachmentDocumentId != null || attachmentName != null
 
+  /**
+   * Ferme la fenêtre de saisie en supprimant le justificatif téléversé mais pas encore enregistré
+   * dans la note de frais : annuler la création ne doit pas laisser le fichier dans Documents.
+   */
+  function closeModal() {
+    previewRequest.current += 1
+    replaceAttachmentUrl(null)
+    const pendingDocumentId = attachmentDocumentId
+    setAttachmentDocumentId(null)
+    setAttachmentName(null)
+    setModalOpen(false)
+    if (pendingDocumentId != null) {
+      void documentsApi.delete(pendingDocumentId).catch(() => {
+        // En cas d'échec, le nettoyage des documents orphelins reprendra le justificatif.
+      })
+    }
+  }
+
   function attachmentFilename(nf: NoteFraisDto): string {
     if (nf.documentName) return nf.documentName
     if (nf.documentContentType === 'application/pdf') return 'justificatif.pdf'
@@ -379,6 +397,7 @@ export function NoteFraisList() {
     setPreviewLoading(false)
     setPreviewFailed(false)
     setAttachmentName(null)
+    const pendingDocumentId = attachmentDocumentId
     setAttachmentDocumentId(null)
     setForm((prev) => ({
       ...prev,
@@ -387,6 +406,15 @@ export function NoteFraisList() {
       // saisie, comme si on supprimait chaque ligne.
       lines: [],
     }))
+    // Le justificatif téléversé pour ce brouillon mais jamais enregistré est supprimé
+    // physiquement du module Documents.
+    if (pendingDocumentId != null) {
+      try {
+        await documentsApi.delete(pendingDocumentId)
+      } catch {
+        // En cas d'échec, le nettoyage des documents orphelins reprendra le justificatif.
+      }
+    }
   }
 
   async function removeLine(index: number) {
@@ -520,6 +548,9 @@ export function NoteFraisList() {
       } else {
         await noteFraisApi.create(request)
       }
+      // Le justificatif est désormais rattaché à la note : il ne doit pas être supprimé à la
+      // fermeture de la fenêtre (contrairement à une annulation sans enregistrement).
+      setAttachmentDocumentId(null)
       setModalOpen(false)
       reload()
     } catch (err) {
@@ -565,7 +596,7 @@ export function NoteFraisList() {
 
   async function handleFormAction(action: 'submit' | 'validate' | 'reject' | 'pay') {
     if (!editing) return
-    if (await changeStatus(editing, action)) setModalOpen(false)
+    if (await changeStatus(editing, action)) closeModal()
   }
 
   const filledLines = form.lines.filter((l) => !isBlankLine(l))
@@ -800,13 +831,13 @@ export function NoteFraisList() {
 
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={closeModal}
         titleId={editing ? 'NoteFraisList.modifier.la.note.de.modal' : 'NoteFraisList.nouvelle.note.de.frais.modal'}
         title={editing ? tr('NoteFraisList.modifier.la.note.de', { name: editing.consultantName }) : tr('NoteFraisList.nouvelle.note.de.frais')}
         size="xl"
         footer={
           <>
-            <IconButton icon="cancel" label={tr('common.cancel')} onClick={() => setModalOpen(false)} id="common.cancel" />
+            <IconButton icon="cancel" label={tr('common.cancel')} onClick={closeModal} id="common.cancel" />
             {editing && isOwner(editing) && (editing.status === 'DRAFT' || editing.status === 'REJECTED') && (
               <IconButton icon="send" label={tr('Unavailability.soumettre')} variant="soft" onClick={() => void handleFormAction('submit')} id="NoteFraisList.form.soumettre" />
             )}
