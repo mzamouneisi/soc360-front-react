@@ -121,6 +121,7 @@ export interface UserDto {
   backgroundColor: string
   manager: ManagerInfo | null
   hasPhoto?: boolean
+  employee?: boolean
 }
 
 export interface AuthResponse {

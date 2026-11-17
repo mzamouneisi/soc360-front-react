@@ -11,6 +11,7 @@ import { GlobalLoading } from '../components/GlobalLoading'
 import { useI18n } from '../i18n'
 import { LanguageSelector } from '../i18n/LanguageSelector'
 import { SocBrandLogo } from './SocBrandLogo'
+import { isNavItemVisible } from './navVisibility'
 
 interface NavItem {
   to: string
@@ -20,6 +21,7 @@ interface NavItem {
   end?: boolean
   roles?: Role[]
   usernames?: string[]
+  employeeOnly?: boolean
 }
 
 interface NavSection {
@@ -27,17 +29,6 @@ interface NavSection {
   title?: string
   items: NavItem[]
 }
-
-const HIDDEN_FOR_CONSULTANT = new Set([
-  '/clients',
-  '/fournisseurs',
-  '/projets',
-  '/missions',
-  '/consultants',
-  '/activites',
-  '/types-activites',
-  '/facturation',
-])
 
 const ICONS = {
   dashboard: 'M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z',
@@ -63,13 +54,18 @@ const ICONS = {
   profile: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z',
 }
 
-function NavSection({ section, role, username }: { section: NavSection; role: Role; username: string }) {
-  const items = section.items.filter((item) => {
-    if (item.roles && !item.roles.includes(role)) return false
-    if (item.usernames && !item.usernames.includes(username)) return false
-    if (role === 'CONSULTANT' && HIDDEN_FOR_CONSULTANT.has(item.to)) return false
-    return true
-  })
+function NavSection({
+  section,
+  role,
+  username,
+  employee,
+}: {
+  section: NavSection
+  role: Role
+  username: string
+  employee: boolean
+}) {
+  const items = section.items.filter((item) => isNavItemVisible(item, role, username, employee))
   if (items.length === 0) return null
 
   return (
@@ -167,7 +163,7 @@ export function MainLayout() {
         { to: '/indisponibilites', id: 'nav.unavailability', label: t('nav.unavailability'), icon: ICONS.holiday },
         { to: '/types-indisponibilites', id: 'nav.unavailabilityTypes', label: t('nav.unavailabilityTypes'), icon: ICONS.holiday, roles: ['ADMIN', 'RESPONSIBLE_SOC'] },
         { to: '/notes-frais', id: 'nav.expenses', label: t('nav.expenses'), icon: ICONS.expenses },
-        { to: '/soldes-conges', id: 'nav.leaveBalances', label: 'Soldes de congés', icon: ICONS.holiday },
+        { to: '/soldes-conges', id: 'nav.leaveBalances', label: 'Soldes de congés', icon: ICONS.holiday, employeeOnly: true },
         { to: '/jours-feries', id: 'nav.holidays', label: t('nav.holidays'), icon: ICONS.holiday },
       ],
     },
@@ -234,7 +230,7 @@ export function MainLayout() {
 
         <nav className="flex-1 space-y-0.5 px-3 pb-4">
           {sections.map((section, i) => (
-            <NavSection key={i} section={section} role={user.role} username={user.username} />
+            <NavSection key={i} section={section} role={user.role} username={user.username} employee={user.employee !== false} />
           ))}
         </nav>
 
