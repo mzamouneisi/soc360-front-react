@@ -239,6 +239,74 @@ describe('LeaveSettings — activation / désactivation', () => {
     )
   })
 
+  it('réinitialise les champs après l’enregistrement d’un paramétrage', async () => {
+    configsMock.mockResolvedValue([])
+    saveConfigMock.mockResolvedValue(config())
+
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    fireEvent.change(document.getElementById('LeaveSettings.config.type') as HTMLSelectElement, {
+      target: { value: 'RTT' },
+    })
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.effectiveDate') as HTMLInputElement,
+      { target: { value: '2026-03-01' } },
+    )
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.frequency') as HTMLSelectElement,
+      { target: { value: 'QUARTERLY' } },
+    )
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.creditMonth') as HTMLInputElement,
+      { target: { value: '4' } },
+    )
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.creditDay') as HTMLInputElement,
+      { target: { value: '10' } },
+    )
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement,
+      { target: { value: '12' } },
+    )
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.negative') as HTMLInputElement,
+      { target: { value: '2' } },
+    )
+    fireEvent.click(document.getElementById('LeaveSettings.config.active') as HTMLInputElement)
+
+    fireEvent.click(document.getElementById('LeaveSettings.config.submit') as HTMLButtonElement)
+
+    await waitFor(() => expect(saveConfigMock).toHaveBeenCalled())
+    await waitFor(() =>
+      expect(
+        (document.getElementById('LeaveSettings.config.type') as HTMLSelectElement).value,
+      ).toBe('CP'),
+    )
+    expect(
+      (document.getElementById('LeaveSettings.config.amount') as HTMLInputElement).value,
+    ).toBe('0')
+    expect(
+      (document.getElementById('LeaveSettings.config.frequency') as HTMLSelectElement).value,
+    ).toBe('MONTHLY')
+    expect(
+      (document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement).value,
+    ).toBe('')
+    expect(
+      (document.getElementById('LeaveSettings.config.negative') as HTMLInputElement).value,
+    ).toBe('0')
+    expect(
+      (document.getElementById('LeaveSettings.config.active') as HTMLInputElement).checked,
+    ).toBe(true)
+    expect(document.getElementById('LeaveSettings.config.creditMonth')).toBeNull()
+    expect(
+      (document.getElementById('LeaveSettings.config.creditDay') as HTMLInputElement).value,
+    ).toBe('1')
+  })
+
   it('envoie une configuration trimestrielle avec le jour et le mois choisis', async () => {
     configsMock.mockResolvedValue([])
     saveConfigMock.mockResolvedValue(config({ accrualFrequency: 'QUARTERLY' }))

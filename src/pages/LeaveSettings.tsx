@@ -26,16 +26,8 @@ const FREQUENCY_LABELS: Record<LeaveAccrualFrequency, string> = {
   ONCE: 'Unique',
 }
 
-export function LeaveSettings() {
-  const { user } = useAuth()
-  const { selectedSocId } = useSoc()
-  const socId = selectedSocId ?? user?.socId ?? null
-
-  const { data: configs, loading, error, reload } = useAsync(
-    () => (socId ? leaveApi.configs(socId) : Promise.resolve([])),
-    [socId],
-  )
-  const [form, setForm] = useState({
+function emptyForm() {
+  return {
     leaveType: 'CP' as LeaveType,
     effectiveDate: new Date().toISOString().slice(0, 10),
     accrualAmount: '0',
@@ -45,7 +37,19 @@ export function LeaveSettings() {
     expirationMonths: '',
     negativeLimit: '0',
     active: true,
-  })
+  }
+}
+
+export function LeaveSettings() {
+  const { user } = useAuth()
+  const { selectedSocId } = useSoc()
+  const socId = selectedSocId ?? user?.socId ?? null
+
+  const { data: configs, loading, error, reload } = useAsync(
+    () => (socId ? leaveApi.configs(socId) : Promise.resolve([])),
+    [socId],
+  )
+  const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<number | null>(null)
@@ -99,6 +103,8 @@ export function LeaveSettings() {
         expirationMonths,
         negativeLimit,
       })
+      // Après enregistrement, le formulaire est réinitialisé pour une nouvelle saisie.
+      setForm(emptyForm())
       reload()
       dialog.success('Configuration enregistrée')
     } catch (err) {
