@@ -124,6 +124,7 @@ describe('Settings — couleurs CRA', () => {
 
     render(<Settings />)
 
+    fireEvent.click(document.getElementById('settings.tab.company') as HTMLElement)
     const title = await screen.findByText('settings.craColors.title')
     expect(title).toBeInTheDocument()
     await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(5))
@@ -160,6 +161,7 @@ describe('Settings — couleurs CRA', () => {
 
     render(<Settings />)
 
+    fireEvent.click(document.getElementById('settings.tab.company') as HTMLElement)
     await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(5))
     const input = document.getElementById('settings.billing.vatRate.input') as HTMLInputElement
     expect(input).not.toBeNull()
@@ -182,6 +184,7 @@ describe('Settings — couleurs CRA', () => {
 
     render(<Settings />)
 
+    fireEvent.click(document.getElementById('settings.tab.company') as HTMLElement)
     await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(5))
     const input = document.getElementById('settings.billing.vatRate.input') as HTMLInputElement
     fireEvent.change(input, { target: { value: '101' } })
@@ -207,6 +210,7 @@ describe('Settings — couleurs CRA', () => {
 
     render(<Settings />)
 
+    fireEvent.click(document.getElementById('settings.tab.company') as HTMLElement)
     await waitFor(() => expect(document.getElementById('SocLogo.fieldset')).not.toBeNull())
     const saveButton = document.getElementById('common.save.button') as HTMLButtonElement
     expect(saveButton).toBeDisabled()
@@ -226,6 +230,9 @@ describe('Settings — couleurs CRA', () => {
     render(<Settings />)
 
     expect(screen.queryByText('settings.craColors.title')).not.toBeInTheDocument()
+    expect(document.getElementById('settings.tab.company')).toBeNull()
+    expect(document.getElementById('settings.tab.translations')).toBeNull()
+    expect(document.getElementById('settings.tab.emails')).toBeNull()
     expect(getByIdMock).not.toHaveBeenCalled()
   })
 
@@ -240,6 +247,7 @@ describe('Settings — couleurs CRA', () => {
 
     render(<Settings />)
 
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
     await screen.findByText('settings.tableHeaderFontSize.title')
     const select = document.getElementById('settings.tableHeaderFontSize.select') as HTMLSelectElement
     fireEvent.change(select, { target: { value: '24' } })
@@ -262,6 +270,7 @@ describe('Settings — couleurs CRA', () => {
 
     render(<Settings />)
 
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
     await screen.findByText('settings.colors.headerText')
     const input = document.getElementById('settings.colors.headerText.input') as HTMLInputElement
     fireEvent.change(input, { target: { value: '#000000' } })
@@ -284,6 +293,7 @@ describe('Settings — couleurs CRA', () => {
 
     render(<Settings />)
 
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
     await screen.findByText('settings.forms.title')
     const bg = document.getElementById('settings.forms.headerBg.input') as HTMLInputElement
     fireEvent.change(bg, { target: { value: '#0284c7' } })

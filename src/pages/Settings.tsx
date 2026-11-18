@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
 import { socsApi } from '../api/socs'
@@ -16,6 +16,11 @@ import { useI18n } from '../i18n'
 import { DEFAULT_VAT_RATE } from '../lib/vat'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
+
+/** Affiche le contenu de l'onglet actif uniquement. */
+function TabPanel({ active, children }: { active: boolean; children: ReactNode }) {
+  return active ? <>{children}</> : null
+}
 
 const CRA_LEAVE_COLOR_DEFAULT = '#fef9c3'
 const CRA_WEEKEND_COLOR_DEFAULT = '#fefce8'
@@ -139,9 +144,22 @@ export function Settings() {
   const [languageSaving, setLanguageSaving] = useState(false)
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('general')
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
+  const tabs = [
+    { id: 'general', labelKey: 'settings.tab.general' },
+    { id: 'appearance', labelKey: 'settings.tab.appearance' },
+    { id: 'buttons', labelKey: 'settings.tab.buttons' },
+    ...(canEditCraColors ? [{ id: 'company', labelKey: 'settings.tab.company' }] : []),
+    ...(canEditTemplates
+      ? [
+          { id: 'translations', labelKey: 'settings.tab.translations' },
+          { id: 'emails', labelKey: 'settings.tab.emails' },
+        ]
+      : []),
+  ]
 
   useEffect(() => {
     if (!selectedSocId || !canEditCraColors) {
@@ -516,6 +534,27 @@ export function Settings() {
     <div>
       <PageHeader title={t('settings.title')} titleId="settings.title" subtitle={t('settings.subtitle')} subtitleId="settings.subtitle" />
       <Card className="w-[90%] p-6">
+        <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-2" role="tablist" id="settings.tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              id={`settings.tab.${tab.id}`}
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                activeTab === tab.id
+                  ? 'bg-brand-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {t(tab.labelKey)}
+            </button>
+          ))}
+        </div>
+        <div role="tabpanel" id={`settings.tabpanel.${activeTab}`}>
+        <TabPanel active={activeTab === 'general'}>
         <h3 className="text-sm font-semibold text-gray-900" id="settings.language.title">{t('settings.language.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.language.description">{t('settings.language.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
@@ -541,8 +580,9 @@ export function Settings() {
         {languageSaved && (
           <p className="mt-3 text-sm text-green-600" id="settings.language.saved">{t('settings.language.saved')}</p>
         )}
+        </TabPanel>
 
-        {canEditTemplates && (
+        {canEditTemplates && activeTab === 'translations' && (
           <div>
             <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.companyTranslations.title">{t('settings.companyTranslations.title')}</h3>
             <p className="mt-1 text-sm text-gray-500" id="settings.companyTranslations.description">
@@ -629,7 +669,8 @@ export function Settings() {
           </div>
         )}
 
-        <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.fontSize.title">{t('settings.fontSize.title')}</h3>
+        <TabPanel active={activeTab === 'appearance'}>
+        <h3 className="text-sm font-semibold text-gray-900" id="settings.fontSize.title">{t('settings.fontSize.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.fontSize.description">{t('settings.fontSize.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <Field label={t('settings.fontSize.field')} id="settings.fontSize.field">
@@ -858,7 +899,9 @@ export function Settings() {
             </tbody>
           </table>
         </div>
+        </TabPanel>
 
+        <TabPanel active={activeTab === 'company'}>
         {canEditCraColors && selectedSocId != null && (
           <div className="mt-8">
             <SocLogoField
@@ -945,8 +988,10 @@ export function Settings() {
             </div>
           </>
         )}
+        </TabPanel>
 
-        <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.buttons.title">{t('settings.buttons.title')}</h3>
+        <TabPanel active={activeTab === 'buttons'}>
+        <h3 className="text-sm font-semibold text-gray-900" id="settings.buttons.title">{t('settings.buttons.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.buttons.description">{t('settings.buttons.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-6">
           <Field label={t('settings.buttons.smallWidth')} id="settings.buttons.smallWidth">
@@ -1265,7 +1310,9 @@ export function Settings() {
             {tr('common.history')}
           </button>
         </div>
+        </TabPanel>
 
+        <TabPanel active={activeTab === 'appearance'}>
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.background.title">{t('settings.background.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.background.description">{t('settings.background.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
@@ -1294,10 +1341,11 @@ export function Settings() {
             {t('settings.background.preview')}
           </div>
         </div>
+        </TabPanel>
 
-        {canEditTemplates && (
-          <>
-            <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.emailTemplates.title">{t('settings.emailTemplates.title')}</h3>
+        {canEditTemplates && activeTab === 'emails' && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900" id="settings.emailTemplates.title">{t('settings.emailTemplates.title')}</h3>
             <p className="mt-1 text-sm text-gray-500" id="settings.emailTemplates.description">{t('settings.emailTemplates.description')}</p>
             {templateLoading ? (
               <div className="mt-4">
@@ -1355,8 +1403,9 @@ export function Settings() {
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
+        </div>
 
         <Button
           id="common.save.button"

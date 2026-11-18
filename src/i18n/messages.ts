@@ -136,6 +136,12 @@ const fr: Messages = {
 
   'settings.title': 'Paramètres',
   'settings.subtitle': 'Personnalisez l’application',
+  'settings.tab.general': 'Général',
+  'settings.tab.appearance': 'Apparence',
+  'settings.tab.buttons': 'Boutons',
+  'settings.tab.company': 'Société',
+  'settings.tab.translations': 'Traductions',
+  'settings.tab.emails': 'E-mails',
   'settings.language.title': 'Langue de l’application',
   'settings.language.description':
     'Choisissez la langue de l’interface. Par défaut, celle de votre navigateur.',
@@ -450,6 +456,12 @@ const en: Messages = {
 
   'settings.title': 'Settings',
   'settings.subtitle': 'Customize the application',
+  'settings.tab.general': 'General',
+  'settings.tab.appearance': 'Appearance',
+  'settings.tab.buttons': 'Buttons',
+  'settings.tab.company': 'Company',
+  'settings.tab.translations': 'Translations',
+  'settings.tab.emails': 'Emails',
   'settings.language.title': 'Application language',
   'settings.language.description':
     'Choose the interface language. Defaults to your browser language.',
@@ -678,6 +690,12 @@ const ar: Messages = {
   'document.required': 'المستند المبرر مطلوب لهذا النوع.',
   'Consultants.email.obligatoire': 'البريد الإلكتروني مطلوب.',
   'Consultants.email.invalide': 'أدخل بريدًا إلكترونيًا صالحًا.',
+  'settings.tab.general': 'عام',
+  'settings.tab.appearance': 'المظهر',
+  'settings.tab.buttons': 'الأزرار',
+  'settings.tab.company': 'الشركة',
+  'settings.tab.translations': 'الترجمات',
+  'settings.tab.emails': 'رسائل البريد',
   'settings.craColors.title': 'ألوان أيام CRA',
   'settings.craColors.description': 'ألوان أيام الإجازة ونهاية الأسبوع في CRA الشركة المحددة.',
   'settings.craColors.leave': 'لون يوم الإجازة',
