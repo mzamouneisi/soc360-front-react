@@ -30,11 +30,11 @@ function emptyForm() {
   return {
     leaveType: 'CP' as LeaveType,
     effectiveDate: new Date().toISOString().slice(0, 10),
-    accrualAmount: '0',
+    accrualAmount: '1',
     accrualFrequency: 'MONTHLY' as LeaveAccrualFrequency,
     creditMonth: '1',
     creditDay: '1',
-    expirationMonths: '',
+    expirationMonths: '12',
     negativeLimit: '0',
     active: true,
   }
@@ -70,14 +70,23 @@ export function LeaveSettings() {
     const creditMonth = Number(form.creditMonth)
     const creditDay = Number(form.creditDay)
 
+    if (!Number.isInteger(expirationMonths) && expirationMonths !== null) {
+      setFormError("L'expiration (mois) doit être un nombre entier.")
+      return
+    }
+    if (Number.isNaN(amount) || amount <= 0) {
+      setFormError('La quantité acquise doit être supérieure à 0.')
+      return
+    }
+    if (Number.isNaN(negativeLimit) || negativeLimit < 0) {
+      setFormError('Le seuil négatif ne peut pas être négatif.')
+      return
+    }
     if (
-      Number.isNaN(amount) ||
-      Number.isNaN(negativeLimit) ||
-      amount < 0 ||
-      negativeLimit < 0 ||
-      (expirationMonths !== null && (Number.isNaN(expirationMonths) || expirationMonths < 0))
+      expirationMonths !== null &&
+      (Number.isNaN(expirationMonths) || expirationMonths < 1 || expirationMonths > 31)
     ) {
-      setFormError('Les valeurs ne peuvent pas être négatives.')
+      setFormError("L'expiration (mois) doit être comprise entre 1 et 31.")
       return
     }
     if (needsMonth && (!Number.isInteger(creditMonth) || creditMonth < 1 || creditMonth > 12)) {
@@ -171,7 +180,7 @@ export function LeaveSettings() {
               <Input id="LeaveSettings.config.effectiveDate" type="date" value={form.effectiveDate} onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })} />
             </Field>
             <Field label="Quantité acquise" id="LeaveSettings.config.amount.label">
-              <Input id="LeaveSettings.config.amount" type="number" min="0" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
+              <Input id="LeaveSettings.config.amount" type="number" min="0.01" step="any" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
             </Field>
             <Field label="Fréquence" id="LeaveSettings.config.frequency.label">
               <Select id="LeaveSettings.config.frequency" value={form.accrualFrequency} onChange={(e) => setForm({ ...form, accrualFrequency: e.target.value as LeaveAccrualFrequency })}>
@@ -195,7 +204,7 @@ export function LeaveSettings() {
               </Field>
             )}
             <Field label="Expiration (mois)" id="LeaveSettings.config.expiration.label">
-              <Input id="LeaveSettings.config.expiration" type="number" min="0" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
+              <Input id="LeaveSettings.config.expiration" type="number" min="1" max="31" step="1" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
             </Field>
             <Field label="Seuil négatif" id="LeaveSettings.config.negative.label">
               <Input id="LeaveSettings.config.negative" type="number" min="0" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />

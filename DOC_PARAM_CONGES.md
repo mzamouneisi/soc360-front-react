@@ -57,12 +57,15 @@ Colonnes principales :
 
 ### Contrôles de saisie
 
-- Toutes les valeurs numériques (`accrual_amount`, `expiration_months`, `carryover_max`,
-  `carryover_expiration_months`, `negative_limit`, composantes mois/jour) doivent être
-  **positives ou nulles** ; une valeur négative est refusée (HTTP 400).
-- `credit_month` ∈ [1..12] et `credit_day` ∈ [1..31]. Les couples mois/jour d'acquisition et
-  d'utilisation sont validés dans les mêmes bornes. Pour le calcul, le jour est ramené au
-  dernier jour du mois concerné (février 28/29, avril/juin/septembre/novembre 30).
+- `accrual_amount` (« Quantité acquise ») doit être **strictement supérieure à 0** ;
+  `expiration_months` (« Expiration (mois) »), si renseigné, ∈ [1..31] ; `negative_limit`
+  (« Seuil négatif »), `carryover_max` et `carryover_expiration_months` doivent être
+  **positifs ou nuls**. Une valeur hors bornes est refusée (HTTP 400 / message IHM).
+- `credit_month` ∈ [1..12] et `credit_day` (« Jour du mois » / « Jour de crédit ») ∈ [1..31].
+  Les couples mois/jour d'acquisition et d'utilisation sont validés dans les mêmes bornes.
+  Pour le calcul, le jour est ramené au dernier jour du mois concerné (février 28/29,
+  avril/juin/septembre/novembre 30).
+- L'IHM pré-remplit « Quantité acquise » à **1** et « Expiration (mois) » à **12**.
 - L'IHM n'affiche que les champs utiles à la fréquence : `MONTHLY` → « Jour du mois » seul ;
   `QUARTERLY`/`YEARLY` → « Mois de crédit » + « Jour de crédit » ; `ONCE` → aucun.
 - Le calcul démarre à `max(effective_date, hire_date)` : la **date d'embauche** du salarié est

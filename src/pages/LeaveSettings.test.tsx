@@ -169,6 +169,9 @@ describe('LeaveSettings — activation / désactivation', () => {
     render(<LeaveSettings />)
 
     await waitFor(() => expect(configsMock).toHaveBeenCalled())
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
     const checkbox = document.getElementById('LeaveSettings.config.active') as HTMLInputElement
     expect(checkbox.checked).toBe(true)
     fireEvent.click(checkbox)
@@ -223,20 +226,109 @@ describe('LeaveSettings — activation / désactivation', () => {
     expect(document.getElementById('LeaveSettings.config.creditDay')).toBeNull()
   })
 
-  it('refuse les valeurs négatives', async () => {
+  it('pré-remplit les valeurs par défaut quantité 1 et expiration 12', async () => {
+    configsMock.mockResolvedValue([])
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    expect(
+      (document.getElementById('LeaveSettings.config.amount') as HTMLInputElement).value,
+    ).toBe('1')
+    expect(
+      (document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement).value,
+    ).toBe('12')
+    expect(
+      (document.getElementById('LeaveSettings.config.creditDay') as HTMLInputElement).value,
+    ).toBe('1')
+    expect(
+      (document.getElementById('LeaveSettings.config.negative') as HTMLInputElement).value,
+    ).toBe('0')
+  })
+
+  it('refuse une quantité acquise négative ou nulle', async () => {
+    configsMock.mockResolvedValue([])
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+    const amount = document.getElementById('LeaveSettings.config.amount') as HTMLInputElement
+
+    for (const value of ['-1', '0']) {
+      fireEvent.change(amount, { target: { value } })
+      fireEvent.submit(document.querySelector('form') as HTMLFormElement)
+
+      expect(saveConfigMock).not.toHaveBeenCalled()
+      await waitFor(() =>
+        expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain(
+          'supérieure à 0',
+        ),
+      )
+    }
+  })
+
+  it('refuse un seuil négatif', async () => {
     configsMock.mockResolvedValue([])
     render(<LeaveSettings />)
     await waitFor(() => expect(configsMock).toHaveBeenCalled())
 
     fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
+    fireEvent.change(document.getElementById('LeaveSettings.config.negative') as HTMLInputElement, {
       target: { value: '-1' },
     })
     fireEvent.submit(document.querySelector('form') as HTMLFormElement)
 
     expect(saveConfigMock).not.toHaveBeenCalled()
     await waitFor(() =>
-      expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain('négatives'),
+      expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain(
+        'seuil négatif',
+      ),
     )
+  })
+
+  it('refuse une expiration hors bornes', async () => {
+    configsMock.mockResolvedValue([])
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
+    const expiration = document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement
+
+    for (const value of ['0', '32']) {
+      fireEvent.change(expiration, { target: { value } })
+      fireEvent.submit(document.querySelector('form') as HTMLFormElement)
+
+      expect(saveConfigMock).not.toHaveBeenCalled()
+      await waitFor(() =>
+        expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain(
+          '1 et 31',
+        ),
+      )
+    }
+  })
+
+  it('refuse un jour du mois hors bornes', async () => {
+    configsMock.mockResolvedValue([])
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
+    const creditDay = document.getElementById('LeaveSettings.config.creditDay') as HTMLInputElement
+
+    for (const value of ['0', '32']) {
+      fireEvent.change(creditDay, { target: { value } })
+      fireEvent.submit(document.querySelector('form') as HTMLFormElement)
+
+      expect(saveConfigMock).not.toHaveBeenCalled()
+      await waitFor(() =>
+        expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain(
+          '1 et 31',
+        ),
+      )
+    }
   })
 
   it('réinitialise les champs après l’enregistrement d’un paramétrage', async () => {
@@ -288,13 +380,13 @@ describe('LeaveSettings — activation / désactivation', () => {
     )
     expect(
       (document.getElementById('LeaveSettings.config.amount') as HTMLInputElement).value,
-    ).toBe('0')
+    ).toBe('1')
     expect(
       (document.getElementById('LeaveSettings.config.frequency') as HTMLSelectElement).value,
     ).toBe('MONTHLY')
     expect(
       (document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement).value,
-    ).toBe('')
+    ).toBe('12')
     expect(
       (document.getElementById('LeaveSettings.config.negative') as HTMLInputElement).value,
     ).toBe('0')
@@ -313,6 +405,9 @@ describe('LeaveSettings — activation / désactivation', () => {
     render(<LeaveSettings />)
     await waitFor(() => expect(configsMock).toHaveBeenCalled())
 
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
     fireEvent.change(document.getElementById('LeaveSettings.config.frequency') as HTMLSelectElement, {
       target: { value: 'QUARTERLY' },
     })
@@ -322,11 +417,20 @@ describe('LeaveSettings — activation / désactivation', () => {
     fireEvent.change(document.getElementById('LeaveSettings.config.creditDay') as HTMLInputElement, {
       target: { value: '10' },
     })
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement,
+      { target: { value: '31' } },
+    )
     fireEvent.click(document.getElementById('LeaveSettings.config.submit') as HTMLButtonElement)
 
     await waitFor(() =>
       expect(saveConfigMock).toHaveBeenCalledWith(
-        expect.objectContaining({ accrualFrequency: 'QUARTERLY', creditMonth: 4, creditDay: 10 }),
+        expect.objectContaining({
+          accrualFrequency: 'QUARTERLY',
+          creditMonth: 4,
+          creditDay: 10,
+          expirationMonths: 31,
+        }),
       ),
     )
   })
