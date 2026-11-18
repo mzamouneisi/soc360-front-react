@@ -126,6 +126,17 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+# Une copie de sauvegarde (ex. depot mza) peut ne pas avoir node_modules : sans lui,
+# `npm run lint` echoue avec « oxlint n'est pas reconnu ». On installe alors les
+# dependances avant de lancer lint/tests/build.
+if [ ! -f "node_modules/.bin/oxlint" ] && [ ! -f "node_modules/.bin/oxlint.cmd" ]; then
+  log "Dependances node manquantes : installation avec 'npm ci'..."
+  if ! $NPM_CMD ci; then
+    log "ERROR: 'npm ci' a echoue (verifiez l'acces au registre npm)."
+    exit 1
+  fi
+fi
+
 BRANCH_NAME="$(git rev-parse --abbrev-ref HEAD)"
 if [ "$BRANCH_NAME" != "$BRANCH_REQUIRED" ]; then
   log "ERROR: GitHub Pages est configuré sur la branche '$BRANCH_REQUIRED' (branche actuelle : '$BRANCH_NAME')."

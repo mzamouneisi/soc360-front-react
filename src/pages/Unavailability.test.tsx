@@ -509,6 +509,26 @@ describe('Unavailability', () => {
     ).padStart(2, '0')}`
   }
 
+  // Dates futures et deterministes (independantes de la date du jour) : le formulaire
+  // refuse une date de debut passee.
+  function nextWeekdayInputValue(weekday: number): string {
+    const date = new Date()
+    const delta = ((weekday - date.getDay() + 7) % 7) || 7
+    date.setDate(date.getDate() + delta)
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate(),
+    ).padStart(2, '0')}`
+  }
+
+  function addDaysInputValue(iso: string, days: number): string {
+    const [year, month, day] = iso.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
+    date.setDate(date.getDate() + days)
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate(),
+    ).padStart(2, '0')}`
+  }
+
   it('pré-remplit la date du jour et le collaborateur connecté', async () => {
     userMock.value = managerUser
     listMock.mockResolvedValue([])
@@ -563,8 +583,9 @@ describe('Unavailability', () => {
       ?.parentElement?.querySelector('input') as HTMLInputElement
     const endInput = document.querySelector('#Unavailability\\.au')
       ?.parentElement?.querySelector('input') as HTMLInputElement
-    fireEvent.change(startInput, { target: { value: '2026-11-06' } })
-    fireEvent.change(endInput, { target: { value: '2026-11-09' } })
+    const start = nextWeekdayInputValue(1)
+    fireEvent.change(startInput, { target: { value: start } })
+    fireEvent.change(endInput, { target: { value: addDaysInputValue(start, 1) } })
 
     expect(await screen.findByText('Durée : 2 j')).toBeInTheDocument()
   })
@@ -608,8 +629,9 @@ describe('Unavailability', () => {
       ?.parentElement?.querySelector('input') as HTMLInputElement
     const endDateInput = document.querySelector('#Unavailability\\.au')
       ?.parentElement?.querySelector('input') as HTMLInputElement
-    fireEvent.change(startDateInput, { target: { value: '2026-11-06' } })
-    fireEvent.change(endDateInput, { target: { value: '2026-11-09' } })
+    const start = nextWeekdayInputValue(1)
+    fireEvent.change(startDateInput, { target: { value: start } })
+    fireEvent.change(endDateInput, { target: { value: addDaysInputValue(start, 2) } })
     const startPart = screen.getByText('Début').parentElement
       ?.querySelector('select') as HTMLSelectElement
     const endPart = screen.getByText('Fin').parentElement
