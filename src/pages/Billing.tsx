@@ -598,12 +598,12 @@ export function Billing() {
                   {((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0)).toFixed(2)}
                 </div>
                 <div className="col-span-1 flex items-center">
-                  <IconButton icon="delete" variant="danger" label="Supprimer la ligne" id={`Billing.form.line.${idx}.remove`} onClick={async () => { if (await dialog.confirm('Supprimer cette ligne ?')) setFormLines(formLines.filter((_, i) => i !== idx)) }} />
+                  <IconButton type="button" icon="delete" variant="danger" label="Supprimer la ligne" id={`Billing.form.line.${idx}.remove`} onClick={async () => { if (await dialog.confirm('Supprimer cette ligne ?')) setFormLines(formLines.filter((_, i) => i !== idx)) }} />
                 </div>
               </div>
             ))}
           </div>
-          <IconButton icon="add" variant="new" label="Ajouter une ligne" id="Billing.form.addLine" onClick={() => setFormLines([...formLines, { description: '', quantity: '1', unitPrice: '0' }])} />
+          <IconButton type="button" icon="add" variant="new" label="Ajouter une ligne" id="Billing.form.addLine" onClick={() => setFormLines([...formLines, { description: '', quantity: '1', unitPrice: '0' }])} />
           <div className="mt-4 flex flex-col items-end gap-1 text-sm font-semibold">
             {(() => {
               const sub = formLines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitPrice) || 0), 0)
@@ -692,11 +692,11 @@ export function Billing() {
                     {((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0)).toFixed(2)}
                   </div>
                   <div className="col-span-1 flex items-center">
-                    <IconButton icon="delete" variant="danger" label="Supprimer la ligne" id={`Billing.view.line.${idx}.remove`} onClick={async () => { if (await dialog.confirm('Supprimer cette ligne ?')) setEditLines(editLines.filter((_, i) => i !== idx)) }} />
+                    <IconButton type="button" icon="delete" variant="danger" label="Supprimer la ligne" id={`Billing.view.line.${idx}.remove`} onClick={async () => { if (await dialog.confirm('Supprimer cette ligne ?')) setEditLines(editLines.filter((_, i) => i !== idx)) }} />
                   </div>
                 </div>
               ))}
-              <IconButton icon="add" variant="new" label="Ajouter une ligne" id="Billing.view.addLine" onClick={() => setEditLines([...editLines, { description: '', quantity: '1', unitPrice: '0' }])} />
+              <IconButton type="button" icon="add" variant="new" label="Ajouter une ligne" id="Billing.view.addLine" onClick={() => setEditLines([...editLines, { description: '', quantity: '1', unitPrice: '0' }])} />
               {editLines.length > 0 && (
                 <div className="mt-4 flex flex-col items-end gap-1 text-sm font-semibold">
                   {(() => {
