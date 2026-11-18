@@ -44,6 +44,7 @@ export interface SocLiteDto {
   name: string
   hasLogo?: boolean
   website?: string | null
+  vatRate?: number | null
 }
 
 export interface AddSocPayload {
@@ -169,6 +170,7 @@ export interface SocDto {
   address?: Address | null
   leaveDayColor?: string | null
   weekendColor?: string | null
+  vatRate?: number | null
   hasLogo?: boolean
   logoFilename?: string | null
   logoMimeType?: string | null

@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Settings } from './Settings'
 
-const { getByIdMock, updateCraColorsMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, userMock } = vi.hoisted(() => ({
+const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, userMock } = vi.hoisted(() => ({
   getByIdMock: vi.fn(),
   updateCraColorsMock: vi.fn(),
+  updateVatRateMock: vi.fn(),
   updateTableColorsMock: vi.fn(),
   updateTableHeaderFontSizeMock: vi.fn(),
   updateFormSettingsMock: vi.fn(),
@@ -55,6 +56,7 @@ vi.mock('../api/socs', () => ({
   socsApi: {
     getById: getByIdMock,
     updateCraColors: updateCraColorsMock,
+    updateVatRate: updateVatRateMock,
     uploadLogo: uploadLogoMock,
   },
 }))
@@ -145,6 +147,53 @@ describe('Settings — couleurs CRA', () => {
         weekendColor: '#eefcee',
       }),
     )
+  })
+
+  it('charge et enregistre la TVA par défaut de la société', async () => {
+    userMock.value = user('RESPONSIBLE_SOC')
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee', vatRate: 5.5 },
+      subscriptions: [],
+      payments: [],
+    })
+    updateVatRateMock.mockResolvedValue({})
+
+    render(<Settings />)
+
+    await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(5))
+    const input = document.getElementById('settings.billing.vatRate.input') as HTMLInputElement
+    expect(input).not.toBeNull()
+    expect(input.value).toBe('5.5')
+
+    fireEvent.change(input, { target: { value: '8.5' } })
+    const saveButtons = screen.getAllByRole('button', { name: 'common.save' })
+    fireEvent.click(saveButtons[saveButtons.length - 1])
+
+    await waitFor(() => expect(updateVatRateMock).toHaveBeenCalledWith(5, 8.5))
+  })
+
+  it('refuse une TVA hors bornes', async () => {
+    userMock.value = user('RESPONSIBLE_SOC')
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee', vatRate: 20 },
+      subscriptions: [],
+      payments: [],
+    })
+
+    render(<Settings />)
+
+    await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(5))
+    const input = document.getElementById('settings.billing.vatRate.input') as HTMLInputElement
+    fireEvent.change(input, { target: { value: '101' } })
+    const saveButtons = screen.getAllByRole('button', { name: 'common.save' })
+    fireEvent.click(saveButtons[saveButtons.length - 1])
+
+    await waitFor(() =>
+      expect(document.getElementById('settings.error')?.textContent).toContain(
+        'settings.billing.vatRateError',
+      ),
+    )
+    expect(updateVatRateMock).not.toHaveBeenCalled()
   })
 
   it('active le bouton Enregistrer après l’import d’un logo', async () => {

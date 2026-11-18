@@ -178,6 +178,13 @@ const fr: Messages = {
     'Couleurs des jours de congé et de week-end dans le CRA de la société sélectionnée.',
   'settings.craColors.leave': 'Couleur jour de congé',
   'settings.craColors.weekend': 'Couleur week-end',
+  'settings.billing.title': 'Facturation',
+  'settings.billing.description':
+    'Taux de TVA appliqué par défaut aux nouveaux devis et factures de la société.',
+  'settings.billing.vatRate': 'TVA par défaut (%)',
+  'settings.billing.vatRateHint':
+    'Taux appliqué par défaut aux nouveaux devis et factures (0 à 100).',
+  'settings.billing.vatRateError': 'La TVA doit être comprise entre 0 et 100.',
   'settings.buttons.title': 'Boutons',
   'settings.buttons.description':
     'Personnalisez la largeur et les couleurs des boutons de l’application.',
@@ -484,6 +491,13 @@ const en: Messages = {
     'Leave day and weekend colours in the selected company CRA.',
   'settings.craColors.leave': 'Leave day colour',
   'settings.craColors.weekend': 'Weekend colour',
+  'settings.billing.title': 'Billing',
+  'settings.billing.description':
+    'Default VAT rate applied to the company’s new quotes and invoices.',
+  'settings.billing.vatRate': 'Default VAT (%)',
+  'settings.billing.vatRateHint':
+    'Rate applied by default to new quotes and invoices (0 to 100).',
+  'settings.billing.vatRateError': 'VAT must be between 0 and 100.',
   'settings.buttons.title': 'Buttons',
   'settings.buttons.description':
     'Customize the width and colours of the application buttons.',
@@ -668,6 +682,13 @@ const ar: Messages = {
   'settings.craColors.description': 'ألوان أيام الإجازة ونهاية الأسبوع في CRA الشركة المحددة.',
   'settings.craColors.leave': 'لون يوم الإجازة',
   'settings.craColors.weekend': 'لون نهاية الأسبوع',
+  'settings.billing.title': 'الفوترة',
+  'settings.billing.description':
+    'نسبة ضريبة القيمة المضافة الافتراضية المطبقة على عروض الأسعار والفواتير الجديدة للشركة.',
+  'settings.billing.vatRate': 'ضريبة القيمة المضافة الافتراضية (%)',
+  'settings.billing.vatRateHint':
+    'النسبة المطبقة افتراضيًا على عروض الأسعار والفواتير الجديدة (من 0 إلى 100).',
+  'settings.billing.vatRateError': 'يجب أن تكون ضريبة القيمة المضافة بين 0 و100.',
   'settings.forms.title': 'النماذج',
   'settings.forms.description': 'مظهر رؤوس النماذج وتسمياتها.',
   'settings.forms.headerBg': 'خلفية الرأس',

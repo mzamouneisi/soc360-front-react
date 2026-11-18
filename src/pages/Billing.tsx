@@ -7,6 +7,7 @@ import { projectsApi } from '../api/projects'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { formatDateTime, formatMoney, monthLabel, monthShort } from '../lib/format'
+import { normalizeVatRate, socVatRate } from '../lib/vat'
 import { useSoc } from '../soc/SocContext'
 import { Card, Field, Input, RefreshButton, Select, Textarea, Button, IconButton } from '../components/ui'
 import { MonthPicker } from '../components/MonthPicker'
@@ -18,8 +19,9 @@ interface LineForm { description: string; quantity: string; unitPrice: string }
 
 export function Billing() {
   const { user } = useAuth()
-  const { selectedSocId } = useSoc()
+  const { selectedSocId, selectedSoc } = useSoc()
   const socId = selectedSocId ?? user?.socId ?? null
+  const defaultVatRate = String(socVatRate(selectedSoc))
   const canEdit = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC' || user?.role === 'MANAGER'
 
   const now = new Date()
@@ -108,7 +110,7 @@ export function Billing() {
     activityId: '',
     notes: '',
     discount: '',
-    vatRate: '20',
+    vatRate: defaultVatRate,
     status: 'DRAFT' as BillingDocumentStatus,
   })
   const [formLines, setFormLines] = useState<LineForm[]>([{ description: '', quantity: '1', unitPrice: '0' }])
@@ -129,7 +131,7 @@ export function Billing() {
   const [editLines, setEditLines] = useState<LineForm[]>([])
 
   function resetForm() {
-    setForm({ type: 'QUOTE', projectId: '', activityId: '', notes: '', discount: '', vatRate: '20', status: 'DRAFT' })
+    setForm({ type: 'QUOTE', projectId: '', activityId: '', notes: '', discount: '', vatRate: defaultVatRate, status: 'DRAFT' })
     setFormLines([{ description: '', quantity: '1', unitPrice: '0' }])
     setFormError(null)
   }
@@ -149,7 +151,7 @@ export function Billing() {
         activityId: form.activityId ? Number(form.activityId) : null,
         type: form.type,
         status: form.status,
-        vatRate: Number(form.vatRate) || 20,
+        vatRate: normalizeVatRate(form.vatRate, socVatRate(selectedSoc)),
         discount: Number(form.discount) || 0,
         notes: form.notes || undefined,
         lines: formLines
@@ -292,7 +294,7 @@ export function Billing() {
       const updated = await billingApi.update(viewing.id, {
         status: editStatus,
         activityId: editActivityId ? Number(editActivityId) : null,
-        vatRate: Number(editVat) || 20,
+        vatRate: normalizeVatRate(editVat, socVatRate(selectedSoc)),
         discount: Number(editDiscount) || 0,
         notes: editNotes || undefined,
         lines,

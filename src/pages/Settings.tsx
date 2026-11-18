@@ -13,6 +13,7 @@ import { PageHeader } from '../components/data'
 import { dialog } from '../components/dialog'
 import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
+import { DEFAULT_VAT_RATE } from '../lib/vat'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
 
@@ -126,6 +127,8 @@ export function Settings() {
   const [bgColor, setBgColor] = useState<string>(user?.backgroundColor || '#bae6fd')
   const [leaveDayColor, setLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
   const [weekendColor, setWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
+  const [vatRate, setVatRate] = useState<string>(String(DEFAULT_VAT_RATE))
+  const [savedVatRate, setSavedVatRate] = useState<string>(String(DEFAULT_VAT_RATE))
   const [socHasLogo, setSocHasLogo] = useState<boolean>(selectedSoc?.hasLogo ?? false)
   const [logoChanged, setLogoChanged] = useState(false)
   const [savedLeaveDayColor, setSavedLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
@@ -151,10 +154,13 @@ export function Settings() {
         if (cancelled) return
         const leave = soc.leaveDayColor || CRA_LEAVE_COLOR_DEFAULT
         const weekend = soc.weekendColor || CRA_WEEKEND_COLOR_DEFAULT
+        const vat = soc.vatRate != null ? String(soc.vatRate) : String(DEFAULT_VAT_RATE)
         setLeaveDayColor(leave)
         setWeekendColor(weekend)
+        setVatRate(vat)
         setSavedLeaveDayColor(leave)
         setSavedWeekendColor(weekend)
+        setSavedVatRate(vat)
         setSocHasLogo(soc.hasLogo ?? false)
         setLogoChanged(false)
       })
@@ -296,7 +302,8 @@ export function Settings() {
     (u.backgroundColor || '#bae6fd') !== bgColor ||
     logoChanged ||
     (canEditCraColors && selectedSocId != null &&
-      (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor))
+      (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor ||
+        vatRate !== savedVatRate))
 
   async function handleLanguageChange(value: string) {
     setLanguageSaving(true)
@@ -313,6 +320,12 @@ export function Settings() {
   }
 
   async function handleSave() {
+    const vatValue = Number(vatRate)
+    if (canEditCraColors && selectedSocId != null &&
+        (vatRate.trim() === '' || !Number.isFinite(vatValue) || vatValue < 0 || vatValue > 100)) {
+      setError(t('settings.billing.vatRateError'))
+      return
+    }
     setSaving(true)
     setError(null)
     setSaved(false)
@@ -390,6 +403,11 @@ export function Settings() {
         await socsApi.updateCraColors(selectedSocId, { leaveDayColor, weekendColor })
         setSavedLeaveDayColor(leaveDayColor)
         setSavedWeekendColor(weekendColor)
+      }
+      if (canEditCraColors && selectedSocId != null && vatRate !== savedVatRate) {
+        await socsApi.updateVatRate(selectedSocId, vatValue)
+        setSavedVatRate(vatRate)
+        await refreshSocs()
       }
       await refreshMe()
       setLogoChanged(false)
@@ -893,6 +911,37 @@ export function Settings() {
                   <span className="text-sm text-gray-500" id="settings.craColors.weekend.value">{weekendColor}</span>
                 </div>
               </Field>
+            </div>
+          </>
+        )}
+
+        {canEditCraColors && selectedSocId != null && (
+          <>
+            <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.billing.title">
+              {t('settings.billing.title')}
+            </h3>
+            <p className="mt-1 text-sm text-gray-500" id="settings.billing.description">
+              {t('settings.billing.description')}
+            </p>
+            <div className="mt-4 flex flex-wrap items-end gap-6">
+              <Field label={t('settings.billing.vatRate')} id="settings.billing.vatRate">
+                <Input
+                  id="settings.billing.vatRate.input"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="0.01"
+                  className="w-28"
+                  value={vatRate}
+                  onChange={(e) => {
+                    setVatRate(e.target.value)
+                    setSaved(false)
+                  }}
+                />
+              </Field>
+              <p className="pb-2 text-sm text-gray-500" id="settings.billing.vatRateHint">
+                {t('settings.billing.vatRateHint')}
+              </p>
             </div>
           </>
         )}

@@ -43,6 +43,8 @@ export const socsApi = {
     api.put<SocDto>(`/socs/${id}`, request),
   updateCraColors: (id: number, colors: { leaveDayColor: string; weekendColor: string }) =>
     api.put<SocDto>(`/socs/${id}/cra-colors`, colors),
+  updateVatRate: (id: number, vatRate: number) =>
+    api.put<SocDto>(`/socs/${id}/vat-rate`, { vatRate }),
   uploadLogo: (id: number, file: File) => {
     const formData = new FormData()
     formData.append('file', file)
