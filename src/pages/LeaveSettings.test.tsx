@@ -295,14 +295,14 @@ describe('LeaveSettings — activation / désactivation', () => {
     })
     const expiration = document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement
 
-    for (const value of ['0', '32']) {
+    for (const value of ['0', '13']) {
       fireEvent.change(expiration, { target: { value } })
       fireEvent.submit(document.querySelector('form') as HTMLFormElement)
 
       expect(saveConfigMock).not.toHaveBeenCalled()
       await waitFor(() =>
         expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain(
-          '1 et 31',
+          '1 et 12',
         ),
       )
     }
@@ -419,7 +419,7 @@ describe('LeaveSettings — activation / désactivation', () => {
     })
     fireEvent.change(
       document.getElementById('LeaveSettings.config.expiration') as HTMLInputElement,
-      { target: { value: '31' } },
+      { target: { value: '12' } },
     )
     fireEvent.click(document.getElementById('LeaveSettings.config.submit') as HTMLButtonElement)
 
@@ -429,7 +429,7 @@ describe('LeaveSettings — activation / désactivation', () => {
           accrualFrequency: 'QUARTERLY',
           creditMonth: 4,
           creditDay: 10,
-          expirationMonths: 31,
+          expirationMonths: 12,
         }),
       ),
     )

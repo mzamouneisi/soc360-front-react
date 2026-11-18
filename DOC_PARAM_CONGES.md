@@ -58,7 +58,7 @@ Colonnes principales :
 ### Contrôles de saisie
 
 - `accrual_amount` (« Quantité acquise ») doit être **strictement supérieure à 0** ;
-  `expiration_months` (« Expiration (mois) »), si renseigné, ∈ [1..31] ; `negative_limit`
+  `expiration_months` (« Expiration (mois) »), si renseigné, ∈ [1..12] ; `negative_limit`
   (« Seuil négatif »), `carryover_max` et `carryover_expiration_months` doivent être
   **positifs ou nuls**. Une valeur hors bornes est refusée (HTTP 400 / message IHM).
 - `credit_month` ∈ [1..12] et `credit_day` (« Jour du mois » / « Jour de crédit ») ∈ [1..31].

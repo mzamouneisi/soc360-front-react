@@ -84,9 +84,9 @@ export function LeaveSettings() {
     }
     if (
       expirationMonths !== null &&
-      (Number.isNaN(expirationMonths) || expirationMonths < 1 || expirationMonths > 31)
+      (Number.isNaN(expirationMonths) || expirationMonths < 1 || expirationMonths > 12)
     ) {
-      setFormError("L'expiration (mois) doit être comprise entre 1 et 31.")
+      setFormError("L'expiration (mois) doit être comprise entre 1 et 12.")
       return
     }
     if (needsMonth && (!Number.isInteger(creditMonth) || creditMonth < 1 || creditMonth > 12)) {
@@ -204,7 +204,7 @@ export function LeaveSettings() {
               </Field>
             )}
             <Field label="Expiration (mois)" id="LeaveSettings.config.expiration.label">
-              <Input id="LeaveSettings.config.expiration" type="number" min="1" max="31" step="1" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
+              <Input id="LeaveSettings.config.expiration" type="number" min="1" max="12" step="1" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
             </Field>
             <Field label="Seuil négatif" id="LeaveSettings.config.negative.label">
               <Input id="LeaveSettings.config.negative" type="number" min="0" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
