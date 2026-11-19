@@ -6,7 +6,7 @@ import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
 import { useSoc } from '../soc/SocContext'
 import { Button, Card, Field, Input, RefreshButton, Select } from '../components/ui'
-import { ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
+import { ErrorBlock, LoadingBlock, PageHeader, Pagination, Table } from '../components/data'
 import { Icon } from '../components/icons'
 import { dialog } from '../components/dialog'
 import { formatDate, formatDateTime } from '../lib/format'
@@ -246,32 +246,172 @@ export function LeaveSettings() {
       </Card>
 
       <Card id="LeaveSettings.configs" className="mb-6 p-5">
-        <h3 id="LeaveSettings.configs.title" className="mb-3 text-sm font-semibold text-gray-700">Configurations existantes</h3>
-        <div className="space-y-3 text-sm text-gray-700">
-          {(configs ?? []).map((config) => {
-            const search = historySearches[config.id] ?? ''
-            const filteredActivations = filterRows(
-              config.activations,
-              search,
-              (a) => `${a.actionDate} ${a.action} ${a.userName ?? ''}`,
-            )
-            const totalPages = Math.max(1, Math.ceil(filteredActivations.length / HISTORY_PAGE_SIZE))
-            const page = Math.min(historyPages[config.id] ?? 0, totalPages - 1)
-            const pageItems = filteredActivations.slice(
-              page * HISTORY_PAGE_SIZE,
-              page * HISTORY_PAGE_SIZE + HISTORY_PAGE_SIZE,
-            )
-            const open = historyOpen[config.id] ?? false
-            return (
-              <div id={`LeaveSettings.configs.${config.id}`} key={config.id} className="rounded border border-gray-100 px-3 py-2">
-                <div className="flex flex-wrap items-center gap-4">
-                  <span className="font-medium">{config.leaveType}</span>
-                  <span>effet {config.effectiveDate}</span>
-                  <span id={`LeaveSettings.configs.${config.id}.frequence`}>
-                    {config.accrualAmount} / {FREQUENCY_LABELS[config.accrualFrequency]}
-                  </span>
-                  <span>seuil négatif {config.negativeLimit}</span>
-                  <span id={`LeaveSettings.configs.${config.id}.statut`}>{config.active ? 'actif' : 'inactif'}</span>
+        <h2 id="LeaveSettings.configs.title" className="mb-3 text-lg font-semibold text-gray-800">Configurations existantes</h2>
+        <Table
+          paginate
+          paginationId="LeaveSettings.configs"
+          searchId="LeaveSettings.configs.search"
+          rowKey={(config) => config.id}
+          rows={configs ?? []}
+          empty={<p id="LeaveSettings.configs.empty" className="text-gray-400">Aucune configuration</p>}
+          searchableText={(config) => [
+            config.leaveType,
+            formatDate(config.effectiveDate),
+            config.accrualAmount,
+            FREQUENCY_LABELS[config.accrualFrequency],
+            config.creditMonth,
+            config.creditDay,
+            monthDay(config.acquisitionStartMonth, config.acquisitionStartDay),
+            monthDay(config.acquisitionEndMonth, config.acquisitionEndDay),
+            monthDay(config.usageStartMonth, config.usageStartDay),
+            monthDay(config.usageEndMonth, config.usageEndDay),
+            config.expirationMonths ?? '',
+            config.carryoverMax,
+            config.carryoverExpirationMonths ?? '',
+            config.negativeLimit,
+            config.active ? 'Actif' : 'Inactif',
+          ].join(' ')}
+          columns={[
+            {
+              key: 'LeaveSettings.configs.col.type',
+              label: 'Type',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.type`} className="font-medium">
+                  {config.leaveType}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.effectiveDate',
+              label: "Date d'effet",
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.effectiveDate`}>
+                  {formatDate(config.effectiveDate)}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.accrualAmount',
+              label: 'Quantité acquise',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.accrualAmount`}>
+                  {config.accrualAmount}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.accrualFrequency',
+              label: 'Fréquence',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.accrualFrequency`}>
+                  {FREQUENCY_LABELS[config.accrualFrequency]}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.creditMonth',
+              label: 'Mois de crédit',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.creditMonth`}>
+                  {config.creditMonth}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.creditDay',
+              label: 'Jour de crédit',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.creditDay`}>
+                  {config.creditDay}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.acquisitionStart',
+              label: "Début d'acquisition",
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.acquisitionStart`}>
+                  {monthDay(config.acquisitionStartMonth, config.acquisitionStartDay)}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.acquisitionEnd',
+              label: "Fin d'acquisition",
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.acquisitionEnd`}>
+                  {monthDay(config.acquisitionEndMonth, config.acquisitionEndDay)}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.usageStart',
+              label: "Début d'utilisation",
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.usageStart`}>
+                  {monthDay(config.usageStartMonth, config.usageStartDay)}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.usageEnd',
+              label: "Fin d'utilisation",
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.usageEnd`}>
+                  {monthDay(config.usageEndMonth, config.usageEndDay)}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.expirationMonths',
+              label: 'Expiration (mois)',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.expirationMonths`}>
+                  {config.expirationMonths ?? '—'}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.carryoverMax',
+              label: 'Report maximum',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.carryoverMax`}>
+                  {config.carryoverMax}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.carryoverExpirationMonths',
+              label: 'Expiration du report (mois)',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.carryoverExpirationMonths`}>
+                  {config.carryoverExpirationMonths ?? '—'}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.negativeLimit',
+              label: 'Seuil négatif',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.negativeLimit`}>
+                  {config.negativeLimit}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.active',
+              label: 'Statut',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.statut`}>
+                  {config.active ? 'Actif' : 'Inactif'}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.actions',
+              label: 'Actions',
+              render: (config) => (
+                <div className="flex flex-wrap gap-2">
                   {config.deletable && (
                     <Button
                       id={`LeaveSettings.configs.${config.id}.supprimer`}
@@ -298,151 +438,125 @@ export function LeaveSettings() {
                     type="button"
                     className="!w-auto !px-2 !py-1 !text-xs"
                     aria-label="Historique"
-                    title={open ? "Masquer l'historique" : "Afficher l'historique"}
-                    onClick={() => setHistoryOpen((prev) => ({ ...prev, [config.id]: !open }))}
+                    title={historyOpen[config.id] ? "Masquer l'historique" : "Afficher l'historique"}
+                    onClick={() =>
+                      setHistoryOpen((prev) => ({ ...prev, [config.id]: !prev[config.id] }))
+                    }
                   >
                     <Icon name="history" className="h-4 w-4" />
                     Historique
                   </Button>
                 </div>
+              ),
+            },
+          ]}
+        />
 
-                <dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 border-t border-gray-100 pt-2 text-xs sm:grid-cols-3 lg:grid-cols-4">
-                  {[
-                    { key: 'type', label: 'Type', value: config.leaveType },
-                    { key: 'effectiveDate', label: "Date d'effet", value: formatDate(config.effectiveDate) },
-                    { key: 'accrualAmount', label: 'Quantité acquise', value: config.accrualAmount },
-                    { key: 'accrualFrequency', label: 'Fréquence', value: FREQUENCY_LABELS[config.accrualFrequency] },
-                    { key: 'creditMonth', label: 'Mois de crédit', value: config.creditMonth },
-                    { key: 'creditDay', label: 'Jour de crédit', value: config.creditDay },
-                    {
-                      key: 'acquisitionStart',
-                      label: "Début d'acquisition",
-                      value: monthDay(config.acquisitionStartMonth, config.acquisitionStartDay),
-                    },
-                    {
-                      key: 'acquisitionEnd',
-                      label: "Fin d'acquisition",
-                      value: monthDay(config.acquisitionEndMonth, config.acquisitionEndDay),
-                    },
-                    {
-                      key: 'usageStart',
-                      label: "Début d'utilisation",
-                      value: monthDay(config.usageStartMonth, config.usageStartDay),
-                    },
-                    {
-                      key: 'usageEnd',
-                      label: "Fin d'utilisation",
-                      value: monthDay(config.usageEndMonth, config.usageEndDay),
-                    },
-                    { key: 'expirationMonths', label: 'Expiration (mois)', value: config.expirationMonths ?? '—' },
-                    { key: 'carryoverMax', label: 'Report maximum', value: config.carryoverMax },
-                    {
-                      key: 'carryoverExpirationMonths',
-                      label: 'Expiration du report (mois)',
-                      value: config.carryoverExpirationMonths ?? '—',
-                    },
-                    { key: 'negativeLimit', label: 'Seuil négatif', value: config.negativeLimit },
-                    { key: 'active', label: 'Statut', value: config.active ? 'Actif' : 'Inactif' },
-                  ].map((param) => (
-                    <div key={param.key}>
-                      <dt
-                        id={`LeaveSettings.configs.${config.id}.param.${param.key}.label`}
-                        className="font-medium text-gray-500"
-                      >
-                        {param.label}
-                      </dt>
-                      <dd
-                        id={`LeaveSettings.configs.${config.id}.param.${param.key}`}
-                        className="text-gray-700"
-                      >
-                        {param.value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-
-                {open && (
-                  <div className="mt-3">
-                    <p id={`LeaveSettings.configs.${config.id}.historique.titre`} className="text-xs font-semibold text-gray-600">
-                      Historique d'activation / désactivation
-                    </p>
-                    {config.activations.length > 0 && (
-                      <div className="mt-1 max-w-xs">
-                        <Input
-                          id={`LeaveSettings.configs.${config.id}.historique.search`}
-                          type="search"
-                          className="!py-1 !text-xs"
-                          placeholder={tr('common.searchPlaceholder')}
-                          aria-label={tr('common.searchPlaceholder')}
-                          value={search}
-                          onChange={(e) =>
-                            setHistorySearches((prev) => ({ ...prev, [config.id]: e.target.value }))
-                          }
-                        />
-                      </div>
-                    )}
-                    {config.activations.length > 0 && filteredActivations.length === 0 && (
-                      <p id={`LeaveSettings.configs.${config.id}.historique.search.empty`} className="mt-1 text-xs text-gray-400">
-                        {tr('common.noResults')}
-                      </p>
-                    )}
-                    {config.activations.length > 0 ? (
-                      <>
-                        <table
-                          id={`LeaveSettings.configs.${config.id}.historique.table`}
-                          className="mt-1 text-xs"
-                          style={{ width: '440px', maxWidth: '100%' }}
-                        >
-                          <colgroup>
-                            <col style={{ width: '150px' }} />
-                            <col style={{ width: '110px' }} />
-                            <col style={{ width: '180px' }} />
-                          </colgroup>
-                          <thead>
-                            <tr className="text-left text-gray-500">
-                              <th id={`LeaveSettings.configs.${config.id}.historique.date.titre`} className="px-2 py-1">Date</th>
-                              <th id={`LeaveSettings.configs.${config.id}.historique.statut.titre`} className="px-2 py-1">Statut</th>
-                              <th id={`LeaveSettings.configs.${config.id}.historique.user.titre`} className="px-2 py-1">Utilisateur</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {pageItems.map((activation) => (
-                              <tr id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}`} key={activation.id}>
-                                <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.date`} className="px-2 py-1">
-                                  {formatDateTime(activation.actionDate)}
-                                </td>
-                                <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.statut`} className="px-2 py-1">
-                                  {activation.action === 'ACTIVATION' ? 'Activation' : 'Désactivation'}
-                                </td>
-                                <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.user`} className="px-2 py-1">
-                                  {activation.userName ?? '—'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                        <div style={{ width: '440px', maxWidth: '100%' }}>
-                          <Pagination
-                            page={page}
-                            totalPages={totalPages}
-                            total={filteredActivations.length}
-                            onChange={(next) =>
-                              setHistoryPages((prev) => ({ ...prev, [config.id]: next }))
-                            }
-                            idPrefix={`LeaveSettings.configs.${config.id}.historique.pagination`}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <p id={`LeaveSettings.configs.${config.id}.historique.vide`} className="text-xs text-gray-400">Aucun historique</p>
-                    )}
-                  </div>
-                )}
+        {(configs ?? []).filter((config) => historyOpen[config.id]).map((config) => {
+          const search = historySearches[config.id] ?? ''
+          const filteredActivations = filterRows(
+            config.activations,
+            search,
+            (a) => `${a.actionDate} ${a.action} ${a.userName ?? ''}`,
+          )
+          const totalPages = Math.max(1, Math.ceil(filteredActivations.length / HISTORY_PAGE_SIZE))
+          const page = Math.min(historyPages[config.id] ?? 0, totalPages - 1)
+          const pageItems = filteredActivations.slice(
+            page * HISTORY_PAGE_SIZE,
+            page * HISTORY_PAGE_SIZE + HISTORY_PAGE_SIZE,
+          )
+          return (
+            <div
+              id={`LeaveSettings.configs.${config.id}.historique`}
+              key={config.id}
+              className="mt-3 rounded border border-gray-100 px-3 py-2 text-sm text-gray-700"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p id={`LeaveSettings.configs.${config.id}.historique.titre`} className="text-xs font-semibold text-gray-600">
+                  Historique d'activation / désactivation — {config.leaveType} ({formatDate(config.effectiveDate)})
+                </p>
+                <Button
+                  id={`LeaveSettings.configs.${config.id}.historique.fermer`}
+                  type="button"
+                  className="!w-auto !px-2 !py-1 !text-xs"
+                  onClick={() => setHistoryOpen((prev) => ({ ...prev, [config.id]: false }))}
+                >
+                  Fermer
+                </Button>
               </div>
-            )
-          })}
-          {(configs ?? []).length === 0 && <p id="LeaveSettings.configs.empty" className="text-gray-400">Aucune configuration</p>}
-        </div>
+              {config.activations.length > 0 && (
+                <div className="mt-1 max-w-xs">
+                  <Input
+                    id={`LeaveSettings.configs.${config.id}.historique.search`}
+                    type="search"
+                    className="!py-1 !text-xs"
+                    placeholder={tr('common.searchPlaceholder')}
+                    aria-label={tr('common.searchPlaceholder')}
+                    value={search}
+                    onChange={(e) =>
+                      setHistorySearches((prev) => ({ ...prev, [config.id]: e.target.value }))
+                    }
+                  />
+                </div>
+              )}
+              {config.activations.length > 0 && filteredActivations.length === 0 && (
+                <p id={`LeaveSettings.configs.${config.id}.historique.search.empty`} className="mt-1 text-xs text-gray-400">
+                  {tr('common.noResults')}
+                </p>
+              )}
+              {config.activations.length > 0 ? (
+                <>
+                  <table
+                    id={`LeaveSettings.configs.${config.id}.historique.table`}
+                    className="mt-1 text-xs"
+                    style={{ width: '440px', maxWidth: '100%' }}
+                  >
+                    <colgroup>
+                      <col style={{ width: '150px' }} />
+                      <col style={{ width: '110px' }} />
+                      <col style={{ width: '180px' }} />
+                    </colgroup>
+                    <thead>
+                      <tr className="text-left text-gray-500">
+                        <th id={`LeaveSettings.configs.${config.id}.historique.date.titre`} className="px-2 py-1">Date</th>
+                        <th id={`LeaveSettings.configs.${config.id}.historique.statut.titre`} className="px-2 py-1">Statut</th>
+                        <th id={`LeaveSettings.configs.${config.id}.historique.user.titre`} className="px-2 py-1">Utilisateur</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageItems.map((activation) => (
+                        <tr id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}`} key={activation.id}>
+                          <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.date`} className="px-2 py-1">
+                            {formatDateTime(activation.actionDate)}
+                          </td>
+                          <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.statut`} className="px-2 py-1">
+                            {activation.action === 'ACTIVATION' ? 'Activation' : 'Désactivation'}
+                          </td>
+                          <td id={`LeaveSettings.configs.${config.id}.historique.row.${activation.id}.user`} className="px-2 py-1">
+                            {activation.userName ?? '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div style={{ width: '440px', maxWidth: '100%' }}>
+                    <Pagination
+                      page={page}
+                      totalPages={totalPages}
+                      total={filteredActivations.length}
+                      onChange={(next) =>
+                        setHistoryPages((prev) => ({ ...prev, [config.id]: next }))
+                      }
+                      idPrefix={`LeaveSettings.configs.${config.id}.historique.pagination`}
+                    />
+                  </div>
+                </>
+              ) : (
+                <p id={`LeaveSettings.configs.${config.id}.historique.vide`} className="text-xs text-gray-400">Aucun historique</p>
+              )}
+            </div>
+          )
+        })}
       </Card>
     </div>
   )

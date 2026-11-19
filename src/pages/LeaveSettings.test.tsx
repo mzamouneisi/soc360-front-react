@@ -137,10 +137,30 @@ describe('LeaveSettings — activation / désactivation', () => {
     expect(value('carryoverMax')).toBe('5')
     expect(value('carryoverExpirationMonths')).toBe('3')
     expect(value('negativeLimit')).toBe('2')
-    expect(value('active')).toBe('Actif')
-    expect(
-      document.getElementById('LeaveSettings.configs.1.param.effectiveDate.label'),
-    ).not.toBeNull()
+    expect(document.getElementById('LeaveSettings.configs.1.statut')).toHaveTextContent('Actif')
+    expect(document.getElementById('LeaveSettings.configs.col.effectiveDate')).not.toBeNull()
+  })
+
+  it('pagine le tableau des configurations existantes', async () => {
+    configsMock.mockResolvedValue(
+      Array.from({ length: 7 }, (_, index) =>
+        config({ id: index + 1, leaveType: index % 2 === 0 ? 'CP' : 'RTT' }),
+      ),
+    )
+
+    render(<LeaveSettings />)
+
+    await screen.findByText('CP')
+    expect(document.getElementById('LeaveSettings.configs.page')).toHaveTextContent('Page 1 / 2')
+    expect(document.getElementById('LeaveSettings.configs.1.param.type')).toBeInTheDocument()
+
+    fireEvent.click(document.getElementById('LeaveSettings.configs.next') as HTMLElement)
+
+    await waitFor(() =>
+      expect(document.getElementById('LeaveSettings.configs.6.param.type')).toBeInTheDocument(),
+    )
+    expect(document.getElementById('LeaveSettings.configs.1.param.type')).toBeNull()
+    expect(document.getElementById('LeaveSettings.configs.page')).toHaveTextContent('Page 2 / 2')
   })
 
   it('pagine l’historique lorsqu’il est volumineux', async () => {
