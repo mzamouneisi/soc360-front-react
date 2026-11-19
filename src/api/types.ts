@@ -1083,6 +1083,8 @@ export interface LeaveMovementDto {
   lotId: number | null
   expirationDate: string | null
   origin: string
+  actorId?: number | null
+  actorName?: string | null
   reason: string | null
   unavailabilityId: number | null
   operationKey: string | null

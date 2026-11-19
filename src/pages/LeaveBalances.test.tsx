@@ -3,9 +3,10 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { LeaveBalances } from './LeaveBalances'
 import type { LeaveBalanceResponse, LeaveLotDto, LeaveType } from '../api/types'
 
-const { balanceMock, collaboratorsMock, userMock } = vi.hoisted(() => ({
+const { balanceMock, collaboratorsMock, movementsMock, userMock } = vi.hoisted(() => ({
   balanceMock: vi.fn(),
   collaboratorsMock: vi.fn(),
+  movementsMock: vi.fn().mockResolvedValue([]),
   userMock: { value: null as unknown },
 }))
 
@@ -24,7 +25,7 @@ vi.mock('../api/consultants', () => ({
 }))
 
 vi.mock('../api/leave', () => ({
-  leaveApi: { balance: balanceMock },
+  leaveApi: { balance: balanceMock, movements: movementsMock },
 }))
 
 function lots(type: LeaveType, count: number): LeaveLotDto[] {
@@ -54,6 +55,7 @@ const consultantUser = {
 
 afterEach(() => {
   vi.clearAllMocks()
+  movementsMock.mockResolvedValue([])
   userMock.value = responsibleUser
 })
 
@@ -88,6 +90,54 @@ describe('LeaveBalances', () => {
     expect(screen.getByText('RTT-4')).toBeInTheDocument()
     expect(document.getElementById('LeaveBalances.CP.lots.page')).toHaveTextContent('Page 2 / 3')
     expect(document.getElementById('LeaveBalances.RTT.lots.page')).toHaveTextContent('Page 2 / 3')
+  })
+
+  it('affiche le journal d’audit des mouvements avec leur auteur', async () => {
+    userMock.value = consultantUser
+    balanceMock.mockResolvedValue({
+      consultantId: 10,
+      consultantName: 'Alice Martin',
+      referenceDate: '2026-11-05',
+      balances: [
+        { leaveType: 'CP', balance: 9, accrued: 10, consumed: 1, expired: 0, adjustments: 0, lots: [] },
+      ],
+      employee: true,
+    })
+    movementsMock.mockResolvedValue([
+      {
+        id: 7,
+        leaveType: 'CP',
+        movementType: 'CONSUMPTION',
+        quantity: -1,
+        balanceBefore: 10,
+        balanceAfter: 9,
+        movementDate: '2026-11-01T23:59:59.999Z',
+        lotId: 1,
+        expirationDate: null,
+        origin: 'ABSENCE_VALIDATION',
+        actorId: 10,
+        actorName: 'Alice Martin',
+        reason: 'Absence validée',
+        unavailabilityId: 12,
+        operationKey: 'absence-12-consume',
+        parentMovementId: null,
+        configId: null,
+        configEffectiveDate: null,
+      },
+    ])
+
+    render(<LeaveBalances />)
+
+    expect(await screen.findByText('Journal des mouvements CP')).toBeInTheDocument()
+    expect(document.getElementById('LeaveBalances.CP.movement.7.nature')).toHaveTextContent(
+      'Consommation',
+    )
+    expect(document.getElementById('LeaveBalances.CP.movement.7.actor')).toHaveTextContent(
+      'Alice Martin',
+    )
+    expect(document.getElementById('LeaveBalances.CP.movement.7.reason')).toHaveTextContent(
+      'Absence validée',
+    )
   })
 
   it('masque les soldes et les droits d’un consultant non salarié', async () => {
