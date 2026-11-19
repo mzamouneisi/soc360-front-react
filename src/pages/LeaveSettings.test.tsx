@@ -97,6 +97,52 @@ describe('LeaveSettings — activation / désactivation', () => {
     ).not.toBe('')
   })
 
+  it('rappelle tous les paramètres de chaque configuration existante', async () => {
+    configsMock.mockResolvedValue([
+      config({
+        accrualAmount: 2.5,
+        accrualFrequency: 'YEARLY',
+        creditMonth: 2,
+        creditDay: 28,
+        acquisitionStartMonth: 6,
+        acquisitionStartDay: 15,
+        acquisitionEndMonth: 5,
+        acquisitionEndDay: 31,
+        usageStartMonth: 5,
+        usageStartDay: 1,
+        usageEndMonth: 4,
+        usageEndDay: 30,
+        expirationMonths: 12,
+        carryoverMax: 5,
+        carryoverExpirationMonths: 3,
+        negativeLimit: 2,
+      }),
+    ])
+
+    render(<LeaveSettings />)
+
+    await screen.findByText('CP')
+    const value = (key: string) =>
+      document.getElementById(`LeaveSettings.configs.1.param.${key}`)?.textContent
+    expect(value('type')).toBe('CP')
+    expect(value('accrualAmount')).toBe('2.5')
+    expect(value('accrualFrequency')).toBe('Annuelle')
+    expect(value('creditMonth')).toBe('2')
+    expect(value('creditDay')).toBe('28')
+    expect(value('acquisitionStart')).toBe('15/06')
+    expect(value('acquisitionEnd')).toBe('31/05')
+    expect(value('usageStart')).toBe('01/05')
+    expect(value('usageEnd')).toBe('30/04')
+    expect(value('expirationMonths')).toBe('12')
+    expect(value('carryoverMax')).toBe('5')
+    expect(value('carryoverExpirationMonths')).toBe('3')
+    expect(value('negativeLimit')).toBe('2')
+    expect(value('active')).toBe('Actif')
+    expect(
+      document.getElementById('LeaveSettings.configs.1.param.effectiveDate.label'),
+    ).not.toBeNull()
+  })
+
   it('pagine l’historique lorsqu’il est volumineux', async () => {
     const activations = Array.from({ length: 7 }, (_, index) => ({
       id: 200 + index,

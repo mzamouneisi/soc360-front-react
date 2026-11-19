@@ -9,7 +9,7 @@ import { Button, Card, Field, Input, RefreshButton, Select } from '../components
 import { ErrorBlock, LoadingBlock, PageHeader, Pagination } from '../components/data'
 import { Icon } from '../components/icons'
 import { dialog } from '../components/dialog'
-import { formatDateTime } from '../lib/format'
+import { formatDate, formatDateTime } from '../lib/format'
 import { filterRows } from '../lib/tableSearch'
 import type {
   LeaveAccrualFrequency,
@@ -30,6 +30,11 @@ const MAX_DAYS_BY_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 function maxDayForMonth(month: number): number {
   return MAX_DAYS_BY_MONTH[month - 1] ?? 31
+}
+
+function monthDay(month: number | null | undefined, day: number | null | undefined): string {
+  if (month == null || day == null) return '—'
+  return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`
 }
 
 function emptyForm() {
@@ -300,6 +305,61 @@ export function LeaveSettings() {
                     Historique
                   </Button>
                 </div>
+
+                <dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 border-t border-gray-100 pt-2 text-xs sm:grid-cols-3 lg:grid-cols-4">
+                  {[
+                    { key: 'type', label: 'Type', value: config.leaveType },
+                    { key: 'effectiveDate', label: "Date d'effet", value: formatDate(config.effectiveDate) },
+                    { key: 'accrualAmount', label: 'Quantité acquise', value: config.accrualAmount },
+                    { key: 'accrualFrequency', label: 'Fréquence', value: FREQUENCY_LABELS[config.accrualFrequency] },
+                    { key: 'creditMonth', label: 'Mois de crédit', value: config.creditMonth },
+                    { key: 'creditDay', label: 'Jour de crédit', value: config.creditDay },
+                    {
+                      key: 'acquisitionStart',
+                      label: "Début d'acquisition",
+                      value: monthDay(config.acquisitionStartMonth, config.acquisitionStartDay),
+                    },
+                    {
+                      key: 'acquisitionEnd',
+                      label: "Fin d'acquisition",
+                      value: monthDay(config.acquisitionEndMonth, config.acquisitionEndDay),
+                    },
+                    {
+                      key: 'usageStart',
+                      label: "Début d'utilisation",
+                      value: monthDay(config.usageStartMonth, config.usageStartDay),
+                    },
+                    {
+                      key: 'usageEnd',
+                      label: "Fin d'utilisation",
+                      value: monthDay(config.usageEndMonth, config.usageEndDay),
+                    },
+                    { key: 'expirationMonths', label: 'Expiration (mois)', value: config.expirationMonths ?? '—' },
+                    { key: 'carryoverMax', label: 'Report maximum', value: config.carryoverMax },
+                    {
+                      key: 'carryoverExpirationMonths',
+                      label: 'Expiration du report (mois)',
+                      value: config.carryoverExpirationMonths ?? '—',
+                    },
+                    { key: 'negativeLimit', label: 'Seuil négatif', value: config.negativeLimit },
+                    { key: 'active', label: 'Statut', value: config.active ? 'Actif' : 'Inactif' },
+                  ].map((param) => (
+                    <div key={param.key}>
+                      <dt
+                        id={`LeaveSettings.configs.${config.id}.param.${param.key}.label`}
+                        className="font-medium text-gray-500"
+                      >
+                        {param.label}
+                      </dt>
+                      <dd
+                        id={`LeaveSettings.configs.${config.id}.param.${param.key}`}
+                        className="text-gray-700"
+                      >
+                        {param.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
 
                 {open && (
                   <div className="mt-3">
