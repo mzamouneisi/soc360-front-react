@@ -26,6 +26,12 @@ const FREQUENCY_LABELS: Record<LeaveAccrualFrequency, string> = {
   ONCE: 'Unique',
 }
 
+const MAX_DAYS_BY_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+function maxDayForMonth(month: number): number {
+  return MAX_DAYS_BY_MONTH[month - 1] ?? 31
+}
+
 function emptyForm() {
   return {
     leaveType: 'CP' as LeaveType,
@@ -95,6 +101,12 @@ export function LeaveSettings() {
     }
     if (needsDay && (!Number.isInteger(creditDay) || creditDay < 1 || creditDay > 31)) {
       setFormError('Le jour de crédit doit être compris entre 1 et 31.')
+      return
+    }
+    if (needsMonth && creditDay > maxDayForMonth(creditMonth)) {
+      setFormError(
+        `Le jour de crédit doit être compris entre 1 et ${maxDayForMonth(creditMonth)} pour ce mois.`,
+      )
       return
     }
 

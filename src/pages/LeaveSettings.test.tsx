@@ -331,6 +331,33 @@ describe('LeaveSettings — activation / désactivation', () => {
     }
   })
 
+  it('refuse un jour de crédit invalide pour le mois choisi', async () => {
+    configsMock.mockResolvedValue([])
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
+    fireEvent.change(document.getElementById('LeaveSettings.config.frequency') as HTMLSelectElement, {
+      target: { value: 'YEARLY' },
+    })
+    fireEvent.change(document.getElementById('LeaveSettings.config.creditMonth') as HTMLInputElement, {
+      target: { value: '2' },
+    })
+    fireEvent.change(document.getElementById('LeaveSettings.config.creditDay') as HTMLInputElement, {
+      target: { value: '30' },
+    })
+    fireEvent.submit(document.querySelector('form') as HTMLFormElement)
+
+    expect(saveConfigMock).not.toHaveBeenCalled()
+    await waitFor(() =>
+      expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain(
+        'compris entre 1 et 28',
+      ),
+    )
+  })
+
   it('réinitialise les champs après l’enregistrement d’un paramétrage', async () => {
     configsMock.mockResolvedValue([])
     saveConfigMock.mockResolvedValue(config())
