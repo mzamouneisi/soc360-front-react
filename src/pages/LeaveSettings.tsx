@@ -328,8 +328,8 @@ export function LeaveSettings() {
         <form onSubmit={handleSubmit} className="space-y-3">
           {formError && <p id="LeaveSettings.formError" className="text-sm text-red-600">{formError}</p>}
 
-          <div className="flex flex-wrap items-start gap-3">
-          <Card id="LeaveSettings.config.group.general" className="w-fit max-w-full p-3">
+          <div className="flex flex-wrap items-stretch gap-3">
+          <Card id="LeaveSettings.config.group.general" className="w-fit max-w-full p-3 min-h-[140px]">
             <h4 id="LeaveSettings.config.section.general" className="mb-2 text-sm font-bold text-gray-700">Général</h4>
             <div className="flex flex-wrap gap-2">
               <Field className="w-40" label="Type" id="LeaveSettings.config.type.label">
@@ -370,7 +370,7 @@ export function LeaveSettings() {
           </Card>
 
           {form.accrualFrequency !== 'ONCE' && (
-            <Card id="LeaveSettings.config.group.acquisition" className="w-fit max-w-full p-3">
+            <Card id="LeaveSettings.config.group.acquisition" className="w-fit max-w-full p-3 min-h-[140px]">
               <h4 id="LeaveSettings.config.section.acquisition" className="mb-2 text-sm font-bold text-gray-700">Acquisition des droits</h4>
               <div className="flex flex-wrap gap-2">
                 <Field className="w-40" label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
@@ -383,7 +383,7 @@ export function LeaveSettings() {
             </Card>
           )}
 
-          <Card id="LeaveSettings.config.group.reference" className="w-fit max-w-full p-3">
+          <Card id="LeaveSettings.config.group.reference" className="w-fit max-w-full p-3 min-h-[140px]">
             <h4 id="LeaveSettings.config.section.reference" className="mb-2 text-sm font-bold text-gray-700">Période de référence</h4>
             <div className="flex flex-wrap gap-2">
               <Field className="w-40" label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
@@ -405,7 +405,7 @@ export function LeaveSettings() {
             </div>
           </Card>
 
-          <Card id="LeaveSettings.config.group.expiration" className="w-fit max-w-full p-3">
+          <Card id="LeaveSettings.config.group.expiration" className="w-fit max-w-full p-3 min-h-[140px]">
             <h4 id="LeaveSettings.config.section.expiration" className="mb-2 text-sm font-bold text-gray-700">Expiration</h4>
             <div className="flex flex-wrap gap-2">
               <Field className="w-40" label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
@@ -435,7 +435,7 @@ export function LeaveSettings() {
             </div>
           </Card>
 
-          <Card id="LeaveSettings.config.group.carryover" className="w-fit max-w-full p-3">
+          <Card id="LeaveSettings.config.group.carryover" className="w-fit max-w-full p-3 min-h-[140px]">
             <h4 id="LeaveSettings.config.section.carryover" className="mb-2 text-sm font-bold text-gray-700">Report des droits</h4>
             <div className="flex flex-wrap gap-2">
               <Field className="w-40" label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
@@ -462,7 +462,7 @@ export function LeaveSettings() {
             </div>
           </Card>
 
-          <Card id="LeaveSettings.config.group.negative" className="w-fit max-w-full p-3">
+          <Card id="LeaveSettings.config.group.negative" className="w-fit max-w-full p-3 min-h-[140px]">
             <h4 id="LeaveSettings.config.section.negative" className="mb-2 text-sm font-bold text-gray-700">Solde négatif</h4>
             <div className="flex flex-wrap gap-2">
               <Field className="w-40" label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
