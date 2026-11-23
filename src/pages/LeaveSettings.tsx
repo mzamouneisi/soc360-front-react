@@ -329,7 +329,7 @@ export function LeaveSettings() {
           {formError && <p id="LeaveSettings.formError" className="text-sm text-red-600">{formError}</p>}
 
           <h4 id="LeaveSettings.config.section.general" className="text-xs font-semibold uppercase text-gray-500">Général</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <Field label="Type" id="LeaveSettings.config.type.label">
               <Select id="LeaveSettings.config.type" value={form.leaveType} onChange={(e) => setForm({ ...form, leaveType: e.target.value as LeaveType })}>
                 <option id="LeaveSettings.config.type.cp" value="CP">CP</option>
@@ -369,7 +369,7 @@ export function LeaveSettings() {
           {form.accrualFrequency !== 'ONCE' && (
             <>
               <h4 id="LeaveSettings.config.section.acquisition" className="text-xs font-semibold uppercase text-gray-500">Acquisition des droits</h4>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
                 <Field label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
                   <Select id="LeaveSettings.config.acquisitionMode" value={form.acquisitionMode} onChange={(e) => setForm({ ...form, acquisitionMode: e.target.value as LeaveAcquisitionMode })}>
                     <option id="LeaveSettings.config.acquisitionMode.start" value="START_OF_PERIOD">Début de période</option>
@@ -381,7 +381,7 @@ export function LeaveSettings() {
           )}
 
           <h4 id="LeaveSettings.config.section.reference" className="text-xs font-semibold uppercase text-gray-500">Période de référence</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <Field label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
               <Select id="LeaveSettings.config.referencePeriod" value={form.referencePeriod} onChange={(e) => setForm({ ...form, referencePeriod: e.target.value as LeaveReferencePeriod })}>
                 <option id="LeaveSettings.config.referencePeriod.calendar" value="CALENDAR_YEAR">Année civile</option>
@@ -401,7 +401,7 @@ export function LeaveSettings() {
           </div>
 
           <h4 id="LeaveSettings.config.section.expiration" className="text-xs font-semibold uppercase text-gray-500">Expiration</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <Field label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
               <Select id="LeaveSettings.config.expirationPolicy" value={form.expirationPolicy} onChange={(e) => setForm({ ...form, expirationPolicy: e.target.value as LeaveExpirationPolicy })}>
                 <option id="LeaveSettings.config.expirationPolicy.none" value="NONE">Aucune expiration</option>
@@ -429,7 +429,7 @@ export function LeaveSettings() {
           </div>
 
           <h4 id="LeaveSettings.config.section.carryover" className="text-xs font-semibold uppercase text-gray-500">Report des droits</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <Field label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
               <label id="LeaveSettings.config.carryoverAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                 <input
@@ -454,7 +454,7 @@ export function LeaveSettings() {
           </div>
 
           <h4 id="LeaveSettings.config.section.negative" className="text-xs font-semibold uppercase text-gray-500">Solde négatif</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
               <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                 <input
