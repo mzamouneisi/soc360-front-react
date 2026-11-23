@@ -321,16 +321,16 @@ export function LeaveSettings() {
       {error && <ErrorBlock id="LeaveSettings.error" message={error} />}
       {loading && <LoadingBlock />}
 
-      <Card id="LeaveSettings.config" className="mb-6 p-5">
+      <div id="LeaveSettings.config" className="mb-6">
         <h3 id="LeaveSettings.config.title" className="mb-3 text-sm font-semibold text-gray-700">
           {isEdit ? 'Modifier une configuration de droits' : 'Nouvelle configuration de droits'}
         </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {formError && <p id="LeaveSettings.formError" className="text-sm text-red-600">{formError}</p>}
 
-          <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[160px_1fr] lg:items-start">
-            <h4 id="LeaveSettings.config.section.general" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Général</h4>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <Card id="LeaveSettings.config.group.general" className="p-3">
+            <h4 id="LeaveSettings.config.section.general" className="mb-2 text-sm font-bold text-gray-700">Général</h4>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               <Field label="Type" id="LeaveSettings.config.type.label">
                 <Select id="LeaveSettings.config.type" value={form.leaveType} onChange={(e) => setForm({ ...form, leaveType: e.target.value as LeaveType })}>
                   <option id="LeaveSettings.config.type.cp" value="CP">CP</option>
@@ -366,23 +366,25 @@ export function LeaveSettings() {
                 </label>
               </Field>
             </div>
+          </Card>
 
-            {form.accrualFrequency !== 'ONCE' && (
-              <>
-                <h4 id="LeaveSettings.config.section.acquisition" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Acquisition des droits</h4>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                  <Field label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
-                    <Select id="LeaveSettings.config.acquisitionMode" value={form.acquisitionMode} onChange={(e) => setForm({ ...form, acquisitionMode: e.target.value as LeaveAcquisitionMode })}>
-                      <option id="LeaveSettings.config.acquisitionMode.start" value="START_OF_PERIOD">Début de période</option>
-                      <option id="LeaveSettings.config.acquisitionMode.end" value="END_OF_PERIOD">Fin de période</option>
-                    </Select>
-                  </Field>
-                </div>
-              </>
-            )}
+          {form.accrualFrequency !== 'ONCE' && (
+            <Card id="LeaveSettings.config.group.acquisition" className="p-3">
+              <h4 id="LeaveSettings.config.section.acquisition" className="mb-2 text-sm font-bold text-gray-700">Acquisition des droits</h4>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                <Field label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
+                  <Select id="LeaveSettings.config.acquisitionMode" value={form.acquisitionMode} onChange={(e) => setForm({ ...form, acquisitionMode: e.target.value as LeaveAcquisitionMode })}>
+                    <option id="LeaveSettings.config.acquisitionMode.start" value="START_OF_PERIOD">Début de période</option>
+                    <option id="LeaveSettings.config.acquisitionMode.end" value="END_OF_PERIOD">Fin de période</option>
+                  </Select>
+                </Field>
+              </div>
+            </Card>
+          )}
 
-            <h4 id="LeaveSettings.config.section.reference" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Période de référence</h4>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <Card id="LeaveSettings.config.group.reference" className="p-3">
+            <h4 id="LeaveSettings.config.section.reference" className="mb-2 text-sm font-bold text-gray-700">Période de référence</h4>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               <Field label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
                 <Select id="LeaveSettings.config.referencePeriod" value={form.referencePeriod} onChange={(e) => setForm({ ...form, referencePeriod: e.target.value as LeaveReferencePeriod })}>
                   <option id="LeaveSettings.config.referencePeriod.calendar" value="CALENDAR_YEAR">Année civile</option>
@@ -400,9 +402,11 @@ export function LeaveSettings() {
                 </>
               )}
             </div>
+          </Card>
 
-            <h4 id="LeaveSettings.config.section.expiration" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Expiration</h4>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <Card id="LeaveSettings.config.group.expiration" className="p-3">
+            <h4 id="LeaveSettings.config.section.expiration" className="mb-2 text-sm font-bold text-gray-700">Expiration</h4>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               <Field label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
                 <Select id="LeaveSettings.config.expirationPolicy" value={form.expirationPolicy} onChange={(e) => setForm({ ...form, expirationPolicy: e.target.value as LeaveExpirationPolicy })}>
                   <option id="LeaveSettings.config.expirationPolicy.none" value="NONE">Aucune expiration</option>
@@ -428,9 +432,11 @@ export function LeaveSettings() {
                 </Field>
               )}
             </div>
+          </Card>
 
-            <h4 id="LeaveSettings.config.section.carryover" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Report des droits</h4>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <Card id="LeaveSettings.config.group.carryover" className="p-3">
+            <h4 id="LeaveSettings.config.section.carryover" className="mb-2 text-sm font-bold text-gray-700">Report des droits</h4>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               <Field label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
                 <label id="LeaveSettings.config.carryoverAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                   <input
@@ -453,9 +459,11 @@ export function LeaveSettings() {
                 </>
               )}
             </div>
+          </Card>
 
-            <h4 id="LeaveSettings.config.section.negative" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Solde négatif</h4>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <Card id="LeaveSettings.config.group.negative" className="p-3">
+            <h4 id="LeaveSettings.config.section.negative" className="mb-2 text-sm font-bold text-gray-700">Solde négatif</h4>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
               <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
                 <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                   <input
@@ -473,7 +481,7 @@ export function LeaveSettings() {
                 </Field>
               )}
             </div>
-          </div>
+          </Card>
 
           <p id="LeaveSettings.config.creditHint" className="text-xs text-gray-500">
             Les droits sont crédités au début ou à la fin de chaque période, selon le mode d'acquisition.
@@ -492,7 +500,7 @@ export function LeaveSettings() {
             )}
           </div>
         </form>
-      </Card>
+      </div>
 
       <Card id="LeaveSettings.configs" className="mb-6 p-5">
         <h2 id="LeaveSettings.configs.title" className="mb-3 text-lg font-semibold text-gray-800">Configurations existantes</h2>
