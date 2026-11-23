@@ -328,25 +328,26 @@ export function LeaveSettings() {
         <form onSubmit={handleSubmit} className="space-y-3">
           {formError && <p id="LeaveSettings.formError" className="text-sm text-red-600">{formError}</p>}
 
-          <Card id="LeaveSettings.config.group.general" className="p-3">
+          <div className="flex flex-wrap items-start gap-3">
+          <Card id="LeaveSettings.config.group.general" className="w-fit max-w-full p-3">
             <h4 id="LeaveSettings.config.section.general" className="mb-2 text-sm font-bold text-gray-700">Général</h4>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <Field label="Type" id="LeaveSettings.config.type.label">
+            <div className="flex flex-wrap gap-2">
+              <Field className="w-40" label="Type" id="LeaveSettings.config.type.label">
                 <Select id="LeaveSettings.config.type" value={form.leaveType} onChange={(e) => setForm({ ...form, leaveType: e.target.value as LeaveType })}>
                   <option id="LeaveSettings.config.type.cp" value="CP">CP</option>
                   <option id="LeaveSettings.config.type.rtt" value="RTT">RTT</option>
                 </Select>
               </Field>
-              <Field label="Date d'effet" id="LeaveSettings.config.effectiveDate.label">
+              <Field className="w-40" label="Date d'effet" id="LeaveSettings.config.effectiveDate.label">
                 <Input id="LeaveSettings.config.effectiveDate" type="date" value={form.effectiveDate} onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })} />
               </Field>
-              <Field label="Date de fin d'application" id="LeaveSettings.config.endDate.label">
+              <Field className="w-40" label="Date de fin d'application" id="LeaveSettings.config.endDate.label">
                 <Input id="LeaveSettings.config.endDate" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
               </Field>
-              <Field label="Quantité acquise" id="LeaveSettings.config.amount.label">
+              <Field className="w-40" label="Quantité acquise" id="LeaveSettings.config.amount.label">
                 <Input id="LeaveSettings.config.amount" type="number" min="0.01" step="any" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
               </Field>
-              <Field label="Fréquence" id="LeaveSettings.config.frequency.label">
+              <Field className="w-40" label="Fréquence" id="LeaveSettings.config.frequency.label">
                 <Select id="LeaveSettings.config.frequency" value={form.accrualFrequency} onChange={(e) => setForm({ ...form, accrualFrequency: e.target.value as LeaveAccrualFrequency })}>
                   <option id="LeaveSettings.config.frequency.monthly" value="MONTHLY">Mensuelle</option>
                   <option id="LeaveSettings.config.frequency.quarterly" value="QUARTERLY">Trimestrielle</option>
@@ -354,7 +355,7 @@ export function LeaveSettings() {
                   <option id="LeaveSettings.config.frequency.once" value="ONCE">Unique</option>
                 </Select>
               </Field>
-              <Field label="Active" id="LeaveSettings.config.active.label">
+              <Field className="w-40" label="Active" id="LeaveSettings.config.active.label">
                 <label id="LeaveSettings.config.active.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                   <input
                     id="LeaveSettings.config.active"
@@ -369,10 +370,10 @@ export function LeaveSettings() {
           </Card>
 
           {form.accrualFrequency !== 'ONCE' && (
-            <Card id="LeaveSettings.config.group.acquisition" className="p-3">
+            <Card id="LeaveSettings.config.group.acquisition" className="w-fit max-w-full p-3">
               <h4 id="LeaveSettings.config.section.acquisition" className="mb-2 text-sm font-bold text-gray-700">Acquisition des droits</h4>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                <Field label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
+              <div className="flex flex-wrap gap-2">
+                <Field className="w-40" label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
                   <Select id="LeaveSettings.config.acquisitionMode" value={form.acquisitionMode} onChange={(e) => setForm({ ...form, acquisitionMode: e.target.value as LeaveAcquisitionMode })}>
                     <option id="LeaveSettings.config.acquisitionMode.start" value="START_OF_PERIOD">Début de période</option>
                     <option id="LeaveSettings.config.acquisitionMode.end" value="END_OF_PERIOD">Fin de période</option>
@@ -382,10 +383,10 @@ export function LeaveSettings() {
             </Card>
           )}
 
-          <Card id="LeaveSettings.config.group.reference" className="p-3">
+          <Card id="LeaveSettings.config.group.reference" className="w-fit max-w-full p-3">
             <h4 id="LeaveSettings.config.section.reference" className="mb-2 text-sm font-bold text-gray-700">Période de référence</h4>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <Field label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
+            <div className="flex flex-wrap gap-2">
+              <Field className="w-40" label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
                 <Select id="LeaveSettings.config.referencePeriod" value={form.referencePeriod} onChange={(e) => setForm({ ...form, referencePeriod: e.target.value as LeaveReferencePeriod })}>
                   <option id="LeaveSettings.config.referencePeriod.calendar" value="CALENDAR_YEAR">Année civile</option>
                   <option id="LeaveSettings.config.referencePeriod.custom" value="CUSTOM">Cycle personnalisé</option>
@@ -393,10 +394,10 @@ export function LeaveSettings() {
               </Field>
               {form.referencePeriod === 'CUSTOM' && (
                 <>
-                  <Field label="Mois de début" id="LeaveSettings.config.referenceStartMonth.label">
+                  <Field className="w-40" label="Mois de début" id="LeaveSettings.config.referenceStartMonth.label">
                     <Input id="LeaveSettings.config.referenceStartMonth" type="number" min="1" max="12" value={form.referenceStartMonth} onChange={(e) => setForm({ ...form, referenceStartMonth: e.target.value })} />
                   </Field>
-                  <Field label="Jour de début" id="LeaveSettings.config.referenceStartDay.label">
+                  <Field className="w-40" label="Jour de début" id="LeaveSettings.config.referenceStartDay.label">
                     <Input id="LeaveSettings.config.referenceStartDay" type="number" min="1" max="31" value={form.referenceStartDay} onChange={(e) => setForm({ ...form, referenceStartDay: e.target.value })} />
                   </Field>
                 </>
@@ -404,10 +405,10 @@ export function LeaveSettings() {
             </div>
           </Card>
 
-          <Card id="LeaveSettings.config.group.expiration" className="p-3">
+          <Card id="LeaveSettings.config.group.expiration" className="w-fit max-w-full p-3">
             <h4 id="LeaveSettings.config.section.expiration" className="mb-2 text-sm font-bold text-gray-700">Expiration</h4>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <Field label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
+            <div className="flex flex-wrap gap-2">
+              <Field className="w-40" label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
                 <Select id="LeaveSettings.config.expirationPolicy" value={form.expirationPolicy} onChange={(e) => setForm({ ...form, expirationPolicy: e.target.value as LeaveExpirationPolicy })}>
                   <option id="LeaveSettings.config.expirationPolicy.none" value="NONE">Aucune expiration</option>
                   <option id="LeaveSettings.config.expirationPolicy.duration" value="AFTER_DURATION">Après une durée</option>
@@ -417,27 +418,27 @@ export function LeaveSettings() {
                 </Select>
               </Field>
               {form.expirationPolicy === 'AFTER_DURATION' && (
-                <Field label="Durée (mois)" id="LeaveSettings.config.expirationMonths.label">
+                <Field className="w-40" label="Durée (mois)" id="LeaveSettings.config.expirationMonths.label">
                   <Input id="LeaveSettings.config.expirationMonths" type="number" min="1" max="12" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
                 </Field>
               )}
               {form.expirationPolicy === 'FIXED_DATE' && (
-                <Field label="Date d'expiration" id="LeaveSettings.config.expirationDate.label">
+                <Field className="w-40" label="Date d'expiration" id="LeaveSettings.config.expirationDate.label">
                   <Input id="LeaveSettings.config.expirationDate" type="date" value={form.expirationDate} onChange={(e) => setForm({ ...form, expirationDate: e.target.value })} />
                 </Field>
               )}
               {form.expirationPolicy === 'MONTH_OF_FOLLOWING_PERIOD' && (
-                <Field label="Mois de la période suivante" id="LeaveSettings.config.expirationMonth.label">
+                <Field className="w-40" label="Mois de la période suivante" id="LeaveSettings.config.expirationMonth.label">
                   <Input id="LeaveSettings.config.expirationMonth" type="number" min="1" max="12" value={form.expirationMonth} onChange={(e) => setForm({ ...form, expirationMonth: e.target.value })} />
                 </Field>
               )}
             </div>
           </Card>
 
-          <Card id="LeaveSettings.config.group.carryover" className="p-3">
+          <Card id="LeaveSettings.config.group.carryover" className="w-fit max-w-full p-3">
             <h4 id="LeaveSettings.config.section.carryover" className="mb-2 text-sm font-bold text-gray-700">Report des droits</h4>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <Field label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
+            <div className="flex flex-wrap gap-2">
+              <Field className="w-40" label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
                 <label id="LeaveSettings.config.carryoverAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                   <input
                     id="LeaveSettings.config.carryoverAllowed"
@@ -450,10 +451,10 @@ export function LeaveSettings() {
               </Field>
               {form.carryoverAllowed && (
                 <>
-                  <Field label="Report maximum (jours)" id="LeaveSettings.config.carryoverMax.label">
+                  <Field className="w-40" label="Report maximum (jours)" id="LeaveSettings.config.carryoverMax.label">
                     <Input id="LeaveSettings.config.carryoverMax" type="number" min="0" step="any" value={form.carryoverMax} onChange={(e) => setForm({ ...form, carryoverMax: e.target.value })} />
                   </Field>
-                  <Field label="Échéance du report (mois)" id="LeaveSettings.config.carryoverExpirationMonths.label">
+                  <Field className="w-40" label="Échéance du report (mois)" id="LeaveSettings.config.carryoverExpirationMonths.label">
                     <Input id="LeaveSettings.config.carryoverExpirationMonths" type="number" min="0" value={form.carryoverExpirationMonths} onChange={(e) => setForm({ ...form, carryoverExpirationMonths: e.target.value })} />
                   </Field>
                 </>
@@ -461,10 +462,10 @@ export function LeaveSettings() {
             </div>
           </Card>
 
-          <Card id="LeaveSettings.config.group.negative" className="p-3">
+          <Card id="LeaveSettings.config.group.negative" className="w-fit max-w-full p-3">
             <h4 id="LeaveSettings.config.section.negative" className="mb-2 text-sm font-bold text-gray-700">Solde négatif</h4>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
+            <div className="flex flex-wrap gap-2">
+              <Field className="w-40" label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
                 <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                   <input
                     id="LeaveSettings.config.negativeAllowed"
@@ -476,12 +477,13 @@ export function LeaveSettings() {
                 </label>
               </Field>
               {form.negativeAllowed && (
-                <Field label="Maximum d'anticipation (jours)" id="LeaveSettings.config.negativeLimit.label">
+                <Field className="w-40" label="Maximum d'anticipation (jours)" id="LeaveSettings.config.negativeLimit.label">
                   <Input id="LeaveSettings.config.negativeLimit" type="number" min="0" step="any" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
                 </Field>
               )}
             </div>
           </Card>
+          </div>
 
           <p id="LeaveSettings.config.creditHint" className="text-xs text-gray-500">
             Les droits sont crédités au début ou à la fin de chaque période, selon le mode d'acquisition.
