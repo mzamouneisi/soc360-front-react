@@ -1006,6 +1006,7 @@ export interface LeaveConfigDto {
   socId: number | null
   leaveType: LeaveType
   effectiveDate: string
+  endDate: string | null
   active: boolean
   accrualAmount: number
   accrualFrequency: LeaveAccrualFrequency
@@ -1023,6 +1024,7 @@ export interface LeaveConfigDto {
   carryoverMax: number
   carryoverExpirationMonths: number | null
   negativeLimit: number
+  negativeAllowed: boolean
   activations: LeaveConfigActivationDto[]
   deletable: boolean
 }
@@ -1031,6 +1033,7 @@ export interface LeaveConfigRequest {
   socId?: number | null
   leaveType: LeaveType
   effectiveDate: string
+  endDate?: string | null
   active?: boolean
   accrualAmount: number
   accrualFrequency?: LeaveAccrualFrequency
@@ -1040,6 +1043,7 @@ export interface LeaveConfigRequest {
   carryoverMax?: number
   carryoverExpirationMonths?: number | null
   negativeLimit?: number
+  negativeAllowed?: boolean
 }
 
 export interface LeaveEligibilityDto {

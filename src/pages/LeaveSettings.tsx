@@ -41,12 +41,14 @@ function emptyForm() {
   return {
     leaveType: 'CP' as LeaveType,
     effectiveDate: new Date().toISOString().slice(0, 10),
+    endDate: '',
     accrualAmount: '1',
     accrualFrequency: 'MONTHLY' as LeaveAccrualFrequency,
     creditMonth: '1',
     creditDay: '1',
     expirationMonths: '12',
     negativeLimit: '0',
+    negativeAllowed: true,
     active: true,
   }
 }
@@ -81,6 +83,10 @@ export function LeaveSettings() {
     const creditMonth = Number(form.creditMonth)
     const creditDay = Number(form.creditDay)
 
+    if (form.endDate !== '' && form.effectiveDate !== '' && form.endDate < form.effectiveDate) {
+      setFormError("La date de fin d'application doit être postérieure ou égale à la date d'effet.")
+      return
+    }
     if (!Number.isInteger(expirationMonths) && expirationMonths !== null) {
       setFormError("L'expiration (mois) doit être un nombre entier.")
       return
@@ -121,6 +127,7 @@ export function LeaveSettings() {
         socId,
         leaveType: form.leaveType,
         effectiveDate: form.effectiveDate,
+        endDate: form.endDate === '' ? null : form.endDate,
         active: form.active,
         accrualAmount: amount,
         accrualFrequency: form.accrualFrequency,
@@ -128,6 +135,7 @@ export function LeaveSettings() {
         creditDay: needsDay ? creditDay : 1,
         expirationMonths,
         negativeLimit,
+        negativeAllowed: form.negativeAllowed,
       })
       // Après enregistrement, le formulaire est réinitialisé pour une nouvelle saisie.
       setForm(emptyForm())
@@ -196,6 +204,9 @@ export function LeaveSettings() {
             <Field label="Date d'effet" id="LeaveSettings.config.effectiveDate.label">
               <Input id="LeaveSettings.config.effectiveDate" type="date" value={form.effectiveDate} onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })} />
             </Field>
+            <Field label="Date de fin d'application" id="LeaveSettings.config.endDate.label">
+              <Input id="LeaveSettings.config.endDate" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+            </Field>
             <Field label="Quantité acquise" id="LeaveSettings.config.amount.label">
               <Input id="LeaveSettings.config.amount" type="number" min="0.01" step="any" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
             </Field>
@@ -225,6 +236,17 @@ export function LeaveSettings() {
             </Field>
             <Field label="Seuil négatif" id="LeaveSettings.config.negative.label">
               <Input id="LeaveSettings.config.negative" type="number" min="0" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
+            </Field>
+            <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
+              <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
+                <input
+                  id="LeaveSettings.config.negativeAllowed"
+                  type="checkbox"
+                  checked={form.negativeAllowed}
+                  onChange={(e) => setForm({ ...form, negativeAllowed: e.target.checked })}
+                />
+                {form.negativeAllowed ? 'Oui' : 'Non'}
+              </label>
             </Field>
             <Field label="Active" id="LeaveSettings.config.active.label">
               <label id="LeaveSettings.config.active.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
@@ -257,6 +279,7 @@ export function LeaveSettings() {
           searchableText={(config) => [
             config.leaveType,
             formatDate(config.effectiveDate),
+            config.endDate ? formatDate(config.endDate) : '',
             config.accrualAmount,
             FREQUENCY_LABELS[config.accrualFrequency],
             config.creditMonth,
@@ -269,6 +292,7 @@ export function LeaveSettings() {
             config.carryoverMax,
             config.carryoverExpirationMonths ?? '',
             config.negativeLimit,
+            config.negativeAllowed ? 'Oui' : 'Non',
             config.active ? 'Actif' : 'Inactif',
           ].join(' ')}
           columns={[
@@ -287,6 +311,15 @@ export function LeaveSettings() {
               render: (config) => (
                 <span id={`LeaveSettings.configs.${config.id}.param.effectiveDate`}>
                   {formatDate(config.effectiveDate)}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.endDate',
+              label: "Fin d'application",
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.endDate`}>
+                  {config.endDate ? formatDate(config.endDate) : '—'}
                 </span>
               ),
             },
@@ -395,6 +428,15 @@ export function LeaveSettings() {
               render: (config) => (
                 <span id={`LeaveSettings.configs.${config.id}.param.negativeLimit`}>
                   {config.negativeLimit}
+                </span>
+              ),
+            },
+            {
+              key: 'LeaveSettings.configs.col.negativeAllowed',
+              label: 'Solde négatif autorisé',
+              render: (config) => (
+                <span id={`LeaveSettings.configs.${config.id}.param.negativeAllowed`}>
+                  {config.negativeAllowed ? 'Oui' : 'Non'}
                 </span>
               ),
             },

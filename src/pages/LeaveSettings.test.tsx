@@ -39,6 +39,7 @@ function config(overrides: Partial<LeaveConfigDto> = {}): LeaveConfigDto {
     socId: 10,
     leaveType: 'CP',
     effectiveDate: '2026-01-01',
+    endDate: null,
     active: true,
     accrualAmount: 2.5,
     accrualFrequency: 'MONTHLY',
@@ -56,6 +57,7 @@ function config(overrides: Partial<LeaveConfigDto> = {}): LeaveConfigDto {
     carryoverMax: 0,
     carryoverExpirationMonths: null,
     negativeLimit: 0,
+    negativeAllowed: true,
     activations: [
       {
         id: 100,
@@ -100,6 +102,7 @@ describe('LeaveSettings — activation / désactivation', () => {
   it('rappelle tous les paramètres de chaque configuration existante', async () => {
     configsMock.mockResolvedValue([
       config({
+        endDate: '2026-12-31',
         accrualAmount: 2.5,
         accrualFrequency: 'YEARLY',
         creditMonth: 2,
@@ -116,6 +119,7 @@ describe('LeaveSettings — activation / désactivation', () => {
         carryoverMax: 5,
         carryoverExpirationMonths: 3,
         negativeLimit: 2,
+        negativeAllowed: false,
       }),
     ])
 
@@ -125,6 +129,7 @@ describe('LeaveSettings — activation / désactivation', () => {
     const value = (key: string) =>
       document.getElementById(`LeaveSettings.configs.1.param.${key}`)?.textContent
     expect(value('type')).toBe('CP')
+    expect(value('endDate')).not.toBe('—')
     expect(value('accrualAmount')).toBe('2.5')
     expect(value('accrualFrequency')).toBe('Annuelle')
     expect(value('creditMonth')).toBe('2')
@@ -137,6 +142,7 @@ describe('LeaveSettings — activation / désactivation', () => {
     expect(value('carryoverMax')).toBe('5')
     expect(value('carryoverExpirationMonths')).toBe('3')
     expect(value('negativeLimit')).toBe('2')
+    expect(value('negativeAllowed')).toBe('Non')
     expect(document.getElementById('LeaveSettings.configs.1.statut')).toHaveTextContent('Actif')
     expect(document.getElementById('LeaveSettings.configs.col.effectiveDate')).not.toBeNull()
   })
@@ -524,6 +530,62 @@ describe('LeaveSettings — activation / désactivation', () => {
           creditDay: 10,
           expirationMonths: 12,
         }),
+      ),
+    )
+  })
+
+  it('envoie la date de fin d’application et l’autorisation de solde négatif', async () => {
+    configsMock.mockResolvedValue([])
+    saveConfigMock.mockResolvedValue(config())
+
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.effectiveDate') as HTMLInputElement,
+      { target: { value: '2026-01-01' } },
+    )
+    fireEvent.change(document.getElementById('LeaveSettings.config.endDate') as HTMLInputElement, {
+      target: { value: '2026-12-31' },
+    })
+    fireEvent.click(
+      document.getElementById('LeaveSettings.config.negativeAllowed') as HTMLInputElement,
+    )
+    fireEvent.click(document.getElementById('LeaveSettings.config.submit') as HTMLButtonElement)
+
+    await waitFor(() =>
+      expect(saveConfigMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          effectiveDate: '2026-01-01',
+          endDate: '2026-12-31',
+          negativeAllowed: false,
+        }),
+      ),
+    )
+  })
+
+  it('refuse une date de fin antérieure à la date d’effet', async () => {
+    configsMock.mockResolvedValue([])
+
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    fireEvent.change(
+      document.getElementById('LeaveSettings.config.effectiveDate') as HTMLInputElement,
+      { target: { value: '2026-06-01' } },
+    )
+    fireEvent.change(document.getElementById('LeaveSettings.config.endDate') as HTMLInputElement, {
+      target: { value: '2026-05-31' },
+    })
+    fireEvent.submit(document.querySelector('form') as HTMLFormElement)
+
+    expect(saveConfigMock).not.toHaveBeenCalled()
+    await waitFor(() =>
+      expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain(
+        "fin d'application",
       ),
     )
   })
