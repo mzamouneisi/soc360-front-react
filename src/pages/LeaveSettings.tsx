@@ -328,149 +328,151 @@ export function LeaveSettings() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && <p id="LeaveSettings.formError" className="text-sm text-red-600">{formError}</p>}
 
-          <h4 id="LeaveSettings.config.section.general" className="text-xs font-semibold uppercase text-gray-500">Général</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            <Field label="Type" id="LeaveSettings.config.type.label">
-              <Select id="LeaveSettings.config.type" value={form.leaveType} onChange={(e) => setForm({ ...form, leaveType: e.target.value as LeaveType })}>
-                <option id="LeaveSettings.config.type.cp" value="CP">CP</option>
-                <option id="LeaveSettings.config.type.rtt" value="RTT">RTT</option>
-              </Select>
-            </Field>
-            <Field label="Date d'effet" id="LeaveSettings.config.effectiveDate.label">
-              <Input id="LeaveSettings.config.effectiveDate" type="date" value={form.effectiveDate} onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })} />
-            </Field>
-            <Field label="Date de fin d'application" id="LeaveSettings.config.endDate.label">
-              <Input id="LeaveSettings.config.endDate" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-            </Field>
-            <Field label="Quantité acquise" id="LeaveSettings.config.amount.label">
-              <Input id="LeaveSettings.config.amount" type="number" min="0.01" step="any" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
-            </Field>
-            <Field label="Fréquence" id="LeaveSettings.config.frequency.label">
-              <Select id="LeaveSettings.config.frequency" value={form.accrualFrequency} onChange={(e) => setForm({ ...form, accrualFrequency: e.target.value as LeaveAccrualFrequency })}>
-                <option id="LeaveSettings.config.frequency.monthly" value="MONTHLY">Mensuelle</option>
-                <option id="LeaveSettings.config.frequency.quarterly" value="QUARTERLY">Trimestrielle</option>
-                <option id="LeaveSettings.config.frequency.yearly" value="YEARLY">Annuelle</option>
-                <option id="LeaveSettings.config.frequency.once" value="ONCE">Unique</option>
-              </Select>
-            </Field>
-            <Field label="Active" id="LeaveSettings.config.active.label">
-              <label id="LeaveSettings.config.active.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
-                <input
-                  id="LeaveSettings.config.active"
-                  type="checkbox"
-                  checked={form.active}
-                  onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                />
-                {form.active ? 'Oui' : 'Non'}
-              </label>
-            </Field>
-          </div>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-[160px_1fr] lg:items-start">
+            <h4 id="LeaveSettings.config.section.general" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Général</h4>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <Field label="Type" id="LeaveSettings.config.type.label">
+                <Select id="LeaveSettings.config.type" value={form.leaveType} onChange={(e) => setForm({ ...form, leaveType: e.target.value as LeaveType })}>
+                  <option id="LeaveSettings.config.type.cp" value="CP">CP</option>
+                  <option id="LeaveSettings.config.type.rtt" value="RTT">RTT</option>
+                </Select>
+              </Field>
+              <Field label="Date d'effet" id="LeaveSettings.config.effectiveDate.label">
+                <Input id="LeaveSettings.config.effectiveDate" type="date" value={form.effectiveDate} onChange={(e) => setForm({ ...form, effectiveDate: e.target.value })} />
+              </Field>
+              <Field label="Date de fin d'application" id="LeaveSettings.config.endDate.label">
+                <Input id="LeaveSettings.config.endDate" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+              </Field>
+              <Field label="Quantité acquise" id="LeaveSettings.config.amount.label">
+                <Input id="LeaveSettings.config.amount" type="number" min="0.01" step="any" value={form.accrualAmount} onChange={(e) => setForm({ ...form, accrualAmount: e.target.value })} />
+              </Field>
+              <Field label="Fréquence" id="LeaveSettings.config.frequency.label">
+                <Select id="LeaveSettings.config.frequency" value={form.accrualFrequency} onChange={(e) => setForm({ ...form, accrualFrequency: e.target.value as LeaveAccrualFrequency })}>
+                  <option id="LeaveSettings.config.frequency.monthly" value="MONTHLY">Mensuelle</option>
+                  <option id="LeaveSettings.config.frequency.quarterly" value="QUARTERLY">Trimestrielle</option>
+                  <option id="LeaveSettings.config.frequency.yearly" value="YEARLY">Annuelle</option>
+                  <option id="LeaveSettings.config.frequency.once" value="ONCE">Unique</option>
+                </Select>
+              </Field>
+              <Field label="Active" id="LeaveSettings.config.active.label">
+                <label id="LeaveSettings.config.active.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
+                  <input
+                    id="LeaveSettings.config.active"
+                    type="checkbox"
+                    checked={form.active}
+                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                  />
+                  {form.active ? 'Oui' : 'Non'}
+                </label>
+              </Field>
+            </div>
 
-          {form.accrualFrequency !== 'ONCE' && (
-            <>
-              <h4 id="LeaveSettings.config.section.acquisition" className="text-xs font-semibold uppercase text-gray-500">Acquisition des droits</h4>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                <Field label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
-                  <Select id="LeaveSettings.config.acquisitionMode" value={form.acquisitionMode} onChange={(e) => setForm({ ...form, acquisitionMode: e.target.value as LeaveAcquisitionMode })}>
-                    <option id="LeaveSettings.config.acquisitionMode.start" value="START_OF_PERIOD">Début de période</option>
-                    <option id="LeaveSettings.config.acquisitionMode.end" value="END_OF_PERIOD">Fin de période</option>
-                  </Select>
-                </Field>
-              </div>
-            </>
-          )}
-
-          <h4 id="LeaveSettings.config.section.reference" className="text-xs font-semibold uppercase text-gray-500">Période de référence</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            <Field label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
-              <Select id="LeaveSettings.config.referencePeriod" value={form.referencePeriod} onChange={(e) => setForm({ ...form, referencePeriod: e.target.value as LeaveReferencePeriod })}>
-                <option id="LeaveSettings.config.referencePeriod.calendar" value="CALENDAR_YEAR">Année civile</option>
-                <option id="LeaveSettings.config.referencePeriod.custom" value="CUSTOM">Cycle personnalisé</option>
-              </Select>
-            </Field>
-            {form.referencePeriod === 'CUSTOM' && (
+            {form.accrualFrequency !== 'ONCE' && (
               <>
-                <Field label="Mois de début" id="LeaveSettings.config.referenceStartMonth.label">
-                  <Input id="LeaveSettings.config.referenceStartMonth" type="number" min="1" max="12" value={form.referenceStartMonth} onChange={(e) => setForm({ ...form, referenceStartMonth: e.target.value })} />
-                </Field>
-                <Field label="Jour de début" id="LeaveSettings.config.referenceStartDay.label">
-                  <Input id="LeaveSettings.config.referenceStartDay" type="number" min="1" max="31" value={form.referenceStartDay} onChange={(e) => setForm({ ...form, referenceStartDay: e.target.value })} />
-                </Field>
+                <h4 id="LeaveSettings.config.section.acquisition" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Acquisition des droits</h4>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                  <Field label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
+                    <Select id="LeaveSettings.config.acquisitionMode" value={form.acquisitionMode} onChange={(e) => setForm({ ...form, acquisitionMode: e.target.value as LeaveAcquisitionMode })}>
+                      <option id="LeaveSettings.config.acquisitionMode.start" value="START_OF_PERIOD">Début de période</option>
+                      <option id="LeaveSettings.config.acquisitionMode.end" value="END_OF_PERIOD">Fin de période</option>
+                    </Select>
+                  </Field>
+                </div>
               </>
             )}
-          </div>
 
-          <h4 id="LeaveSettings.config.section.expiration" className="text-xs font-semibold uppercase text-gray-500">Expiration</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            <Field label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
-              <Select id="LeaveSettings.config.expirationPolicy" value={form.expirationPolicy} onChange={(e) => setForm({ ...form, expirationPolicy: e.target.value as LeaveExpirationPolicy })}>
-                <option id="LeaveSettings.config.expirationPolicy.none" value="NONE">Aucune expiration</option>
-                <option id="LeaveSettings.config.expirationPolicy.duration" value="AFTER_DURATION">Après une durée</option>
-                <option id="LeaveSettings.config.expirationPolicy.fixed" value="FIXED_DATE">À une date fixe</option>
-                <option id="LeaveSettings.config.expirationPolicy.referenceEnd" value="END_OF_REFERENCE_PERIOD">Fin de période de référence</option>
-                <option id="LeaveSettings.config.expirationPolicy.followingMonth" value="MONTH_OF_FOLLOWING_PERIOD">Mois de la période suivante</option>
-              </Select>
-            </Field>
-            {form.expirationPolicy === 'AFTER_DURATION' && (
-              <Field label="Durée (mois)" id="LeaveSettings.config.expirationMonths.label">
-                <Input id="LeaveSettings.config.expirationMonths" type="number" min="1" max="12" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
+            <h4 id="LeaveSettings.config.section.reference" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Période de référence</h4>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <Field label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
+                <Select id="LeaveSettings.config.referencePeriod" value={form.referencePeriod} onChange={(e) => setForm({ ...form, referencePeriod: e.target.value as LeaveReferencePeriod })}>
+                  <option id="LeaveSettings.config.referencePeriod.calendar" value="CALENDAR_YEAR">Année civile</option>
+                  <option id="LeaveSettings.config.referencePeriod.custom" value="CUSTOM">Cycle personnalisé</option>
+                </Select>
               </Field>
-            )}
-            {form.expirationPolicy === 'FIXED_DATE' && (
-              <Field label="Date d'expiration" id="LeaveSettings.config.expirationDate.label">
-                <Input id="LeaveSettings.config.expirationDate" type="date" value={form.expirationDate} onChange={(e) => setForm({ ...form, expirationDate: e.target.value })} />
-              </Field>
-            )}
-            {form.expirationPolicy === 'MONTH_OF_FOLLOWING_PERIOD' && (
-              <Field label="Mois de la période suivante" id="LeaveSettings.config.expirationMonth.label">
-                <Input id="LeaveSettings.config.expirationMonth" type="number" min="1" max="12" value={form.expirationMonth} onChange={(e) => setForm({ ...form, expirationMonth: e.target.value })} />
-              </Field>
-            )}
-          </div>
+              {form.referencePeriod === 'CUSTOM' && (
+                <>
+                  <Field label="Mois de début" id="LeaveSettings.config.referenceStartMonth.label">
+                    <Input id="LeaveSettings.config.referenceStartMonth" type="number" min="1" max="12" value={form.referenceStartMonth} onChange={(e) => setForm({ ...form, referenceStartMonth: e.target.value })} />
+                  </Field>
+                  <Field label="Jour de début" id="LeaveSettings.config.referenceStartDay.label">
+                    <Input id="LeaveSettings.config.referenceStartDay" type="number" min="1" max="31" value={form.referenceStartDay} onChange={(e) => setForm({ ...form, referenceStartDay: e.target.value })} />
+                  </Field>
+                </>
+              )}
+            </div>
 
-          <h4 id="LeaveSettings.config.section.carryover" className="text-xs font-semibold uppercase text-gray-500">Report des droits</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            <Field label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
-              <label id="LeaveSettings.config.carryoverAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
-                <input
-                  id="LeaveSettings.config.carryoverAllowed"
-                  type="checkbox"
-                  checked={form.carryoverAllowed}
-                  onChange={(e) => setForm({ ...form, carryoverAllowed: e.target.checked })}
-                />
-                {form.carryoverAllowed ? 'Oui' : 'Non'}
-              </label>
-            </Field>
-            {form.carryoverAllowed && (
-              <>
-                <Field label="Report maximum (jours)" id="LeaveSettings.config.carryoverMax.label">
-                  <Input id="LeaveSettings.config.carryoverMax" type="number" min="0" step="any" value={form.carryoverMax} onChange={(e) => setForm({ ...form, carryoverMax: e.target.value })} />
+            <h4 id="LeaveSettings.config.section.expiration" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Expiration</h4>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <Field label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
+                <Select id="LeaveSettings.config.expirationPolicy" value={form.expirationPolicy} onChange={(e) => setForm({ ...form, expirationPolicy: e.target.value as LeaveExpirationPolicy })}>
+                  <option id="LeaveSettings.config.expirationPolicy.none" value="NONE">Aucune expiration</option>
+                  <option id="LeaveSettings.config.expirationPolicy.duration" value="AFTER_DURATION">Après une durée</option>
+                  <option id="LeaveSettings.config.expirationPolicy.fixed" value="FIXED_DATE">À une date fixe</option>
+                  <option id="LeaveSettings.config.expirationPolicy.referenceEnd" value="END_OF_REFERENCE_PERIOD">Fin de période de référence</option>
+                  <option id="LeaveSettings.config.expirationPolicy.followingMonth" value="MONTH_OF_FOLLOWING_PERIOD">Mois de la période suivante</option>
+                </Select>
+              </Field>
+              {form.expirationPolicy === 'AFTER_DURATION' && (
+                <Field label="Durée (mois)" id="LeaveSettings.config.expirationMonths.label">
+                  <Input id="LeaveSettings.config.expirationMonths" type="number" min="1" max="12" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
                 </Field>
-                <Field label="Échéance du report (mois)" id="LeaveSettings.config.carryoverExpirationMonths.label">
-                  <Input id="LeaveSettings.config.carryoverExpirationMonths" type="number" min="0" value={form.carryoverExpirationMonths} onChange={(e) => setForm({ ...form, carryoverExpirationMonths: e.target.value })} />
+              )}
+              {form.expirationPolicy === 'FIXED_DATE' && (
+                <Field label="Date d'expiration" id="LeaveSettings.config.expirationDate.label">
+                  <Input id="LeaveSettings.config.expirationDate" type="date" value={form.expirationDate} onChange={(e) => setForm({ ...form, expirationDate: e.target.value })} />
                 </Field>
-              </>
-            )}
-          </div>
+              )}
+              {form.expirationPolicy === 'MONTH_OF_FOLLOWING_PERIOD' && (
+                <Field label="Mois de la période suivante" id="LeaveSettings.config.expirationMonth.label">
+                  <Input id="LeaveSettings.config.expirationMonth" type="number" min="1" max="12" value={form.expirationMonth} onChange={(e) => setForm({ ...form, expirationMonth: e.target.value })} />
+                </Field>
+              )}
+            </div>
 
-          <h4 id="LeaveSettings.config.section.negative" className="text-xs font-semibold uppercase text-gray-500">Solde négatif</h4>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-            <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
-              <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
-                <input
-                  id="LeaveSettings.config.negativeAllowed"
-                  type="checkbox"
-                  checked={form.negativeAllowed}
-                  onChange={(e) => setForm({ ...form, negativeAllowed: e.target.checked })}
-                />
-                {form.negativeAllowed ? 'Oui' : 'Non'}
-              </label>
-            </Field>
-            {form.negativeAllowed && (
-              <Field label="Maximum d'anticipation (jours)" id="LeaveSettings.config.negativeLimit.label">
-                <Input id="LeaveSettings.config.negativeLimit" type="number" min="0" step="any" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
+            <h4 id="LeaveSettings.config.section.carryover" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Report des droits</h4>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <Field label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
+                <label id="LeaveSettings.config.carryoverAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
+                  <input
+                    id="LeaveSettings.config.carryoverAllowed"
+                    type="checkbox"
+                    checked={form.carryoverAllowed}
+                    onChange={(e) => setForm({ ...form, carryoverAllowed: e.target.checked })}
+                  />
+                  {form.carryoverAllowed ? 'Oui' : 'Non'}
+                </label>
               </Field>
-            )}
+              {form.carryoverAllowed && (
+                <>
+                  <Field label="Report maximum (jours)" id="LeaveSettings.config.carryoverMax.label">
+                    <Input id="LeaveSettings.config.carryoverMax" type="number" min="0" step="any" value={form.carryoverMax} onChange={(e) => setForm({ ...form, carryoverMax: e.target.value })} />
+                  </Field>
+                  <Field label="Échéance du report (mois)" id="LeaveSettings.config.carryoverExpirationMonths.label">
+                    <Input id="LeaveSettings.config.carryoverExpirationMonths" type="number" min="0" value={form.carryoverExpirationMonths} onChange={(e) => setForm({ ...form, carryoverExpirationMonths: e.target.value })} />
+                  </Field>
+                </>
+              )}
+            </div>
+
+            <h4 id="LeaveSettings.config.section.negative" className="text-xs font-semibold uppercase text-gray-500 lg:pt-2">Solde négatif</h4>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
+                <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
+                  <input
+                    id="LeaveSettings.config.negativeAllowed"
+                    type="checkbox"
+                    checked={form.negativeAllowed}
+                    onChange={(e) => setForm({ ...form, negativeAllowed: e.target.checked })}
+                  />
+                  {form.negativeAllowed ? 'Oui' : 'Non'}
+                </label>
+              </Field>
+              {form.negativeAllowed && (
+                <Field label="Maximum d'anticipation (jours)" id="LeaveSettings.config.negativeLimit.label">
+                  <Input id="LeaveSettings.config.negativeLimit" type="number" min="0" step="any" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
+                </Field>
+              )}
+            </div>
           </div>
 
           <p id="LeaveSettings.config.creditHint" className="text-xs text-gray-500">
