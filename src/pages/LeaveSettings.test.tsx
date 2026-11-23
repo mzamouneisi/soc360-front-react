@@ -3,14 +3,21 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { LeaveSettings } from './LeaveSettings'
 import type { LeaveConfigDto } from '../api/types'
 
-const { configsMock, saveConfigMock, setConfigActiveMock, deleteConfigMock, confirmMock } =
-  vi.hoisted(() => ({
-    configsMock: vi.fn(),
-    saveConfigMock: vi.fn(),
-    setConfigActiveMock: vi.fn(),
-    deleteConfigMock: vi.fn(),
-    confirmMock: vi.fn(),
-  }))
+const {
+  configsMock,
+  saveConfigMock,
+  setConfigActiveMock,
+  deleteConfigMock,
+  deleteConfigCascadeMock,
+  confirmMock,
+} = vi.hoisted(() => ({
+  configsMock: vi.fn(),
+  saveConfigMock: vi.fn(),
+  setConfigActiveMock: vi.fn(),
+  deleteConfigMock: vi.fn(),
+  deleteConfigCascadeMock: vi.fn(),
+  confirmMock: vi.fn(),
+}))
 
 vi.mock('../auth/AuthContext', () => ({
   useAuth: () => ({ user: { id: 1, role: 'RESPONSIBLE_SOC', socId: 10 } }),
@@ -26,6 +33,7 @@ vi.mock('../api/leave', () => ({
     saveConfig: saveConfigMock,
     setConfigActive: setConfigActiveMock,
     deleteConfig: deleteConfigMock,
+    deleteConfigCascade: deleteConfigCascadeMock,
   },
 }))
 
@@ -268,6 +276,28 @@ describe('LeaveSettings — activation / désactivation', () => {
 
     await screen.findByText('CP')
     expect(screen.queryByRole('button', { name: 'Supprimer' })).toBeNull()
+  })
+
+  it('propose le bouton de suppression en cascade pour une configuration référencée', async () => {
+    configsMock.mockResolvedValue([config({ deletable: false })])
+
+    render(<LeaveSettings />)
+
+    await screen.findByText('CP')
+    expect(document.getElementById('LeaveSettings.configs.1.supprimerCascade')).not.toBeNull()
+  })
+
+  it('supprime en cascade une configuration après confirmation', async () => {
+    configsMock.mockResolvedValue([config({ deletable: false })])
+    confirmMock.mockResolvedValue(true)
+    deleteConfigCascadeMock.mockResolvedValue(undefined)
+
+    render(<LeaveSettings />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Supprimer en cascade' }))
+
+    await waitFor(() => expect(deleteConfigCascadeMock).toHaveBeenCalledWith(1))
+    expect(confirmMock).toHaveBeenCalled()
   })
 
   it('ne propose plus de jour ni de mois de crédit saisis séparément', async () => {

@@ -156,6 +156,27 @@ export function LeaveSettings() {
     }
   }
 
+  async function removeConfigCascade(config: LeaveConfigDto) {
+    if (
+      !(await dialog.confirm(
+        `Supprimer en cascade la configuration ${config.leaveType} du ${config.effectiveDate} ? `
+          + 'Les droits acquis (lots), les mouvements et l’historique associés seront supprimés définitivement.',
+        { variant: 'warning', danger: true, okLabel: 'Supprimer en cascade' },
+      ))
+    ) {
+      return
+    }
+    setDeletingId(config.id)
+    try {
+      await leaveApi.deleteConfigCascade(config.id)
+      reload()
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : 'Erreur')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <div>
       <PageHeader title="Paramètres congés" titleId="LeaveSettings.title" actions={<RefreshButton onClick={reload} />} />
@@ -410,6 +431,17 @@ export function LeaveSettings() {
                       Supprimer
                     </Button>
                   )}
+                  <Button
+                    id={`LeaveSettings.configs.${config.id}.supprimerCascade`}
+                    type="button"
+                    variant="danger"
+                    disabled={deletingId === config.id}
+                    className="!w-auto !px-2 !py-1 !text-xs"
+                    title="Supprimer la configuration et tous ses droits acquis"
+                    onClick={() => void removeConfigCascade(config)}
+                  >
+                    Supprimer en cascade
+                  </Button>
                   <Button
                     id={`LeaveSettings.configs.${config.id}.toggle`}
                     type="button"
