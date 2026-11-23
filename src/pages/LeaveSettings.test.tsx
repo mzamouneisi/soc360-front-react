@@ -91,6 +91,15 @@ async function waitForRow() {
   await waitFor(() => expect(document.getElementById('LeaveSettings.configs.1.param.type')).not.toBeNull())
 }
 
+function parseDateField(value: string): { day: string; month: string; year: string } {
+  if (value.includes('/')) {
+    const [day, month, year] = value.split('/')
+    return { day, month, year }
+  }
+  const [year, month, day] = value.split('-')
+  return { day, month, year }
+}
+
 describe('LeaveSettings — refonte des règles', () => {
   it('affiche l’historique d’activation par utilisateur après clic sur le bouton', async () => {
     configsMock.mockResolvedValue([config()])
@@ -195,14 +204,16 @@ describe('LeaveSettings — refonte des règles', () => {
     expect(confirmMock).toHaveBeenCalled()
   })
 
-  it('pré-remplit la date d’effet au 1er jour du mois et les valeurs par défaut', async () => {
+  it('pré-remplit la date d’effet au 1er janvier de l’année en cours et les valeurs par défaut', async () => {
     configsMock.mockResolvedValue([])
     render(<LeaveSettings />)
     await waitFor(() => expect(configsMock).toHaveBeenCalled())
 
     const effectiveDate = (document.getElementById('LeaveSettings.config.effectiveDate') as HTMLInputElement).value
-    const day = effectiveDate.startsWith('0') ? effectiveDate.slice(0, 2) : effectiveDate.slice(-2)
-    expect(day).toBe('01')
+    const parsed = parseDateField(effectiveDate)
+    expect(parsed.day).toBe('01')
+    expect(parsed.month).toBe('01')
+    expect(parsed.year).toBe(String(new Date().getFullYear()))
     expect((document.getElementById('LeaveSettings.config.amount') as HTMLInputElement).value).toBe('1')
     expect(document.getElementById('LeaveSettings.config.creditMonth')).toBeNull()
     expect(document.getElementById('LeaveSettings.config.creditDay')).toBeNull()

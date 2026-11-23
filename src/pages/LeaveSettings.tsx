@@ -58,15 +58,15 @@ function monthDay(month: number | null | undefined, day: number | null | undefin
   return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`
 }
 
-/** La date d'effet commence par défaut le 1er jour du mois courant. */
-function firstDayOfCurrentMonth(): string {
-  return `${new Date().toISOString().slice(0, 7)}-01`
+/** La date d'effet commence par défaut le 1er janvier de l'année en cours. */
+function defaultEffectiveDate(): string {
+  return `${new Date().getFullYear()}-01-01`
 }
 
 function emptyForm() {
   return {
     leaveType: 'CP' as LeaveType,
-    effectiveDate: firstDayOfCurrentMonth(),
+    effectiveDate: defaultEffectiveDate(),
     endDate: '',
     active: true,
     accrualAmount: '1',
@@ -275,7 +275,7 @@ export function LeaveSettings() {
 
   function startDuplicate(config: LeaveConfigDto) {
     setEditingId(null)
-    setForm({ ...formFromConfig(config), effectiveDate: firstDayOfCurrentMonth(), active: true })
+    setForm({ ...formFromConfig(config), effectiveDate: defaultEffectiveDate(), active: true })
     setFormError(null)
   }
 
@@ -487,7 +487,7 @@ export function LeaveSettings() {
 
           <p id="LeaveSettings.config.creditHint" className="text-xs text-gray-500">
             Les droits sont crédités au début ou à la fin de chaque période, selon le mode d'acquisition.
-            La date d'effet commence par défaut le 1er jour du mois.
+            La date d'effet commence par défaut le 1er janvier de l'année en cours.
           </p>
           <p id="LeaveSettings.config.hireDateHint" className="text-xs text-gray-500">
             Les droits sont calculés à partir de la date d'embauche du salarié (ou de la date d'effet si elle est postérieure).
