@@ -13,7 +13,10 @@ import { formatDate, formatDateTime } from '../lib/format'
 import { filterRows } from '../lib/tableSearch'
 import type {
   LeaveAccrualFrequency,
+  LeaveAcquisitionMode,
   LeaveConfigDto,
+  LeaveExpirationPolicy,
+  LeaveReferencePeriod,
   LeaveType,
 } from '../api/types'
 
@@ -26,9 +29,28 @@ const FREQUENCY_LABELS: Record<LeaveAccrualFrequency, string> = {
   ONCE: 'Unique',
 }
 
-/** La date d'effet commence par défaut le 1er jour du mois courant. */
-function firstDayOfCurrentMonth(): string {
-  return `${new Date().toISOString().slice(0, 7)}-01`
+const MODE_LABELS: Record<LeaveAcquisitionMode, string> = {
+  START_OF_PERIOD: 'Début de période',
+  END_OF_PERIOD: 'Fin de période',
+}
+
+const REFERENCE_LABELS: Record<LeaveReferencePeriod, string> = {
+  CALENDAR_YEAR: 'Année civile',
+  CUSTOM: 'Cycle personnalisé',
+}
+
+const EXPIRATION_LABELS: Record<LeaveExpirationPolicy, string> = {
+  NONE: 'Aucune expiration',
+  AFTER_DURATION: 'Après une durée',
+  FIXED_DATE: 'À une date fixe',
+  END_OF_REFERENCE_PERIOD: 'Fin de période de référence',
+  MONTH_OF_FOLLOWING_PERIOD: 'Mois de la période suivante',
+}
+
+const MAX_DAYS_BY_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+function maxDayForMonth(month: number): number {
+  return MAX_DAYS_BY_MONTH[month - 1] ?? 31
 }
 
 function monthDay(month: number | null | undefined, day: number | null | undefined): string {
@@ -36,18 +58,91 @@ function monthDay(month: number | null | undefined, day: number | null | undefin
   return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`
 }
 
+/** La date d'effet commence par défaut le 1er jour du mois courant. */
+function firstDayOfCurrentMonth(): string {
+  return `${new Date().toISOString().slice(0, 7)}-01`
+}
+
 function emptyForm() {
   return {
     leaveType: 'CP' as LeaveType,
     effectiveDate: firstDayOfCurrentMonth(),
     endDate: '',
+    active: true,
     accrualAmount: '1',
     accrualFrequency: 'MONTHLY' as LeaveAccrualFrequency,
+    acquisitionMode: 'START_OF_PERIOD' as LeaveAcquisitionMode,
+    referencePeriod: 'CALENDAR_YEAR' as LeaveReferencePeriod,
+    referenceStartMonth: '1',
+    referenceStartDay: '1',
+    expirationPolicy: 'AFTER_DURATION' as LeaveExpirationPolicy,
     expirationMonths: '12',
-    negativeLimit: '0',
+    expirationDate: '',
+    expirationMonth: '5',
+    carryoverAllowed: false,
+    carryoverMax: '0',
+    carryoverExpirationMonths: '',
     negativeAllowed: true,
-    active: true,
+    negativeLimit: '0',
   }
+}
+
+type LeaveForm = ReturnType<typeof emptyForm>
+
+function formFromConfig(config: LeaveConfigDto): LeaveForm {
+  return {
+    leaveType: config.leaveType,
+    effectiveDate: config.effectiveDate,
+    endDate: config.endDate ?? '',
+    active: config.active,
+    accrualAmount: String(config.accrualAmount),
+    accrualFrequency: config.accrualFrequency,
+    acquisitionMode: config.acquisitionMode,
+    referencePeriod: config.referencePeriod,
+    referenceStartMonth: String(config.referenceStartMonth ?? 1),
+    referenceStartDay: String(config.referenceStartDay ?? 1),
+    expirationPolicy: config.expirationPolicy,
+    expirationMonths: config.expirationMonths == null ? '' : String(config.expirationMonths),
+    expirationDate: config.expirationDate ?? '',
+    expirationMonth: config.expirationMonth == null ? '5' : String(config.expirationMonth),
+    carryoverAllowed: config.carryoverAllowed,
+    carryoverMax: String(config.carryoverMax),
+    carryoverExpirationMonths:
+      config.carryoverExpirationMonths == null ? '' : String(config.carryoverExpirationMonths),
+    negativeAllowed: config.negativeAllowed,
+    negativeLimit: String(config.negativeLimit),
+  }
+}
+
+function expirationSummary(config: LeaveConfigDto): string {
+  switch (config.expirationPolicy) {
+    case 'NONE':
+      return 'Aucune'
+    case 'AFTER_DURATION':
+      return config.expirationMonths == null ? '—' : `Après ${config.expirationMonths} mois`
+    case 'FIXED_DATE':
+      return config.expirationDate ? formatDate(config.expirationDate) : '—'
+    case 'END_OF_REFERENCE_PERIOD':
+      return 'Fin de période de référence'
+    case 'MONTH_OF_FOLLOWING_PERIOD':
+      return config.expirationMonth == null ? '—' : `Mois ${config.expirationMonth} (période suivante)`
+    default:
+      return '—'
+  }
+}
+
+function referenceSummary(config: LeaveConfigDto): string {
+  if (config.referencePeriod === 'CUSTOM') {
+    return `Cycle ${monthDay(config.referenceStartMonth, config.referenceStartDay)}`
+  }
+  return 'Année civile'
+}
+
+function reportSummary(config: LeaveConfigDto): string {
+  if (!config.carryoverAllowed) return 'Non autorisé'
+  const deadline =
+    config.carryoverExpirationMonths == null ? '' : ` (échéance ${config.carryoverExpirationMonths} mois)`
+  return `Max ${config.carryoverMax} j${deadline}`
 }
 
 export function LeaveSettings() {
@@ -60,6 +155,7 @@ export function LeaveSettings() {
     [socId],
   )
   const [form, setForm] = useState(emptyForm)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<number | null>(null)
@@ -68,37 +164,75 @@ export function LeaveSettings() {
   const [historyPages, setHistoryPages] = useState<Record<number, number>>({})
   const [historySearches, setHistorySearches] = useState<Record<number, string>>({})
 
+  function resetForm() {
+    setForm(emptyForm())
+    setEditingId(null)
+    setFormError(null)
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setFormError(null)
 
     const amount = Number(form.accrualAmount)
     const negativeLimit = Number(form.negativeLimit)
+    const carryoverMax = Number(form.carryoverMax)
     const expirationMonths = form.expirationMonths === '' ? null : Number(form.expirationMonths)
+    const expirationMonth = form.expirationMonth === '' ? null : Number(form.expirationMonth)
+    const carryoverExpirationMonths =
+      form.carryoverExpirationMonths === '' ? null : Number(form.carryoverExpirationMonths)
 
     if (form.endDate !== '' && form.effectiveDate !== '' && form.endDate < form.effectiveDate) {
       setFormError("La date de fin d'application doit être postérieure ou égale à la date d'effet.")
-      return
-    }
-    if (!Number.isInteger(expirationMonths) && expirationMonths !== null) {
-      setFormError("L'expiration (mois) doit être un nombre entier.")
       return
     }
     if (Number.isNaN(amount) || amount <= 0) {
       setFormError('La quantité acquise doit être supérieure à 0.')
       return
     }
-    if (Number.isNaN(negativeLimit) || negativeLimit < 0) {
-      setFormError('Le seuil négatif ne peut pas être négatif.')
+    if (form.expirationPolicy === 'AFTER_DURATION') {
+      if (expirationMonths == null || !Number.isInteger(expirationMonths) || expirationMonths < 1 || expirationMonths > 12) {
+        setFormError("La durée d'expiration doit être comprise entre 1 et 12 mois.")
+        return
+      }
+    }
+    if (form.expirationPolicy === 'FIXED_DATE' && form.expirationDate === '') {
+      setFormError("La date d'expiration est obligatoire.")
       return
     }
-    if (
-      expirationMonths !== null &&
-      (Number.isNaN(expirationMonths) || expirationMonths < 1 || expirationMonths > 12)
-    ) {
-      setFormError("L'expiration (mois) doit être comprise entre 1 et 12.")
+    if (form.expirationPolicy === 'MONTH_OF_FOLLOWING_PERIOD') {
+      if (expirationMonth == null || !Number.isInteger(expirationMonth) || expirationMonth < 1 || expirationMonth > 12) {
+        setFormError("Le mois d'expiration doit être compris entre 1 et 12.")
+        return
+      }
+    }
+    if (form.referencePeriod === 'CUSTOM') {
+      const month = Number(form.referenceStartMonth)
+      const day = Number(form.referenceStartDay)
+      if (!Number.isInteger(month) || month < 1 || month > 12) {
+        setFormError('Le mois de début de la période de référence doit être compris entre 1 et 12.')
+        return
+      }
+      if (!Number.isInteger(day) || day < 1 || day > maxDayForMonth(month)) {
+        setFormError(`Le jour de début doit être compris entre 1 et ${maxDayForMonth(month)}.`)
+        return
+      }
+    }
+    if (form.carryoverAllowed) {
+      if (Number.isNaN(carryoverMax) || carryoverMax < 0) {
+        setFormError('Le report maximum ne peut pas être négatif.')
+        return
+      }
+      if (carryoverExpirationMonths != null && carryoverExpirationMonths < 0) {
+        setFormError("L'échéance du report ne peut pas être négative.")
+        return
+      }
+    }
+    if (form.negativeAllowed && (Number.isNaN(negativeLimit) || negativeLimit < 0)) {
+      setFormError("Le maximum d'anticipation ne peut pas être négatif.")
       return
     }
+
     setSaving(true)
     try {
       await leaveApi.saveConfig({
@@ -109,12 +243,21 @@ export function LeaveSettings() {
         active: form.active,
         accrualAmount: amount,
         accrualFrequency: form.accrualFrequency,
-        expirationMonths,
-        negativeLimit,
+        acquisitionMode: form.acquisitionMode,
+        referencePeriod: form.referencePeriod,
+        referenceStartMonth: form.referencePeriod === 'CUSTOM' ? Number(form.referenceStartMonth) : null,
+        referenceStartDay: form.referencePeriod === 'CUSTOM' ? Number(form.referenceStartDay) : null,
+        expirationPolicy: form.expirationPolicy,
+        expirationMonths: form.expirationPolicy === 'AFTER_DURATION' ? expirationMonths : null,
+        expirationDate: form.expirationPolicy === 'FIXED_DATE' ? form.expirationDate : null,
+        expirationMonth: form.expirationPolicy === 'MONTH_OF_FOLLOWING_PERIOD' ? expirationMonth : null,
+        carryoverAllowed: form.carryoverAllowed,
+        carryoverMax: form.carryoverAllowed ? carryoverMax : 0,
+        carryoverExpirationMonths: form.carryoverAllowed ? carryoverExpirationMonths : null,
         negativeAllowed: form.negativeAllowed,
+        negativeLimit: form.negativeAllowed ? negativeLimit : 0,
       })
-      // Après enregistrement, le formulaire est réinitialisé pour une nouvelle saisie.
-      setForm(emptyForm())
+      resetForm()
       reload()
       dialog.success('Configuration enregistrée')
     } catch (err) {
@@ -122,6 +265,18 @@ export function LeaveSettings() {
     } finally {
       setSaving(false)
     }
+  }
+
+  function startEdit(config: LeaveConfigDto) {
+    setEditingId(config.id)
+    setForm(formFromConfig(config))
+    setFormError(null)
+  }
+
+  function startDuplicate(config: LeaveConfigDto) {
+    setEditingId(null)
+    setForm({ ...formFromConfig(config), effectiveDate: firstDayOfCurrentMonth(), active: true })
+    setFormError(null)
   }
 
   async function toggleActive(config: LeaveConfigDto) {
@@ -133,26 +288,6 @@ export function LeaveSettings() {
       void dialog.error(err instanceof ApiError ? err.message : 'Erreur')
     } finally {
       setTogglingId(null)
-    }
-  }
-
-  async function removeConfig(config: LeaveConfigDto) {
-    if (
-      !(await dialog.confirm(
-        `Supprimer la configuration ${config.leaveType} du ${config.effectiveDate} ?`,
-        { variant: 'warning', danger: true, okLabel: 'Supprimer' },
-      ))
-    ) {
-      return
-    }
-    setDeletingId(config.id)
-    try {
-      await leaveApi.deleteConfig(config.id)
-      reload()
-    } catch (err) {
-      void dialog.error(err instanceof ApiError ? err.message : 'Erreur')
-    } finally {
-      setDeletingId(null)
     }
   }
 
@@ -177,6 +312,8 @@ export function LeaveSettings() {
     }
   }
 
+  const isEdit = editingId !== null
+
   return (
     <div>
       <PageHeader title="Paramètres congés" titleId="LeaveSettings.title" actions={<RefreshButton onClick={reload} />} />
@@ -185,14 +322,18 @@ export function LeaveSettings() {
       {loading && <LoadingBlock />}
 
       <Card id="LeaveSettings.config" className="mb-6 p-5">
-        <h3 id="LeaveSettings.config.title" className="mb-3 text-sm font-semibold text-gray-700">Nouvelle configuration de droits</h3>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <h3 id="LeaveSettings.config.title" className="mb-3 text-sm font-semibold text-gray-700">
+          {isEdit ? 'Modifier une configuration de droits' : 'Nouvelle configuration de droits'}
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {formError && <p id="LeaveSettings.formError" className="text-sm text-red-600">{formError}</p>}
+
+          <h4 id="LeaveSettings.config.section.general" className="text-xs font-semibold uppercase text-gray-500">Général</h4>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Field label="Type" id="LeaveSettings.config.type.label">
               <Select id="LeaveSettings.config.type" value={form.leaveType} onChange={(e) => setForm({ ...form, leaveType: e.target.value as LeaveType })}>
-                <option value="CP">CP</option>
-                <option value="RTT">RTT</option>
+                <option id="LeaveSettings.config.type.cp" value="CP">CP</option>
+                <option id="LeaveSettings.config.type.rtt" value="RTT">RTT</option>
               </Select>
             </Field>
             <Field label="Date d'effet" id="LeaveSettings.config.effectiveDate.label">
@@ -212,23 +353,6 @@ export function LeaveSettings() {
                 <option id="LeaveSettings.config.frequency.once" value="ONCE">Unique</option>
               </Select>
             </Field>
-            <Field label="Expiration (mois)" id="LeaveSettings.config.expiration.label">
-              <Input id="LeaveSettings.config.expiration" type="number" min="1" max="12" step="1" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
-            </Field>
-            <Field label="Seuil négatif" id="LeaveSettings.config.negative.label">
-              <Input id="LeaveSettings.config.negative" type="number" min="0" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
-            </Field>
-            <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
-              <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
-                <input
-                  id="LeaveSettings.config.negativeAllowed"
-                  type="checkbox"
-                  checked={form.negativeAllowed}
-                  onChange={(e) => setForm({ ...form, negativeAllowed: e.target.checked })}
-                />
-                {form.negativeAllowed ? 'Oui' : 'Non'}
-              </label>
-            </Field>
             <Field label="Active" id="LeaveSettings.config.active.label">
               <label id="LeaveSettings.config.active.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                 <input
@@ -241,14 +365,130 @@ export function LeaveSettings() {
               </label>
             </Field>
           </div>
+
+          {form.accrualFrequency !== 'ONCE' && (
+            <>
+              <h4 id="LeaveSettings.config.section.acquisition" className="text-xs font-semibold uppercase text-gray-500">Acquisition des droits</h4>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <Field label="Mode d'acquisition" id="LeaveSettings.config.acquisitionMode.label">
+                  <Select id="LeaveSettings.config.acquisitionMode" value={form.acquisitionMode} onChange={(e) => setForm({ ...form, acquisitionMode: e.target.value as LeaveAcquisitionMode })}>
+                    <option id="LeaveSettings.config.acquisitionMode.start" value="START_OF_PERIOD">Début de période</option>
+                    <option id="LeaveSettings.config.acquisitionMode.end" value="END_OF_PERIOD">Fin de période</option>
+                  </Select>
+                </Field>
+              </div>
+            </>
+          )}
+
+          <h4 id="LeaveSettings.config.section.reference" className="text-xs font-semibold uppercase text-gray-500">Période de référence</h4>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field label="Période de référence" id="LeaveSettings.config.referencePeriod.label">
+              <Select id="LeaveSettings.config.referencePeriod" value={form.referencePeriod} onChange={(e) => setForm({ ...form, referencePeriod: e.target.value as LeaveReferencePeriod })}>
+                <option id="LeaveSettings.config.referencePeriod.calendar" value="CALENDAR_YEAR">Année civile</option>
+                <option id="LeaveSettings.config.referencePeriod.custom" value="CUSTOM">Cycle personnalisé</option>
+              </Select>
+            </Field>
+            {form.referencePeriod === 'CUSTOM' && (
+              <>
+                <Field label="Mois de début" id="LeaveSettings.config.referenceStartMonth.label">
+                  <Input id="LeaveSettings.config.referenceStartMonth" type="number" min="1" max="12" value={form.referenceStartMonth} onChange={(e) => setForm({ ...form, referenceStartMonth: e.target.value })} />
+                </Field>
+                <Field label="Jour de début" id="LeaveSettings.config.referenceStartDay.label">
+                  <Input id="LeaveSettings.config.referenceStartDay" type="number" min="1" max="31" value={form.referenceStartDay} onChange={(e) => setForm({ ...form, referenceStartDay: e.target.value })} />
+                </Field>
+              </>
+            )}
+          </div>
+
+          <h4 id="LeaveSettings.config.section.expiration" className="text-xs font-semibold uppercase text-gray-500">Expiration</h4>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field label="Politique d'expiration" id="LeaveSettings.config.expirationPolicy.label">
+              <Select id="LeaveSettings.config.expirationPolicy" value={form.expirationPolicy} onChange={(e) => setForm({ ...form, expirationPolicy: e.target.value as LeaveExpirationPolicy })}>
+                <option id="LeaveSettings.config.expirationPolicy.none" value="NONE">Aucune expiration</option>
+                <option id="LeaveSettings.config.expirationPolicy.duration" value="AFTER_DURATION">Après une durée</option>
+                <option id="LeaveSettings.config.expirationPolicy.fixed" value="FIXED_DATE">À une date fixe</option>
+                <option id="LeaveSettings.config.expirationPolicy.referenceEnd" value="END_OF_REFERENCE_PERIOD">Fin de période de référence</option>
+                <option id="LeaveSettings.config.expirationPolicy.followingMonth" value="MONTH_OF_FOLLOWING_PERIOD">Mois de la période suivante</option>
+              </Select>
+            </Field>
+            {form.expirationPolicy === 'AFTER_DURATION' && (
+              <Field label="Durée (mois)" id="LeaveSettings.config.expirationMonths.label">
+                <Input id="LeaveSettings.config.expirationMonths" type="number" min="1" max="12" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
+              </Field>
+            )}
+            {form.expirationPolicy === 'FIXED_DATE' && (
+              <Field label="Date d'expiration" id="LeaveSettings.config.expirationDate.label">
+                <Input id="LeaveSettings.config.expirationDate" type="date" value={form.expirationDate} onChange={(e) => setForm({ ...form, expirationDate: e.target.value })} />
+              </Field>
+            )}
+            {form.expirationPolicy === 'MONTH_OF_FOLLOWING_PERIOD' && (
+              <Field label="Mois de la période suivante" id="LeaveSettings.config.expirationMonth.label">
+                <Input id="LeaveSettings.config.expirationMonth" type="number" min="1" max="12" value={form.expirationMonth} onChange={(e) => setForm({ ...form, expirationMonth: e.target.value })} />
+              </Field>
+            )}
+          </div>
+
+          <h4 id="LeaveSettings.config.section.carryover" className="text-xs font-semibold uppercase text-gray-500">Report des droits</h4>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
+              <label id="LeaveSettings.config.carryoverAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
+                <input
+                  id="LeaveSettings.config.carryoverAllowed"
+                  type="checkbox"
+                  checked={form.carryoverAllowed}
+                  onChange={(e) => setForm({ ...form, carryoverAllowed: e.target.checked })}
+                />
+                {form.carryoverAllowed ? 'Oui' : 'Non'}
+              </label>
+            </Field>
+            {form.carryoverAllowed && (
+              <>
+                <Field label="Report maximum (jours)" id="LeaveSettings.config.carryoverMax.label">
+                  <Input id="LeaveSettings.config.carryoverMax" type="number" min="0" step="any" value={form.carryoverMax} onChange={(e) => setForm({ ...form, carryoverMax: e.target.value })} />
+                </Field>
+                <Field label="Échéance du report (mois)" id="LeaveSettings.config.carryoverExpirationMonths.label">
+                  <Input id="LeaveSettings.config.carryoverExpirationMonths" type="number" min="0" value={form.carryoverExpirationMonths} onChange={(e) => setForm({ ...form, carryoverExpirationMonths: e.target.value })} />
+                </Field>
+              </>
+            )}
+          </div>
+
+          <h4 id="LeaveSettings.config.section.negative" className="text-xs font-semibold uppercase text-gray-500">Solde négatif</h4>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field label="Solde négatif autorisé" id="LeaveSettings.config.negativeAllowed.label">
+              <label id="LeaveSettings.config.negativeAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
+                <input
+                  id="LeaveSettings.config.negativeAllowed"
+                  type="checkbox"
+                  checked={form.negativeAllowed}
+                  onChange={(e) => setForm({ ...form, negativeAllowed: e.target.checked })}
+                />
+                {form.negativeAllowed ? 'Oui' : 'Non'}
+              </label>
+            </Field>
+            {form.negativeAllowed && (
+              <Field label="Maximum d'anticipation (jours)" id="LeaveSettings.config.negativeLimit.label">
+                <Input id="LeaveSettings.config.negativeLimit" type="number" min="0" step="any" value={form.negativeLimit} onChange={(e) => setForm({ ...form, negativeLimit: e.target.value })} />
+              </Field>
+            )}
+          </div>
+
           <p id="LeaveSettings.config.creditHint" className="text-xs text-gray-500">
-            Les droits sont crédités au jour et au mois de la date d'effet, selon la fréquence choisie.
+            Les droits sont crédités au début ou à la fin de chaque période, selon le mode d'acquisition.
             La date d'effet commence par défaut le 1er jour du mois.
           </p>
           <p id="LeaveSettings.config.hireDateHint" className="text-xs text-gray-500">
             Les droits sont calculés à partir de la date d'embauche du salarié (ou de la date d'effet si elle est postérieure).
           </p>
-          <Button type="submit" id="LeaveSettings.config.submit" disabled={saving}>{saving ? '...' : 'Enregistrer'}</Button>
+
+          <div className="flex gap-2">
+            <Button type="submit" id="LeaveSettings.config.submit" disabled={saving}>{saving ? '...' : 'Enregistrer'}</Button>
+            {isEdit && (
+              <Button type="button" id="LeaveSettings.config.cancel" variant="neutral" onClick={resetForm}>
+                Annuler
+              </Button>
+            )}
+          </div>
         </form>
       </Card>
 
@@ -267,15 +507,13 @@ export function LeaveSettings() {
             config.endDate ? formatDate(config.endDate) : '',
             config.accrualAmount,
             FREQUENCY_LABELS[config.accrualFrequency],
-            monthDay(config.acquisitionStartMonth, config.acquisitionStartDay),
-            monthDay(config.acquisitionEndMonth, config.acquisitionEndDay),
-            monthDay(config.usageStartMonth, config.usageStartDay),
-            monthDay(config.usageEndMonth, config.usageEndDay),
-            config.expirationMonths ?? '',
-            config.carryoverMax,
-            config.carryoverExpirationMonths ?? '',
-            config.negativeLimit,
-            config.negativeAllowed ? 'Oui' : 'Non',
+            MODE_LABELS[config.acquisitionMode],
+            REFERENCE_LABELS[config.referencePeriod],
+            referenceSummary(config),
+            EXPIRATION_LABELS[config.expirationPolicy],
+            expirationSummary(config),
+            reportSummary(config),
+            config.negativeAllowed ? `${config.negativeLimit}` : 'Non autorisé',
             config.active ? 'Actif' : 'Inactif',
           ].join(' ')}
           columns={[
@@ -307,101 +545,48 @@ export function LeaveSettings() {
               ),
             },
             {
-              key: 'LeaveSettings.configs.col.accrualAmount',
-              label: 'Quantité acquise',
+              key: 'LeaveSettings.configs.col.acquisition',
+              label: 'Acquisition',
               render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.accrualAmount`}>
-                  {config.accrualAmount}
+                <span id={`LeaveSettings.configs.${config.id}.param.acquisition`}>
+                  {config.accrualAmount} j — {FREQUENCY_LABELS[config.accrualFrequency]}
+                  {config.accrualFrequency !== 'ONCE' && ` (${MODE_LABELS[config.acquisitionMode]})`}
                 </span>
               ),
             },
             {
-              key: 'LeaveSettings.configs.col.accrualFrequency',
-              label: 'Fréquence',
+              key: 'LeaveSettings.configs.col.reference',
+              label: 'Période de référence',
               render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.accrualFrequency`}>
-                  {FREQUENCY_LABELS[config.accrualFrequency]}
+                <span id={`LeaveSettings.configs.${config.id}.param.reference`}>
+                  {referenceSummary(config)}
                 </span>
               ),
             },
             {
-              key: 'LeaveSettings.configs.col.acquisitionStart',
-              label: "Début d'acquisition",
+              key: 'LeaveSettings.configs.col.expiration',
+              label: 'Expiration',
               render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.acquisitionStart`}>
-                  {monthDay(config.acquisitionStartMonth, config.acquisitionStartDay)}
+                <span id={`LeaveSettings.configs.${config.id}.param.expiration`}>
+                  {expirationSummary(config)}
                 </span>
               ),
             },
             {
-              key: 'LeaveSettings.configs.col.acquisitionEnd',
-              label: "Fin d'acquisition",
+              key: 'LeaveSettings.configs.col.report',
+              label: 'Report',
               render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.acquisitionEnd`}>
-                  {monthDay(config.acquisitionEndMonth, config.acquisitionEndDay)}
+                <span id={`LeaveSettings.configs.${config.id}.param.report`}>
+                  {reportSummary(config)}
                 </span>
               ),
             },
             {
-              key: 'LeaveSettings.configs.col.usageStart',
-              label: "Début d'utilisation",
+              key: 'LeaveSettings.configs.col.negative',
+              label: 'Anticipation',
               render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.usageStart`}>
-                  {monthDay(config.usageStartMonth, config.usageStartDay)}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.usageEnd',
-              label: "Fin d'utilisation",
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.usageEnd`}>
-                  {monthDay(config.usageEndMonth, config.usageEndDay)}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.expirationMonths',
-              label: 'Expiration (mois)',
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.expirationMonths`}>
-                  {config.expirationMonths ?? '—'}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.carryoverMax',
-              label: 'Report maximum',
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.carryoverMax`}>
-                  {config.carryoverMax}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.carryoverExpirationMonths',
-              label: 'Expiration du report (mois)',
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.carryoverExpirationMonths`}>
-                  {config.carryoverExpirationMonths ?? '—'}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.negativeLimit',
-              label: 'Seuil négatif',
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.negativeLimit`}>
-                  {config.negativeLimit}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.negativeAllowed',
-              label: 'Solde négatif autorisé',
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.negativeAllowed`}>
-                  {config.negativeAllowed ? 'Oui' : 'Non'}
+                <span id={`LeaveSettings.configs.${config.id}.param.negative`}>
+                  {config.negativeAllowed ? `${config.negativeLimit} j` : 'Non autorisé'}
                 </span>
               ),
             },
@@ -419,28 +604,21 @@ export function LeaveSettings() {
               label: 'Actions',
               render: (config) => (
                 <div className="flex flex-wrap gap-2">
-                  {config.deletable && (
-                    <Button
-                      id={`LeaveSettings.configs.${config.id}.supprimer`}
-                      type="button"
-                      variant="danger"
-                      disabled={deletingId === config.id}
-                      className="!w-auto !px-2 !py-1 !text-xs"
-                      onClick={() => void removeConfig(config)}
-                    >
-                      Supprimer
-                    </Button>
-                  )}
                   <Button
-                    id={`LeaveSettings.configs.${config.id}.supprimerCascade`}
+                    id={`LeaveSettings.configs.${config.id}.modifier`}
                     type="button"
-                    variant="danger"
-                    disabled={deletingId === config.id}
                     className="!w-auto !px-2 !py-1 !text-xs"
-                    title="Supprimer la configuration et tous ses droits acquis"
-                    onClick={() => void removeConfigCascade(config)}
+                    onClick={() => startEdit(config)}
                   >
-                    Supprimer en cascade
+                    Modifier
+                  </Button>
+                  <Button
+                    id={`LeaveSettings.configs.${config.id}.dupliquer`}
+                    type="button"
+                    className="!w-auto !px-2 !py-1 !text-xs"
+                    onClick={() => startDuplicate(config)}
+                  >
+                    Dupliquer
                   </Button>
                   <Button
                     id={`LeaveSettings.configs.${config.id}.toggle`}
@@ -463,6 +641,17 @@ export function LeaveSettings() {
                   >
                     <Icon name="history" className="h-4 w-4" />
                     Historique
+                  </Button>
+                  <Button
+                    id={`LeaveSettings.configs.${config.id}.supprimerCascade`}
+                    type="button"
+                    variant="danger"
+                    disabled={deletingId === config.id}
+                    className="!w-auto !px-2 !py-1 !text-xs"
+                    title="Supprimer la configuration et tous ses droits acquis"
+                    onClick={() => void removeConfigCascade(config)}
+                  >
+                    Supprimer en cascade
                   </Button>
                 </div>
               ),
