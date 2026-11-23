@@ -191,8 +191,8 @@ export function LeaveSettings() {
       return
     }
     if (form.expirationPolicy === 'AFTER_DURATION') {
-      if (expirationMonths == null || !Number.isInteger(expirationMonths) || expirationMonths < 1 || expirationMonths > 12) {
-        setFormError("La durée d'expiration doit être comprise entre 1 et 12 mois.")
+      if (expirationMonths == null || !Number.isInteger(expirationMonths) || expirationMonths < 1 || expirationMonths > 120) {
+        setFormError("La durée d'expiration doit être comprise entre 1 et 120 mois.")
         return
       }
     }
@@ -419,7 +419,7 @@ export function LeaveSettings() {
               </Field>
               {form.expirationPolicy === 'AFTER_DURATION' && (
                 <Field className="w-40" label="Durée (mois)" id="LeaveSettings.config.expirationMonths.label">
-                  <Input id="LeaveSettings.config.expirationMonths" type="number" min="1" max="12" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
+                  <Input id="LeaveSettings.config.expirationMonths" type="number" min="1" max="120" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
                 </Field>
               )}
               {form.expirationPolicy === 'FIXED_DATE' && (

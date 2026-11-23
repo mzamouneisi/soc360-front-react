@@ -313,7 +313,7 @@ describe('LeaveSettings — refonte des règles', () => {
     }
   })
 
-  it('refuse une duration d’expiration hors bornes', async () => {
+  it('refuse une durée d’expiration hors bornes', async () => {
     configsMock.mockResolvedValue([])
     render(<LeaveSettings />)
     await waitFor(() => expect(configsMock).toHaveBeenCalled())
@@ -323,14 +323,35 @@ describe('LeaveSettings — refonte des règles', () => {
     })
     const expiration = document.getElementById('LeaveSettings.config.expirationMonths') as HTMLInputElement
 
-    for (const value of ['0', '13']) {
+    for (const value of ['0', '121']) {
       fireEvent.change(expiration, { target: { value } })
       fireEvent.submit(document.querySelector('form') as HTMLFormElement)
       expect(saveConfigMock).not.toHaveBeenCalled()
       await waitFor(() =>
-        expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain('1 et 12'),
+        expect(document.getElementById('LeaveSettings.formError')?.textContent).toContain('1 et 120'),
       )
     }
+  })
+
+  it('accepte une durée d’expiration supérieure à 12 mois', async () => {
+    configsMock.mockResolvedValue([])
+    saveConfigMock.mockResolvedValue(config())
+    render(<LeaveSettings />)
+    await waitFor(() => expect(configsMock).toHaveBeenCalled())
+
+    fireEvent.change(document.getElementById('LeaveSettings.config.amount') as HTMLInputElement, {
+      target: { value: '5' },
+    })
+    fireEvent.change(document.getElementById('LeaveSettings.config.expirationMonths') as HTMLInputElement, {
+      target: { value: '24' },
+    })
+    fireEvent.submit(document.querySelector('form') as HTMLFormElement)
+
+    await waitFor(() =>
+      expect(saveConfigMock).toHaveBeenCalledWith(
+        expect.objectContaining({ expirationPolicy: 'AFTER_DURATION', expirationMonths: 24 }),
+      ),
+    )
   })
 
   it('refuse une date de fin antérieure à la date d’effet', async () => {
