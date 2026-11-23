@@ -1010,8 +1010,6 @@ export interface LeaveConfigDto {
   active: boolean
   accrualAmount: number
   accrualFrequency: LeaveAccrualFrequency
-  creditMonth: number
-  creditDay: number
   acquisitionStartMonth: number | null
   acquisitionStartDay: number | null
   acquisitionEndMonth: number | null
@@ -1037,8 +1035,6 @@ export interface LeaveConfigRequest {
   active?: boolean
   accrualAmount: number
   accrualFrequency?: LeaveAccrualFrequency
-  creditMonth?: number
-  creditDay?: number
   expirationMonths?: number | null
   carryoverMax?: number
   carryoverExpirationMonths?: number | null

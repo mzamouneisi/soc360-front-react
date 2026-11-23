@@ -26,10 +26,9 @@ const FREQUENCY_LABELS: Record<LeaveAccrualFrequency, string> = {
   ONCE: 'Unique',
 }
 
-const MAX_DAYS_BY_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
-function maxDayForMonth(month: number): number {
-  return MAX_DAYS_BY_MONTH[month - 1] ?? 31
+/** La date d'effet commence par défaut le 1er jour du mois courant. */
+function firstDayOfCurrentMonth(): string {
+  return `${new Date().toISOString().slice(0, 7)}-01`
 }
 
 function monthDay(month: number | null | undefined, day: number | null | undefined): string {
@@ -40,12 +39,10 @@ function monthDay(month: number | null | undefined, day: number | null | undefin
 function emptyForm() {
   return {
     leaveType: 'CP' as LeaveType,
-    effectiveDate: new Date().toISOString().slice(0, 10),
+    effectiveDate: firstDayOfCurrentMonth(),
     endDate: '',
     accrualAmount: '1',
     accrualFrequency: 'MONTHLY' as LeaveAccrualFrequency,
-    creditMonth: '1',
-    creditDay: '1',
     expirationMonths: '12',
     negativeLimit: '0',
     negativeAllowed: true,
@@ -75,13 +72,9 @@ export function LeaveSettings() {
     e.preventDefault()
     setFormError(null)
 
-    const needsMonth = form.accrualFrequency === 'YEARLY' || form.accrualFrequency === 'QUARTERLY'
-    const needsDay = form.accrualFrequency !== 'ONCE'
     const amount = Number(form.accrualAmount)
     const negativeLimit = Number(form.negativeLimit)
     const expirationMonths = form.expirationMonths === '' ? null : Number(form.expirationMonths)
-    const creditMonth = Number(form.creditMonth)
-    const creditDay = Number(form.creditDay)
 
     if (form.endDate !== '' && form.effectiveDate !== '' && form.endDate < form.effectiveDate) {
       setFormError("La date de fin d'application doit être postérieure ou égale à la date d'effet.")
@@ -106,21 +99,6 @@ export function LeaveSettings() {
       setFormError("L'expiration (mois) doit être comprise entre 1 et 12.")
       return
     }
-    if (needsMonth && (!Number.isInteger(creditMonth) || creditMonth < 1 || creditMonth > 12)) {
-      setFormError('Le mois de crédit doit être compris entre 1 et 12.')
-      return
-    }
-    if (needsDay && (!Number.isInteger(creditDay) || creditDay < 1 || creditDay > 31)) {
-      setFormError('Le jour de crédit doit être compris entre 1 et 31.')
-      return
-    }
-    if (needsMonth && creditDay > maxDayForMonth(creditMonth)) {
-      setFormError(
-        `Le jour de crédit doit être compris entre 1 et ${maxDayForMonth(creditMonth)} pour ce mois.`,
-      )
-      return
-    }
-
     setSaving(true)
     try {
       await leaveApi.saveConfig({
@@ -131,8 +109,6 @@ export function LeaveSettings() {
         active: form.active,
         accrualAmount: amount,
         accrualFrequency: form.accrualFrequency,
-        creditMonth: needsMonth ? creditMonth : 1,
-        creditDay: needsDay ? creditDay : 1,
         expirationMonths,
         negativeLimit,
         negativeAllowed: form.negativeAllowed,
@@ -180,9 +156,6 @@ export function LeaveSettings() {
     }
   }
 
-  const needsMonth = form.accrualFrequency === 'YEARLY' || form.accrualFrequency === 'QUARTERLY'
-  const needsDay = form.accrualFrequency !== 'ONCE'
-
   return (
     <div>
       <PageHeader title="Paramètres congés" titleId="LeaveSettings.title" actions={<RefreshButton onClick={reload} />} />
@@ -218,19 +191,6 @@ export function LeaveSettings() {
                 <option id="LeaveSettings.config.frequency.once" value="ONCE">Unique</option>
               </Select>
             </Field>
-            {needsMonth && (
-              <Field label="Mois de crédit" id="LeaveSettings.config.creditMonth.label">
-                <Input id="LeaveSettings.config.creditMonth" type="number" min="1" max="12" value={form.creditMonth} onChange={(e) => setForm({ ...form, creditMonth: e.target.value })} />
-              </Field>
-            )}
-            {needsDay && (
-              <Field
-                label={form.accrualFrequency === 'MONTHLY' ? 'Jour du mois' : 'Jour de crédit'}
-                id="LeaveSettings.config.creditDay.label"
-              >
-                <Input id="LeaveSettings.config.creditDay" type="number" min="1" max="31" value={form.creditDay} onChange={(e) => setForm({ ...form, creditDay: e.target.value })} />
-              </Field>
-            )}
             <Field label="Expiration (mois)" id="LeaveSettings.config.expiration.label">
               <Input id="LeaveSettings.config.expiration" type="number" min="1" max="12" step="1" value={form.expirationMonths} onChange={(e) => setForm({ ...form, expirationMonths: e.target.value })} />
             </Field>
@@ -260,6 +220,10 @@ export function LeaveSettings() {
               </label>
             </Field>
           </div>
+          <p id="LeaveSettings.config.creditHint" className="text-xs text-gray-500">
+            Les droits sont crédités au jour et au mois de la date d'effet, selon la fréquence choisie.
+            La date d'effet commence par défaut le 1er jour du mois.
+          </p>
           <p id="LeaveSettings.config.hireDateHint" className="text-xs text-gray-500">
             Les droits sont calculés à partir de la date d'embauche du salarié (ou de la date d'effet si elle est postérieure).
           </p>
@@ -282,8 +246,6 @@ export function LeaveSettings() {
             config.endDate ? formatDate(config.endDate) : '',
             config.accrualAmount,
             FREQUENCY_LABELS[config.accrualFrequency],
-            config.creditMonth,
-            config.creditDay,
             monthDay(config.acquisitionStartMonth, config.acquisitionStartDay),
             monthDay(config.acquisitionEndMonth, config.acquisitionEndDay),
             monthDay(config.usageStartMonth, config.usageStartDay),
@@ -338,24 +300,6 @@ export function LeaveSettings() {
               render: (config) => (
                 <span id={`LeaveSettings.configs.${config.id}.param.accrualFrequency`}>
                   {FREQUENCY_LABELS[config.accrualFrequency]}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.creditMonth',
-              label: 'Mois de crédit',
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.creditMonth`}>
-                  {config.creditMonth}
-                </span>
-              ),
-            },
-            {
-              key: 'LeaveSettings.configs.col.creditDay',
-              label: 'Jour de crédit',
-              render: (config) => (
-                <span id={`LeaveSettings.configs.${config.id}.param.creditDay`}>
-                  {config.creditDay}
                 </span>
               ),
             },
