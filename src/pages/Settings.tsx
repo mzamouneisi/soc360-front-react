@@ -152,9 +152,9 @@ export function Settings() {
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
-  // Apparence toujours enregistrée au niveau personnel : les réglages d'un utilisateur (y compris
-  // le responsable de société, le manager et l'admin) ne modifient jamais ceux des autres.
-  const appearanceScope: AppearanceScope = 'USER'
+  // Le responsable de société définit l'apparence de sa société ; les autres rôles (admin inclus)
+  // ont une apparence personnelle. Les réglages personnels restent prioritaires sur la société.
+  const appearanceScope: AppearanceScope = user?.role === 'RESPONSIBLE_SOC' ? 'SOC' : 'USER'
   const appearanceRestoreLabel = user?.role === 'RESPONSIBLE_SOC'
     ? 'Restaurer le paramétrage SOC360'
     : 'Restaurer le paramétrage de ma société'

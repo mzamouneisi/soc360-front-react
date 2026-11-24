@@ -274,7 +274,7 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() =>
       expect(appearanceSaveMock).toHaveBeenCalledWith(
-        'USER',
+        'SOC',
         expect.objectContaining({ tableHeaderFontSize: '24' }),
       ),
     )
@@ -301,7 +301,7 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() =>
       expect(appearanceSaveMock).toHaveBeenCalledWith(
-        'USER',
+        'SOC',
         expect.objectContaining({
           tableHeaderColor: '#1d48eb',
           tableHeaderTextColor: '#000000',
@@ -332,7 +332,7 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() =>
       expect(appearanceSaveMock).toHaveBeenCalledWith(
-        'USER',
+        'SOC',
         expect.objectContaining({
           formHeaderBackgroundColor: '#0284c7',
           formHeaderTextColor: '#ffffff',
@@ -359,10 +359,39 @@ describe('Settings — couleurs CRA', () => {
     )
     fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
 
-    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('USER'))
+    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('SOC'))
   })
 
-  it('ne montre pas le bouton Restaurer à un administrateur (niveau SOC360)', async () => {
+  it('restaure et affiche les paramètres de la société pour un manager', async () => {
+    userMock.value = user('MANAGER')
+    appearanceEffectiveMock
+      .mockResolvedValueOnce({ config: {}, sources: {}, userDefined: false, socDefined: false })
+      .mockResolvedValueOnce({
+        config: { fontSize: '20', theme: 'forest', backgroundColor: '#123456' },
+        sources: { fontSize: 'SOC', theme: 'SOC', backgroundColor: 'SOC' },
+        userDefined: false,
+        socDefined: true,
+      })
+
+    render(<Settings />)
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    await waitFor(() =>
+      expect(document.getElementById('settings.appearance.restore')).not.toBeNull(),
+    )
+    fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
+
+    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('USER'))
+    await waitFor(() =>
+      expect(
+        (document.getElementById('settings.theme.field.select') as HTMLSelectElement).value,
+      ).toBe('forest'),
+    )
+    expect(
+      (document.getElementById('settings.fontSize.field.select') as HTMLSelectElement).value,
+    ).toBe('20')
+  })
+
+  it('ne montre pas le bouton Restaurer à un administrateur', async () => {
     userMock.value = user('ADMIN')
 
     render(<Settings />)
