@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import { useSoc } from '../soc/SocContext'
 import { appearanceApi } from '../api/appearance'
 import { applyAppearance } from '../lib/appearance'
 
 /** Applique l'apparence effective (héritage utilisateur → société → SOC360) au document. */
 export function AppearanceApplier() {
   const { user } = useAuth()
+  const { selectedSocId } = useSoc()
 
   useEffect(() => {
     if (!user) return
@@ -21,7 +23,7 @@ export function AppearanceApplier() {
     return () => {
       cancelled = true
     }
-  }, [user?.id, user?.socId])
+  }, [user?.id, user?.socId, selectedSocId])
 
   return null
 }

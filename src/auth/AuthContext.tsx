@@ -29,67 +29,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [initializing, setInitializing] = useState(true)
 
   useEffect(() => {
-    const doc = document.documentElement
-    doc.style.fontSize = `${user?.fontSize && user.fontSize > 0 ? user.fontSize : 14}px`
-    doc.dataset.theme = user?.theme || 'ocean'
-    doc.style.setProperty('--table-header', user?.tableHeaderColor || '#1d48eb')
-    doc.style.setProperty('--table-header-text', user?.tableHeaderTextColor || '#ffffff')
-    doc.style.setProperty('--table-border', user?.tableBorderColor || '#000000')
-    doc.style.setProperty('--table-header-font-size', `${user?.tableHeaderFontSize ?? 15}px`)
-    doc.style.setProperty('--form-header-bg', user?.formHeaderBackgroundColor || '#0ea5e9')
-    doc.style.setProperty('--form-header-text', user?.formHeaderTextColor || '#ffffff')
-    doc.style.setProperty('--form-header-font-size', `${user?.formHeaderFontSize ?? 15}px`)
-    doc.style.setProperty('--form-label-text', user?.formLabelTextColor || '#0ea5e9')
-    doc.style.setProperty('--form-label-font-size', `${user?.formLabelFontSize ?? 12}px`)
-    doc.style.setProperty('--btn-small-width', `${user?.buttonSmallWidth ?? 50}px`)
-    doc.style.setProperty('--btn-large-width', `${user?.buttonLargeWidth ?? 100}px`)
-    doc.style.setProperty('--btn-save-color', user?.buttonSaveColor || '#1d48eb')
-    doc.style.setProperty('--btn-delete-color', user?.buttonDeleteColor || '#dc2626')
-    doc.style.setProperty('--btn-cancel-color', user?.buttonCancelColor || '#ffffff')
-    doc.style.setProperty('--btn-cancel-text-color', user?.buttonCancelTextColor || '#374151')
-    doc.style.setProperty('--btn-submit-color', user?.buttonSubmitColor || '#e0e7ff')
-    doc.style.setProperty('--btn-submit-text-color', user?.buttonSubmitTextColor || '#1d48eb')
-    doc.style.setProperty('--btn-history-color', user?.buttonHistoryColor || '#e0e7ff')
-    doc.style.setProperty('--btn-history-text-color', user?.buttonHistoryTextColor || '#1d48eb')
-    doc.style.setProperty('--btn-ok-color', user?.buttonOkColor || '#16a34a')
-    doc.style.setProperty('--btn-ok-text-color', user?.buttonOkTextColor || '#ffffff')
-    doc.style.setProperty('--btn-new-color', user?.buttonNewColor || '#0ea5e9')
-    doc.style.setProperty('--btn-new-text-color', user?.buttonNewTextColor || '#ffffff')
-    doc.style.setProperty('--btn-disable-color', user?.buttonDisableColor || '#f97316')
-    doc.style.setProperty('--btn-disable-text-color', user?.buttonDisableTextColor || '#ffffff')
-    doc.style.setProperty('--app-bg-color', user?.backgroundColor || '#bae6fd')
-  }, [
-    user?.fontSize,
-    user?.theme,
-    user?.tableHeaderColor,
-    user?.tableHeaderTextColor,
-    user?.tableBorderColor,
-    user?.tableHeaderFontSize,
-    user?.formHeaderBackgroundColor,
-    user?.formHeaderTextColor,
-    user?.formHeaderFontSize,
-    user?.formLabelTextColor,
-    user?.formLabelFontSize,
-    user?.buttonSmallWidth,
-    user?.buttonLargeWidth,
-    user?.buttonSaveColor,
-    user?.buttonDeleteColor,
-    user?.buttonCancelColor,
-    user?.buttonCancelTextColor,
-    user?.buttonSubmitColor,
-    user?.buttonSubmitTextColor,
-    user?.buttonHistoryColor,
-    user?.buttonHistoryTextColor,
-    user?.buttonOkColor,
-    user?.buttonOkTextColor,
-    user?.buttonNewColor,
-    user?.buttonNewTextColor,
-    user?.buttonDisableColor,
-    user?.buttonDisableTextColor,
-    user?.backgroundColor,
-  ])
-
-  useEffect(() => {
     setUnauthorizedHandler(() => {
       setUser(null)
     })
