@@ -987,6 +987,22 @@ export interface GeneratableMonthDto {
   alreadyGenerated: boolean
 }
 
+export type AppearanceScope = 'GLOBAL' | 'SOC' | 'USER'
+
+export interface AppearanceConfigDto {
+  scope: AppearanceScope
+  scopeId: number
+  config: Record<string, string>
+  defined: boolean
+}
+
+export interface EffectiveAppearanceDto {
+  config: Record<string, string>
+  sources: Record<string, string>
+  userDefined: boolean
+  socDefined: boolean
+}
+
 export type LeaveType = 'CP' | 'RTT'
 export type LeaveAccrualFrequency = 'MONTHLY' | 'QUARTERLY' | 'YEARLY' | 'ONCE'
 export type LeaveAcquisitionMode = 'START_OF_PERIOD' | 'END_OF_PERIOD'

@@ -184,6 +184,7 @@ export function MainLayout() {
         { to: '/messages', id: 'nav.messages', label: t('nav.messages'), icon: ICONS.messages },
         { to: '/support', id: 'nav.support', label: t('nav.support'), icon: ICONS.support },
         { to: '/parametres', id: 'nav.settings', label: t('nav.settings'), icon: ICONS.support },
+        { to: '/apparence', id: 'nav.appearance', label: 'Apparence', icon: ICONS.support },
         { to: '/parametres-conges', id: 'nav.leaveSettings', label: 'Paramètres congés', icon: ICONS.support, roles: ['RESPONSIBLE_SOC'] },
         { to: '/parametres-notifications', id: 'nav.notificationSettings', label: t('nav.notificationSettings'), icon: ICONS.support, roles: ['RESPONSIBLE_SOC'] },
       ],
