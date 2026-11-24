@@ -1576,8 +1576,10 @@ export function Settings() {
           </div>
         )}
         </div>
+      </Card>
 
-        <div className="mt-6 flex flex-wrap items-center gap-2">
+      <div id="settings.actions" className="mt-4 w-[90%] pl-1">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             id="common.save.button"
             className="w-auto"
@@ -1601,7 +1603,7 @@ export function Settings() {
         </div>
         {error && <p className="mt-3 text-sm text-red-600" id="settings.error">{error}</p>}
         {saved && <p className="mt-3 text-sm text-green-600" id="settings.saved">{t('settings.saved')}</p>}
-      </Card>
+      </div>
     </div>
   )
 }
