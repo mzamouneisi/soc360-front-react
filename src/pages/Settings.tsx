@@ -152,9 +152,12 @@ export function Settings() {
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
-  // Niveau d'apparence géré selon le rôle : global SOC360, société, ou utilisateur.
-  const appearanceScope: AppearanceScope =
-    user?.role === 'ADMIN' ? 'GLOBAL' : user?.role === 'RESPONSIBLE_SOC' ? 'SOC' : 'USER'
+  // Apparence toujours enregistrée au niveau personnel : les réglages d'un utilisateur (y compris
+  // le responsable de société, le manager et l'admin) ne modifient jamais ceux des autres.
+  const appearanceScope: AppearanceScope = 'USER'
+  const appearanceRestoreLabel = user?.role === 'RESPONSIBLE_SOC'
+    ? 'Restaurer le paramétrage SOC360'
+    : 'Restaurer le paramétrage de ma société'
   const tabs: { id: string; labelKey: string; label?: string }[] = [
     { id: 'general', labelKey: 'settings.tab.general' },
     { id: 'appearance', labelKey: 'settings.tab.appearance' },
@@ -541,9 +544,9 @@ export function Settings() {
 
   /** Restaure l'apparence de SOC360 (valeurs par défaut) après confirmation. */
   async function handleRestoreAppearance() {
-    const message = appearanceScope === 'SOC'
-      ? "Restaurer l'apparence SOC360 pour la société ? La personnalisation de la société sera supprimée."
-      : "Restaurer l'apparence de votre société ? Votre personnalisation individuelle sera supprimée."
+    const message = user?.role === 'RESPONSIBLE_SOC'
+      ? "Restaurer le paramétrage SOC360 ? Votre personnalisation d'apparence sera supprimée."
+      : "Restaurer le paramétrage de votre société ? Votre personnalisation individuelle sera supprimée."
     if (!(await dialog.confirm(message, { variant: 'warning', danger: true, okLabel: 'Restaurer' }))) {
       return
     }
@@ -1589,7 +1592,7 @@ export function Settings() {
             {saving ? <Spinner className="border-white border-t-transparent" /> : null}
             {t('common.save')}
           </Button>
-          {activeTab === 'appearance' && appearanceScope !== 'GLOBAL' && (
+          {activeTab === 'appearance' && user?.role !== 'ADMIN' && (
             <Button
               id="settings.appearance.restore"
               className="w-auto"
@@ -1597,7 +1600,7 @@ export function Settings() {
               onClick={() => void handleRestoreAppearance()}
               disabled={saving}
             >
-              Restaurer
+              {appearanceRestoreLabel}
             </Button>
           )}
         </div>

@@ -274,7 +274,7 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() =>
       expect(appearanceSaveMock).toHaveBeenCalledWith(
-        'SOC',
+        'USER',
         expect.objectContaining({ tableHeaderFontSize: '24' }),
       ),
     )
@@ -301,7 +301,7 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() =>
       expect(appearanceSaveMock).toHaveBeenCalledWith(
-        'SOC',
+        'USER',
         expect.objectContaining({
           tableHeaderColor: '#1d48eb',
           tableHeaderTextColor: '#000000',
@@ -332,7 +332,7 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() =>
       expect(appearanceSaveMock).toHaveBeenCalledWith(
-        'SOC',
+        'USER',
         expect.objectContaining({
           formHeaderBackgroundColor: '#0284c7',
           formHeaderTextColor: '#ffffff',
@@ -359,7 +359,7 @@ describe('Settings — couleurs CRA', () => {
     )
     fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
 
-    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('SOC'))
+    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('USER'))
   })
 
   it('ne montre pas le bouton Restaurer à un administrateur (niveau SOC360)', async () => {
@@ -371,5 +371,22 @@ describe('Settings — couleurs CRA', () => {
       expect(document.getElementById('common.save.button')).not.toBeNull(),
     )
     expect(document.getElementById('settings.appearance.restore')).toBeNull()
+  })
+
+  it('enregistre l’apparence d’un manager au niveau personnel (USER)', async () => {
+    userMock.value = user('MANAGER')
+
+    render(<Settings />)
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    const theme = document.getElementById('settings.theme.field.select') as HTMLSelectElement
+    fireEvent.change(theme, { target: { value: 'forest' } })
+    fireEvent.click(document.getElementById('common.save.button') as HTMLButtonElement)
+
+    await waitFor(() =>
+      expect(appearanceSaveMock).toHaveBeenCalledWith(
+        'USER',
+        expect.objectContaining({ theme: 'forest' }),
+      ),
+    )
   })
 })
