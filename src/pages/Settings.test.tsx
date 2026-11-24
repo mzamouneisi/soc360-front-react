@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Settings } from './Settings'
 
-const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, appearanceEffectiveMock, appearanceSaveMock, appearanceResetMock, userMock } = vi.hoisted(() => ({
+const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, appearanceEffectiveMock, appearanceSaveMock, appearanceResetMock, appearanceRestoreMock, userMock } = vi.hoisted(() => ({
   getByIdMock: vi.fn(),
   updateCraColorsMock: vi.fn(),
   updateVatRateMock: vi.fn(),
@@ -14,6 +14,7 @@ const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMo
   appearanceEffectiveMock: vi.fn().mockResolvedValue({ config: {}, sources: {}, userDefined: false, socDefined: false }),
   appearanceSaveMock: vi.fn().mockResolvedValue({ scope: 'SOC', scopeId: 5, config: {}, defined: true }),
   appearanceResetMock: vi.fn().mockResolvedValue(undefined),
+  appearanceRestoreMock: vi.fn().mockResolvedValue({ config: {}, sources: {}, userDefined: false, socDefined: false }),
   userMock: { value: null as unknown },
 }))
 
@@ -99,6 +100,7 @@ vi.mock('../api/appearance', () => ({
     get: vi.fn().mockResolvedValue({ scope: 'SOC', scopeId: 5, config: {}, defined: false }),
     save: appearanceSaveMock,
     reset: appearanceResetMock,
+    restore: appearanceRestoreMock,
   },
 }))
 
@@ -278,8 +280,6 @@ describe('Settings — couleurs CRA', () => {
         expect.objectContaining({ tableHeaderFontSize: '24' }),
       ),
     )
-    // La personnalisation personnelle du responsable est retirée pour refléter la société.
-    expect(appearanceResetMock).toHaveBeenCalledWith('USER')
   })
 
   it('enregistre la couleur du texte des en-têtes de tableau', async () => {
@@ -361,20 +361,17 @@ describe('Settings — couleurs CRA', () => {
     )
     fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
 
-    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('SOC'))
-    expect(appearanceResetMock).toHaveBeenCalledWith('USER')
+    await waitFor(() => expect(appearanceRestoreMock).toHaveBeenCalled())
   })
 
   it('restaure et affiche les paramètres de la société pour un manager', async () => {
     userMock.value = user('MANAGER')
-    appearanceEffectiveMock
-      .mockResolvedValueOnce({ config: {}, sources: {}, userDefined: false, socDefined: false })
-      .mockResolvedValueOnce({
-        config: { fontSize: '20', theme: 'forest', backgroundColor: '#123456' },
-        sources: { fontSize: 'SOC', theme: 'SOC', backgroundColor: 'SOC' },
-        userDefined: false,
-        socDefined: true,
-      })
+    appearanceRestoreMock.mockResolvedValueOnce({
+      config: { fontSize: '20', theme: 'forest', backgroundColor: '#123456' },
+      sources: { fontSize: 'SOC', theme: 'SOC', backgroundColor: 'SOC' },
+      userDefined: false,
+      socDefined: true,
+    })
 
     render(<Settings />)
     fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
@@ -383,7 +380,7 @@ describe('Settings — couleurs CRA', () => {
     )
     fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
 
-    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('USER'))
+    await waitFor(() => expect(appearanceRestoreMock).toHaveBeenCalled())
     await waitFor(() =>
       expect(
         (document.getElementById('settings.theme.field.select') as HTMLSelectElement).value,

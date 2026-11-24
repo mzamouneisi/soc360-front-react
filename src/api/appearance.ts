@@ -11,4 +11,6 @@ export const appearanceApi = {
   save: (scope: AppearanceScope, config: Record<string, string>) =>
     api.put<AppearanceConfigDto>(`/appearance/${scope}`, { config }),
   reset: (scope: AppearanceScope) => api.delete<void>(`/appearance/${scope}`),
+  /** Copie les paramètres du niveau supérieur vers le niveau courant (restauration). */
+  restore: () => api.post<EffectiveAppearanceDto>('/appearance/restore', {}),
 }

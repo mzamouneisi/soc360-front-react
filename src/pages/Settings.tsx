@@ -514,11 +514,6 @@ export function Settings() {
       // Le bouton Enregistrer des paramètres enregistre aussi l'apparence (niveau du rôle).
       if (activeTab === 'appearance') {
         await appearanceApi.save(appearanceScope, buildAppearanceConfig())
-        // Le responsable gère l'apparence de la société : sa personnalisation personnelle
-        // éventuelle est retirée pour que son écran reflète bien le paramétrage société.
-        if (appearanceScope === 'SOC') {
-          await appearanceApi.reset('USER')
-        }
         const eff = await appearanceApi.effective()
         applyAppearance(eff)
         applyAppearanceConfig(eff.config)
@@ -538,20 +533,15 @@ export function Settings() {
   /** Restaure l'apparence de SOC360 (valeurs par défaut) après confirmation. */
   async function handleRestoreAppearance() {
     const message = user?.role === 'RESPONSIBLE_SOC'
-      ? "Restaurer le paramétrage SOC360 ? Votre personnalisation d'apparence sera supprimée."
-      : "Restaurer le paramétrage de votre société ? Votre personnalisation individuelle sera supprimée."
+      ? "Restaurer le paramétrage SOC360 ? Les paramètres SOC360 seront copiés vers votre société."
+      : "Restaurer le paramétrage de ma société ? Les paramètres de votre société seront copiés vers votre compte."
     if (!(await dialog.confirm(message, { variant: 'warning', danger: true, okLabel: 'Restaurer' }))) {
       return
     }
     setSaving(true)
     setError(null)
-    markDirty()
     try {
-      await appearanceApi.reset(appearanceScope)
-      if (appearanceScope === 'SOC') {
-        await appearanceApi.reset('USER')
-      }
-      const eff = await appearanceApi.effective()
+      const eff = await appearanceApi.restore()
       applyAppearance(eff)
       applyAppearanceConfig(eff.config)
       dirtyRef.current = false
