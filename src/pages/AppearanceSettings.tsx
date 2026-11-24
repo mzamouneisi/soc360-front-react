@@ -23,7 +23,7 @@ const SCOPE_LABELS: Record<AppearanceScope, string> = {
   GLOBAL: 'SOC360 (global)',
 }
 
-export function AppearanceSettings() {
+export function AppearanceSettings({ embedded = false }: { embedded?: boolean } = {}) {
   const { user } = useAuth()
 
   const scopes = useMemo<AppearanceScope[]>(() => {
@@ -34,7 +34,9 @@ export function AppearanceSettings() {
   }, [user?.role])
 
   const effective = useAsync(() => appearanceApi.effective(), [])
-  const [scope, setScope] = useState<AppearanceScope>('USER')
+  const [scope, setScope] = useState<AppearanceScope>(
+    user?.role === 'ADMIN' ? 'GLOBAL' : user?.role === 'RESPONSIBLE_SOC' ? 'SOC' : 'USER',
+  )
   const [form, setForm] = useState<Record<string, string>>({})
   const [defined, setDefined] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -111,7 +113,7 @@ export function AppearanceSettings() {
 
   return (
     <div>
-      <PageHeader title="Apparence" titleId="Appearance.title" />
+      {!embedded && <PageHeader title="Apparence" titleId="Appearance.title" />}
 
       {effective.error && <ErrorBlock id="Appearance.error" message={effective.error} />}
       {effective.loading && <LoadingBlock />}

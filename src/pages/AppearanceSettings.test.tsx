@@ -76,6 +76,7 @@ describe('AppearanceSettings', () => {
   })
 
   it('enregistre la personnalisation individuelle', async () => {
+    userMock.value = { id: 2, role: 'CONSULTANT', socId: 10 }
     effectiveMock.mockResolvedValue(effective())
     getMock.mockResolvedValue({
       scope: 'USER',
@@ -107,6 +108,7 @@ describe('AppearanceSettings', () => {
   })
 
   it('restaure le paramétrage de la société après confirmation', async () => {
+    userMock.value = { id: 2, role: 'CONSULTANT', socId: 10 }
     effectiveMock.mockResolvedValue(effective({ userDefined: false }))
     getMock.mockResolvedValue({ scope: 'USER', scopeId: 2, config: {}, defined: true })
     resetMock.mockResolvedValue(undefined)

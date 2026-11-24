@@ -14,6 +14,7 @@ import { dialog } from '../components/dialog'
 import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
 import { DEFAULT_VAT_RATE } from '../lib/vat'
+import { AppearanceSettings } from './AppearanceSettings'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
 
@@ -148,8 +149,9 @@ export function Settings() {
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
-  const tabs = [
+  const tabs: { id: string; labelKey: string; label?: string }[] = [
     { id: 'general', labelKey: 'settings.tab.general' },
+    { id: 'appearanceLevels', labelKey: '', label: 'Apparence (héritage)' },
     { id: 'appearance', labelKey: 'settings.tab.appearance' },
     { id: 'buttons', labelKey: 'settings.tab.buttons' },
     ...(canEditCraColors ? [{ id: 'company', labelKey: 'settings.tab.company' }] : []),
@@ -549,7 +551,7 @@ export function Settings() {
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              {t(tab.labelKey)}
+              {tab.label ?? t(tab.labelKey)}
             </button>
           ))}
         </div>
@@ -668,6 +670,10 @@ export function Settings() {
             )}
           </div>
         )}
+
+        <TabPanel active={activeTab === 'appearanceLevels'}>
+          <AppearanceSettings embedded />
+        </TabPanel>
 
         <TabPanel active={activeTab === 'appearance'}>
         <h3 className="text-sm font-semibold text-gray-900" id="settings.fontSize.title">{t('settings.fontSize.title')}</h3>
