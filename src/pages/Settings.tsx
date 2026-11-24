@@ -147,6 +147,7 @@ export function Settings() {
   // Activé dès qu'un champ des paramètres est modifié (active le bouton Enregistrer).
   const [dirty, setDirty] = useState(false)
   const dirtyRef = useRef(false)
+  const appliedAppearanceKeyRef = useRef<string | null>(null)
   const [languageSaving, setLanguageSaving] = useState(false)
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
@@ -392,6 +393,11 @@ export function Settings() {
       .then((eff) => {
         // Ne pas écraser une saisie déjà commencée (évite d'avoir à ressaisir une valeur).
         if (cancelled || dirtyRef.current) return
+        // N'applique la configuration qu'une fois pour un couple utilisateur/société afin qu'une
+        // ré-exécution de l'effet ne réinitialise pas la valeur choisie.
+        const key = `${user.id}-${selectedSocId ?? 'none'}`
+        if (appliedAppearanceKeyRef.current === key) return
+        appliedAppearanceKeyRef.current = key
         applyAppearanceConfig(eff.config)
         applyAppearance(eff)
       })
