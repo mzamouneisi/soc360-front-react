@@ -14,7 +14,9 @@ import { dialog } from '../components/dialog'
 import { languageLabel } from '../i18n/messages'
 import { useI18n } from '../i18n'
 import { DEFAULT_VAT_RATE } from '../lib/vat'
-import { AppearanceSettings } from './AppearanceSettings'
+import { appearanceApi } from '../api/appearance'
+import { applyAppearance } from '../lib/appearance'
+import type { AppearanceScope } from '../api/types'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
 
@@ -150,9 +152,11 @@ export function Settings() {
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
+  // Niveau d'apparence géré selon le rôle : global SOC360, société, ou utilisateur.
+  const appearanceScope: AppearanceScope =
+    user?.role === 'ADMIN' ? 'GLOBAL' : user?.role === 'RESPONSIBLE_SOC' ? 'SOC' : 'USER'
   const tabs: { id: string; labelKey: string; label?: string }[] = [
     { id: 'general', labelKey: 'settings.tab.general' },
-    { id: 'appearanceLevels', labelKey: '', label: 'Apparence (héritage)' },
     { id: 'appearance', labelKey: 'settings.tab.appearance' },
     ...(canEditCraColors ? [{ id: 'company', labelKey: 'settings.tab.company' }] : []),
     ...(canEditTemplates
@@ -339,6 +343,112 @@ export function Settings() {
     }
   }
 
+  function applyAppearanceConfig(config: Record<string, string>) {
+    const number = (key: string, fallback: number) => {
+      const value = Number(config[key])
+      return Number.isFinite(value) && value > 0 ? value : fallback
+    }
+    setSize(number('fontSize', 14))
+    setTheme(config.theme || 'ocean')
+    setBgColor(config.backgroundColor || '#bae6fd')
+    setPageSize(number('pageSize', 5))
+    setHeaderColor(config.tableHeaderColor || '#1d48eb')
+    setHeaderTextColor(config.tableHeaderTextColor || '#ffffff')
+    setBorderColor(config.tableBorderColor || '#000000')
+    setTableHeaderFontSize(number('tableHeaderFontSize', 15))
+    setFormHeaderBg(config.formHeaderBackgroundColor || '#0ea5e9')
+    setFormHeaderText(config.formHeaderTextColor || '#ffffff')
+    setFormHeaderFontSize(number('formHeaderFontSize', 15))
+    setFormLabelText(config.formLabelTextColor || '#0ea5e9')
+    setFormLabelFontSize(number('formLabelFontSize', 12))
+    setBtnSmallWidth(number('buttonSmallWidth', 50))
+    setBtnLargeWidth(number('buttonLargeWidth', 100))
+    setBtnSaveColor(config.buttonSaveColor || '#1d48eb')
+    setBtnDeleteColor(config.buttonDeleteColor || '#dc2626')
+    setBtnCancelColor(config.buttonCancelColor || '#ffffff')
+    setBtnCancelTextColor(config.buttonCancelTextColor || '#374151')
+    setBtnSubmitColor(config.buttonSubmitColor || '#e0e7ff')
+    setBtnSubmitTextColor(config.buttonSubmitTextColor || '#1d48eb')
+    setBtnHistoryColor(config.buttonHistoryColor || '#e0e7ff')
+    setBtnHistoryTextColor(config.buttonHistoryTextColor || '#1d48eb')
+    setBtnOkColor(config.buttonOkColor || '#16a34a')
+    setBtnOkTextColor(config.buttonOkTextColor || '#ffffff')
+    setBtnNewColor(config.buttonNewColor || '#0ea5e9')
+    setBtnNewTextColor(config.buttonNewTextColor || '#ffffff')
+    setBtnDisableColor(config.buttonDisableColor || '#f97316')
+    setBtnDisableTextColor(config.buttonDisableTextColor || '#ffffff')
+  }
+
+  function buildAppearanceConfig(): Record<string, string> {
+    return {
+      fontSize: String(size),
+      theme,
+      backgroundColor: bgColor,
+      tableHeaderColor: headerColor,
+      tableHeaderTextColor: headerTextColor,
+      tableBorderColor: borderColor,
+      tableHeaderFontSize: String(tableHeaderFontSize),
+      formHeaderBackgroundColor: formHeaderBg,
+      formHeaderTextColor: formHeaderText,
+      formHeaderFontSize: String(formHeaderFontSize),
+      formLabelTextColor: formLabelText,
+      formLabelFontSize: String(formLabelFontSize),
+      pageSize: String(pageSize),
+      buttonSmallWidth: String(btnSmallWidth),
+      buttonLargeWidth: String(btnLargeWidth),
+      buttonSaveColor: btnSaveColor,
+      buttonDeleteColor: btnDeleteColor,
+      buttonCancelColor: btnCancelColor,
+      buttonCancelTextColor: btnCancelTextColor,
+      buttonSubmitColor: btnSubmitColor,
+      buttonSubmitTextColor: btnSubmitTextColor,
+      buttonHistoryColor: btnHistoryColor,
+      buttonHistoryTextColor: btnHistoryTextColor,
+      buttonOkColor: btnOkColor,
+      buttonOkTextColor: btnOkTextColor,
+      buttonNewColor: btnNewColor,
+      buttonNewTextColor: btnNewTextColor,
+      buttonDisableColor: btnDisableColor,
+      buttonDisableTextColor: btnDisableTextColor,
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false
+    if (!user) return
+    appearanceApi
+      .effective()
+      .then((eff) => {
+        if (cancelled) return
+        applyAppearanceConfig(eff.config)
+        applyAppearance(eff)
+      })
+      .catch(() => {
+        // Apparence optionnelle : on conserve les valeurs par défaut en cas d'erreur.
+      })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.socId, user?.role, selectedSocId])
+
+  async function handleSaveAppearance() {
+    setSaving(true)
+    setError(null)
+    setSaved(false)
+    try {
+      await appearanceApi.save(appearanceScope, buildAppearanceConfig())
+      const eff = await appearanceApi.effective()
+      applyAppearance(eff)
+      applyAppearanceConfig(eff.config)
+      setSaved(true)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function handleSave() {
     const vatValue = Number(vatRate)
     if (canEditCraColors && selectedSocId != null &&
@@ -441,79 +551,20 @@ export function Settings() {
 
   /** Restaure l'apparence de SOC360 (valeurs par défaut) après confirmation. */
   async function handleRestoreAppearance() {
-    if (
-      !(await dialog.confirm(
-        "Restaurer l'apparence de SOC360 ? Votre personnalisation de l'apparence sera remplacée par les valeurs par défaut.",
-        { variant: 'warning', danger: true, okLabel: 'Restaurer' },
-      ))
-    ) {
+    const message = appearanceScope === 'SOC'
+      ? "Restaurer l'apparence SOC360 pour la société ? La personnalisation de la société sera supprimée."
+      : "Restaurer l'apparence de votre société ? Votre personnalisation individuelle sera supprimée."
+    if (!(await dialog.confirm(message, { variant: 'warning', danger: true, okLabel: 'Restaurer' }))) {
       return
     }
     setSaving(true)
     setError(null)
     setSaved(false)
     try {
-      await authApi.updateFontSize(14)
-      await authApi.updateTheme('ocean')
-      await authApi.updateTableColors('#1d48eb', '#000000', '#ffffff')
-      await authApi.updateTableHeaderFontSize(15)
-      await authApi.updateFormSettings({
-        formHeaderBackgroundColor: '#0ea5e9',
-        formHeaderTextColor: '#ffffff',
-        formHeaderFontSize: 15,
-        formLabelTextColor: '#0ea5e9',
-        formLabelFontSize: 12,
-      })
-      await authApi.updatePageSize(5)
-      await authApi.updateButtonSettings({
-        buttonSmallWidth: 50,
-        buttonLargeWidth: 100,
-        buttonSaveColor: '#1d48eb',
-        buttonDeleteColor: '#dc2626',
-        buttonCancelColor: '#ffffff',
-        buttonCancelTextColor: '#374151',
-        buttonSubmitColor: '#e0e7ff',
-        buttonSubmitTextColor: '#1d48eb',
-        buttonHistoryColor: '#e0e7ff',
-        buttonHistoryTextColor: '#1d48eb',
-        buttonOkColor: '#16a34a',
-        buttonOkTextColor: '#ffffff',
-        buttonNewColor: '#0ea5e9',
-        buttonNewTextColor: '#ffffff',
-        buttonDisableColor: '#f97316',
-        buttonDisableTextColor: '#ffffff',
-      })
-      await authApi.updateBackgroundColor('#bae6fd')
-      await refreshMe()
-      setSize(14)
-      setTheme('ocean')
-      setBgColor('#bae6fd')
-      setPageSize(5)
-      setHeaderColor('#1d48eb')
-      setHeaderTextColor('#ffffff')
-      setBorderColor('#000000')
-      setTableHeaderFontSize(15)
-      setFormHeaderBg('#0ea5e9')
-      setFormHeaderText('#ffffff')
-      setFormHeaderFontSize(15)
-      setFormLabelText('#0ea5e9')
-      setFormLabelFontSize(12)
-      setBtnSmallWidth(50)
-      setBtnLargeWidth(100)
-      setBtnSaveColor('#1d48eb')
-      setBtnDeleteColor('#dc2626')
-      setBtnCancelColor('#ffffff')
-      setBtnCancelTextColor('#374151')
-      setBtnSubmitColor('#e0e7ff')
-      setBtnSubmitTextColor('#1d48eb')
-      setBtnHistoryColor('#e0e7ff')
-      setBtnHistoryTextColor('#1d48eb')
-      setBtnOkColor('#16a34a')
-      setBtnOkTextColor('#ffffff')
-      setBtnNewColor('#0ea5e9')
-      setBtnNewTextColor('#ffffff')
-      setBtnDisableColor('#f97316')
-      setBtnDisableTextColor('#ffffff')
+      await appearanceApi.reset(appearanceScope)
+      const eff = await appearanceApi.effective()
+      applyAppearance(eff)
+      applyAppearanceConfig(eff.config)
       setSaved(true)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
@@ -753,10 +804,6 @@ export function Settings() {
             )}
           </div>
         )}
-
-        <TabPanel active={activeTab === 'appearanceLevels'}>
-          <AppearanceSettings embedded />
-        </TabPanel>
 
         <TabPanel active={activeTab === 'appearance'}>
         <div id="settings.appearance.tabs" role="tablist" className="mb-4 flex flex-wrap gap-2 border-b border-gray-200 pb-2">
@@ -1481,21 +1528,23 @@ export function Settings() {
             <Button
               id="settings.appearance.save"
               className="w-auto"
-              onClick={() => void handleSave()}
-              disabled={saving || !changed}
+              onClick={() => void handleSaveAppearance()}
+              disabled={saving}
             >
               {saving ? <Spinner className="border-white border-t-transparent" /> : null}
               {t('common.save')}
             </Button>
-            <Button
-              id="settings.appearance.restore"
-              className="w-auto"
-              variant="neutral"
-              onClick={() => void handleRestoreAppearance()}
-              disabled={saving}
-            >
-              Restaurer
-            </Button>
+            {appearanceScope !== 'GLOBAL' && (
+              <Button
+                id="settings.appearance.restore"
+                className="w-auto"
+                variant="neutral"
+                onClick={() => void handleRestoreAppearance()}
+                disabled={saving}
+              >
+                Restaurer
+              </Button>
+            )}
             {error && <p className="text-sm text-red-600" id="settings.appearance.error">{error}</p>}
             {saved && <p className="text-sm text-green-600" id="settings.appearance.saved">{t('settings.saved')}</p>}
           </div>

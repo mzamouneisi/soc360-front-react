@@ -2,20 +2,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Settings } from './Settings'
 
-const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, updateFontSizeMock, updateThemeMock, updatePageSizeMock, updateButtonSettingsMock, updateBackgroundColorMock, refreshMeMock, uploadLogoMock, userMock } = vi.hoisted(() => ({
+const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, appearanceEffectiveMock, appearanceSaveMock, appearanceResetMock, userMock } = vi.hoisted(() => ({
   getByIdMock: vi.fn(),
   updateCraColorsMock: vi.fn(),
   updateVatRateMock: vi.fn(),
   updateTableColorsMock: vi.fn(),
   updateTableHeaderFontSizeMock: vi.fn(),
   updateFormSettingsMock: vi.fn(),
-  updateFontSizeMock: vi.fn(),
-  updateThemeMock: vi.fn(),
-  updatePageSizeMock: vi.fn(),
-  updateButtonSettingsMock: vi.fn(),
-  updateBackgroundColorMock: vi.fn(),
   refreshMeMock: vi.fn(),
   uploadLogoMock: vi.fn(),
+  appearanceEffectiveMock: vi.fn().mockResolvedValue({ config: {}, sources: {}, userDefined: false, socDefined: false }),
+  appearanceSaveMock: vi.fn().mockResolvedValue({ scope: 'SOC', scopeId: 5, config: {}, defined: true }),
+  appearanceResetMock: vi.fn().mockResolvedValue(undefined),
   userMock: { value: null as unknown },
 }))
 
@@ -87,11 +85,20 @@ vi.mock('../api/auth', () => ({
     updateTableColors: updateTableColorsMock,
     updateTableHeaderFontSize: updateTableHeaderFontSizeMock,
     updateFormSettings: updateFormSettingsMock,
-    updateFontSize: updateFontSizeMock,
-    updateTheme: updateThemeMock,
-    updatePageSize: updatePageSizeMock,
-    updateButtonSettings: updateButtonSettingsMock,
-    updateBackgroundColor: updateBackgroundColorMock,
+    updateFontSize: vi.fn(),
+    updateTheme: vi.fn(),
+    updatePageSize: vi.fn(),
+    updateButtonSettings: vi.fn(),
+    updateBackgroundColor: vi.fn(),
+  },
+}))
+
+vi.mock('../api/appearance', () => ({
+  appearanceApi: {
+    effective: appearanceEffectiveMock,
+    get: vi.fn().mockResolvedValue({ scope: 'SOC', scopeId: 5, config: {}, defined: false }),
+    save: appearanceSaveMock,
+    reset: appearanceResetMock,
   },
 }))
 
@@ -266,7 +273,10 @@ describe('Settings — couleurs CRA', () => {
     fireEvent.click(saveButtons[saveButtons.length - 1])
 
     await waitFor(() =>
-      expect(updateTableHeaderFontSizeMock).toHaveBeenCalledWith(24),
+      expect(appearanceSaveMock).toHaveBeenCalledWith(
+        'SOC',
+        expect.objectContaining({ tableHeaderFontSize: '24' }),
+      ),
     )
   })
 
@@ -290,7 +300,14 @@ describe('Settings — couleurs CRA', () => {
     fireEvent.click(saveButtons[saveButtons.length - 1])
 
     await waitFor(() =>
-      expect(updateTableColorsMock).toHaveBeenCalledWith('#1d48eb', '#000000', '#000000'),
+      expect(appearanceSaveMock).toHaveBeenCalledWith(
+        'SOC',
+        expect.objectContaining({
+          tableHeaderColor: '#1d48eb',
+          tableHeaderTextColor: '#000000',
+          tableBorderColor: '#000000',
+        }),
+      ),
     )
   })
 
@@ -314,32 +331,26 @@ describe('Settings — couleurs CRA', () => {
     fireEvent.click(saveButtons[saveButtons.length - 1])
 
     await waitFor(() =>
-      expect(updateFormSettingsMock).toHaveBeenCalledWith({
-        formHeaderBackgroundColor: '#0284c7',
-        formHeaderTextColor: '#ffffff',
-        formHeaderFontSize: 15,
-        formLabelTextColor: '#0ea5e9',
-        formLabelFontSize: 12,
-      }),
+      expect(appearanceSaveMock).toHaveBeenCalledWith(
+        'SOC',
+        expect.objectContaining({
+          formHeaderBackgroundColor: '#0284c7',
+          formHeaderTextColor: '#ffffff',
+          formHeaderFontSize: '15',
+          formLabelTextColor: '#0ea5e9',
+          formLabelFontSize: '12',
+        }),
+      ),
     )
   })
 
-  it('restaure l’apparence de SOC360 après confirmation', async () => {
+  it('restaure le paramétrage SOC360 au niveau société après confirmation', async () => {
     userMock.value = user('RESPONSIBLE_SOC')
     getByIdMock.mockResolvedValue({
       soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee' },
       subscriptions: [],
       payments: [],
     })
-    updateFontSizeMock.mockResolvedValue({})
-    updateThemeMock.mockResolvedValue({})
-    updateTableColorsMock.mockResolvedValue({})
-    updateTableHeaderFontSizeMock.mockResolvedValue({})
-    updateFormSettingsMock.mockResolvedValue({})
-    updatePageSizeMock.mockResolvedValue({})
-    updateButtonSettingsMock.mockResolvedValue({})
-    updateBackgroundColorMock.mockResolvedValue({})
-    refreshMeMock.mockResolvedValue(undefined)
 
     render(<Settings />)
     fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
@@ -348,8 +359,17 @@ describe('Settings — couleurs CRA', () => {
     )
     fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
 
-    await waitFor(() => expect(updateFontSizeMock).toHaveBeenCalledWith(14))
-    expect(updateThemeMock).toHaveBeenCalledWith('ocean')
-    expect(updateBackgroundColorMock).toHaveBeenCalledWith('#bae6fd')
+    await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('SOC'))
+  })
+
+  it('ne montre pas le bouton Restaurer à un administrateur (niveau SOC360)', async () => {
+    userMock.value = user('ADMIN')
+
+    render(<Settings />)
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    await waitFor(() =>
+      expect(document.getElementById('settings.appearance.save')).not.toBeNull(),
+    )
+    expect(document.getElementById('settings.appearance.restore')).toBeNull()
   })
 })
