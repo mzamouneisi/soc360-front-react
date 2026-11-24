@@ -528,6 +528,11 @@ export function Settings() {
       // Le bouton Enregistrer des paramètres enregistre aussi l'apparence (niveau du rôle).
       if (activeTab === 'appearance') {
         await appearanceApi.save(appearanceScope, buildAppearanceConfig())
+        // Le responsable gère l'apparence de la société : sa personnalisation personnelle
+        // éventuelle est retirée pour que son écran reflète bien le paramétrage société.
+        if (appearanceScope === 'SOC') {
+          await appearanceApi.reset('USER')
+        }
         const eff = await appearanceApi.effective()
         applyAppearance(eff)
         applyAppearanceConfig(eff.config)
@@ -555,6 +560,9 @@ export function Settings() {
     setSaved(false)
     try {
       await appearanceApi.reset(appearanceScope)
+      if (appearanceScope === 'SOC') {
+        await appearanceApi.reset('USER')
+      }
       const eff = await appearanceApi.effective()
       applyAppearance(eff)
       applyAppearanceConfig(eff.config)

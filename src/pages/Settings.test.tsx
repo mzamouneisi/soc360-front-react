@@ -278,6 +278,8 @@ describe('Settings — couleurs CRA', () => {
         expect.objectContaining({ tableHeaderFontSize: '24' }),
       ),
     )
+    // La personnalisation personnelle du responsable est retirée pour refléter la société.
+    expect(appearanceResetMock).toHaveBeenCalledWith('USER')
   })
 
   it('enregistre la couleur du texte des en-têtes de tableau', async () => {
@@ -360,6 +362,7 @@ describe('Settings — couleurs CRA', () => {
     fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
 
     await waitFor(() => expect(appearanceResetMock).toHaveBeenCalledWith('SOC'))
+    expect(appearanceResetMock).toHaveBeenCalledWith('USER')
   })
 
   it('restaure et affiche les paramètres de la société pour un manager', async () => {
