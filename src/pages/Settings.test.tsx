@@ -2,13 +2,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Settings } from './Settings'
 
-const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, userMock } = vi.hoisted(() => ({
+const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, updateFontSizeMock, updateThemeMock, updatePageSizeMock, updateButtonSettingsMock, updateBackgroundColorMock, refreshMeMock, uploadLogoMock, userMock } = vi.hoisted(() => ({
   getByIdMock: vi.fn(),
   updateCraColorsMock: vi.fn(),
   updateVatRateMock: vi.fn(),
   updateTableColorsMock: vi.fn(),
   updateTableHeaderFontSizeMock: vi.fn(),
   updateFormSettingsMock: vi.fn(),
+  updateFontSizeMock: vi.fn(),
+  updateThemeMock: vi.fn(),
+  updatePageSizeMock: vi.fn(),
+  updateButtonSettingsMock: vi.fn(),
+  updateBackgroundColorMock: vi.fn(),
   refreshMeMock: vi.fn(),
   uploadLogoMock: vi.fn(),
   userMock: { value: null as unknown },
@@ -82,6 +87,11 @@ vi.mock('../api/auth', () => ({
     updateTableColors: updateTableColorsMock,
     updateTableHeaderFontSize: updateTableHeaderFontSizeMock,
     updateFormSettings: updateFormSettingsMock,
+    updateFontSize: updateFontSizeMock,
+    updateTheme: updateThemeMock,
+    updatePageSize: updatePageSizeMock,
+    updateButtonSettings: updateButtonSettingsMock,
+    updateBackgroundColor: updateBackgroundColorMock,
   },
 }))
 
@@ -248,6 +258,7 @@ describe('Settings — couleurs CRA', () => {
     render(<Settings />)
 
     fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    fireEvent.click(document.getElementById('settings.appearance.tab.tables') as HTMLElement)
     await screen.findByText('settings.tableHeaderFontSize.title')
     const select = document.getElementById('settings.tableHeaderFontSize.select') as HTMLSelectElement
     fireEvent.change(select, { target: { value: '24' } })
@@ -271,6 +282,7 @@ describe('Settings — couleurs CRA', () => {
     render(<Settings />)
 
     fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    fireEvent.click(document.getElementById('settings.appearance.tab.tables') as HTMLElement)
     await screen.findByText('settings.colors.headerText')
     const input = document.getElementById('settings.colors.headerText.input') as HTMLInputElement
     fireEvent.change(input, { target: { value: '#000000' } })
@@ -294,6 +306,7 @@ describe('Settings — couleurs CRA', () => {
     render(<Settings />)
 
     fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    fireEvent.click(document.getElementById('settings.appearance.tab.forms') as HTMLElement)
     await screen.findByText('settings.forms.title')
     const bg = document.getElementById('settings.forms.headerBg.input') as HTMLInputElement
     fireEvent.change(bg, { target: { value: '#0284c7' } })
@@ -309,5 +322,34 @@ describe('Settings — couleurs CRA', () => {
         formLabelFontSize: 12,
       }),
     )
+  })
+
+  it('restaure l’apparence de SOC360 après confirmation', async () => {
+    userMock.value = user('RESPONSIBLE_SOC')
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee' },
+      subscriptions: [],
+      payments: [],
+    })
+    updateFontSizeMock.mockResolvedValue({})
+    updateThemeMock.mockResolvedValue({})
+    updateTableColorsMock.mockResolvedValue({})
+    updateTableHeaderFontSizeMock.mockResolvedValue({})
+    updateFormSettingsMock.mockResolvedValue({})
+    updatePageSizeMock.mockResolvedValue({})
+    updateButtonSettingsMock.mockResolvedValue({})
+    updateBackgroundColorMock.mockResolvedValue({})
+    refreshMeMock.mockResolvedValue(undefined)
+
+    render(<Settings />)
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    await waitFor(() =>
+      expect(document.getElementById('settings.appearance.restore')).not.toBeNull(),
+    )
+    fireEvent.click(document.getElementById('settings.appearance.restore') as HTMLElement)
+
+    await waitFor(() => expect(updateFontSizeMock).toHaveBeenCalledWith(14))
+    expect(updateThemeMock).toHaveBeenCalledWith('ocean')
+    expect(updateBackgroundColorMock).toHaveBeenCalledWith('#bae6fd')
   })
 })

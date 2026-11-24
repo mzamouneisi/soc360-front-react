@@ -146,6 +146,7 @@ export function Settings() {
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('general')
+  const [appearanceTab, setAppearanceTab] = useState<'application' | 'buttons' | 'forms' | 'tables'>('application')
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
@@ -153,7 +154,6 @@ export function Settings() {
     { id: 'general', labelKey: 'settings.tab.general' },
     { id: 'appearanceLevels', labelKey: '', label: 'Apparence (héritage)' },
     { id: 'appearance', labelKey: 'settings.tab.appearance' },
-    { id: 'buttons', labelKey: 'settings.tab.buttons' },
     ...(canEditCraColors ? [{ id: 'company', labelKey: 'settings.tab.company' }] : []),
     ...(canEditTemplates
       ? [
@@ -439,6 +439,89 @@ export function Settings() {
     }
   }
 
+  /** Restaure l'apparence de SOC360 (valeurs par défaut) après confirmation. */
+  async function handleRestoreAppearance() {
+    if (
+      !(await dialog.confirm(
+        "Restaurer l'apparence de SOC360 ? Votre personnalisation de l'apparence sera remplacée par les valeurs par défaut.",
+        { variant: 'warning', danger: true, okLabel: 'Restaurer' },
+      ))
+    ) {
+      return
+    }
+    setSaving(true)
+    setError(null)
+    setSaved(false)
+    try {
+      await authApi.updateFontSize(14)
+      await authApi.updateTheme('ocean')
+      await authApi.updateTableColors('#1d48eb', '#000000', '#ffffff')
+      await authApi.updateTableHeaderFontSize(15)
+      await authApi.updateFormSettings({
+        formHeaderBackgroundColor: '#0ea5e9',
+        formHeaderTextColor: '#ffffff',
+        formHeaderFontSize: 15,
+        formLabelTextColor: '#0ea5e9',
+        formLabelFontSize: 12,
+      })
+      await authApi.updatePageSize(5)
+      await authApi.updateButtonSettings({
+        buttonSmallWidth: 50,
+        buttonLargeWidth: 100,
+        buttonSaveColor: '#1d48eb',
+        buttonDeleteColor: '#dc2626',
+        buttonCancelColor: '#ffffff',
+        buttonCancelTextColor: '#374151',
+        buttonSubmitColor: '#e0e7ff',
+        buttonSubmitTextColor: '#1d48eb',
+        buttonHistoryColor: '#e0e7ff',
+        buttonHistoryTextColor: '#1d48eb',
+        buttonOkColor: '#16a34a',
+        buttonOkTextColor: '#ffffff',
+        buttonNewColor: '#0ea5e9',
+        buttonNewTextColor: '#ffffff',
+        buttonDisableColor: '#f97316',
+        buttonDisableTextColor: '#ffffff',
+      })
+      await authApi.updateBackgroundColor('#bae6fd')
+      await refreshMe()
+      setSize(14)
+      setTheme('ocean')
+      setBgColor('#bae6fd')
+      setPageSize(5)
+      setHeaderColor('#1d48eb')
+      setHeaderTextColor('#ffffff')
+      setBorderColor('#000000')
+      setTableHeaderFontSize(15)
+      setFormHeaderBg('#0ea5e9')
+      setFormHeaderText('#ffffff')
+      setFormHeaderFontSize(15)
+      setFormLabelText('#0ea5e9')
+      setFormLabelFontSize(12)
+      setBtnSmallWidth(50)
+      setBtnLargeWidth(100)
+      setBtnSaveColor('#1d48eb')
+      setBtnDeleteColor('#dc2626')
+      setBtnCancelColor('#ffffff')
+      setBtnCancelTextColor('#374151')
+      setBtnSubmitColor('#e0e7ff')
+      setBtnSubmitTextColor('#1d48eb')
+      setBtnHistoryColor('#e0e7ff')
+      setBtnHistoryTextColor('#1d48eb')
+      setBtnOkColor('#16a34a')
+      setBtnOkTextColor('#ffffff')
+      setBtnNewColor('#0ea5e9')
+      setBtnNewTextColor('#ffffff')
+      setBtnDisableColor('#f97316')
+      setBtnDisableTextColor('#ffffff')
+      setSaved(true)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function handleTemplateSave() {
     if (!templateKey) return
     setTemplateSaving(true)
@@ -676,6 +759,33 @@ export function Settings() {
         </TabPanel>
 
         <TabPanel active={activeTab === 'appearance'}>
+        <div id="settings.appearance.tabs" role="tablist" className="mb-4 flex flex-wrap gap-2 border-b border-gray-200 pb-2">
+          {[
+            { id: 'application', label: 'Application' },
+            { id: 'buttons', label: 'Boutons' },
+            { id: 'forms', label: 'Formulaires' },
+            { id: 'tables', label: 'Tableaux' },
+          ].map((sub) => (
+            <button
+              key={sub.id}
+              type="button"
+              role="tab"
+              id={`settings.appearance.tab.${sub.id}`}
+              aria-selected={appearanceTab === sub.id}
+              onClick={() => setAppearanceTab(sub.id as typeof appearanceTab)}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                appearanceTab === sub.id
+                  ? 'bg-brand-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {sub.label}
+            </button>
+          ))}
+        </div>
+
+        {appearanceTab === 'application' && (
+        <>
         <h3 className="text-sm font-semibold text-gray-900" id="settings.fontSize.title">{t('settings.fontSize.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.fontSize.description">{t('settings.fontSize.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
@@ -705,6 +815,11 @@ export function Settings() {
           </div>
         </div>
 
+        </>
+        )}
+
+        {appearanceTab === 'forms' && (
+        <>
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.forms.title">{t('settings.forms.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.forms.description">{t('settings.forms.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-6">
@@ -750,6 +865,11 @@ export function Settings() {
           </Field>
         </div>
 
+        </>
+        )}
+
+        {appearanceTab === 'application' && (
+        <>
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.theme.title">{t('settings.theme.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.theme.description">{t('settings.theme.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
@@ -788,6 +908,11 @@ export function Settings() {
           {t('settings.theme.preview')}
         </div>
 
+        </>
+        )}
+
+        {appearanceTab === 'tables' && (
+        <>
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.pageSize.title">{t('settings.pageSize.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.pageSize.description">{t('settings.pageSize.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
@@ -905,6 +1030,8 @@ export function Settings() {
             </tbody>
           </table>
         </div>
+        </>
+        )}
         </TabPanel>
 
         <TabPanel active={activeTab === 'company'}>
@@ -996,7 +1123,7 @@ export function Settings() {
         )}
         </TabPanel>
 
-        <TabPanel active={activeTab === 'buttons'}>
+        <TabPanel active={activeTab === 'appearance' && appearanceTab === 'buttons'}>
         <h3 className="text-sm font-semibold text-gray-900" id="settings.buttons.title">{t('settings.buttons.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.buttons.description">{t('settings.buttons.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-6">
@@ -1318,7 +1445,7 @@ export function Settings() {
         </div>
         </TabPanel>
 
-        <TabPanel active={activeTab === 'appearance'}>
+        <TabPanel active={activeTab === 'appearance' && appearanceTab === 'application'}>
         <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.background.title">{t('settings.background.title')}</h3>
         <p className="mt-1 text-sm text-gray-500" id="settings.background.description">{t('settings.background.description')}</p>
         <div className="mt-4 flex flex-wrap items-end gap-4">
@@ -1347,6 +1474,31 @@ export function Settings() {
             {t('settings.background.preview')}
           </div>
         </div>
+        </TabPanel>
+
+        <TabPanel active={activeTab === 'appearance'}>
+          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-gray-200 pt-4">
+            <Button
+              id="settings.appearance.save"
+              className="w-auto"
+              onClick={() => void handleSave()}
+              disabled={saving || !changed}
+            >
+              {saving ? <Spinner className="border-white border-t-transparent" /> : null}
+              {t('common.save')}
+            </Button>
+            <Button
+              id="settings.appearance.restore"
+              className="w-auto"
+              variant="neutral"
+              onClick={() => void handleRestoreAppearance()}
+              disabled={saving}
+            >
+              Restaurer
+            </Button>
+            {error && <p className="text-sm text-red-600" id="settings.appearance.error">{error}</p>}
+            {saved && <p className="text-sm text-green-600" id="settings.appearance.saved">{t('settings.saved')}</p>}
+          </div>
         </TabPanel>
 
         {canEditTemplates && activeTab === 'emails' && (
@@ -1413,17 +1565,19 @@ export function Settings() {
         )}
         </div>
 
-        <Button
-          id="common.save.button"
-          className="mt-6 w-auto"
-          onClick={() => void handleSave()}
-          disabled={saving || !changed}
-        >
-          {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-          {t('common.save')}
-        </Button>
-        {error && <p className="mt-3 text-sm text-red-600" id="settings.error">{error}</p>}
-        {saved && <p className="mt-3 text-sm text-green-600" id="settings.saved">{t('settings.saved')}</p>}
+        {activeTab !== 'appearance' && (
+          <Button
+            id="common.save.button"
+            className="mt-6 w-auto"
+            onClick={() => void handleSave()}
+            disabled={saving || !changed}
+          >
+            {saving ? <Spinner className="border-white border-t-transparent" /> : null}
+            {t('common.save')}
+          </Button>
+        )}
+        {activeTab !== 'appearance' && error && <p className="mt-3 text-sm text-red-600" id="settings.error">{error}</p>}
+        {activeTab !== 'appearance' && saved && <p className="mt-3 text-sm text-green-600" id="settings.saved">{t('settings.saved')}</p>}
       </Card>
     </div>
   )
