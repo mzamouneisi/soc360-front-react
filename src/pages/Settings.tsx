@@ -410,6 +410,13 @@ export function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.socId, user?.role, selectedSocId])
 
+  /** Marque les paramètres comme modifiés : active le bouton Enregistrer. */
+  function markDirty() {
+    dirtyRef.current = true
+    setDirty(true)
+    setSaved(false)
+  }
+
   async function handleSave() {
     const vatValue = Number(vatRate)
     if (canEditCraColors && selectedSocId != null &&
@@ -419,7 +426,7 @@ export function Settings() {
     }
     setSaving(true)
     setError(null)
-    setSaved(false)
+    markDirty()
     try {
       if (size !== (u.fontSize ?? 14)) {
         await authApi.updateFontSize(size)
@@ -534,7 +541,7 @@ export function Settings() {
     }
     setSaving(true)
     setError(null)
-    setSaved(false)
+    markDirty()
     try {
       await appearanceApi.reset(appearanceScope)
       if (appearanceScope === 'SOC') {
@@ -650,16 +657,6 @@ export function Settings() {
     <div>
       <PageHeader title={t('settings.title')} titleId="settings.title" subtitle={t('settings.subtitle')} subtitleId="settings.subtitle" />
       <Card className="w-[90%] p-6">
-        <div
-          onChange={() => {
-            dirtyRef.current = true
-            setDirty(true)
-          }}
-          onInput={() => {
-            dirtyRef.current = true
-            setDirty(true)
-          }}
-        >
         <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-2" role="tablist" id="settings.tabs">
           {tabs.map((tab) => (
             <button
@@ -833,7 +830,7 @@ export function Settings() {
               value={String(size)}
               onChange={(e) => {
                 setSize(Number(e.target.value))
-                setSaved(false)
+                markDirty()
               }}
             >
               {FONT_SIZES.map((s) => (
@@ -863,7 +860,7 @@ export function Settings() {
           <Field label={t('settings.forms.headerBg')} id="settings.forms.headerBg">
             <div className="flex items-center gap-2">
               <input type="color" id="settings.forms.headerBg.input" value={formHeaderBg}
-                onChange={(e) => { setFormHeaderBg(e.target.value); setSaved(false) }}
+                onChange={(e) => { setFormHeaderBg(e.target.value); markDirty() }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1" />
               <span className="text-sm text-gray-500" id="settings.forms.headerBg.value">{formHeaderBg}</span>
             </div>
@@ -871,14 +868,14 @@ export function Settings() {
           <Field label={t('settings.forms.headerText')} id="settings.forms.headerText">
             <div className="flex items-center gap-2">
               <input type="color" id="settings.forms.headerText.input" value={formHeaderText}
-                onChange={(e) => { setFormHeaderText(e.target.value); setSaved(false) }}
+                onChange={(e) => { setFormHeaderText(e.target.value); markDirty() }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1" />
               <span className="text-sm text-gray-500" id="settings.forms.headerText.value">{formHeaderText}</span>
             </div>
           </Field>
           <Field label={t('settings.forms.headerFontSize')} id="settings.forms.headerFontSize">
             <Select id="settings.forms.headerFontSize.select" className="w-28" value={String(formHeaderFontSize)}
-              onChange={(e) => { setFormHeaderFontSize(Number(e.target.value)); setSaved(false) }}>
+              onChange={(e) => { setFormHeaderFontSize(Number(e.target.value)); markDirty() }}>
               {FONT_SIZES.map((s) => (
                 <option key={s} value={s} id={`settings.forms.headerFontSize.option.${s}`}>{s} {tr('Settings.px')}</option>
               ))}
@@ -887,14 +884,14 @@ export function Settings() {
           <Field label={t('settings.forms.labelText')} id="settings.forms.labelText">
             <div className="flex items-center gap-2">
               <input type="color" id="settings.forms.labelText.input" value={formLabelText}
-                onChange={(e) => { setFormLabelText(e.target.value); setSaved(false) }}
+                onChange={(e) => { setFormLabelText(e.target.value); markDirty() }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1" />
               <span className="text-sm text-gray-500" id="settings.forms.labelText.value">{formLabelText}</span>
             </div>
           </Field>
           <Field label={t('settings.forms.labelFontSize')} id="settings.forms.labelFontSize">
             <Select id="settings.forms.labelFontSize.select" className="w-28" value={String(formLabelFontSize)}
-              onChange={(e) => { setFormLabelFontSize(Number(e.target.value)); setSaved(false) }}>
+              onChange={(e) => { setFormLabelFontSize(Number(e.target.value)); markDirty() }}>
               {FONT_SIZES.map((s) => (
                 <option key={s} value={s} id={`settings.forms.labelFontSize.option.${s}`}>{s} {tr('Settings.px')}</option>
               ))}
@@ -917,7 +914,7 @@ export function Settings() {
               value={theme}
               onChange={(e) => {
                 setTheme(e.target.value)
-                setSaved(false)
+                markDirty()
               }}
             >
               {THEMES.map((th) => (
@@ -962,7 +959,7 @@ export function Settings() {
                   value={String(pageSize)}
                   onChange={(e) => {
                     setPageSize(Number(e.target.value))
-                    setSaved(false)
+                    markDirty()
                   }}
                 >
                   {[5, 10, 15, 20, 50, 100].map((n) => (
@@ -987,7 +984,7 @@ export function Settings() {
                     value={headerColor}
                     onChange={(e) => {
                       setHeaderColor(e.target.value)
-                      setSaved(false)
+                      markDirty()
                     }}
                     className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
                   />
@@ -1002,7 +999,7 @@ export function Settings() {
                     value={headerTextColor}
                     onChange={(e) => {
                       setHeaderTextColor(e.target.value)
-                      setSaved(false)
+                      markDirty()
                     }}
                     className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
                   />
@@ -1017,7 +1014,7 @@ export function Settings() {
                     value={borderColor}
                     onChange={(e) => {
                       setBorderColor(e.target.value)
-                      setSaved(false)
+                      markDirty()
                     }}
                     className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
                   />
@@ -1038,7 +1035,7 @@ export function Settings() {
                   value={String(tableHeaderFontSize)}
                   onChange={(e) => {
                     setTableHeaderFontSize(Number(e.target.value))
-                    setSaved(false)
+                    markDirty()
                   }}
                 >
                   {FONT_SIZES.map((s) => (
@@ -1093,6 +1090,7 @@ export function Settings() {
               onChange={(saved) => {
                 setSocHasLogo(saved.hasLogo ?? false)
                 setLogoChanged(true)
+                markDirty()
                 void refreshSocs()
               }}
             />
@@ -1114,7 +1112,7 @@ export function Settings() {
                     value={leaveDayColor}
                     onChange={(e) => {
                       setLeaveDayColor(e.target.value)
-                      setSaved(false)
+                      markDirty()
                     }}
                     className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
                   />
@@ -1129,7 +1127,7 @@ export function Settings() {
                     value={weekendColor}
                     onChange={(e) => {
                       setWeekendColor(e.target.value)
-                      setSaved(false)
+                      markDirty()
                     }}
                     className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
                   />
@@ -1160,7 +1158,7 @@ export function Settings() {
                   value={vatRate}
                   onChange={(e) => {
                     setVatRate(e.target.value)
-                    setSaved(false)
+                    markDirty()
                   }}
                 />
               </Field>
@@ -1186,7 +1184,7 @@ export function Settings() {
               value={btnSmallWidth}
               onChange={(e) => {
                 setBtnSmallWidth(Number(e.target.value) || 0)
-                setSaved(false)
+                markDirty()
               }}
             />
           </Field>
@@ -1200,7 +1198,7 @@ export function Settings() {
               value={btnLargeWidth}
               onChange={(e) => {
                 setBtnLargeWidth(Number(e.target.value) || 0)
-                setSaved(false)
+                markDirty()
               }}
             />
           </Field>
@@ -1212,7 +1210,7 @@ export function Settings() {
                 value={btnSaveColor}
                 onChange={(e) => {
                   setBtnSaveColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1227,7 +1225,7 @@ export function Settings() {
                 value={btnDeleteColor}
                 onChange={(e) => {
                   setBtnDeleteColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1242,7 +1240,7 @@ export function Settings() {
                 value={btnDisableColor}
                 onChange={(e) => {
                   setBtnDisableColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1257,7 +1255,7 @@ export function Settings() {
                 value={btnDisableTextColor}
                 onChange={(e) => {
                   setBtnDisableTextColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1272,7 +1270,7 @@ export function Settings() {
                 value={btnCancelColor}
                 onChange={(e) => {
                   setBtnCancelColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1287,7 +1285,7 @@ export function Settings() {
                 value={btnCancelTextColor}
                 onChange={(e) => {
                   setBtnCancelTextColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1302,7 +1300,7 @@ export function Settings() {
                 value={btnSubmitColor}
                 onChange={(e) => {
                   setBtnSubmitColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1317,7 +1315,7 @@ export function Settings() {
                 value={btnSubmitTextColor}
                 onChange={(e) => {
                   setBtnSubmitTextColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1332,7 +1330,7 @@ export function Settings() {
                 value={btnHistoryColor}
                 onChange={(e) => {
                   setBtnHistoryColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1347,7 +1345,7 @@ export function Settings() {
                 value={btnHistoryTextColor}
                 onChange={(e) => {
                   setBtnHistoryTextColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1362,7 +1360,7 @@ export function Settings() {
                 value={btnNewColor}
                 onChange={(e) => {
                   setBtnNewColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1377,7 +1375,7 @@ export function Settings() {
                 value={btnNewTextColor}
                 onChange={(e) => {
                   setBtnNewTextColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1392,7 +1390,7 @@ export function Settings() {
                 value={btnOkColor}
                 onChange={(e) => {
                   setBtnOkColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1407,7 +1405,7 @@ export function Settings() {
                 value={btnOkTextColor}
                 onChange={(e) => {
                   setBtnOkTextColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1506,7 +1504,7 @@ export function Settings() {
                 value={bgColor}
                 onChange={(e) => {
                   setBgColor(e.target.value)
-                  setSaved(false)
+                  markDirty()
                 }}
                 className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
               />
@@ -1587,7 +1585,6 @@ export function Settings() {
             )}
           </div>
         )}
-        </div>
         </div>
       </Card>
 
