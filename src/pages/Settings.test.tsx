@@ -405,6 +405,30 @@ describe('Settings — couleurs CRA', () => {
     expect(document.getElementById('settings.appearance.restore')).toBeNull()
   })
 
+  it('enregistre l’apparence au niveau SOC360 (GLOBAL) pour un admin', async () => {
+    userMock.value = user('ADMIN')
+    appearanceSaveMock.mockResolvedValue({
+      scope: 'GLOBAL',
+      scopeId: 0,
+      config: {},
+      defined: true,
+    })
+
+    render(<Settings />)
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    fireEvent.change(document.getElementById('settings.theme.field.select') as HTMLSelectElement, {
+      target: { value: 'forest' },
+    })
+    fireEvent.click(document.getElementById('common.save.button') as HTMLButtonElement)
+
+    await waitFor(() =>
+      expect(appearanceSaveMock).toHaveBeenCalledWith(
+        'GLOBAL',
+        expect.objectContaining({ theme: 'forest' }),
+      ),
+    )
+  })
+
   it('enregistre l’apparence d’un manager au niveau personnel (USER)', async () => {
     userMock.value = user('MANAGER')
 

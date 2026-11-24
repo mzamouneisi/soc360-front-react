@@ -156,9 +156,13 @@ export function Settings() {
 
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
   const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
-  // Le responsable de société définit l'apparence de sa société ; les autres rôles (admin inclus)
-  // ont une apparence personnelle. Les réglages personnels restent prioritaires sur la société.
-  const appearanceScope: AppearanceScope = user?.role === 'RESPONSIBLE_SOC' ? 'SOC' : 'USER'
+  // L'admin définit l'apparence SOC360 (GLOBAL, référence des restaurations), le responsable celle
+  // de sa société, les autres une apparence personnelle.
+  const appearanceScope: AppearanceScope = user?.role === 'ADMIN'
+    ? 'GLOBAL'
+    : user?.role === 'RESPONSIBLE_SOC'
+      ? 'SOC'
+      : 'USER'
   const appearanceRestoreLabel = user?.role === 'RESPONSIBLE_SOC'
     ? 'Restaurer le paramétrage SOC360'
     : 'Restaurer le paramétrage de ma société'
