@@ -950,123 +950,135 @@ export function Settings() {
 
         {appearanceTab === 'tables' && (
         <>
-        <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.pageSize.title">{t('settings.pageSize.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500" id="settings.pageSize.description">{t('settings.pageSize.description')}</p>
-        <div className="mt-4 flex flex-wrap items-end gap-4">
-          <Field label={t('settings.pageSize.field')} id="settings.pageSize.field">
-            <Select
-              id="settings.pageSize.field.select"
-              className="w-28"
-              value={String(pageSize)}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value))
-                setSaved(false)
-              }}
-            >
-              {[5, 10, 15, 20, 50, 100].map((n) => (
-                <option key={n} value={n} id={`settings.pageSize.option.${n}`}>
-                  {n}
-                </option>
-              ))}
-            </Select>
-          </Field>
+        <div className="mt-8 grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card id="settings.tables.pageSize.card" className="min-h-[180px] p-4">
+            <h3 className="text-sm font-semibold text-gray-900" id="settings.pageSize.title">{t('settings.pageSize.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500" id="settings.pageSize.description">{t('settings.pageSize.description')}</p>
+            <div className="mt-3">
+              <Field label={t('settings.pageSize.field')} id="settings.pageSize.field">
+                <Select
+                  id="settings.pageSize.field.select"
+                  className="w-28"
+                  value={String(pageSize)}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value))
+                    setSaved(false)
+                  }}
+                >
+                  {[5, 10, 15, 20, 50, 100].map((n) => (
+                    <option key={n} value={n} id={`settings.pageSize.option.${n}`}>
+                      {n}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+          </Card>
+
+          <Card id="settings.tables.colors.card" className="min-h-[180px] p-4">
+            <h3 className="text-sm font-semibold text-gray-900" id="settings.colors.title">{t('settings.colors.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500" id="settings.colors.description">{t('settings.colors.description')}</p>
+            <div className="mt-3 flex flex-wrap items-end gap-4">
+              <Field label={t('settings.colors.header')} id="settings.colors.header">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    id="settings.colors.header.input"
+                    value={headerColor}
+                    onChange={(e) => {
+                      setHeaderColor(e.target.value)
+                      setSaved(false)
+                    }}
+                    className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+                  />
+                  <span className="text-sm text-gray-500" id="settings.colors.header.value">{headerColor}</span>
+                </div>
+              </Field>
+              <Field label={t('settings.colors.headerText')} id="settings.colors.headerText">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    id="settings.colors.headerText.input"
+                    value={headerTextColor}
+                    onChange={(e) => {
+                      setHeaderTextColor(e.target.value)
+                      setSaved(false)
+                    }}
+                    className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+                  />
+                  <span className="text-sm text-gray-500" id="settings.colors.headerText.value">{headerTextColor}</span>
+                </div>
+              </Field>
+              <Field label={t('settings.colors.border')} id="settings.colors.border">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    id="settings.colors.border.input"
+                    value={borderColor}
+                    onChange={(e) => {
+                      setBorderColor(e.target.value)
+                      setSaved(false)
+                    }}
+                    className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
+                  />
+                  <span className="text-sm text-gray-500" id="settings.colors.border.value">{borderColor}</span>
+                </div>
+              </Field>
+            </div>
+          </Card>
+
+          <Card id="settings.tables.header.card" className="min-h-[180px] p-4">
+            <h3 className="text-sm font-semibold text-gray-900" id="settings.tableHeaderFontSize.title">{t('settings.tableHeaderFontSize.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500" id="settings.tableHeaderFontSize.description">{t('settings.tableHeaderFontSize.description')}</p>
+            <div className="mt-3">
+              <Field label={t('settings.tableHeaderFontSize.field')} id="settings.tableHeaderFontSize.field">
+                <Select
+                  id="settings.tableHeaderFontSize.select"
+                  className="w-28"
+                  value={String(tableHeaderFontSize)}
+                  onChange={(e) => {
+                    setTableHeaderFontSize(Number(e.target.value))
+                    setSaved(false)
+                  }}
+                >
+                  {FONT_SIZES.map((s) => (
+                    <option key={s} value={s} id={`settings.tableHeaderFontSize.option.${s}`}>
+                      {s} {tr('Settings.px')}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+          </Card>
         </div>
 
-        <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.colors.title">{t('settings.colors.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500" id="settings.colors.description">{t('settings.colors.description')}</p>
-        <div className="mt-4 flex flex-wrap items-end gap-6">
-          <Field label={t('settings.colors.header')} id="settings.colors.header">
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                id="settings.colors.header.input"
-                value={headerColor}
-                onChange={(e) => {
-                  setHeaderColor(e.target.value)
-                  setSaved(false)
-                }}
-                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
-              />
-              <span className="text-sm text-gray-500" id="settings.colors.header.value">{headerColor}</span>
-            </div>
-          </Field>
-          <Field label={t('settings.colors.headerText')} id="settings.colors.headerText">
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                id="settings.colors.headerText.input"
-                value={headerTextColor}
-                onChange={(e) => {
-                  setHeaderTextColor(e.target.value)
-                  setSaved(false)
-                }}
-                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
-              />
-              <span className="text-sm text-gray-500" id="settings.colors.headerText.value">{headerTextColor}</span>
-            </div>
-          </Field>
-          <Field label={t('settings.colors.border')} id="settings.colors.border">
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                id="settings.colors.border.input"
-                value={borderColor}
-                onChange={(e) => {
-                  setBorderColor(e.target.value)
-                  setSaved(false)
-                }}
-                className="h-9 w-12 cursor-pointer rounded border border-gray-300 bg-white p-1"
-              />
-              <span className="text-sm text-gray-500" id="settings.colors.border.value">{borderColor}</span>
-            </div>
-          </Field>
-        </div>
-        <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.tableHeaderFontSize.title">{t('settings.tableHeaderFontSize.title')}</h3>
-        <p className="mt-1 text-sm text-gray-500" id="settings.tableHeaderFontSize.description">{t('settings.tableHeaderFontSize.description')}</p>
-        <div className="mt-4 flex flex-wrap items-end gap-4">
-          <Field label={t('settings.tableHeaderFontSize.field')} id="settings.tableHeaderFontSize.field">
-            <Select
-              id="settings.tableHeaderFontSize.select"
-              className="w-28"
-              value={String(tableHeaderFontSize)}
-              onChange={(e) => {
-                setTableHeaderFontSize(Number(e.target.value))
-                setSaved(false)
-              }}
-            >
-              {FONT_SIZES.map((s) => (
-                <option key={s} value={s} id={`settings.tableHeaderFontSize.option.${s}`}>
-                  {s} {tr('Settings.px')}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-
-        <div className="mt-4 overflow-hidden rounded-xl border" style={{ borderColor: borderColor }}>
-          <table className="min-w-full divide-y" style={{ borderColor: borderColor }} id="settings.colors.preview.table">
-            <thead style={{ backgroundColor: headerColor }}>
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide" style={{ color: headerTextColor }} id="settings.example">
-                  {t('settings.example')}
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide" style={{ color: headerTextColor }} id="settings.preview">
-                  {t('settings.preview')}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y bg-white">
-              <tr>
-                <td className="px-4 py-2 text-sm text-gray-700" id="settings.row.1">{t('settings.row')} 1</td>
-                <td className="px-4 py-2 text-sm text-gray-700" id="settings.content.1">{t('settings.content')}</td>
-              </tr>
-              <tr className="even:bg-gray-50">
-                <td className="px-4 py-2 text-sm text-gray-700" id="settings.row.2">{t('settings.row')} 2</td>
-                <td className="px-4 py-2 text-sm text-gray-700" id="settings.content.2">{t('settings.content')}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <Card id="settings.tables.preview.card" className="mt-4 p-4">
+          <h3 className="mb-2 text-sm font-semibold text-gray-900" id="settings.tables.preview.title">{t('settings.preview')}</h3>
+          <div className="overflow-hidden rounded-xl border" style={{ borderColor: borderColor }}>
+            <table className="min-w-full divide-y" style={{ borderColor: borderColor }} id="settings.colors.preview.table">
+              <thead style={{ backgroundColor: headerColor }}>
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide" style={{ color: headerTextColor }} id="settings.example">
+                    {t('settings.example')}
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-bold uppercase tracking-wide" style={{ color: headerTextColor }} id="settings.preview">
+                    {t('settings.preview')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y bg-white">
+                <tr>
+                  <td className="px-4 py-2 text-sm text-gray-700" id="settings.row.1">{t('settings.row')} 1</td>
+                  <td className="px-4 py-2 text-sm text-gray-700" id="settings.content.1">{t('settings.content')}</td>
+                </tr>
+                <tr className="even:bg-gray-50">
+                  <td className="px-4 py-2 text-sm text-gray-700" id="settings.row.2">{t('settings.row')} 2</td>
+                  <td className="px-4 py-2 text-sm text-gray-700" id="settings.content.2">{t('settings.content')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Card>
         </>
         )}
         </TabPanel>
