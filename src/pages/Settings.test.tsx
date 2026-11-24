@@ -441,4 +441,31 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() => expect(save).not.toBeDisabled())
   })
+
+  it('une seule sélection suffit pour le nombre de lignes par page', async () => {
+    userMock.value = user('RESPONSIBLE_SOC')
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee' },
+      subscriptions: [],
+      payments: [],
+    })
+    let resolveEffective: (value: unknown) => void = () => {}
+    appearanceEffectiveMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveEffective = resolve
+        }),
+    )
+
+    render(<Settings />)
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    fireEvent.click(document.getElementById('settings.appearance.tab.tables') as HTMLElement)
+    const select = document.getElementById('settings.pageSize.field.select') as HTMLSelectElement
+    fireEvent.change(select, { target: { value: '10' } })
+    expect(select.value).toBe('10')
+
+    // Le chargement de l'apparence effective arrive après la saisie : il ne doit pas l'écraser.
+    resolveEffective({ config: {}, sources: {}, userDefined: false, socDefined: false })
+    await waitFor(() => expect(select.value).toBe('10'))
+  })
 })

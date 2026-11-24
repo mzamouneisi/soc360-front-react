@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { authApi } from '../api/auth'
 import { socsApi } from '../api/socs'
@@ -146,6 +146,7 @@ export function Settings() {
   const [saved, setSaved] = useState(false)
   // Activé dès qu'un champ des paramètres est modifié (active le bouton Enregistrer).
   const [dirty, setDirty] = useState(false)
+  const dirtyRef = useRef(false)
   const [languageSaving, setLanguageSaving] = useState(false)
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
@@ -389,7 +390,8 @@ export function Settings() {
     appearanceApi
       .effective()
       .then((eff) => {
-        if (cancelled) return
+        // Ne pas écraser une saisie déjà commencée (évite d'avoir à ressaisir une valeur).
+        if (cancelled || dirtyRef.current) return
         applyAppearanceConfig(eff.config)
         applyAppearance(eff)
       })
@@ -506,6 +508,7 @@ export function Settings() {
       }
       await refreshMe()
       setLogoChanged(false)
+      dirtyRef.current = false
       setDirty(false)
       setSaved(true)
     } catch (err) {
@@ -534,6 +537,7 @@ export function Settings() {
       const eff = await appearanceApi.effective()
       applyAppearance(eff)
       applyAppearanceConfig(eff.config)
+      dirtyRef.current = false
       setDirty(false)
       setSaved(true)
     } catch (err) {
@@ -640,7 +644,16 @@ export function Settings() {
     <div>
       <PageHeader title={t('settings.title')} titleId="settings.title" subtitle={t('settings.subtitle')} subtitleId="settings.subtitle" />
       <Card className="w-[90%] p-6">
-        <div onChange={() => setDirty(true)} onInput={() => setDirty(true)}>
+        <div
+          onChange={() => {
+            dirtyRef.current = true
+            setDirty(true)
+          }}
+          onInput={() => {
+            dirtyRef.current = true
+            setDirty(true)
+          }}
+        >
         <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-2" role="tablist" id="settings.tabs">
           {tabs.map((tab) => (
             <button
