@@ -432,23 +432,6 @@ export function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.socId, user?.role, selectedSocId])
 
-  async function handleSaveAppearance() {
-    setSaving(true)
-    setError(null)
-    setSaved(false)
-    try {
-      await appearanceApi.save(appearanceScope, buildAppearanceConfig())
-      const eff = await appearanceApi.effective()
-      applyAppearance(eff)
-      applyAppearanceConfig(eff.config)
-      setSaved(true)
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
-    } finally {
-      setSaving(false)
-    }
-  }
-
   async function handleSave() {
     const vatValue = Number(vatRate)
     if (canEditCraColors && selectedSocId != null &&
@@ -538,6 +521,13 @@ export function Settings() {
         await socsApi.updateVatRate(selectedSocId, vatValue)
         setSavedVatRate(vatRate)
         await refreshSocs()
+      }
+      // Le bouton Enregistrer des paramètres enregistre aussi l'apparence (niveau du rôle).
+      if (activeTab === 'appearance') {
+        await appearanceApi.save(appearanceScope, buildAppearanceConfig())
+        const eff = await appearanceApi.effective()
+        applyAppearance(eff)
+        applyAppearanceConfig(eff.config)
       }
       await refreshMe()
       setLogoChanged(false)
@@ -1523,33 +1513,6 @@ export function Settings() {
         </div>
         </TabPanel>
 
-        <TabPanel active={activeTab === 'appearance'}>
-          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-gray-200 pt-4">
-            <Button
-              id="settings.appearance.save"
-              className="w-auto"
-              onClick={() => void handleSaveAppearance()}
-              disabled={saving}
-            >
-              {saving ? <Spinner className="border-white border-t-transparent" /> : null}
-              {t('common.save')}
-            </Button>
-            {appearanceScope !== 'GLOBAL' && (
-              <Button
-                id="settings.appearance.restore"
-                className="w-auto"
-                variant="neutral"
-                onClick={() => void handleRestoreAppearance()}
-                disabled={saving}
-              >
-                Restaurer
-              </Button>
-            )}
-            {error && <p className="text-sm text-red-600" id="settings.appearance.error">{error}</p>}
-            {saved && <p className="text-sm text-green-600" id="settings.appearance.saved">{t('settings.saved')}</p>}
-          </div>
-        </TabPanel>
-
         {canEditTemplates && activeTab === 'emails' && (
           <div>
             <h3 className="text-sm font-semibold text-gray-900" id="settings.emailTemplates.title">{t('settings.emailTemplates.title')}</h3>
@@ -1614,19 +1577,30 @@ export function Settings() {
         )}
         </div>
 
-        {activeTab !== 'appearance' && (
+        <div className="mt-6 flex flex-wrap items-center gap-2">
           <Button
             id="common.save.button"
-            className="mt-6 w-auto"
+            className="w-auto"
             onClick={() => void handleSave()}
             disabled={saving || !changed}
           >
             {saving ? <Spinner className="border-white border-t-transparent" /> : null}
             {t('common.save')}
           </Button>
-        )}
-        {activeTab !== 'appearance' && error && <p className="mt-3 text-sm text-red-600" id="settings.error">{error}</p>}
-        {activeTab !== 'appearance' && saved && <p className="mt-3 text-sm text-green-600" id="settings.saved">{t('settings.saved')}</p>}
+          {activeTab === 'appearance' && appearanceScope !== 'GLOBAL' && (
+            <Button
+              id="settings.appearance.restore"
+              className="w-auto"
+              variant="neutral"
+              onClick={() => void handleRestoreAppearance()}
+              disabled={saving}
+            >
+              Restaurer
+            </Button>
+          )}
+        </div>
+        {error && <p className="mt-3 text-sm text-red-600" id="settings.error">{error}</p>}
+        {saved && <p className="mt-3 text-sm text-green-600" id="settings.saved">{t('settings.saved')}</p>}
       </Card>
     </div>
   )

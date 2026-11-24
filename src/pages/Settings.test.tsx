@@ -368,7 +368,7 @@ describe('Settings — couleurs CRA', () => {
     render(<Settings />)
     fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
     await waitFor(() =>
-      expect(document.getElementById('settings.appearance.save')).not.toBeNull(),
+      expect(document.getElementById('common.save.button')).not.toBeNull(),
     )
     expect(document.getElementById('settings.appearance.restore')).toBeNull()
   })
