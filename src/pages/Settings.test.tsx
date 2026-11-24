@@ -421,4 +421,24 @@ describe('Settings — couleurs CRA', () => {
       ),
     )
   })
+
+  it('active le bouton Enregistrer dès qu’un paramètre change', async () => {
+    userMock.value = user('RESPONSIBLE_SOC')
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee' },
+      subscriptions: [],
+      payments: [],
+    })
+
+    render(<Settings />)
+    fireEvent.click(document.getElementById('settings.tab.appearance') as HTMLElement)
+    const save = document.getElementById('common.save.button') as HTMLButtonElement
+    expect(save).toBeDisabled()
+
+    fireEvent.change(document.getElementById('settings.theme.field.select') as HTMLSelectElement, {
+      target: { value: 'forest' },
+    })
+
+    await waitFor(() => expect(save).not.toBeDisabled())
+  })
 })

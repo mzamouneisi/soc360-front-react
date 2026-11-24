@@ -138,12 +138,14 @@ export function Settings() {
   const [vatRate, setVatRate] = useState<string>(String(DEFAULT_VAT_RATE))
   const [savedVatRate, setSavedVatRate] = useState<string>(String(DEFAULT_VAT_RATE))
   const [socHasLogo, setSocHasLogo] = useState<boolean>(selectedSoc?.hasLogo ?? false)
-  const [logoChanged, setLogoChanged] = useState(false)
+  const [, setLogoChanged] = useState(false)
   const [savedLeaveDayColor, setSavedLeaveDayColor] = useState<string>(CRA_LEAVE_COLOR_DEFAULT)
   const [savedWeekendColor, setSavedWeekendColor] = useState<string>(CRA_WEEKEND_COLOR_DEFAULT)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  // Activé dès qu'un champ des paramètres est modifié (active le bouton Enregistrer).
+  const [dirty, setDirty] = useState(false)
   const [languageSaving, setLanguageSaving] = useState(false)
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
@@ -296,41 +298,6 @@ export function Settings() {
 
   if (!user) return null
   const u = user
-
-  const changed =
-    size !== (u.fontSize ?? 14) ||
-    (u.theme || 'ocean') !== theme ||
-    (u.tableHeaderColor || '#1d48eb') !== headerColor ||
-    (u.tableHeaderTextColor || '#ffffff') !== headerTextColor ||
-    (u.tableBorderColor || '#000000') !== borderColor ||
-    (u.tableHeaderFontSize ?? 15) !== tableHeaderFontSize ||
-    (u.formHeaderBackgroundColor || '#0ea5e9') !== formHeaderBg ||
-    (u.formHeaderTextColor || '#ffffff') !== formHeaderText ||
-    (u.formHeaderFontSize ?? 15) !== formHeaderFontSize ||
-    (u.formLabelTextColor || '#0ea5e9') !== formLabelText ||
-    (u.formLabelFontSize ?? 12) !== formLabelFontSize ||
-    (u.pageSize ?? 5) !== pageSize ||
-    (u.buttonSmallWidth ?? 50) !== btnSmallWidth ||
-    (u.buttonLargeWidth ?? 100) !== btnLargeWidth ||
-    (u.buttonSaveColor || '#1d48eb') !== btnSaveColor ||
-    (u.buttonDeleteColor || '#dc2626') !== btnDeleteColor ||
-    (u.buttonCancelColor || '#ffffff') !== btnCancelColor ||
-    (u.buttonCancelTextColor || '#374151') !== btnCancelTextColor ||
-    (u.buttonSubmitColor || '#e0e7ff') !== btnSubmitColor ||
-    (u.buttonSubmitTextColor || '#1d48eb') !== btnSubmitTextColor ||
-    (u.buttonHistoryColor || '#e0e7ff') !== btnHistoryColor ||
-    (u.buttonHistoryTextColor || '#1d48eb') !== btnHistoryTextColor ||
-    (u.buttonOkColor || '#16a34a') !== btnOkColor ||
-    (u.buttonOkTextColor || '#ffffff') !== btnOkTextColor ||
-    (u.buttonNewColor || '#0ea5e9') !== btnNewColor ||
-    (u.buttonNewTextColor || '#ffffff') !== btnNewTextColor ||
-    (u.buttonDisableColor || '#f97316') !== btnDisableColor ||
-    (u.buttonDisableTextColor || '#ffffff') !== btnDisableTextColor ||
-    (u.backgroundColor || '#bae6fd') !== bgColor ||
-    logoChanged ||
-    (canEditCraColors && selectedSocId != null &&
-      (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor ||
-        vatRate !== savedVatRate))
 
   async function handleLanguageChange(value: string) {
     setLanguageSaving(true)
@@ -539,6 +506,7 @@ export function Settings() {
       }
       await refreshMe()
       setLogoChanged(false)
+      setDirty(false)
       setSaved(true)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
@@ -566,6 +534,7 @@ export function Settings() {
       const eff = await appearanceApi.effective()
       applyAppearance(eff)
       applyAppearanceConfig(eff.config)
+      setDirty(false)
       setSaved(true)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
@@ -671,6 +640,7 @@ export function Settings() {
     <div>
       <PageHeader title={t('settings.title')} titleId="settings.title" subtitle={t('settings.subtitle')} subtitleId="settings.subtitle" />
       <Card className="w-[90%] p-6">
+        <div onChange={() => setDirty(true)} onInput={() => setDirty(true)}>
         <div className="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-2" role="tablist" id="settings.tabs">
           {tabs.map((tab) => (
             <button
@@ -1587,6 +1557,7 @@ export function Settings() {
           </div>
         )}
         </div>
+        </div>
       </Card>
 
       <div id="settings.actions" className="mt-4 w-[90%] pl-1">
@@ -1595,7 +1566,7 @@ export function Settings() {
             id="common.save.button"
             className="w-auto"
             onClick={() => void handleSave()}
-            disabled={saving || !changed}
+            disabled={saving || !dirty}
           >
             {saving ? <Spinner className="border-white border-t-transparent" /> : null}
             {t('common.save')}
