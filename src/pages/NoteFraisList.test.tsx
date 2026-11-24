@@ -221,6 +221,23 @@ describe('NoteFraisList', () => {
     expect(screen.getAllByText('125,50 €').length).toBeGreaterThan(0)
   })
 
+  it('affiche le nom du fichier justificatif dans la liste', async () => {
+    userMock.value = managerUser
+    findBySocYearMock.mockResolvedValue([
+      nf({ documentId: 77, documentName: 'facture.pdf' }),
+    ])
+    totalsByMonthMock.mockResolvedValue({})
+    totalsByCategoryMock.mockResolvedValue({})
+    summariesMock.mockResolvedValue([])
+
+    renderList()
+
+    await screen.findByText('Alice Martin')
+    expect(
+      document.getElementById('NoteFraisList.row.1.document')?.textContent,
+    ).toBe('facture.pdf')
+  })
+
   it('télécharge le PDF interne du mois en cliquant sur son montant', async () => {
     stubFixedNow()
     userMock.value = managerUser

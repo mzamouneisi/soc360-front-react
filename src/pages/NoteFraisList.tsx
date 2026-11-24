@@ -773,6 +773,15 @@ export function NoteFraisList() {
                 render: (nf) => <span id={`NoteFraisList.row.${nf.id}.lines`}>{nf.lines.length}</span>,
               },
               {
+                key: 'document',
+                label: tr('NoteFraisList.fichier'),
+                render: (nf) => (
+                  <span id={`NoteFraisList.row.${nf.id}.document`} className="text-gray-700">
+                    {nf.documentName ?? '—'}
+                  </span>
+                ),
+              },
+              {
                 key: 'total',
                 label: tr('NoteFraisList.total'),
                 render: (nf) => <span id={`NoteFraisList.row.${nf.id}.total`} className="font-semibold text-gray-900">{formatMoney(nf.totalAmount)}</span>,
