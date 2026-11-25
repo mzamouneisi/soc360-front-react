@@ -25,7 +25,10 @@ find_npm() {
     "/c/pgm/nvm/v22.12.0/npm.cmd" \
     "/cygdrive/c/pgm/nvm/v22.12.0/npm" \
     "/c/pgm/nvm/v22.12.0/npm"; do
-    if [ -f "$path" ] && [ -x "$path" ]; then
+    # Sur Windows, npm.cmd n'a pas le bit executable sous MobaXterm/git-bash :
+    # on l'accepte des lors qu'il existe (sinon on tombe sur le script bash
+    # "npm" lance par WSL et qui echoue avec /bin/bash introuvable).
+    if [ -f "$path" ] && { [ -x "$path" ] || [ "${path%.cmd}" != "$path" ]; }; then
       echo "$path"
       return 0
     fi
