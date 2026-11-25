@@ -302,6 +302,31 @@ export function Settings() {
     trUiMemory.override = trOverride
   }, [trOverride])
 
+  useEffect(() => {
+    let cancelled = false
+    if (!user) return
+    appearanceApi
+      .effective()
+      .then((eff) => {
+        // Ne pas écraser une saisie déjà commencée (évite d'avoir à ressaisir une valeur).
+        if (cancelled || dirtyRef.current) return
+        // N'applique la configuration qu'une fois pour un couple utilisateur/société afin qu'une
+        // ré-exécution de l'effet ne réinitialise pas la valeur choisie.
+        const key = `${user.id}-${selectedSocId ?? 'none'}`
+        if (appliedAppearanceKeyRef.current === key) return
+        appliedAppearanceKeyRef.current = key
+        applyAppearanceConfig(eff.config)
+        applyAppearance(eff)
+      })
+      .catch(() => {
+        // Apparence optionnelle : on conserve les valeurs par défaut en cas d'erreur.
+      })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.socId, user?.role, selectedSocId])
+
   if (!user) return null
   const u = user
 
@@ -388,31 +413,6 @@ export function Settings() {
       buttonDisableTextColor: btnDisableTextColor,
     }
   }
-
-  useEffect(() => {
-    let cancelled = false
-    if (!user) return
-    appearanceApi
-      .effective()
-      .then((eff) => {
-        // Ne pas écraser une saisie déjà commencée (évite d'avoir à ressaisir une valeur).
-        if (cancelled || dirtyRef.current) return
-        // N'applique la configuration qu'une fois pour un couple utilisateur/société afin qu'une
-        // ré-exécution de l'effet ne réinitialise pas la valeur choisie.
-        const key = `${user.id}-${selectedSocId ?? 'none'}`
-        if (appliedAppearanceKeyRef.current === key) return
-        appliedAppearanceKeyRef.current = key
-        applyAppearanceConfig(eff.config)
-        applyAppearance(eff)
-      })
-      .catch(() => {
-        // Apparence optionnelle : on conserve les valeurs par défaut en cas d'erreur.
-      })
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, user?.socId, user?.role, selectedSocId])
 
   /** Marque les paramètres comme modifiés : active le bouton Enregistrer. */
   function markDirty() {
