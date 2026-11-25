@@ -2,8 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Settings } from './Settings'
 
-const { getByIdMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, appearanceEffectiveMock, appearanceSaveMock, appearanceResetMock, appearanceRestoreMock, userMock } = vi.hoisted(() => ({
+const { getByIdMock, findAllMock, updateCraColorsMock, updateVatRateMock, updateTableColorsMock, updateTableHeaderFontSizeMock, updateFormSettingsMock, refreshMeMock, uploadLogoMock, appearanceEffectiveMock, appearanceSaveMock, appearanceResetMock, appearanceRestoreMock, userMock } = vi.hoisted(() => ({
   getByIdMock: vi.fn(),
+  findAllMock: vi.fn().mockResolvedValue([]),
   updateCraColorsMock: vi.fn(),
   updateVatRateMock: vi.fn(),
   updateTableColorsMock: vi.fn(),
@@ -58,6 +59,7 @@ vi.mock('../i18n', () => ({
 
 vi.mock('../api/socs', () => ({
   socsApi: {
+    findAll: findAllMock,
     getById: getByIdMock,
     updateCraColors: updateCraColorsMock,
     updateVatRate: updateVatRateMock,
@@ -241,6 +243,39 @@ describe('Settings — couleurs CRA', () => {
 
     await waitFor(() => expect(uploadLogoMock).toHaveBeenCalledWith(5, expect.any(File)))
     await waitFor(() => expect(saveButton).not.toBeDisabled())
+  })
+
+  it('affiche l’onglet Société à l’administrateur et permet de choisir la société', async () => {
+    userMock.value = user('ADMIN')
+    findAllMock.mockResolvedValue([
+      { id: 5, name: 'Soc Test' },
+      { id: 9, name: 'Autre Société' },
+    ])
+    getByIdMock.mockResolvedValue({
+      soc: { id: 5, name: 'Soc Test', leaveDayColor: '#ffeeaa', weekendColor: '#eefcee' },
+      subscriptions: [],
+      payments: [],
+    })
+
+    render(<Settings />)
+
+    const tab = document.getElementById('settings.tab.company')
+    expect(tab).not.toBeNull()
+    fireEvent.click(tab as HTMLElement)
+
+    await waitFor(() => expect(findAllMock).toHaveBeenCalled())
+    await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(5))
+    const select = document.getElementById('settings.company.select.input') as HTMLSelectElement
+    expect(select).not.toBeNull()
+    expect(select.value).toBe('5')
+
+    getByIdMock.mockResolvedValue({
+      soc: { id: 9, name: 'Autre Société', leaveDayColor: '#000000', weekendColor: '#ffffff', vatRate: 10 },
+      subscriptions: [],
+      payments: [],
+    })
+    fireEvent.change(select, { target: { value: '9' } })
+    await waitFor(() => expect(getByIdMock).toHaveBeenCalledWith(9))
   })
 
   it('ne montre pas les couleurs CRA à un consultant', async () => {

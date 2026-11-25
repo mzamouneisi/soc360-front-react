@@ -142,6 +142,8 @@ const fr: Messages = {
   'settings.tab.company': 'Société',
   'settings.tab.translations': 'Traductions',
   'settings.tab.emails': 'E-mails',
+  'settings.company.select': 'Société à paramétrer',
+  'settings.company.empty': 'Aucune société à paramétrer.',
   'settings.language.title': 'Langue de l’application',
   'settings.language.description':
     'Choisissez la langue de l’interface. Par défaut, celle de votre navigateur.',
@@ -462,6 +464,8 @@ const en: Messages = {
   'settings.tab.company': 'Company',
   'settings.tab.translations': 'Translations',
   'settings.tab.emails': 'Emails',
+  'settings.company.select': 'Company to configure',
+  'settings.company.empty': 'No company to configure.',
   'settings.language.title': 'Application language',
   'settings.language.description':
     'Choose the interface language. Defaults to your browser language.',
@@ -696,6 +700,8 @@ const ar: Messages = {
   'settings.tab.company': 'الشركة',
   'settings.tab.translations': 'الترجمات',
   'settings.tab.emails': 'رسائل البريد',
+  'settings.company.select': 'الشركة المراد تهيئتها',
+  'settings.company.empty': 'لا توجد شركة لتهيئتها.',
   'settings.craColors.title': 'ألوان أيام CRA',
   'settings.craColors.description': 'ألوان أيام الإجازة ونهاية الأسبوع في CRA الشركة المحددة.',
   'settings.craColors.leave': 'لون يوم الإجازة',

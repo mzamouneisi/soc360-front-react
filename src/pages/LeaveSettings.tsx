@@ -437,8 +437,8 @@ export function LeaveSettings() {
 
           <Card id="LeaveSettings.config.group.carryover" className="w-fit max-w-full p-3 min-h-[140px]">
             <h4 id="LeaveSettings.config.section.carryover" className="mb-2 text-sm font-bold text-gray-700">Report des droits</h4>
-            <div className="flex flex-wrap gap-2">
-              <Field className="w-40" label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
+            <div className="flex flex-wrap items-end gap-2">
+              <Field className="w-48" label="Autoriser le report" id="LeaveSettings.config.carryoverAllowed.label">
                 <label id="LeaveSettings.config.carryoverAllowed.wrapper" className="flex h-full items-center gap-2 text-sm text-gray-700">
                   <input
                     id="LeaveSettings.config.carryoverAllowed"
@@ -451,10 +451,10 @@ export function LeaveSettings() {
               </Field>
               {form.carryoverAllowed && (
                 <>
-                  <Field className="w-40" label="Report maximum (jours)" id="LeaveSettings.config.carryoverMax.label">
+                  <Field className="w-48" label="Report maximum (jours)" id="LeaveSettings.config.carryoverMax.label">
                     <Input id="LeaveSettings.config.carryoverMax" type="number" min="0" step="any" value={form.carryoverMax} onChange={(e) => setForm({ ...form, carryoverMax: e.target.value })} />
                   </Field>
-                  <Field className="w-40" label="Échéance du report (mois)" id="LeaveSettings.config.carryoverExpirationMonths.label">
+                  <Field className="w-56" label="Échéance du report (mois)" id="LeaveSettings.config.carryoverExpirationMonths.label">
                     <Input id="LeaveSettings.config.carryoverExpirationMonths" type="number" min="0" value={form.carryoverExpirationMonths} onChange={(e) => setForm({ ...form, carryoverExpirationMonths: e.target.value })} />
                   </Field>
                 </>

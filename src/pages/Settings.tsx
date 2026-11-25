@@ -16,7 +16,7 @@ import { useI18n } from '../i18n'
 import { DEFAULT_VAT_RATE } from '../lib/vat'
 import { appearanceApi } from '../api/appearance'
 import { applyAppearance } from '../lib/appearance'
-import type { AppearanceScope } from '../api/types'
+import type { AppearanceScope, SocDto } from '../api/types'
 
 const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24]
 
@@ -153,9 +153,18 @@ export function Settings() {
   const [languageError, setLanguageError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('general')
   const [appearanceTab, setAppearanceTab] = useState<'application' | 'buttons' | 'forms' | 'tables'>('application')
+  // L'administrateur ne dépend d'aucune société : il choisit celle à paramétrer dans l'onglet Société.
+  const [adminSocs, setAdminSocs] = useState<SocDto[]>([])
+  const [adminSocId, setAdminSocId] = useState<number | null>(null)
 
+  const isAdmin = user?.role === 'ADMIN'
   const canEditTemplates = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
-  const canEditCraColors = user?.role === 'RESPONSIBLE_SOC'
+  // Les paramètres société (logo, couleurs CRA, TVA) sont gérables par le responsable et l'admin.
+  const canManageCompany = user?.role === 'ADMIN' || user?.role === 'RESPONSIBLE_SOC'
+  const companySocId = isAdmin ? adminSocId : selectedSocId
+  const companySoc = isAdmin
+    ? adminSocs.find((s) => s.id === adminSocId) ?? null
+    : selectedSoc
   // L'admin définit l'apparence SOC360 (GLOBAL, référence des restaurations), le responsable celle
   // de sa société, les autres une apparence personnelle.
   const appearanceScope: AppearanceScope = user?.role === 'ADMIN'
@@ -169,7 +178,7 @@ export function Settings() {
   const tabs: { id: string; labelKey: string; label?: string }[] = [
     { id: 'general', labelKey: 'settings.tab.general' },
     { id: 'appearance', labelKey: 'settings.tab.appearance' },
-    ...(canEditCraColors ? [{ id: 'company', labelKey: 'settings.tab.company' }] : []),
+    ...(canManageCompany ? [{ id: 'company', labelKey: 'settings.tab.company' }] : []),
     ...(canEditTemplates
       ? [
           { id: 'translations', labelKey: 'settings.tab.translations' },
@@ -179,12 +188,33 @@ export function Settings() {
   ]
 
   useEffect(() => {
-    if (!selectedSocId || !canEditCraColors) {
+    if (!isAdmin) {
       return
     }
     let cancelled = false
     socsApi
-      .getById(selectedSocId)
+      .findAll()
+      .then((list) => {
+        if (cancelled) return
+        setAdminSocs(list)
+        setAdminSocId((current) => {
+          if (current != null && list.some((s) => s.id === current)) return current
+          return list[0]?.id ?? null
+        })
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [isAdmin])
+
+  useEffect(() => {
+    if (!companySocId || !canManageCompany) {
+      return
+    }
+    let cancelled = false
+    socsApi
+      .getById(companySocId)
       .then(({ soc }) => {
         if (cancelled) return
         const leave = soc.leaveDayColor || CRA_LEAVE_COLOR_DEFAULT
@@ -203,7 +233,7 @@ export function Settings() {
     return () => {
       cancelled = true
     }
-  }, [selectedSocId, canEditCraColors])
+  }, [companySocId, canManageCompany])
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplateView[]>([])
   const [templateKey, setTemplateKey] = useState('')
   const [templateSubject, setTemplateSubject] = useState('')
@@ -423,7 +453,7 @@ export function Settings() {
 
   async function handleSave() {
     const vatValue = Number(vatRate)
-    if (canEditCraColors && selectedSocId != null &&
+    if (canManageCompany && companySocId != null &&
         (vatRate.trim() === '' || !Number.isFinite(vatValue) || vatValue < 0 || vatValue > 100)) {
       setError(t('settings.billing.vatRateError'))
       return
@@ -500,14 +530,14 @@ export function Settings() {
       if ((u.backgroundColor || '#bae6fd') !== bgColor) {
         await authApi.updateBackgroundColor(bgColor)
       }
-      if (canEditCraColors && selectedSocId != null &&
+      if (canManageCompany && companySocId != null &&
           (leaveDayColor !== savedLeaveDayColor || weekendColor !== savedWeekendColor)) {
-        await socsApi.updateCraColors(selectedSocId, { leaveDayColor, weekendColor })
+        await socsApi.updateCraColors(companySocId, { leaveDayColor, weekendColor })
         setSavedLeaveDayColor(leaveDayColor)
         setSavedWeekendColor(weekendColor)
       }
-      if (canEditCraColors && selectedSocId != null && vatRate !== savedVatRate) {
-        await socsApi.updateVatRate(selectedSocId, vatValue)
+      if (canManageCompany && companySocId != null && vatRate !== savedVatRate) {
+        await socsApi.updateVatRate(companySocId, vatValue)
         setSavedVatRate(vatRate)
         await refreshSocs()
       }
@@ -1075,12 +1105,35 @@ export function Settings() {
         </TabPanel>
 
         <TabPanel active={activeTab === 'company'}>
-        {canEditCraColors && selectedSocId != null && (
+        {canManageCompany && isAdmin && (
+          <div className="mt-2">
+            <Field label={t('settings.company.select')} id="settings.company.select">
+              <Select
+                id="settings.company.select.input"
+                className="w-72"
+                value={companySocId ?? ''}
+                onChange={(e) => setAdminSocId(Number(e.target.value))}
+              >
+                {adminSocs.map((soc) => (
+                  <option key={soc.id} value={soc.id} id={`settings.company.select.option.${soc.id}`}>
+                    {soc.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {adminSocs.length === 0 && (
+              <p id="settings.company.empty" className="mt-3 text-sm text-gray-500">
+                {t('settings.company.empty')}
+              </p>
+            )}
+          </div>
+        )}
+        {canManageCompany && companySocId != null && (
           <div className="mt-8">
             <SocLogoField
-              socId={selectedSocId}
+              socId={companySocId}
               hasLogo={socHasLogo}
-              socName={selectedSoc?.name}
+              socName={companySoc?.name}
               onChange={(saved) => {
                 setSocHasLogo(saved.hasLogo ?? false)
                 setLogoChanged(true)
@@ -1091,7 +1144,7 @@ export function Settings() {
           </div>
         )}
 
-        {canEditCraColors && selectedSocId != null && (
+        {canManageCompany && companySocId != null && (
           <>
             <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.craColors.title">
               {t('settings.craColors.title')}
@@ -1132,7 +1185,7 @@ export function Settings() {
           </>
         )}
 
-        {canEditCraColors && selectedSocId != null && (
+        {canManageCompany && companySocId != null && (
           <>
             <h3 className="mt-8 text-sm font-semibold text-gray-900" id="settings.billing.title">
               {t('settings.billing.title')}
