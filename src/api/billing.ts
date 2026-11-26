@@ -25,6 +25,8 @@ export const billingApi = {
     api.get<{ recipient: string; subject: string; body: string }>(`/billing/${id}/send-preview`),
   send: (id: number) => api.post<BillingDocumentDto>(`/billing/${id}/send`, {}),
   sendHistory: (id: number) => api.get<BillingSendHistoryDto[]>(`/billing/${id}/sends`),
+  validateQuote: (id: number) => api.post<BillingDocumentDto>(`/billing/${id}/validate`, {}),
+  duplicate: (id: number) => api.post<BillingDocumentDto>(`/billing/${id}/duplicate`, {}),
   generateMonths: (socId?: number | null) => {
     const params = new URLSearchParams()
     if (socId != null) params.set('socId', String(socId))

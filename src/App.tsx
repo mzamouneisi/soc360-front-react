@@ -181,9 +181,9 @@ const router = createBrowserRouter(
             {
               path: '/parametres-notifications',
               element: (
-                <ResponsibleSocRoute>
+                <NotConsultantRoute>
                   <NotificationSettings />
-                </ResponsibleSocRoute>
+                </NotConsultantRoute>
               ),
             },
             { path: '/fiches-paie', element: <FichePaie /> },

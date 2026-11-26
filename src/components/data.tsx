@@ -327,6 +327,7 @@ export function Modal({
   children,
   footer,
   size = 'md',
+  scrollBody = false,
 }: {
   open: boolean
   title: string
@@ -335,6 +336,8 @@ export function Modal({
   children: ReactNode
   footer?: ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
+  /** Rend le corps de la popup défilant (vertical + horizontal) pour les petits écrans. */
+  scrollBody?: boolean
 }) {
   const { t } = useI18n()
   useEffect(() => {
@@ -392,7 +395,12 @@ export function Modal({
             </svg>
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className={scrollBody
+          ? 'max-h-[calc(100vh-10rem)] overflow-auto px-5 py-4'
+          : 'px-5 py-4'}
+        >
+          {children}
+        </div>
         {footer && (
           <div className="flex items-center justify-end gap-2 border-t border-gray-200 px-5 py-3">
             {footer}

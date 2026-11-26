@@ -3,18 +3,24 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { NotificationSettings } from './NotificationSettings'
 import type { NotificationConfigDto } from '../api/types'
 
-const { listMock, collaboratorsMock, saveMock } = vi.hoisted(() => ({
+const { listMock, collaboratorsMock, saveMock, socsMock, userMock } = vi.hoisted(() => ({
   listMock: vi.fn(),
   collaboratorsMock: vi.fn(),
   saveMock: vi.fn().mockResolvedValue({}),
+  socsMock: vi.fn().mockResolvedValue([]),
+  userMock: { value: { id: 1, role: 'RESPONSIBLE_SOC', socId: 5 } as Record<string, unknown> },
 }))
 
 vi.mock('../auth/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 1, role: 'RESPONSIBLE_SOC', socId: 5 } }),
+  useAuth: () => ({ user: userMock.value }),
 }))
 
 vi.mock('../soc/SocContext', () => ({
   useSoc: () => ({ selectedSocId: 5 }),
+}))
+
+vi.mock('../api/socs', () => ({
+  socsApi: { findAll: socsMock },
 }))
 
 vi.mock('../api/notificationConfigs', () => ({
@@ -57,11 +63,11 @@ const config: NotificationConfigDto = {
   status: 'ACTIVE',
   referenceType: 'CRA',
   referenceId: null,
-  recipientAll: false,
-  recipientEmployee: false,
-  recipientNonEmployee: false,
-  recipientManager: false,
-  recipientConsultant: false,
+  recipientAudience: null,
+  recipientIncludeNonEmployees: false,
+  recipientIncludeSelf: false,
+  recipientCompanyIds: [],
+  recipientCompanyNames: [],
   recipientIds: [2],
   recipientNames: ['Jean Dupont'],
   nextRunAt: '2026-11-25T08:00:00',
@@ -70,14 +76,37 @@ const config: NotificationConfigDto = {
   updatedAt: '2026-11-01T08:00:00Z',
 }
 
+const collaborators = [
+  { id: 2, fullName: 'Jean Dupont', position: null, email: 'j@test.fr', role: 'CONSULTANT' as const, employee: true, socId: 5, socName: 'Soc Test' },
+  { id: 3, fullName: 'Karim Bensalem', position: null, email: 'k@test.fr', role: 'MANAGER' as const, employee: false, socId: 5, socName: 'Soc Test' },
+]
+
 afterEach(() => {
   vi.clearAllMocks()
+  socsMock.mockResolvedValue([])
+  userMock.value = { id: 1, role: 'RESPONSIBLE_SOC', socId: 5 }
 })
+
+function openCreate() {
+  fireEvent.click(document.getElementById('NotificationSettings.new') as HTMLElement)
+}
+
+function fillRequired() {
+  fireEvent.change(document.getElementById('NotificationSettings.name.input') as HTMLInputElement, {
+    target: { value: 'Diffusion' },
+  })
+  fireEvent.change(document.getElementById('NotificationSettings.subject.input') as HTMLInputElement, {
+    target: { value: 'Sujet' },
+  })
+  fireEvent.change(document.getElementById('NotificationSettings.message.input') as HTMLTextAreaElement, {
+    target: { value: 'Message' },
+  })
+}
 
 describe('NotificationSettings', () => {
   it('affiche les configurations de la société', async () => {
     listMock.mockResolvedValue([config])
-    collaboratorsMock.mockResolvedValue([{ id: 2, fullName: 'Jean Dupont', position: null, email: 'j@test.fr', role: 'CONSULTANT', employee: true }])
+    collaboratorsMock.mockResolvedValue(collaborators)
 
     render(<NotificationSettings />)
 
@@ -91,8 +120,7 @@ describe('NotificationSettings', () => {
     collaboratorsMock.mockResolvedValue([])
 
     render(<NotificationSettings />)
-
-    fireEvent.click(document.getElementById('NotificationSettings.new') as HTMLElement)
+    openCreate()
 
     expect(document.getElementById('NotificationSettings.form')).toBeInTheDocument()
     expect(document.getElementById('NotificationSettings.name.input')).toBeInTheDocument()
@@ -126,23 +154,24 @@ describe('NotificationSettings', () => {
     expect(document.getElementById('NotificationSettings.form')).not.toBeInTheDocument()
   })
 
-  it('désactive les autres filtres quand « tous les collaborateurs » est coché', async () => {
+  it('choisit un cadre et désactive l’autre', async () => {
     listMock.mockResolvedValue([])
-    collaboratorsMock.mockResolvedValue([
-      { id: 2, fullName: 'Jean Dupont', position: null, email: 'j@test.fr', role: 'CONSULTANT', employee: true },
-    ])
+    collaboratorsMock.mockResolvedValue(collaborators)
 
     render(<NotificationSettings />)
-    fireEvent.click(document.getElementById('NotificationSettings.new') as HTMLElement)
+    openCreate()
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.2.input')).not.toBeNull(),
+    )
 
-    fireEvent.click(document.getElementById('NotificationSettings.recipients.all.input') as HTMLInputElement)
+    expect((document.getElementById('NotificationSettings.recipients.modeAudience.input') as HTMLInputElement).checked).toBe(true)
+    expect((document.getElementById('NotificationSettings.recipients.option.2.input') as HTMLInputElement).disabled).toBe(true)
 
-    expect((document.getElementById('NotificationSettings.recipients.all.input') as HTMLInputElement).checked).toBe(true)
-    expect((document.getElementById('NotificationSettings.recipients.employee.input') as HTMLInputElement).disabled).toBe(true)
-    expect((document.getElementById('NotificationSettings.recipients.nonEmployee.input') as HTMLInputElement).disabled).toBe(true)
-    expect((document.getElementById('NotificationSettings.recipients.manager.input') as HTMLInputElement).disabled).toBe(true)
-    expect((document.getElementById('NotificationSettings.recipients.consultant.input') as HTMLInputElement).disabled).toBe(true)
-    expect((document.getElementById('NotificationSettings.recipients.input') as HTMLSelectElement).disabled).toBe(true)
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement)
+
+    expect((document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement).checked).toBe(true)
+    expect((document.getElementById('NotificationSettings.recipients.option.2.input') as HTMLInputElement).disabled).toBe(false)
+    expect((document.getElementById('NotificationSettings.recipients.audienceAll.input') as HTMLInputElement).disabled).toBe(true)
   })
 
   it('enregistre l’audience « tous les collaborateurs »', async () => {
@@ -150,27 +179,58 @@ describe('NotificationSettings', () => {
     collaboratorsMock.mockResolvedValue([])
 
     render(<NotificationSettings />)
-    fireEvent.click(document.getElementById('NotificationSettings.new') as HTMLElement)
-    fireEvent.change(document.getElementById('NotificationSettings.name.input') as HTMLInputElement, {
-      target: { value: 'Diffusion' },
-    })
-    fireEvent.change(document.getElementById('NotificationSettings.subject.input') as HTMLInputElement, {
-      target: { value: 'Sujet' },
-    })
-    fireEvent.change(document.getElementById('NotificationSettings.message.input') as HTMLTextAreaElement, {
-      target: { value: 'Message' },
-    })
-    fireEvent.click(document.getElementById('NotificationSettings.recipients.all.input') as HTMLInputElement)
+    openCreate()
+    fillRequired()
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.audienceAll.input') as HTMLInputElement)
     fireEvent.submit(document.getElementById('NotificationSettings.form') as HTMLFormElement)
 
     await waitFor(() => expect(saveMock).toHaveBeenCalled())
     expect(saveMock).toHaveBeenCalledWith(expect.objectContaining({
-      recipientAll: true,
-      recipientEmployee: false,
-      recipientNonEmployee: false,
-      recipientManager: false,
-      recipientConsultant: false,
+      recipientAudience: 'ALL',
+      recipientIds: [],
+      recipientIncludeNonEmployees: false,
+      recipientIncludeSelf: false,
     }))
+  })
+
+  it('sélectionne puis désélectionne tout et enregistre la sélection manuelle', async () => {
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue(collaborators)
+
+    render(<NotificationSettings />)
+    openCreate()
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement)
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
+    )
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.toggleAll') as HTMLElement)
+    await waitFor(() => {
+      expect((document.getElementById('NotificationSettings.recipients.option.2.input') as HTMLInputElement).checked).toBe(true)
+      expect((document.getElementById('NotificationSettings.recipients.option.3.input') as HTMLInputElement).checked).toBe(true)
+    })
+    expect(document.getElementById('NotificationSettings.recipients.toggleAll')?.textContent).toBe(
+      'NotificationSettings.recipients.deselectAll',
+    )
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.toggleAll') as HTMLElement)
+    await waitFor(() => {
+      expect((document.getElementById('NotificationSettings.recipients.option.2.input') as HTMLInputElement).checked).toBe(false)
+      expect((document.getElementById('NotificationSettings.recipients.option.3.input') as HTMLInputElement).checked).toBe(false)
+    })
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.toggleAll') as HTMLElement)
+    await waitFor(() =>
+      expect((document.getElementById('NotificationSettings.recipients.option.2.input') as HTMLInputElement).checked).toBe(true),
+    )
+    fillRequired()
+    fireEvent.submit(document.getElementById('NotificationSettings.form') as HTMLFormElement)
+
+    await waitFor(() => expect(saveMock).toHaveBeenCalled())
+    const payload = saveMock.mock.calls[0][0] as { recipientAudience: unknown; recipientIds: number[] }
+    expect(payload.recipientAudience).toBeNull()
+    expect(payload.recipientIds).toHaveLength(2)
+    expect(payload.recipientIds).toEqual(expect.arrayContaining([2, 3]))
   })
 
   it('affiche le rôle et le statut salarié de chaque collaborateur', async () => {
@@ -181,7 +241,7 @@ describe('NotificationSettings', () => {
     ])
 
     render(<NotificationSettings />)
-    fireEvent.click(document.getElementById('NotificationSettings.new') as HTMLElement)
+    openCreate()
 
     await waitFor(() =>
       expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
@@ -203,14 +263,122 @@ describe('NotificationSettings', () => {
     ])
 
     render(<NotificationSettings />)
-    fireEvent.click(document.getElementById('NotificationSettings.new') as HTMLElement)
+    openCreate()
 
     await waitFor(() =>
-      expect((document.getElementById('NotificationSettings.recipients.input') as HTMLSelectElement).options.length).toBe(3),
+      expect(document.getElementById('NotificationSettings.recipients.option.1')).not.toBeNull(),
     )
-    const options = Array.from(
-      (document.getElementById('NotificationSettings.recipients.input') as HTMLSelectElement).options,
+    const container = document.getElementById('NotificationSettings.recipients.input') as HTMLElement
+    const labels = Array.from(container.querySelectorAll('label'))
+    expect(labels.map((label) => label.id.split('.').pop())).toEqual(['3', '2', '1'])
+  })
+
+  it('admin : cadres Sociétés/Responsables et sélection de sociétés destinataires', async () => {
+    userMock.value = { id: 1, role: 'ADMIN', socId: 10 }
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue([])
+    socsMock.mockResolvedValue([
+      { id: 20, name: 'Société A' },
+      { id: 30, name: 'Société B' },
+    ])
+
+    render(<NotificationSettings />)
+    await waitFor(() => expect(document.getElementById('NotificationSettings.new')).not.toBeNull())
+    openCreate()
+
+    expect(document.getElementById('NotificationSettings.recipients.audienceCompanies.input')).not.toBeNull()
+    expect(document.getElementById('NotificationSettings.recipients.audienceResponsibles.input')).not.toBeNull()
+    expect(document.getElementById('NotificationSettings.recipients.modeCompanies.input')).not.toBeNull()
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeCompanies.input') as HTMLInputElement)
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.company.20.input')).not.toBeNull(),
     )
-    expect(options.map((option) => option.value)).toEqual(['3', '2', '1'])
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.toggleAllCompanies') as HTMLElement)
+    await waitFor(() =>
+      expect((document.getElementById('NotificationSettings.recipients.company.20.input') as HTMLInputElement).checked).toBe(true),
+    )
+
+    fillRequired()
+    fireEvent.submit(document.getElementById('NotificationSettings.form') as HTMLFormElement)
+
+    await waitFor(() => expect(saveMock).toHaveBeenCalled())
+    const payload = saveMock.mock.calls[0][0] as { recipientAudience: unknown; recipientCompanyIds: number[] }
+    expect(payload.recipientAudience).toBeNull()
+    expect(payload.recipientCompanyIds).toEqual(expect.arrayContaining([20, 30]))
+  })
+
+  it('la liste des collaborateurs est défilante pour un grand nombre d’utilisateurs', async () => {
+    const many = Array.from({ length: 30 }, (_, index) => ({
+      id: index + 1,
+      fullName: `Utilisateur ${index + 1}`,
+      position: null,
+      email: null,
+      role: 'CONSULTANT' as const,
+      employee: true,
+      socId: 5,
+      socName: 'Soc Test',
+    }))
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue(many)
+
+    render(<NotificationSettings />)
+    openCreate()
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement)
+
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.30')).not.toBeNull(),
+    )
+    const container = document.getElementById('NotificationSettings.recipients.input') as HTMLElement
+    expect(container.className).toContain('overflow-y-auto')
+    expect(container.className).toContain('max-h-72')
+  })
+
+  it('manager sans manager dans son équipe : pas de radio Managers', async () => {
+    userMock.value = { id: 1, role: 'MANAGER', socId: 5 }
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue([
+      { id: 1, fullName: 'Moi Manager', position: null, email: null, role: 'MANAGER', employee: true, socId: 5, socName: 'Soc Test' },
+      { id: 2, fullName: 'Consultant', position: null, email: null, role: 'CONSULTANT', employee: true, socId: 5, socName: 'Soc Test' },
+    ])
+
+    render(<NotificationSettings />)
+    openCreate()
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
+    )
+
+    expect(document.getElementById('NotificationSettings.recipients.audienceManagers.input')).toBeNull()
+    expect(document.getElementById('NotificationSettings.recipients.audienceConsultants.input')).not.toBeNull()
+  })
+
+  it('manager avec un autre manager dans son équipe : radio Managers affichée', async () => {
+    userMock.value = { id: 1, role: 'MANAGER', socId: 5 }
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue([
+      { id: 1, fullName: 'Moi Manager', position: null, email: null, role: 'MANAGER', employee: true, socId: 5, socName: 'Soc Test' },
+      { id: 2, fullName: 'Autre Manager', position: null, email: null, role: 'MANAGER', employee: true, socId: 5, socName: 'Soc Test' },
+    ])
+
+    render(<NotificationSettings />)
+    openCreate()
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
+    )
+
+    expect(document.getElementById('NotificationSettings.recipients.audienceManagers.input')).not.toBeNull()
+  })
+
+  it('la popup de configuration est défilante (vertical/horizontal)', async () => {
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue([])
+
+    render(<NotificationSettings />)
+    openCreate()
+
+    const body = document.getElementById('NotificationSettings.form')?.parentElement as HTMLElement
+    expect(body).not.toBeNull()
+    expect(body.className).toContain('overflow-auto')
+    expect(body.className).toContain('max-h-')
   })
 })

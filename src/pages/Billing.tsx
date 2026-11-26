@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { billingApi } from '../api/billing'
 import { activitiesApi } from '../api/activities'
+import { clientsApi } from '../api/clients'
 import { projectsApi } from '../api/projects'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
@@ -13,7 +14,7 @@ import { Card, Field, Input, RefreshButton, Select, Textarea, Button, IconButton
 import { MonthPicker } from '../components/MonthPicker'
 import { EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
-import type { BillingDocumentDto, BillingDocumentStatus, BillingDocumentType, BillingLineRequest, BillingSendHistoryDto } from '../api/types'
+import type { BillingDocumentDto, BillingDocumentStatus, BillingDocumentType, BillingLineRequest, BillingSendHistoryDto, ClientDto } from '../api/types'
 
 interface LineForm { description: string; quantity: string; unitPrice: string }
 
@@ -44,6 +45,12 @@ export function Billing() {
     () => (socId ? activitiesApi.findAll({ socId }) : Promise.resolve([])),
     [socId],
   )
+  const { data: clients } = useAsync(
+    () => (socId ? clientsApi.findAll(socId) : Promise.resolve([])),
+    [socId],
+  )
+  // Seules les activités de type MISSION peuvent être facturées (pas les congés/formations).
+  const missionActivities = (activities ?? []).filter((a) => a.type?.code === 'MISSION')
   const { data: generateMonths, reload: reloadGenerateMonths } = useAsync(
     () => (socId ? billingApi.generateMonths(socId) : Promise.resolve([])),
     [socId],
@@ -108,12 +115,23 @@ export function Billing() {
     type: 'QUOTE' as BillingDocumentType,
     projectId: '',
     activityId: '',
+    clientId: '',
+    missionLabel: '',
     notes: '',
     discount: '',
     vatRate: defaultVatRate,
     status: 'DRAFT' as BillingDocumentStatus,
   })
+  const [missionMode, setMissionMode] = useState<'LIST' | 'FREE'>('LIST')
   const [formLines, setFormLines] = useState<LineForm[]>([{ description: '', quantity: '1', unitPrice: '0' }])
+  // La mission (activité de type MISSION) détermine le projet : une seule liste « Mission ».
+  const selectedMission = missionActivities.find((a) => String(a.id) === form.activityId) ?? null
+  const findClient = (id: number | null | undefined): ClientDto | null =>
+    id != null ? (clients ?? []).find((c) => c.id === id) ?? null : null
+  const formClient = missionMode === 'FREE'
+    ? findClient(form.clientId ? Number(form.clientId) : null)
+    : findClient(selectedMission?.project?.clientId)
+      ?? (clients ?? []).find((c) => c.name === selectedMission?.project?.clientName) ?? null
 
   const [viewing, setViewing] = useState<BillingDocumentDto | null>(null)
   const [viewSaving, setViewSaving] = useState(false)
@@ -129,9 +147,13 @@ export function Billing() {
   const [editDiscount, setEditDiscount] = useState('0')
   const [editNotes, setEditNotes] = useState('')
   const [editLines, setEditLines] = useState<LineForm[]>([])
+  const [result, setResult] = useState<{ doc: BillingDocumentDto; kind: 'invoice' | 'duplicate' } | null>(null)
+  const [switchToResult, setSwitchToResult] = useState(true)
+  const locked = viewing?.frozen === true
 
   function resetForm() {
-    setForm({ type: 'QUOTE', projectId: '', activityId: '', notes: '', discount: '', vatRate: defaultVatRate, status: 'DRAFT' })
+    setForm({ type: 'QUOTE', projectId: '', activityId: '', clientId: '', missionLabel: '', notes: '', discount: '', vatRate: defaultVatRate, status: 'DRAFT' })
+    setMissionMode('LIST')
     setFormLines([{ description: '', quantity: '1', unitPrice: '0' }])
     setFormError(null)
   }
@@ -142,13 +164,25 @@ export function Billing() {
       setFormError('Au moins une ligne requise')
       return
     }
+    if (missionMode === 'FREE') {
+      if (!form.missionLabel.trim()) {
+        setFormError('Saisissez la mission')
+        return
+      }
+      if (!form.clientId) {
+        setFormError('Sélectionnez le client')
+        return
+      }
+    }
     setSubmitting(true)
     setFormError(null)
     try {
       const created = await billingApi.create({
         socId,
-        projectId: form.projectId ? Number(form.projectId) : null,
-        activityId: form.activityId ? Number(form.activityId) : null,
+        projectId: missionMode === 'LIST' ? selectedMission?.project?.id ?? null : null,
+        activityId: missionMode === 'LIST' && form.activityId ? Number(form.activityId) : null,
+        clientId: missionMode === 'FREE' ? Number(form.clientId) : selectedMission?.project?.clientId ?? null,
+        missionLabel: missionMode === 'FREE' ? form.missionLabel.trim() : null,
         type: form.type,
         status: form.status,
         vatRate: normalizeVatRate(form.vatRate, socVatRate(selectedSoc)),
@@ -315,6 +349,8 @@ export function Billing() {
         socId,
         projectId: doc.projectId,
         consultantId: doc.consultantId,
+        clientId: doc.clientId,
+        missionLabel: doc.missionLabel,
         parentQuoteId: doc.id,
         type: 'INVOICE',
         vatRate: doc.vatRate,
@@ -326,11 +362,63 @@ export function Billing() {
           unitPrice: l.unitPrice,
         })),
       })
-      setData((prev) => (prev ? [created, ...prev] : [created]))
-      dialog.success?.('Facture créée')
+      const frozenQuote: BillingDocumentDto = {
+        ...doc,
+        validated: true,
+        frozen: true,
+        generatedInvoiceId: created.id,
+        generatedInvoiceNumber: created.number,
+      }
+      setData((prev) => {
+        const list = prev ? prev.map((d) => (d.id === doc.id ? frozenQuote : d)) : [frozenQuote]
+        return [created, ...list]
+      })
+      setViewing(frozenQuote)
+      setSwitchToResult(true)
+      setResult({ doc: created, kind: 'invoice' })
     } catch (err) {
       void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
     }
+  }
+
+  async function handleValidateQuote(doc: BillingDocumentDto) {
+    const ok = await dialog.confirm('Valider ce devis ? Il ne sera plus modifiable.', {
+      okLabel: 'Valider',
+    })
+    if (!ok) return
+    try {
+      const updated = await billingApi.validateQuote(doc.id)
+      setData((prev) => (prev ? prev.map((d) => (d.id === updated.id ? updated : d)) : [updated]))
+      setViewing(updated)
+      dialog.success?.('Devis validé')
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    }
+  }
+
+  async function handleDuplicate(doc: BillingDocumentDto) {
+    try {
+      const copy = await billingApi.duplicate(doc.id)
+      setData((prev) => (prev ? [copy, ...prev] : [copy]))
+      setSwitchToResult(true)
+      setResult({ doc: copy, kind: 'duplicate' })
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    }
+  }
+
+  async function openLinked(id: number) {
+    try {
+      openView(await billingApi.getById(id))
+    } catch (err) {
+      void dialog.error(err instanceof ApiError ? err.message : tr('common.unexpectedError'))
+    }
+  }
+
+  function handleResultConfirm() {
+    if (!result) return
+    if (switchToResult) openView(result.doc)
+    setResult(null)
   }
 
   return (
@@ -402,7 +490,7 @@ export function Billing() {
           columns={[
             { key: 'number', label: 'Numéro', render: (d) => <span id={`Billing.row.${d.id}.number`}>{d.number}</span> },
             { key: 'type', label: 'Type', render: (d) => <span id={`Billing.row.${d.id}.type`}>{d.type === 'QUOTE' ? 'Devis' : 'Facture'}</span> },
-            { key: 'project', label: 'Mission', render: (d) => <span id={`Billing.row.${d.id}.project`}>{d.projectName ?? '—'}</span> },
+            { key: 'project', label: 'Mission', render: (d) => <span id={`Billing.row.${d.id}.project`}>{d.projectName ?? d.missionLabel ?? d.activityName ?? '—'}</span> },
             { key: 'date', label: 'Date', render: (d) => <span id={`Billing.row.${d.id}.date`}>{d.issueDate}</span> },
             { key: 'ht', label: 'HT', render: (d) => <span id={`Billing.row.${d.id}.ht`}>{d.totalHt}</span> },
             { key: 'ttc', label: 'TTC', render: (d) => <span id={`Billing.row.${d.id}.ttc`}>{d.totalTtc}</span> },
@@ -521,24 +609,18 @@ export function Billing() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={[form.type === 'QUOTE' ? 'Nouveau devis' : 'Nouvelle facture', (projects ?? []).find((p) => String(p.id) === form.projectId)?.name].filter(Boolean).join(' - ')}
+        title={[form.type === 'QUOTE' ? 'Nouveau devis' : 'Nouvelle facture',
+          missionMode === 'FREE' ? (formClient?.name ?? form.missionLabel) : selectedMission?.project?.name,
+        ].filter(Boolean).join(' - ')}
         size="2xl"
       >
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form id="Billing.form" onSubmit={handleSubmit} className="space-y-3">
           {formError && <p id="Billing.formError" className="text-red-600 text-sm">{formError}</p>}
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Field label="Type">
               <Select id="Billing.form.type" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as BillingDocumentType })}>
                 <option value="QUOTE">Devis</option>
                 <option value="INVOICE">Facture</option>
-              </Select>
-            </Field>
-            <Field label="Mission">
-              <Select id="Billing.form.project" value={form.projectId} onChange={(e) => setForm({ ...form, projectId: e.target.value })}>
-                <option value="">—</option>
-                {(projects ?? []).map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
               </Select>
             </Field>
             <Field label="Statut">
@@ -554,18 +636,72 @@ export function Billing() {
             <Field label="TVA %">
               <Input id="Billing.form.vat" type="number" value={form.vatRate} onChange={(e) => setForm({ ...form, vatRate: e.target.value })} />
             </Field>
-            <Field label="Remise">
-              <Input id="Billing.form.discount" type="number" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} />
+            <Field label="Remise (%)">
+              <Input id="Billing.form.discount" type="number" min="0" max="100" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} />
             </Field>
           </div>
-          <Field label="Activité" id="Billing.form.activity.label">
-            <Select id="Billing.form.activity" value={form.activityId} onChange={(e) => setForm({ ...form, activityId: e.target.value })}>
-              <option value="">—</option>
-              {(activities ?? []).map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </Select>
-          </Field>
+          <div className="space-y-2">
+            <span id="Billing.form.missionMode.label" className="block text-sm font-medium text-gray-700">Mission</span>
+            <div className="flex flex-wrap gap-4 text-sm text-gray-700">
+              <label id="Billing.form.missionMode.list" className="flex items-center gap-2">
+                <input
+                  id="Billing.form.missionMode.list.input"
+                  type="radio"
+                  name="Billing.form.missionMode"
+                  checked={missionMode === 'LIST'}
+                  onChange={() => setMissionMode('LIST')}
+                />
+                Liste des missions
+              </label>
+              <label id="Billing.form.missionMode.free" className="flex items-center gap-2">
+                <input
+                  id="Billing.form.missionMode.free.input"
+                  type="radio"
+                  name="Billing.form.missionMode"
+                  checked={missionMode === 'FREE'}
+                  onChange={() => setMissionMode('FREE')}
+                />
+                Saisie libre
+              </label>
+            </div>
+            {missionMode === 'LIST' ? (
+              <Field label="Mission" id="Billing.form.activity.label">
+                <Select id="Billing.form.activity" value={form.activityId} onChange={(e) => setForm({ ...form, activityId: e.target.value })}>
+                  <option value="">—</option>
+                  {missionActivities.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </Select>
+              </Field>
+            ) : (
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Field label="Mission" id="Billing.form.missionLabel.label">
+                  <Textarea
+                    id="Billing.form.missionLabel"
+                    rows={2}
+                    value={form.missionLabel}
+                    onChange={(e) => setForm({ ...form, missionLabel: e.target.value })}
+                  />
+                </Field>
+                <Field label="Client" id="Billing.form.client.label">
+                  <Select id="Billing.form.client" value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })}>
+                    <option value="">—</option>
+                    {(clients ?? []).map((c) => (
+                      <option key={c.id} id={`Billing.form.client.option.${c.id}`} value={c.id}>{c.name}</option>
+                    ))}
+                  </Select>
+                </Field>
+              </div>
+            )}
+            {formClient && (
+              <div id="Billing.form.clientInfo" className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                <p id="Billing.form.clientInfo.name" className="font-semibold">{formClient.name}</p>
+                {formClient.address && <p id="Billing.form.clientInfo.address">{formClient.address}</p>}
+                {formClient.contactPhone && <p id="Billing.form.clientInfo.phone">{formClient.contactPhone}</p>}
+                {formClient.contactEmail && <p id="Billing.form.clientInfo.email">{formClient.contactEmail}</p>}
+              </div>
+            )}
+          </div>
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Lignes</label>
             <div className="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700">
@@ -608,7 +744,7 @@ export function Billing() {
             {(() => {
               const sub = formLines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitPrice) || 0), 0)
               const discount = Number(form.discount) || 0
-              const ht = Math.max(0, sub - discount)
+              const ht = Math.max(0, sub * (1 - discount / 100))
               const ttc = ht * (1 + (Number(form.vatRate) || 0) / 100)
               return (
                 <>
@@ -634,7 +770,7 @@ export function Billing() {
             {viewError && <p id="Billing.viewError" className="text-red-600 text-sm">{viewError}</p>}
             <div className="grid grid-cols-3 gap-2">
               <Field label="Statut">
-                <Select id="Billing.view.status" value={editStatus} onChange={(e) => setEditStatus(e.target.value as BillingDocumentStatus)}>
+                <Select id="Billing.view.status" value={editStatus} disabled={locked} onChange={(e) => setEditStatus(e.target.value as BillingDocumentStatus)}>
                   <option value="DRAFT">Brouillon</option>
                   <option value="SENT">Envoyé</option>
                   <option value="ACCEPTED">Accepté</option>
@@ -644,20 +780,33 @@ export function Billing() {
                 </Select>
               </Field>
               <Field label="TVA %">
-                <Input id="Billing.view.vat" type="number" value={editVat} onChange={(e) => setEditVat(e.target.value)} />
+                <Input id="Billing.view.vat" type="number" value={editVat} disabled={locked} onChange={(e) => setEditVat(e.target.value)} />
               </Field>
-              <Field label="Remise">
-                <Input id="Billing.view.discount" type="number" value={editDiscount} onChange={(e) => setEditDiscount(e.target.value)} />
+              <Field label="Remise (%)">
+                <Input id="Billing.view.discount" type="number" min="0" max="100" value={editDiscount} disabled={locked} onChange={(e) => setEditDiscount(e.target.value)} />
               </Field>
             </div>
-            <Field label="Activité" id="Billing.view.activity.label">
-              <Select id="Billing.view.activity" value={editActivityId} onChange={(e) => setEditActivityId(e.target.value)}>
+            <Field label="Mission" id="Billing.view.activity.label">
+              <Select id="Billing.view.activity" value={editActivityId} disabled={locked} onChange={(e) => setEditActivityId(e.target.value)}>
                 <option value="">—</option>
-                {(activities ?? []).map((a) => (
+                {missionActivities.map((a) => (
                   <option key={a.id} value={a.id}>{a.name}</option>
                 ))}
               </Select>
             </Field>
+            {viewing.missionLabel && (
+              <p id="Billing.view.missionLabel" className="text-sm text-gray-700">
+                Mission : {viewing.missionLabel}
+              </p>
+            )}
+            {(viewing.clientName || viewing.clientAddress || viewing.clientPhone || viewing.clientEmail) && (
+              <div id="Billing.view.clientInfo" className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                <p id="Billing.view.clientInfo.name" className="font-semibold">{viewing.clientName ?? '—'}</p>
+                {viewing.clientAddress && <p id="Billing.view.clientInfo.address">{viewing.clientAddress}</p>}
+                {viewing.clientPhone && <p id="Billing.view.clientInfo.phone">{viewing.clientPhone}</p>}
+                {viewing.clientEmail && <p id="Billing.view.clientInfo.email">{viewing.clientEmail}</p>}
+              </div>
+            )}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">Lignes</label>
               {editLines.length > 0 && (
@@ -674,17 +823,17 @@ export function Billing() {
                 <div key={idx} className="grid grid-cols-12 gap-2">
                   <div className="col-span-1 flex items-center text-sm">{idx + 1}</div>
                   <div className="col-span-5">
-                    <Textarea id={`Billing.view.line.${idx}.desc`} rows={2} value={l.description} onChange={(e) => {
+                    <Textarea id={`Billing.view.line.${idx}.desc`} rows={2} value={l.description} disabled={locked} onChange={(e) => {
                       const next = [...editLines]; next[idx] = { ...l, description: e.target.value }; setEditLines(next)
                     }} />
                   </div>
                   <div className="col-span-2">
-                    <Input id={`Billing.view.line.${idx}.qty`} type="number" value={l.quantity} onChange={(e) => {
+                    <Input id={`Billing.view.line.${idx}.qty`} type="number" value={l.quantity} disabled={locked} onChange={(e) => {
                       const next = [...editLines]; next[idx] = { ...l, quantity: e.target.value }; setEditLines(next)
                     }} />
                   </div>
                   <div className="col-span-2">
-                    <Input id={`Billing.view.line.${idx}.price`} type="number" value={l.unitPrice} onChange={(e) => {
+                    <Input id={`Billing.view.line.${idx}.price`} type="number" value={l.unitPrice} disabled={locked} onChange={(e) => {
                       const next = [...editLines]; next[idx] = { ...l, unitPrice: e.target.value }; setEditLines(next)
                     }} />
                   </div>
@@ -692,17 +841,21 @@ export function Billing() {
                     {((Number(l.quantity) || 0) * (Number(l.unitPrice) || 0)).toFixed(2)}
                   </div>
                   <div className="col-span-1 flex items-center">
-                    <IconButton type="button" icon="delete" variant="danger" label="Supprimer la ligne" id={`Billing.view.line.${idx}.remove`} onClick={async () => { if (await dialog.confirm('Supprimer cette ligne ?')) setEditLines(editLines.filter((_, i) => i !== idx)) }} />
+                    {!locked && (
+                      <IconButton type="button" icon="delete" variant="danger" label="Supprimer la ligne" id={`Billing.view.line.${idx}.remove`} onClick={async () => { if (await dialog.confirm('Supprimer cette ligne ?')) setEditLines(editLines.filter((_, i) => i !== idx)) }} />
+                    )}
                   </div>
                 </div>
               ))}
-              <IconButton type="button" icon="add" variant="new" label="Ajouter une ligne" id="Billing.view.addLine" onClick={() => setEditLines([...editLines, { description: '', quantity: '1', unitPrice: '0' }])} />
+              {!locked && (
+                <IconButton type="button" icon="add" variant="new" label="Ajouter une ligne" id="Billing.view.addLine" onClick={() => setEditLines([...editLines, { description: '', quantity: '1', unitPrice: '0' }])} />
+              )}
               {editLines.length > 0 && (
                 <div className="mt-4 flex flex-col items-end gap-1 text-sm font-semibold">
                   {(() => {
                     const sub = editLines.reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitPrice) || 0), 0)
                     const discount = Number(editDiscount) || 0
-                    const ht = Math.max(0, sub - discount)
+                    const ht = Math.max(0, sub * (1 - discount / 100))
                     const ttc = ht * (1 + (Number(editVat) || 0) / 100)
                     return (
                       <>
@@ -715,7 +868,7 @@ export function Billing() {
               )}
             </div>
             <Field label="Notes">
-              <Textarea id="Billing.view.notes" value={editNotes} onChange={(e) => setEditNotes(e.target.value)} />
+              <Textarea id="Billing.view.notes" value={editNotes} disabled={locked} onChange={(e) => setEditNotes(e.target.value)} />
             </Field>
             <div id="Billing.view.sendHistory" className="rounded-lg border border-gray-200 p-3 text-sm">
               <div className="flex items-center justify-between">
@@ -739,18 +892,38 @@ export function Billing() {
                 )}
               </ul>
             </div>
-            <div className="flex justify-between gap-2">
-              {viewing.type === 'QUOTE' && canEdit && (
-                <Button type="button" id="Billing.view.convert" onClick={() => handleConvertToInvoice(viewing)}>Créer facture</Button>
-              )}
-              <div className="flex gap-2 ml-auto">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2">
+                {viewing.type === 'QUOTE' && viewing.generatedInvoiceId != null && (
+                  <Button type="button" id="Billing.view.openInvoice" variant="neutral" onClick={() => void openLinked(viewing.generatedInvoiceId as number)}>
+                    Voir la facture
+                  </Button>
+                )}
+                {viewing.type === 'INVOICE' && viewing.parentQuoteId != null && (
+                  <Button type="button" id="Billing.view.openQuote" variant="neutral" onClick={() => void openLinked(viewing.parentQuoteId as number)}>
+                    Voir le devis
+                  </Button>
+                )}
+                {viewing.type === 'QUOTE' && canEdit && !viewing.validated && viewing.generatedInvoiceId == null && (
+                  <Button type="button" id="Billing.view.validate" variant="green" onClick={() => void handleValidateQuote(viewing)}>
+                    Valider le devis
+                  </Button>
+                )}
+                {viewing.type === 'QUOTE' && canEdit && viewing.validated && viewing.generatedInvoiceId == null && (
+                  <Button type="button" id="Billing.view.convert" onClick={() => handleConvertToInvoice(viewing)}>Créer facture</Button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 ml-auto">
                 <IconButton icon="print" variant="neutral" label="Générer le PDF" id="Billing.view.pdf" onClick={() => openPdf(viewing)} />
                 <IconButton icon="send" variant="primary" label="Envoyer par email" id="Billing.view.send" onClick={() => openSend(viewing)} />
-                {canEdit && viewing.type === 'QUOTE' && (
+                {canEdit && (
+                  <IconButton icon="copy" variant="neutral" label="Dupliquer" id="Billing.view.duplicate" onClick={() => void handleDuplicate(viewing)} />
+                )}
+                {canEdit && viewing.type === 'QUOTE' && viewing.generatedInvoiceId == null && (
                   <IconButton icon="delete" variant="danger" label="Supprimer" id="Billing.view.delete" onClick={() => handleDelete(viewing)} />
                 )}
-                <IconButton icon="cancel" variant="neutral" label="Fermer" id="Billing.view.cancel" onClick={() => setViewing(null)} />
-                {canEdit && (
+                <IconButton icon="cancel" variant="neutral" label="Annuler" id="Billing.view.cancel" onClick={() => setViewing(null)} />
+                {canEdit && !locked && (
                   <IconButton icon="save" variant="primary" label="Enregistrer" id="Billing.view.save" onClick={handleViewSave} loading={viewSaving} disabled={viewSaving} />
                 )}
               </div>
@@ -765,7 +938,7 @@ export function Billing() {
             <Field label="Email du client" id="Billing.send.recipient.label">
               <Input id="Billing.send.recipient" value={sendPreview.recipient} readOnly />
             </Field>
-            <Field label="Sujet" id="Billing.send.subject.label">
+            <Field label="Objet" id="Billing.send.subject.label">
               <Input id="Billing.send.subject" value={sendPreview.subject} readOnly />
             </Field>
             <Field label="Corps du mail" id="Billing.send.body.label">
@@ -785,6 +958,39 @@ export function Billing() {
             <div className="flex justify-end gap-2">
               <IconButton icon="cancel" variant="neutral" label="Annuler" id="Billing.send.cancel" onClick={closeSend} />
               <IconButton icon="send" variant="primary" label="Envoyer" id="Billing.send.confirm" onClick={confirmSend} loading={sending} disabled={sending} />
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        open={!!result}
+        onClose={() => setResult(null)}
+        title={result?.kind === 'invoice' ? 'Facture générée' : 'Document dupliqué'}
+        titleId="Billing.result.title"
+        size="md"
+      >
+        {result && (
+          <div className="space-y-4">
+            <p id="Billing.result.message" className="text-sm text-gray-700">
+              {result.kind === 'invoice'
+                ? `La facture ${result.doc.number} a été générée.`
+                : `Le document ${result.doc.number} a été dupliqué.`}
+            </p>
+            <label id="Billing.result.switch.wrapper" className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                id="Billing.result.switch"
+                type="checkbox"
+                checked={switchToResult}
+                onChange={(e) => setSwitchToResult(e.target.checked)}
+              />
+              {result.kind === 'invoice'
+                ? 'Basculer vers la facture générée'
+                : 'Basculer vers le document dupliqué'}
+            </label>
+            <div className="flex justify-end gap-2">
+              <Button type="button" id="Billing.result.close" variant="neutral" onClick={() => setResult(null)}>Rester</Button>
+              <Button type="button" id="Billing.result.confirm" onClick={handleResultConfirm}>Continuer</Button>
             </div>
           </div>
         )}

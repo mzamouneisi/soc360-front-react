@@ -363,6 +363,8 @@ export interface CollaboratorSummary {
   email: string | null
   role: Role
   employee: boolean
+  socId: number | null
+  socName: string | null
 }
 
 export interface ManagerSummary {
@@ -494,7 +496,7 @@ export interface ActivityDto {
   startDate: string | null
   endDate: string | null
   type?: { id: number; code: string; labelFr: string; color?: string | null } | null
-  project?: { id: number; name: string; clientName?: string | null } | null
+  project?: { id: number; name: string; clientId?: number | null; clientName?: string | null } | null
   consultant?: { id: number; firstName: string; lastName: string } | null
   soc?: { id: number; name: string } | null
   active: boolean
@@ -928,10 +930,15 @@ export interface BillingDocumentDto {
   socId: number | null
   projectId: number | null
   projectName: string | null
+  clientId: number | null
   clientName: string | null
+  clientAddress: string | null
+  clientPhone: string | null
+  clientEmail: string | null
   location: string | null
   activityId: number | null
   activityName: string | null
+  missionLabel: string | null
   consultantId: number | null
   consultantName: string | null
   parentQuoteId: number | null
@@ -947,6 +954,10 @@ export interface BillingDocumentDto {
   notes: string | null
   sentToClientAt: string | null
   sendCount: number
+  validated: boolean
+  frozen: boolean
+  generatedInvoiceId: number | null
+  generatedInvoiceNumber: string | null
   lines: BillingLineDto[]
 }
 
@@ -970,6 +981,8 @@ export interface CreateBillingDocumentRequest {
   discount?: number
   notes?: string
   lines?: BillingLineRequest[]
+  clientId?: number | null
+  missionLabel?: string | null
 }
 
 export interface UpdateBillingDocumentRequest {
@@ -981,6 +994,8 @@ export interface UpdateBillingDocumentRequest {
   discount?: number
   notes?: string
   lines?: BillingLineRequest[]
+  clientId?: number | null
+  missionLabel?: string | null
 }
 
 export interface GeneratableMonthDto {
@@ -1164,6 +1179,7 @@ export type NotificationChannel = 'IN_APP' | 'EMAIL'
 export type NotificationScheduleType = 'ONCE' | 'RECURRING'
 export type NotificationRecurrence = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
 export type NotificationConfigStatus = 'ACTIVE' | 'DISABLED'
+export type NotificationRecipientAudience = 'ALL' | 'RESPONSIBLE_SOC' | 'MANAGERS' | 'CONSULTANTS'
 export type NotificationTriggerType = 'SCHEDULED' | 'BUSINESS'
 export type NotificationExecutionStatus = 'SUCCESS' | 'PARTIAL' | 'FAILED'
 export type NotificationDeliveryStatus = 'SENT' | 'FAILED'
@@ -1184,11 +1200,11 @@ export interface NotificationConfigDto {
   status: NotificationConfigStatus
   referenceType: string | null
   referenceId: string | null
-  recipientAll: boolean
-  recipientEmployee: boolean
-  recipientNonEmployee: boolean
-  recipientManager: boolean
-  recipientConsultant: boolean
+  recipientAudience: NotificationRecipientAudience | null
+  recipientIncludeNonEmployees: boolean
+  recipientIncludeSelf: boolean
+  recipientCompanyIds: number[]
+  recipientCompanyNames: string[]
   recipientIds: number[]
   recipientNames: string[]
   nextRunAt: string | null
@@ -1213,11 +1229,10 @@ export interface NotificationConfigRequest {
   status: NotificationConfigStatus
   referenceType?: string | null
   referenceId?: string | null
-  recipientAll: boolean
-  recipientEmployee: boolean
-  recipientNonEmployee: boolean
-  recipientManager: boolean
-  recipientConsultant: boolean
+  recipientAudience: NotificationRecipientAudience | null
+  recipientIncludeNonEmployees: boolean
+  recipientIncludeSelf: boolean
+  recipientCompanyIds: number[]
   recipientIds: number[]
 }
 
