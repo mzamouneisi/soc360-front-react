@@ -14,7 +14,7 @@ describe('DocumentPreview', () => {
   })
 
   it('affiche un PDF dans une iframe', () => {
-    render(<DocumentPreview url="blob:preview" name="document.pdf" />)
+    render(<DocumentPreview url="about:blank" name="document.pdf" />)
 
     expect(screen.getByTitle('Aperçu du document PDF')).toBeInTheDocument()
   })

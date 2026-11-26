@@ -84,7 +84,7 @@ describe('Documents', () => {
     findAllMock.mockResolvedValue([document()])
     shareTargetsMock.mockResolvedValue([])
     summariesMock.mockResolvedValue([])
-    previewUrlMock.mockResolvedValue('blob:preview')
+    previewUrlMock.mockResolvedValue('about:blank')
 
     render(
       <MemoryRouter>

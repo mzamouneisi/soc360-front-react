@@ -13,12 +13,13 @@ vi.mock('../api/documents', () => ({
     upload: uploadMock,
     download: downloadMock,
     delete: deleteMock,
-    previewUrl: vi.fn().mockResolvedValue('blob:preview'),
+    previewUrl: vi.fn().mockResolvedValue('about:blank'),
   },
 }))
 
 afterEach(() => {
   vi.clearAllMocks()
+  vi.restoreAllMocks()
 })
 
 describe('DocumentAttachment', () => {
@@ -46,6 +47,8 @@ describe('DocumentAttachment', () => {
 
   it('téléverse le fichier et associe le document avec son commentaire', async () => {
     uploadMock.mockResolvedValue({ id: 42, name: 'justificatif.pdf' })
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('about:blank')
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
     const onChange = vi.fn()
     render(<DocumentAttachment value={null} onChange={onChange} />)
 
