@@ -9,7 +9,9 @@ import { useSoc } from '../soc/SocContext'
 import { Button, Card, Field, Input, InlineButton, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
+import { ROLE_LABELS } from '../lib/format'
 import type {
+  CollaboratorSummary,
   NotificationConfigDto,
   NotificationConfigRequest,
   NotificationConfigStatus,
@@ -21,6 +23,13 @@ import type {
 
 const CONTEXTS: NotificationContext[] = ['CRA', 'INVOICE', 'ORDER', 'DOCUMENT', 'VALIDATION', 'OTHER']
 const RECURRENCES: NotificationRecurrence[] = ['NONE', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']
+// Rôle du plus haut au plus bas (ADMIN exclu des destinataires).
+const ROLE_RANK: Record<string, number> = {
+  ADMIN: 4,
+  RESPONSIBLE_SOC: 3,
+  MANAGER: 2,
+  CONSULTANT: 1,
+}
 
 function defaultExecutionAt(): string {
   const date = new Date()
@@ -57,6 +66,11 @@ function emptyForm(socId: number | null): NotificationConfigRequest {
     status: 'ACTIVE',
     referenceType: null,
     referenceId: null,
+    recipientAll: false,
+    recipientEmployee: false,
+    recipientNonEmployee: false,
+    recipientManager: false,
+    recipientConsultant: false,
     recipientIds: [],
   }
 }
@@ -75,6 +89,10 @@ export function NotificationSettings() {
     () => (socId ? consultantsApi.collaborators(socId) : Promise.resolve([])),
     [socId],
   )
+  const sortedCollaborators = [...(collaborators ?? [])].sort((a, b) => {
+    const byRole = (ROLE_RANK[b.role] ?? 0) - (ROLE_RANK[a.role] ?? 0)
+    return byRole !== 0 ? byRole : a.fullName.localeCompare(b.fullName)
+  })
 
   const [form, setForm] = useState<NotificationConfigRequest>(emptyForm(socId))
   const [open, setOpen] = useState(false)
@@ -109,14 +127,53 @@ export function NotificationSettings() {
       status: config.status,
       referenceType: config.referenceType,
       referenceId: config.referenceId,
+      recipientAll: config.recipientAll ?? false,
+      recipientEmployee: config.recipientEmployee ?? false,
+      recipientNonEmployee: config.recipientNonEmployee ?? false,
+      recipientManager: config.recipientManager ?? false,
+      recipientConsultant: config.recipientConsultant ?? false,
       recipientIds: [...config.recipientIds],
     })
     setFormError(null)
     setOpen(true)
   }
 
+  /** « Tous les collaborateurs » est exclusif : il désactive et vide les autres filtres. */
+  function setRecipientAll(checked: boolean) {
+    setForm({
+      ...form,
+      recipientAll: checked,
+      recipientEmployee: checked ? false : form.recipientEmployee,
+      recipientNonEmployee: checked ? false : form.recipientNonEmployee,
+      recipientManager: checked ? false : form.recipientManager,
+      recipientConsultant: checked ? false : form.recipientConsultant,
+      recipientIds: checked ? [] : form.recipientIds,
+    })
+  }
+
+  type RecipientFlag = 'recipientEmployee' | 'recipientNonEmployee' | 'recipientManager' | 'recipientConsultant'
+
+  function setRecipientFlag(flag: RecipientFlag, checked: boolean) {
+    setForm({ ...form, [flag]: checked })
+  }
+
+  /** Libellé d'un collaborateur : nom, rôle et statut salarié/non salarié. */
+  const collaboratorLabel = (collaborator: CollaboratorSummary) => {
+    const role = ROLE_LABELS[collaborator.role] ?? collaborator.role
+    const status = collaborator.employee
+      ? t('NotificationSettings.recipients.salarie')
+      : t('NotificationSettings.recipients.nonSalarie')
+    return `${collaborator.fullName} (${role}, ${status})`
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    const hasAudience = form.recipientAll || form.recipientEmployee || form.recipientNonEmployee
+      || form.recipientManager || form.recipientConsultant || form.recipientIds.length > 0
+    if (!hasAudience) {
+      setFormError(t('NotificationSettings.required'))
+      return
+    }
     setSaving(true)
     setFormError(null)
     try {
@@ -184,8 +241,19 @@ export function NotificationSettings() {
     }
   }
 
-  const recipientLabel = (config: NotificationConfigDto) =>
-    config.recipientNames.length ? config.recipientNames.join(', ') : '—'
+  const recipientLabel = (config: NotificationConfigDto) => {
+    const parts: string[] = []
+    if (config.recipientAll) {
+      parts.push(t('NotificationSettings.recipients.all'))
+    } else {
+      if (config.recipientEmployee) parts.push(t('NotificationSettings.recipients.employee'))
+      if (config.recipientNonEmployee) parts.push(t('NotificationSettings.recipients.nonEmployee'))
+      if (config.recipientManager) parts.push(t('NotificationSettings.recipients.manager'))
+      if (config.recipientConsultant) parts.push(t('NotificationSettings.recipients.consultant'))
+      if (config.recipientNames.length) parts.push(config.recipientNames.join(', '))
+    }
+    return parts.length ? parts.join(' + ') : '—'
+  }
 
   const statusBadge = (config: NotificationConfigDto) => (
     <Badge id={`NotificationSettings.row.${config.id}.status`} kind={config.status === 'ACTIVE' ? 'success' : 'muted'}>
@@ -373,24 +441,73 @@ export function NotificationSettings() {
             {t('NotificationSettings.variables')}
           </p>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Field label={t('NotificationSettings.recipients')} id="NotificationSettings.recipients">
-              <Select
-                id="NotificationSettings.recipients.input"
-                multiple
-                size={6}
-                value={form.recipientIds.map(String)}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    recipientIds: Array.from(event.target.selectedOptions).map((option) => Number(option.value)),
-                  })
-                }
-              >
-                {(collaborators ?? []).map((collaborator) => (
-                  <option key={collaborator.id} value={collaborator.id}>{collaborator.fullName}</option>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field className="sm:col-span-2" label={t('NotificationSettings.recipients')} id="NotificationSettings.recipients.field">
+              <div className="space-y-2 text-sm text-gray-700">
+                <label id="NotificationSettings.recipients.all" className="flex items-center gap-2">
+                  <input
+                    id="NotificationSettings.recipients.all.input"
+                    type="checkbox"
+                    checked={form.recipientAll}
+                    onChange={(event) => setRecipientAll(event.target.checked)}
+                  />
+                  {t('NotificationSettings.recipients.all')}
+                </label>
+                {[
+                  ['employee', 'recipientEmployee', form.recipientEmployee],
+                  ['nonEmployee', 'recipientNonEmployee', form.recipientNonEmployee],
+                  ['manager', 'recipientManager', form.recipientManager],
+                  ['consultant', 'recipientConsultant', form.recipientConsultant],
+                ].map(([key, field, checked]) => (
+                  <label
+                    key={key as string}
+                    id={`NotificationSettings.recipients.${key as string}`}
+                    className={`ml-6 flex items-center gap-2 ${form.recipientAll ? 'text-gray-400' : ''}`}
+                  >
+                    <input
+                      id={`NotificationSettings.recipients.${key as string}.input`}
+                      type="checkbox"
+                      checked={checked as boolean}
+                      disabled={form.recipientAll}
+                      onChange={(event) => setRecipientFlag(field as RecipientFlag, event.target.checked)}
+                    />
+                    {t(`NotificationSettings.recipients.${key as string}`)}
+                  </label>
                 ))}
-              </Select>
+                <div>
+                  <label
+                    id="NotificationSettings.recipients.specific"
+                    htmlFor="NotificationSettings.recipients.input"
+                    className="flex items-center gap-2"
+                  >
+                    {t('NotificationSettings.recipients.specific')}
+                  </label>
+                  <Select
+                    id="NotificationSettings.recipients.input"
+                    className="mt-1"
+                    multiple
+                    size={6}
+                    disabled={form.recipientAll}
+                    value={form.recipientIds.map(String)}
+                    onChange={(event) =>
+                      setForm({
+                        ...form,
+                        recipientIds: Array.from(event.target.selectedOptions).map((option) => Number(option.value)),
+                      })
+                    }
+                  >
+                    {sortedCollaborators.map((collaborator) => (
+                      <option
+                        key={collaborator.id}
+                        id={`NotificationSettings.recipients.option.${collaborator.id}`}
+                        value={collaborator.id}
+                      >
+                        {collaboratorLabel(collaborator)}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
             </Field>
             <div className="space-y-3">
               <Field label={t('NotificationSettings.channels')} id="NotificationSettings.channels">

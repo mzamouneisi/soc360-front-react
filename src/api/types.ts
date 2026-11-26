@@ -362,6 +362,7 @@ export interface CollaboratorSummary {
   position: string | null
   email: string | null
   role: Role
+  employee: boolean
 }
 
 export interface ManagerSummary {
@@ -1183,6 +1184,11 @@ export interface NotificationConfigDto {
   status: NotificationConfigStatus
   referenceType: string | null
   referenceId: string | null
+  recipientAll: boolean
+  recipientEmployee: boolean
+  recipientNonEmployee: boolean
+  recipientManager: boolean
+  recipientConsultant: boolean
   recipientIds: number[]
   recipientNames: string[]
   nextRunAt: string | null
@@ -1207,6 +1213,11 @@ export interface NotificationConfigRequest {
   status: NotificationConfigStatus
   referenceType?: string | null
   referenceId?: string | null
+  recipientAll: boolean
+  recipientEmployee: boolean
+  recipientNonEmployee: boolean
+  recipientManager: boolean
+  recipientConsultant: boolean
   recipientIds: number[]
 }
 
