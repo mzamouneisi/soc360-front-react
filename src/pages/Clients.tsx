@@ -6,9 +6,11 @@ import { socsApi } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { CompanyLookup } from '../api/auth'
 import { useAsync } from '../lib/useAsync'
+import { isValidEmail, isValidPhone } from '../lib/validation'
 import { Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
 import { dialog } from '../components/dialog'
+import { FlagField } from '../components/FlagField'
 import { useSoc } from '../soc/SocContext'
 import { socToCompanyLookup } from '../soc/socLookup'
 import type { ClientDto } from '../api/types'
@@ -69,6 +71,8 @@ export function Clients() {
   const [modalOpen, setModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const emailValid = !!form.contactEmail.trim() && isValidEmail(form.contactEmail)
+  const phoneValid = !!form.contactPhone.trim() && isValidPhone(form.contactPhone)
 
   function applyCompany(company: CompanyLookup | null) {
     if (!company) return
@@ -120,6 +124,16 @@ export function Clients() {
     }
     if (!form.socId) {
       setFormError(tr('Clients.selectionner.societe.associee'))
+      return
+    }
+    const email = form.contactEmail.trim()
+    if (email && !isValidEmail(email)) {
+      setFormError(tr('Clients.email.invalid'))
+      return
+    }
+    const phone = form.contactPhone.trim()
+    if (phone && !isValidPhone(phone)) {
+      setFormError(tr('Clients.phone.invalid'))
       return
     }
     setSubmitting(true)
@@ -323,22 +337,22 @@ export function Clients() {
                 onChange={(e) => setForm({ ...form, contactName: e.target.value })}
               />
             </Field>
-            <Field label={tr('Clients.telephone')} id="Clients.telephone">
+            <FlagField label={tr('Clients.telephone')} id="Clients.telephone" valid={phoneValid}>
               <Input
                 id="Clients.telephone.input"
                 value={form.contactPhone}
                 onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
               />
-            </Field>
+            </FlagField>
           </div>
-          <Field label={tr('Clients.e.mail.du.contact')} id="Clients.e.mail.du.contact">
+          <FlagField label={tr('Clients.e.mail.du.contact')} id="Clients.e.mail.du.contact" valid={emailValid}>
             <Input
               id="Clients.e.mail.du.contact.input"
               type="email"
               value={form.contactEmail}
               onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
             />
-          </Field>
+          </FlagField>
           <label id="Clients.client.actif" className="flex items-center gap-2 text-sm text-gray-700">
             <input
               id="Clients.client.actif.checkbox"
