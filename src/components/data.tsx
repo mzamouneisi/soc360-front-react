@@ -327,7 +327,7 @@ export function Modal({
   children,
   footer,
   size = 'md',
-  scrollBody = false,
+  scrollBody = true,
 }: {
   open: boolean
   title: string

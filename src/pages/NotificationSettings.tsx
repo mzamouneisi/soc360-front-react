@@ -130,6 +130,20 @@ export function NotificationSettings() {
   const [historyLoading, setHistoryLoading] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [recipientMode, setRecipientModeState] = useState<'AUDIENCE' | 'SPECIFIC' | 'COMPANIES'>('AUDIENCE')
+  const [includeNonEmployeesSpecific, setIncludeNonEmployeesSpecific] = useState(false)
+  const specificCollaborators = includeNonEmployeesSpecific
+    ? sortedCollaborators
+    : sortedCollaborators.filter((collaborator) => collaborator.employee)
+
+  useEffect(() => {
+    if (!open || includeNonEmployeesSpecific) return
+    const hasSelectedNonEmployee = (collaborators ?? []).some(
+      (collaborator) => !collaborator.employee && form.recipientIds.includes(collaborator.id),
+    )
+    if (hasSelectedNonEmployee) {
+      setIncludeNonEmployeesSpecific(true)
+    }
+  }, [open, collaborators, form.recipientIds, includeNonEmployeesSpecific])
 
   const audienceKeys: Record<NotificationRecipientAudience, string> = {
     ALL: isAdmin
@@ -154,6 +168,7 @@ export function NotificationSettings() {
   function openCreate() {
     setForm(emptyForm(socId))
     setRecipientModeState('AUDIENCE')
+    setIncludeNonEmployeesSpecific(false)
     setFormError(null)
     setOpen(true)
   }
@@ -202,11 +217,11 @@ export function NotificationSettings() {
   }
 
   function toggleSelectAll() {
-    const allSelected = sortedCollaborators.length > 0
-      && sortedCollaborators.every((c) => form.recipientIds.includes(c.id))
+    const allSelected = specificCollaborators.length > 0
+      && specificCollaborators.every((c) => form.recipientIds.includes(c.id))
     setForm({
       ...form,
-      recipientIds: allSelected ? [] : sortedCollaborators.map((c) => c.id),
+      recipientIds: allSelected ? [] : specificCollaborators.map((c) => c.id),
     })
   }
 
@@ -617,7 +632,7 @@ export function NotificationSettings() {
                       id="NotificationSettings.recipients.input"
                       className="max-h-72 w-full overflow-y-auto rounded-lg border border-gray-200 p-2"
                     >
-                      {sortedCollaborators.map((collaborator) => (
+                      {specificCollaborators.map((collaborator) => (
                         <label
                           key={collaborator.id}
                           id={`NotificationSettings.recipients.option.${collaborator.id}`}
@@ -641,19 +656,46 @@ export function NotificationSettings() {
                         </label>
                       ))}
                     </div>
-                    <Button
-                      type="button"
-                      id="NotificationSettings.recipients.toggleAll"
-                      variant="neutral"
-                      disabled={recipientMode !== 'SPECIFIC' || sortedCollaborators.length === 0}
-                      onClick={toggleSelectAll}
-                      className="whitespace-nowrap"
-                    >
-                      {sortedCollaborators.length > 0
-                        && sortedCollaborators.every((c) => form.recipientIds.includes(c.id))
-                        ? t('NotificationSettings.recipients.deselectAll')
-                        : t('NotificationSettings.recipients.selectAll')}
-                    </Button>
+                    <div className="flex flex-col items-start gap-2">
+                      <label
+                        id="NotificationSettings.recipients.includeNonEmployeesSpecific"
+                        className={`flex items-center gap-2 ${recipientMode === 'SPECIFIC' ? '' : 'text-gray-400'}`}
+                      >
+                        <input
+                          id="NotificationSettings.recipients.includeNonEmployeesSpecific.input"
+                          type="checkbox"
+                          disabled={recipientMode !== 'SPECIFIC'}
+                          checked={includeNonEmployeesSpecific}
+                          onChange={(event) => {
+                            const checked = event.target.checked
+                            setIncludeNonEmployeesSpecific(checked)
+                            if (!checked) {
+                              const employeeIds = new Set(
+                                sortedCollaborators.filter((c) => c.employee).map((c) => c.id),
+                              )
+                              setForm({
+                                ...form,
+                                recipientIds: form.recipientIds.filter((id) => employeeIds.has(id)),
+                              })
+                            }
+                          }}
+                        />
+                        {t('NotificationSettings.recipients.includeNonEmployees')}
+                      </label>
+                      <Button
+                        type="button"
+                        id="NotificationSettings.recipients.toggleAll"
+                        variant="neutral"
+                        disabled={recipientMode !== 'SPECIFIC' || specificCollaborators.length === 0}
+                        onClick={toggleSelectAll}
+                        className="whitespace-nowrap"
+                      >
+                        {specificCollaborators.length > 0
+                          && specificCollaborators.every((c) => form.recipientIds.includes(c.id))
+                          ? t('NotificationSettings.recipients.deselectAll')
+                          : t('NotificationSettings.recipients.selectAll')}
+                      </Button>
+                    </div>
                   </div>
                 </div>
 

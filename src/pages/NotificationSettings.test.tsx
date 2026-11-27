@@ -203,6 +203,11 @@ describe('NotificationSettings', () => {
     await waitFor(() =>
       expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
     )
+    // Par défaut les non-salariés sont masqués : on les inclut pour tester la sélection complète.
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.includeNonEmployeesSpecific.input') as HTMLInputElement)
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.3')).not.toBeNull(),
+    )
 
     fireEvent.click(document.getElementById('NotificationSettings.recipients.toggleAll') as HTMLElement)
     await waitFor(() => {
@@ -242,6 +247,8 @@ describe('NotificationSettings', () => {
 
     render(<NotificationSettings />)
     openCreate()
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement)
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.includeNonEmployeesSpecific.input') as HTMLInputElement)
 
     await waitFor(() =>
       expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
@@ -264,6 +271,8 @@ describe('NotificationSettings', () => {
 
     render(<NotificationSettings />)
     openCreate()
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement)
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.includeNonEmployeesSpecific.input') as HTMLInputElement)
 
     await waitFor(() =>
       expect(document.getElementById('NotificationSettings.recipients.option.1')).not.toBeNull(),
@@ -380,5 +389,45 @@ describe('NotificationSettings', () => {
     expect(body).not.toBeNull()
     expect(body.className).toContain('overflow-auto')
     expect(body.className).toContain('max-h-')
+  })
+
+  it('sélection manuelle : non-salariés masqués par défaut, inclus via la case à cocher', async () => {
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue(collaborators)
+
+    render(<NotificationSettings />)
+    openCreate()
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement)
+
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
+    )
+    const include = () => document.getElementById(
+      'NotificationSettings.recipients.includeNonEmployeesSpecific.input',
+    ) as HTMLInputElement
+    expect(include().checked).toBe(false)
+    expect(document.getElementById('NotificationSettings.recipients.option.3')).toBeNull()
+
+    fireEvent.click(include())
+    await waitFor(() => expect(include().checked).toBe(true))
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.3')).not.toBeNull(),
+    )
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.option.3.input') as HTMLInputElement)
+    await waitFor(() =>
+      expect((document.getElementById('NotificationSettings.recipients.option.3.input') as HTMLInputElement).checked).toBe(true),
+    )
+
+    fireEvent.click(include())
+    await waitFor(() => expect(include().checked).toBe(false))
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.3')).toBeNull(),
+    )
+    fireEvent.click(include())
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.3')).not.toBeNull(),
+    )
+    expect((document.getElementById('NotificationSettings.recipients.option.3.input') as HTMLInputElement).checked).toBe(false)
   })
 })
