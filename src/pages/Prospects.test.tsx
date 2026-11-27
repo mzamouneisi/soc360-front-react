@@ -1,16 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Prospects } from './Prospects'
 import type { ProspectDto } from '../api/types'
 
-const { findAllMock, userMock } = vi.hoisted(() => {
+const { findAllMock, createMock, userMock, selectedSocMock } = vi.hoisted(() => {
   const initialUser: { id: number; role: string; socId: number | null; pageSize: number } = {
     id: 1,
     role: 'MANAGER',
     socId: 5,
     pageSize: 3,
   }
-  return { findAllMock: vi.fn(), userMock: { value: initialUser } }
+  return {
+    findAllMock: vi.fn(),
+    createMock: vi.fn().mockResolvedValue({}),
+    userMock: { value: initialUser },
+    selectedSocMock: { value: { id: 5, name: 'SOC', country: 'FRANCE' } },
+  }
 })
 
 vi.mock('../auth/AuthContext', () => ({
@@ -18,13 +23,13 @@ vi.mock('../auth/AuthContext', () => ({
 }))
 
 vi.mock('../soc/SocContext', () => ({
-  useSoc: () => ({ selectedSocId: 5 }),
+  useSoc: () => ({ selectedSocId: 5, selectedSoc: selectedSocMock.value }),
 }))
 
 vi.mock('../api/prospects', () => ({
   prospectsApi: {
     findAll: findAllMock,
-    create: vi.fn(),
+    create: createMock,
     update: vi.fn(),
     delete: vi.fn(),
     addNote: vi.fn(),
@@ -41,6 +46,10 @@ const prospect: ProspectDto = {
   contactEmail: 'jean@prospect.fr',
   contactPhone: '0102030405',
   address: '1 rue de Paris',
+  street: '1 rue de Paris',
+  postalCode: '75001',
+  city: 'Paris',
+  country: 'France',
   soc: { id: 5, name: 'SOC' },
   socParent: { id: 5, name: 'SOC' },
   status: 'ACTIVE',
@@ -54,7 +63,9 @@ const prospect: ProspectDto = {
 
 afterEach(() => {
   vi.clearAllMocks()
+  vi.unstubAllGlobals()
   userMock.value = { id: 1, role: 'MANAGER', socId: 5, pageSize: 3 }
+  selectedSocMock.value = { id: 5, name: 'SOC', country: 'FRANCE' }
 })
 
 describe('Prospects', () => {
@@ -135,6 +146,60 @@ describe('Prospects', () => {
     expect(document.getElementById('Prospects.form')).toBeInTheDocument()
     expect(document.getElementById('Prospects.name.input')).toBeInTheDocument()
     expect(document.getElementById('Prospects.kind.input')).toBeInTheDocument()
+    expect(document.getElementById('Prospects.address.card')).toBeInTheDocument()
+    expect(document.getElementById('Prospects.address')).toHaveTextContent('Prospects.address')
+    expect(document.getElementById('Prospects.address.invalid')).toHaveTextContent('X')
+  })
+
+  it('affiche X en rouge par défaut puis le flag si l’adresse existe', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        features: [{ properties: { street: 'Rue de Paris', city: 'Paris', postcode: '75001' } }],
+      }),
+    })))
+
+    const invalid = document.getElementById('Prospects.address.invalid')
+    expect(invalid?.textContent).toBe('X')
+    expect(invalid?.className).toContain('text-red-600')
+
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+    fireEvent.change(document.getElementById('Prospects.city.input') as HTMLInputElement, {
+      target: { value: 'Paris' },
+    })
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: 'Rue de Paris' },
+    })
+    fireEvent.blur(document.getElementById('Prospects.street.input') as HTMLInputElement)
+
+    await waitFor(() => expect(document.getElementById('Prospects.address.valid')).not.toBeNull(), {
+      timeout: 3000,
+    })
+    expect(document.getElementById('Prospects.address.invalid')).toBeNull()
+    expect(document.getElementById('Prospects.address.valid')?.className).toContain('text-green-600')
+  })
+
+  it('garde X en rouge si l’adresse n’existe pas', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ features: [] }) })))
+
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+    fireEvent.change(document.getElementById('Prospects.city.input') as HTMLInputElement, {
+      target: { value: 'Paris' },
+    })
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: 'Rue Inexistante' },
+    })
+    fireEvent.blur(document.getElementById('Prospects.street.input') as HTMLInputElement)
+
+    await new Promise((resolve) => setTimeout(resolve, 800))
+    expect(document.getElementById('Prospects.address.invalid')).not.toBeNull()
+    expect(document.getElementById('Prospects.address.valid')).toBeNull()
   })
 
   it('admin charge tous les prospects sans filtre société et affiche la société', async () => {
@@ -146,5 +211,189 @@ describe('Prospects', () => {
     expect(await screen.findByText('Société Prospective')).toBeInTheDocument()
     expect(findAllMock).toHaveBeenCalledWith(undefined)
     expect(document.getElementById('Prospects.row.1.soc')).toHaveTextContent('SOC')
+  })
+
+  async function openCreateForm() {
+    findAllMock.mockResolvedValue([])
+    render(<Prospects />)
+    fireEvent.click(document.getElementById('Prospects.new') as HTMLElement)
+    fireEvent.change(document.getElementById('Prospects.name.input') as HTMLInputElement, {
+      target: { value: 'Nouveau prospect' },
+    })
+  }
+
+  it('refuse un email invalide', async () => {
+    await openCreateForm()
+    fireEvent.change(document.getElementById('Prospects.email.input') as HTMLInputElement, {
+      target: { value: 'a@b' },
+    })
+    fireEvent.submit(document.getElementById('Prospects.form') as HTMLFormElement)
+
+    expect(await screen.findByText('Prospects.email.invalid')).toBeInTheDocument()
+    expect(createMock).not.toHaveBeenCalled()
+  })
+
+  it('refuse un téléphone invalide', async () => {
+    await openCreateForm()
+    fireEvent.change(document.getElementById('Prospects.phone.input') as HTMLInputElement, {
+      target: { value: 'abc' },
+    })
+    fireEvent.submit(document.getElementById('Prospects.form') as HTMLFormElement)
+
+    expect(await screen.findByText('Prospects.phone.invalid')).toBeInTheDocument()
+    expect(createMock).not.toHaveBeenCalled()
+  })
+
+  it('refuse un code postal français invalide', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ features: [] }) })))
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '7500' },
+    })
+    fireEvent.submit(document.getElementById('Prospects.form') as HTMLFormElement)
+
+    expect(await screen.findByText('Prospects.postalCode.invalid')).toBeInTheDocument()
+    expect(createMock).not.toHaveBeenCalled()
+  })
+
+  it('remplit la ville depuis le code postal (France)', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ features: [{ properties: { city: 'Paris', postcode: '75001' } }] }),
+    })))
+
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+
+    await waitFor(() =>
+      expect((document.getElementById('Prospects.city.input') as HTMLInputElement).value).toBe('Paris'),
+    )
+  })
+
+  it('remplit le code postal depuis la ville (France)', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ features: [{ properties: { city: 'Lyon', postcode: '69001' } }] }),
+    })))
+
+    const city = document.getElementById('Prospects.city.input') as HTMLInputElement
+    fireEvent.change(city, { target: { value: 'Lyon' } })
+    fireEvent.blur(city)
+
+    await waitFor(() =>
+      expect((document.getElementById('Prospects.postalCode.input') as HTMLInputElement).value).toBe('69001'),
+    )
+  })
+
+  it('propose des suggestions de rue pour un code postal (France)', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        features: [{ properties: { street: 'Rue de Paris', label: 'Rue de Paris 75001 Paris' } }],
+      }),
+    })))
+
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: 'Rue de' },
+    })
+
+    await waitFor(() => {
+      expect(document.getElementById('Prospects.street.suggestions')).not.toBeNull()
+    }, { timeout: 3000 })
+    const list = document.getElementById('Prospects.street.suggestions') as HTMLElement
+    expect(list.querySelectorAll('li')).toHaveLength(1)
+    expect(list.textContent).toBe('Rue de Paris')
+  })
+
+  it('propose des rues quand la saisie commence par un numéro', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        features: [{ properties: { street: 'Rue de Paris', label: 'Rue de Paris 75001 Paris' } }],
+      }),
+    })))
+
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: '12 rue de' },
+    })
+
+    await waitFor(() => {
+      expect(document.getElementById('Prospects.street.suggestions')).not.toBeNull()
+    }, { timeout: 3000 })
+    const list = document.getElementById('Prospects.street.suggestions') as HTMLElement
+    expect(list.textContent).toBe('12 Rue de Paris')
+  })
+
+  it('ne propose pas de rue sans code postal', async () => {
+    await openCreateForm()
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ features: [{ properties: { street: 'Rue de Paris' } }] }),
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: 'Rue de' },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 400))
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(document.getElementById('Prospects.street.suggestions')).toBeNull()
+  })
+
+  it('enregistre l’adresse structurée', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ features: [] }) })))
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: '1 rue de Paris' },
+    })
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+    fireEvent.change(document.getElementById('Prospects.city.input') as HTMLInputElement, {
+      target: { value: 'Paris' },
+    })
+    fireEvent.submit(document.getElementById('Prospects.form') as HTMLFormElement)
+
+    await waitFor(() => expect(createMock).toHaveBeenCalled())
+    expect(createMock).toHaveBeenCalledWith(expect.objectContaining({
+      street: '1 rue de Paris',
+      postalCode: '75001',
+      city: 'Paris',
+      country: 'FRANCE',
+    }))
+  })
+
+  it('propose des pays et passe le pays en majuscules', async () => {
+    await openCreateForm()
+
+    const countryInput = document.getElementById('Prospects.country.input') as HTMLInputElement
+    fireEvent.change(countryInput, { target: { value: 'fra' } })
+
+    expect(countryInput.value).toBe('FRA')
+    const list = document.getElementById('Prospects.country.suggestions') as HTMLDataListElement
+    const values = Array.from(list.options).map((option) => option.value)
+    expect(values).toContain('FRANCE')
+  })
+
+  it('pré-remplit le pays avec celui de la société sélectionnée', async () => {
+    selectedSocMock.value = { id: 5, name: 'SOC', country: 'Belgique' }
+    findAllMock.mockResolvedValue([])
+
+    render(<Prospects />)
+    fireEvent.click(document.getElementById('Prospects.new') as HTMLElement)
+
+    expect((document.getElementById('Prospects.country.input') as HTMLInputElement).value).toBe('BELGIQUE')
   })
 })

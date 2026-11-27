@@ -430,4 +430,47 @@ describe('NotificationSettings', () => {
     )
     expect((document.getElementById('NotificationSettings.recipients.option.3.input') as HTMLInputElement).checked).toBe(false)
   })
+
+  it('affiche le nombre de collaborateurs sélectionnés sur le total', async () => {
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue(collaborators)
+
+    render(<NotificationSettings />)
+    openCreate()
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.modeSpecific.input') as HTMLInputElement)
+
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.option.2')).not.toBeNull(),
+    )
+    const count = () => document.getElementById('NotificationSettings.recipients.count') as HTMLSpanElement
+    expect(count().textContent).toBe('0 / 2')
+    expect(count().className).toContain('ml-5')
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.option.2.input') as HTMLInputElement)
+
+    await waitFor(() => expect(count().textContent).toBe('1 / 2'))
+  })
+
+  it('calcule aussi le compteur en mode « Par catégorie »', async () => {
+    listMock.mockResolvedValue([])
+    collaboratorsMock.mockResolvedValue(collaborators)
+
+    render(<NotificationSettings />)
+    openCreate()
+
+    const count = () => document.getElementById('NotificationSettings.recipients.count') as HTMLSpanElement
+    await waitFor(() =>
+      expect(document.getElementById('NotificationSettings.recipients.audienceConsultants.input')).not.toBeNull(),
+    )
+    expect(count().textContent).toBe('0 / 2')
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.audienceConsultants.input') as HTMLInputElement)
+    await waitFor(() => expect(count().textContent).toBe('1 / 2'))
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.audienceAll.input') as HTMLInputElement)
+    await waitFor(() => expect(count().textContent).toBe('1 / 2'))
+
+    fireEvent.click(document.getElementById('NotificationSettings.recipients.includeNonEmployees.input') as HTMLInputElement)
+    await waitFor(() => expect(count().textContent).toBe('2 / 2'))
+  })
 })

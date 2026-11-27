@@ -134,6 +134,39 @@ export function NotificationSettings() {
   const specificCollaborators = includeNonEmployeesSpecific
     ? sortedCollaborators
     : sortedCollaborators.filter((collaborator) => collaborator.employee)
+  // Nombre de destinataires résolus selon le cadre choisi (manuel ou par catégorie/sociétés).
+  const audienceResolvedCount = (() => {
+    if (!form.recipientAudience) return 0
+    return sortedCollaborators.filter((collaborator) => {
+      if (collaborator.role === 'ADMIN') return false
+      const roleMatch = form.recipientAudience === 'ALL'
+        ? true
+        : form.recipientAudience === 'RESPONSIBLE_SOC'
+          ? collaborator.role === 'RESPONSIBLE_SOC'
+          : form.recipientAudience === 'MANAGERS'
+            ? collaborator.role === 'MANAGER'
+            : collaborator.role === 'CONSULTANT'
+      if (!roleMatch) return false
+      const responsibleAlwaysIncluded = form.recipientAudience === 'ALL'
+        && collaborator.role === 'RESPONSIBLE_SOC'
+      if (!form.recipientIncludeNonEmployees && !collaborator.employee && !responsibleAlwaysIncluded) {
+        return false
+      }
+      if (!form.recipientIncludeSelf && user?.id != null && collaborator.id === user.id) {
+        return false
+      }
+      return true
+    }).length
+  })()
+  const companiesResolvedCount = sortedCollaborators
+    .filter((collaborator) => form.recipientCompanyIds.includes(collaborator.socId ?? -1))
+    .length
+  const selectedCollaboratorCount = recipientMode === 'AUDIENCE'
+    ? audienceResolvedCount
+    : recipientMode === 'COMPANIES'
+      ? companiesResolvedCount
+      : form.recipientIds.length
+  const totalCollaboratorCount = sortedCollaborators.length
 
   useEffect(() => {
     if (!open || includeNonEmployeesSpecific) return
@@ -554,7 +587,15 @@ export function NotificationSettings() {
             {t('NotificationSettings.variables')}
           </p>
 
-          <Field label={t('NotificationSettings.recipients')} id="NotificationSettings.recipients.field">
+          <div className="space-y-1">
+            <div className="flex items-center">
+              <label id="NotificationSettings.recipients.field" className="block text-sm font-medium text-gray-700">
+                {t('NotificationSettings.recipients')}
+              </label>
+              <span id="NotificationSettings.recipients.count" className="ml-5 text-sm text-gray-500">
+                {selectedCollaboratorCount} / {totalCollaboratorCount}
+              </span>
+            </div>
             <div className="space-y-3 text-sm text-gray-700">
               <div className={`grid grid-cols-1 gap-3 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
                 <div id="NotificationSettings.recipients.frame.audience" className="rounded-lg border border-gray-200 p-3">
@@ -784,7 +825,7 @@ export function NotificationSettings() {
                 </div>
               </Field>
             </div>
-          </Field>
+          </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Field label={t('NotificationSettings.scheduleType')} id="NotificationSettings.scheduleType">

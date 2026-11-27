@@ -1,10 +1,18 @@
 import { tr } from '../i18n/translate'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { prospectsApi } from '../api/prospects'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { Field, IconButton, Input, RefreshButton, Select, Textarea } from '../components/ui'
+import { findCountrySuggestions } from '../lib/countries'
+import {
+  findCityByPostalCode,
+  findPostalCodeByCity,
+  findStreetSuggestions,
+  frenchAddressExists,
+  isFranceCountry,
+} from '../lib/frenchAddress'
+import { Field, IconButton, Input, RefreshButton, Select, Textarea, Card } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Pagination, Table } from '../components/data'
 import { dialog } from '../components/dialog'
 import { useSoc } from '../soc/SocContext'
@@ -17,6 +25,10 @@ interface FormState {
   contactEmail: string
   contactPhone: string
   address: string
+  street: string
+  postalCode: string
+  city: string
+  country: string
 }
 
 const emptyForm: FormState = {
@@ -26,6 +38,20 @@ const emptyForm: FormState = {
   contactEmail: '',
   contactPhone: '',
   address: '',
+  street: '',
+  postalCode: '',
+  city: '',
+  country: 'FRANCE',
+}
+
+function isCompleteAddress(country: string, postalCode: string, city: string, street: string): boolean {
+  const postal = postalCode.trim()
+  if (!country.trim() || !city.trim() || !street.trim() || !postal) {
+    return false
+  }
+  return isFranceCountry(country)
+    ? /^\d{5}$/.test(postal)
+    : /^[A-Za-z0-9 \-]{2,20}$/.test(postal)
 }
 
 function today(): string {
@@ -58,7 +84,7 @@ function noteText(note: ProspectNoteDto): string {
 
 export function Prospects() {
   const { user } = useAuth()
-  const { selectedSocId } = useSoc()
+  const { selectedSocId, selectedSoc } = useSoc()
   const socId = selectedSocId ?? user?.socId ?? undefined
   const isAdmin = user?.role === 'ADMIN'
   const listSocId = isAdmin ? undefined : socId
@@ -73,6 +99,38 @@ export function Prospects() {
   const [modalOpen, setModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [streetSuggestions, setStreetSuggestions] = useState<string[]>([])
+  const streetTimer = useRef<number | null>(null)
+  const [addressExists, setAddressExists] = useState(false)
+  const addressVerification = useRef(0)
+  const countrySuggestions = findCountrySuggestions(form.country)
+
+  function resetAddressFlag() {
+    addressVerification.current += 1
+    setAddressExists(false)
+  }
+
+  /** Vérifie l'existence de l'adresse à la fin de la saisie de la rue. */
+  async function verifyAddress(streetValue?: string) {
+    const street = (streetValue ?? form.street).trim()
+    if (!isCompleteAddress(form.country, form.postalCode, form.city, street)) {
+      resetAddressFlag()
+      return
+    }
+    if (!isFranceCountry(form.country)) {
+      setAddressExists(true)
+      return
+    }
+    const requestId = ++addressVerification.current
+    const exists = await frenchAddressExists(street, form.postalCode.trim(), form.city.trim())
+    if (addressVerification.current === requestId) {
+      setAddressExists(exists)
+    }
+  }
+
+  useEffect(() => () => {
+    if (streetTimer.current) window.clearTimeout(streetTimer.current)
+  }, [])
 
   const [noteProspect, setNoteProspect] = useState<ProspectDto | null>(null)
   const [noteOpen, setNoteOpen] = useState(false)
@@ -83,7 +141,8 @@ export function Prospects() {
   const [notePage, setNotePage] = useState(0)
 
   function openCreate() {
-    setForm(emptyForm)
+    const defaultCountry = (selectedSoc?.country ?? emptyForm.country).toUpperCase()
+    setForm({ ...emptyForm, country: defaultCountry })
     setEditing(null)
     setFormError(null)
     setModalOpen(true)
@@ -97,16 +156,89 @@ export function Prospects() {
       contactEmail: prospect.contactEmail ?? '',
       contactPhone: prospect.contactPhone ?? '',
       address: prospect.address ?? '',
+      street: prospect.street ?? '',
+      postalCode: prospect.postalCode ?? '',
+      city: prospect.city ?? '',
+      country: (prospect.country ?? '').toUpperCase(),
     })
     setEditing(prospect)
     setFormError(null)
     setModalOpen(true)
   }
 
+  async function handlePostalCodeChange(value: string) {
+    resetAddressFlag()
+    setStreetSuggestions([])
+    setForm((previous) => ({ ...previous, postalCode: value }))
+    if (isFranceCountry(form.country) && /^\d{5}$/.test(value)) {
+      const city = await findCityByPostalCode(value)
+      if (city) {
+        setForm((previous) => ({ ...previous, city }))
+      }
+    }
+  }
+
+  async function handleCityBlur() {
+    const city = form.city.trim()
+    if (!city || form.postalCode.trim() || !isFranceCountry(form.country)) {
+      return
+    }
+    const postalCode = await findPostalCodeByCity(city)
+    if (postalCode) {
+      resetAddressFlag()
+      setForm((previous) => ({ ...previous, postalCode }))
+    }
+  }
+
+  function handleCityChange(value: string) {
+    resetAddressFlag()
+    setForm((previous) => ({ ...previous, city: value }))
+  }
+
+  function handleCountryChange(value: string) {
+    const country = value.toUpperCase()
+    resetAddressFlag()
+    setForm((previous) => ({ ...previous, country }))
+    if (!isFranceCountry(country)) {
+      setStreetSuggestions([])
+    }
+  }
+
+  function handleStreetChange(value: string) {
+    resetAddressFlag()
+    setForm((previous) => ({ ...previous, street: value }))
+    if (streetTimer.current) {
+      window.clearTimeout(streetTimer.current)
+    }
+    const postalCode = form.postalCode.trim()
+    if (!isFranceCountry(form.country) || !/^\d{5}$/.test(postalCode) || value.trim().length < 3) {
+      setStreetSuggestions([])
+      return
+    }
+    streetTimer.current = window.setTimeout(() => {
+      void findStreetSuggestions(value, postalCode, form.city).then(setStreetSuggestions)
+    }, 300)
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!form.name.trim()) {
       setFormError(tr('Prospects.nom.obligatoire'))
+      return
+    }
+    const email = form.contactEmail.trim()
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setFormError(tr('Prospects.email.invalid'))
+      return
+    }
+    const phone = form.contactPhone.trim()
+    if (phone && !/^[+]?[0-9 ()\-. ]{6,30}$/.test(phone)) {
+      setFormError(tr('Prospects.phone.invalid'))
+      return
+    }
+    const postalCode = form.postalCode.trim()
+    if (postalCode && isFranceCountry(form.country) && !/^\d{5}$/.test(postalCode)) {
+      setFormError(tr('Prospects.postalCode.invalid'))
       return
     }
     setSubmitting(true)
@@ -119,6 +251,10 @@ export function Prospects() {
         contactEmail: form.contactEmail.trim() || null,
         contactPhone: form.contactPhone.trim() || null,
         address: form.address.trim() || null,
+        street: form.street.trim() || null,
+        postalCode: form.postalCode.trim() || null,
+        city: form.city.trim() || null,
+        country: form.country.trim() || null,
         socId: socId ?? null,
         socParentId: socId ?? null,
         status: editing?.status ?? 'ACTIVE',
@@ -437,13 +573,93 @@ export function Prospects() {
               onChange={(event) => setForm({ ...form, contactEmail: event.target.value })}
             />
           </Field>
-          <Field label={tr('Prospects.address')} id="Prospects.address">
-            <Input
-              id="Prospects.address.input"
-              value={form.address}
-              onChange={(event) => setForm({ ...form, address: event.target.value })}
-            />
-          </Field>
+          <Card id="Prospects.address.card" className="p-4">
+            <div className="flex items-center gap-2">
+              <h3 id="Prospects.address" className="text-sm font-semibold text-gray-900">
+                {tr('Prospects.address')}
+              </h3>
+              {addressExists ? (
+                <span id="Prospects.address.valid" className="font-bold text-green-600" title={tr('Prospects.address')}>
+                  ✓
+                </span>
+              ) : (
+                <span id="Prospects.address.invalid" className="font-bold text-red-600" title={tr('Prospects.address')}>
+                  X
+                </span>
+              )}
+            </div>
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label={tr('Prospects.country')} id="Prospects.country">
+                <Input
+                  id="Prospects.country.input"
+                  list="Prospects.country.suggestions"
+                  value={form.country}
+                  onChange={(event) => handleCountryChange(event.target.value)}
+                />
+                <datalist id="Prospects.country.suggestions">
+                  {countrySuggestions.map((country) => (
+                    <option key={country} value={country.toUpperCase()} />
+                  ))}
+                </datalist>
+              </Field>
+              <Field label={tr('Prospects.postalCode')} id="Prospects.postalCode">
+                <Input
+                  id="Prospects.postalCode.input"
+                  value={form.postalCode}
+                  onChange={(event) => void handlePostalCodeChange(event.target.value)}
+                />
+              </Field>
+              <Field label={tr('Prospects.city')} id="Prospects.city">
+                <Input
+                  id="Prospects.city.input"
+                  value={form.city}
+                  onChange={(event) => handleCityChange(event.target.value)}
+                  onBlur={() => void handleCityBlur()}
+                />
+              </Field>
+              <Field label={tr('Prospects.street')} id="Prospects.street">
+                <div className="relative">
+                  <Input
+                    id="Prospects.street.input"
+                    autoComplete="off"
+                    value={form.street}
+                    onChange={(event) => handleStreetChange(event.target.value)}
+                    onBlur={() => void verifyAddress()}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        void verifyAddress()
+                      }
+                    }}
+                  />
+                  {streetSuggestions.length > 0 && (
+                    <ul
+                      id="Prospects.street.suggestions"
+                      className="mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow"
+                    >
+                      {streetSuggestions.map((suggestion, index) => (
+                        <li key={suggestion}>
+                          <button
+                            type="button"
+                            id={`Prospects.street.suggestion.${index}`}
+                            className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => {
+                              setForm((previous) => ({ ...previous, street: suggestion }))
+                              setStreetSuggestions([])
+                              void verifyAddress(suggestion)
+                            }}
+                          >
+                            {suggestion}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </Field>
+            </div>
+          </Card>
         </form>
       </Modal>
 

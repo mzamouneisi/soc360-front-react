@@ -45,6 +45,7 @@ export interface SocLiteDto {
   hasLogo?: boolean
   website?: string | null
   vatRate?: number | null
+  country?: string | null
 }
 
 export interface AddSocPayload {
@@ -1289,6 +1290,10 @@ export interface ProspectDto {
   contactEmail: string | null
   contactPhone: string | null
   address: string | null
+  street: string | null
+  postalCode: string | null
+  city: string | null
+  country: string | null
   soc?: { id: number; name: string } | null
   socParent?: { id: number; name: string } | null
   status: ProspectStatus
@@ -1307,6 +1312,10 @@ export interface ProspectRequest {
   contactEmail?: string | null
   contactPhone?: string | null
   address?: string | null
+  street?: string | null
+  postalCode?: string | null
+  city?: string | null
+  country?: string | null
   socId?: number | null
   socParentId?: number | null
   status?: ProspectStatus | null
