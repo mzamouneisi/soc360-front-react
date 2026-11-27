@@ -1,4 +1,21 @@
 /**
+ * Validation d'une adresse de site web (http(s):// ou domaine contenant un point).
+ * Une valeur vide est considérée invalide (utile pour le flag ; à filtrer avant l'enregistrement).
+ */
+export function isValidWebsite(value: string | null | undefined): boolean {
+  const website = (value ?? '').trim()
+  if (!website) {
+    return false
+  }
+  try {
+    const url = new URL(/^https?:\/\//i.test(website) ? website : `https://${website}`)
+    return !!url.hostname && url.hostname.includes('.')
+  } catch {
+    return false
+  }
+}
+
+/**
  * Validation d'une adresse email (format simple). Une valeur vide est considérée valide
  * (champ facultatif).
  */

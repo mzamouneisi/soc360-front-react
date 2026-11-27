@@ -1,5 +1,5 @@
 import { tr } from '../i18n/translate'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState, useEffect } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { useSoc } from '../soc/SocContext'
 import { AddSocModal } from '../soc/AddSocModal'
@@ -8,8 +8,19 @@ import { socsApi, type DemoSocDto, type SocDependency } from '../api/socs'
 import { ApiError } from '../api/client'
 import type { AddSocPayload, SocDto, SocLiteDto } from '../api/types'
 import { useAsync } from '../lib/useAsync'
-import { Button, Field, IconButton, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
+import { isValidWebsite } from '../lib/validation'
+import { findCountrySuggestions, isKnownCountry } from '../lib/countries'
+import {
+  findCityByPostalCode,
+  findPostalCodeByCity,
+  findStreetSuggestions,
+  frenchCityMatchesPostalCode,
+  frenchStreetExists,
+  isFranceCountry,
+} from '../lib/frenchAddress'
+import { Button, Card, Field, IconButton, Input, RefreshButton, Spinner, Textarea } from '../components/ui'
 import { Badge, EmptyState, ErrorBlock, LoadingBlock, Modal, PageHeader, Table } from '../components/data'
+import { FlagField } from '../components/FlagField'
 import { dialog } from '../components/dialog'
 
 interface EditForm {
@@ -56,6 +67,158 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
   const [dependencyLoading, setDependencyLoading] = useState(false)
   const [demoCreating, setDemoCreating] = useState(false)
   const [demoResult, setDemoResult] = useState<DemoSocDto | null>(null)
+
+  const [cityValid, setCityValid] = useState(false)
+  const [streetValid, setStreetValid] = useState(false)
+  const [streetSuggestions, setStreetSuggestions] = useState<string[]>([])
+  const streetTimer = useRef<number | null>(null)
+  const cityVerification = useRef(0)
+  const streetVerification = useRef(0)
+
+  const editForm = editingForm?.form ?? null
+  const editCountry = editForm?.country ?? ''
+  const countrySuggestions = findCountrySuggestions(editCountry)
+  const countryValid = isKnownCountry(editCountry)
+  const editPostalCode = editForm?.zipCode.trim() ?? ''
+  const postalCodeValid = !!editPostalCode && (isFranceCountry(editCountry)
+    ? /^\d{5}$/.test(editPostalCode)
+    : /^[A-Za-z0-9 \-]{2,20}$/.test(editPostalCode))
+  const websiteValid = isValidWebsite(editForm?.website ?? '')
+
+  function resetAddressFlags() {
+    cityVerification.current += 1
+    streetVerification.current += 1
+    setCityValid(false)
+    setStreetValid(false)
+  }
+
+  function updateEditForm(partial: Partial<EditForm>) {
+    setEditingForm((previous) => (previous
+      ? { ...previous, form: { ...previous.form, ...partial } }
+      : previous))
+  }
+
+  async function verifyCity(cityValue?: string, postalValue?: string, countryValue?: string) {
+    const city = (cityValue ?? editingForm?.form.city ?? '').trim()
+    const postalCode = (postalValue ?? editingForm?.form.zipCode ?? '').trim()
+    const country = countryValue ?? editingForm?.form.country ?? ''
+    if (!city) {
+      setCityValid(false)
+      return
+    }
+    if (!isFranceCountry(country)) {
+      setCityValid(true)
+      return
+    }
+    if (!/^\d{5}$/.test(postalCode)) {
+      setCityValid(false)
+      return
+    }
+    const requestId = ++cityVerification.current
+    const matches = await frenchCityMatchesPostalCode(city, postalCode)
+    if (cityVerification.current === requestId) {
+      setCityValid(matches)
+    }
+  }
+
+  async function verifyStreet(streetValue?: string, postalValue?: string, countryValue?: string) {
+    const street = (streetValue ?? editingForm?.form.street ?? '').trim()
+    const postalCode = (postalValue ?? editingForm?.form.zipCode ?? '').trim()
+    const country = countryValue ?? editingForm?.form.country ?? ''
+    if (!street) {
+      setStreetValid(false)
+      return
+    }
+    if (!isFranceCountry(country)) {
+      setStreetValid(true)
+      return
+    }
+    if (!/^\d{5}$/.test(postalCode)) {
+      setStreetValid(false)
+      return
+    }
+    const requestId = ++streetVerification.current
+    const exists = await frenchStreetExists(street, postalCode)
+    if (streetVerification.current === requestId) {
+      setStreetValid(exists)
+    }
+  }
+
+  async function handlePostalCodeChange(value: string) {
+    resetAddressFlags()
+    setStreetSuggestions([])
+    updateEditForm({ zipCode: value })
+    if (isFranceCountry(editingForm?.form.country ?? '') && /^\d{5}$/.test(value)) {
+      const city = await findCityByPostalCode(value)
+      if (city) {
+        updateEditForm({ city })
+        setCityValid(true)
+      }
+    }
+  }
+
+  async function handleCityBlur() {
+    if (!editingForm) return
+    const city = editingForm.form.city.trim()
+    if (!city) {
+      setCityValid(false)
+      return
+    }
+    if (!isFranceCountry(editingForm.form.country)) {
+      setCityValid(true)
+      return
+    }
+    let postalCode = editingForm.form.zipCode.trim()
+    if (!postalCode) {
+      const found = await findPostalCodeByCity(city)
+      if (found) {
+        postalCode = found
+        resetAddressFlags()
+        updateEditForm({ zipCode: found })
+        setCityValid(true)
+        return
+      }
+    }
+    await verifyCity(city, postalCode)
+  }
+
+  function handleCityChange(value: string) {
+    cityVerification.current += 1
+    setCityValid(false)
+    updateEditForm({ city: value })
+  }
+
+  function handleCountryChange(value: string) {
+    const country = value.toUpperCase()
+    resetAddressFlags()
+    updateEditForm({ country })
+    if (!isFranceCountry(country)) {
+      setStreetSuggestions([])
+    }
+  }
+
+  function handleStreetChange(value: string) {
+    streetVerification.current += 1
+    setStreetValid(false)
+    updateEditForm({ street: value })
+    if (streetTimer.current) {
+      window.clearTimeout(streetTimer.current)
+    }
+    const country = editingForm?.form.country ?? ''
+    const postalCode = editingForm?.form.zipCode.trim() ?? ''
+    if (!isFranceCountry(country) || !/^\d{5}$/.test(postalCode) || value.trim().length < 3) {
+      setStreetSuggestions([])
+      return
+    }
+    const city = editingForm?.form.city ?? ''
+    streetTimer.current = window.setTimeout(() => {
+      void findStreetSuggestions(value, postalCode, city).then(setStreetSuggestions)
+    }, 300)
+  }
+
+  useEffect(() => () => {
+    if (streetTimer.current) window.clearTimeout(streetTimer.current)
+  }, [])
 
   const mine = scope === 'mine' && !isAdmin
 
@@ -119,6 +282,8 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
 
   function openEdit(soc: SocDto) {
     setActionError(null)
+    resetAddressFlags()
+    setStreetSuggestions([])
     setEditingForm({
       soc,
       readOnly: !canManage(soc),
@@ -137,9 +302,12 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
         street: soc.address?.street ?? '',
         zipCode: soc.address?.zipCode ?? '',
         city: soc.address?.city ?? '',
-        country: soc.address?.country ?? '',
+        country: (soc.address?.country ?? '').toUpperCase(),
       },
     })
+    // Vérifie ville/rue dès l'ouverture (adresse déjà enregistrée).
+    void verifyCity(soc.address?.city ?? '', soc.address?.zipCode ?? '', soc.address?.country ?? '')
+    void verifyStreet(soc.address?.street ?? '', soc.address?.zipCode ?? '', soc.address?.country ?? '')
   }
 
   async function saveEdit() {
@@ -147,6 +315,15 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
     const f = editingForm.form
     if (!f.name.trim()) {
       setActionError(tr('SocAdmin.nom.obligatoire'))
+      return
+    }
+    if (f.website.trim() && !isValidWebsite(f.website)) {
+      setActionError(tr('SocAdmin.site.web.invalide'))
+      return
+    }
+    const postalCode = f.zipCode.trim()
+    if (postalCode && isFranceCountry(f.country) && !/^\d{5}$/.test(postalCode)) {
+      setActionError(tr('SocAdmin.code.postal.invalide'))
       return
     }
     setSaving(true)
@@ -404,21 +581,56 @@ export function SocAdmin({ scope = 'mine' }: { scope?: 'mine' | 'all' }) {
             <Field label={tr('SocAdmin.date.de.fermeture')} id="SocAdmin.date.de.fermeture">
               <Input id="SocAdmin.date.de.fermeture.input" type="date" value={editingForm.form.dateFermeture} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, dateFermeture: e.target.value } })} />
             </Field>
-            <Field label={tr('SocAdmin.site.web')} id="SocAdmin.site.web">
-              <Input id="SocAdmin.site.web.input" type="url" value={editingForm.form.website} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, website: e.target.value } })} />
-            </Field>
-            <Field label={tr('SocAdmin.rue')} id="SocAdmin.rue">
-              <Input id="SocAdmin.rue.input" value={editingForm.form.street} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, street: e.target.value } })} />
-            </Field>
-            <Field label={tr('SocAdmin.code.postal')} id="SocAdmin.code.postal">
-              <Input id="SocAdmin.code.postal.input" value={editingForm.form.zipCode} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, zipCode: e.target.value } })} />
-            </Field>
-            <Field label={tr('SocAdmin.ville')} id="SocAdmin.ville">
-              <Input id="SocAdmin.ville.input" value={editingForm.form.city} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, city: e.target.value } })} />
-            </Field>
-            <Field label={tr('SocAdmin.pays')} id="SocAdmin.pays">
-              <Input id="SocAdmin.pays.input" value={editingForm.form.country} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, country: e.target.value } })} />
-            </Field>
+            <FlagField label={tr('SocAdmin.site.web')} id="SocAdmin.site.web" valid={websiteValid}>
+              <Input id="SocAdmin.site.web.input" type="url" value={editingForm.form.website} onChange={(e) => updateEditForm({ website: e.target.value })} />
+            </FlagField>
+            <div className="sm:col-span-2">
+              <Card id="SocAdmin.adresse.card" className="p-4">
+                <h3 id="SocAdmin.adresse" className="text-sm font-semibold text-gray-900">Adresse</h3>
+                <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FlagField label={tr('SocAdmin.pays')} id="SocAdmin.pays" valid={countryValid}>
+                    <Input id="SocAdmin.pays.input" list="SocAdmin.pays.suggestions" value={editingForm.form.country} onChange={(e) => handleCountryChange(e.target.value)} />
+                    <datalist id="SocAdmin.pays.suggestions">
+                      {countrySuggestions.map((country) => (
+                        <option key={country} value={country.toUpperCase()} />
+                      ))}
+                    </datalist>
+                  </FlagField>
+                  <FlagField label={tr('SocAdmin.code.postal')} id="SocAdmin.code.postal" valid={postalCodeValid}>
+                    <Input id="SocAdmin.code.postal.input" value={editingForm.form.zipCode} onChange={(e) => void handlePostalCodeChange(e.target.value)} />
+                  </FlagField>
+                  <FlagField label={tr('SocAdmin.ville')} id="SocAdmin.ville" valid={cityValid}>
+                    <Input id="SocAdmin.ville.input" value={editingForm.form.city} onChange={(e) => handleCityChange(e.target.value)} onBlur={() => void handleCityBlur()} />
+                  </FlagField>
+                  <FlagField label={tr('SocAdmin.rue')} id="SocAdmin.rue" valid={streetValid}>
+                    <div className="relative">
+                      <Input id="SocAdmin.rue.input" autoComplete="off" value={editingForm.form.street} onChange={(e) => handleStreetChange(e.target.value)} onBlur={() => void verifyStreet()} />
+                      {streetSuggestions.length > 0 && (
+                        <ul id="SocAdmin.rue.suggestions" className="mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow">
+                          {streetSuggestions.map((suggestion, index) => (
+                            <li key={suggestion}>
+                              <button
+                                type="button"
+                                id={`SocAdmin.rue.suggestion.${index}`}
+                                className="block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => {
+                                  updateEditForm({ street: suggestion })
+                                  setStreetSuggestions([])
+                                  void verifyStreet(suggestion)
+                                }}
+                              >
+                                {suggestion}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </FlagField>
+                </div>
+              </Card>
+            </div>
             <div className="sm:col-span-2">
               <Field label={tr('SocAdmin.description')} id="SocAdmin.description">
                 <Textarea id="SocAdmin.description.textarea" rows={3} value={editingForm.form.description} onChange={(e) => setEditingForm({ ...editingForm, form: { ...editingForm.form, description: e.target.value } })} />

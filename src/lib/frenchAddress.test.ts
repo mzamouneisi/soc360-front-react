@@ -4,6 +4,8 @@ import {
   findPostalCodeByCity,
   findStreetSuggestions,
   frenchAddressExists,
+  frenchCityMatchesPostalCode,
+  frenchStreetExists,
   isFranceCountry,
   splitStreetNumber,
 } from './frenchAddress'
@@ -85,6 +87,26 @@ describe('frenchAddress', () => {
     ]))
 
     expect(await frenchAddressExists('12 rue de Paris', '75001', 'Paris')).toBe(true)
+  })
+
+  it('fait correspondre les nombres en lettres et en chiffres (BAN)', async () => {
+    vi.stubGlobal('fetch', stubFetch([
+      {
+        properties: {
+          street: 'Rue des 2 Communes',
+          name: 'Rue des 2 Communes',
+          city: 'Quincy-sous-Sénart',
+          postcode: '91480',
+          label: 'Rue des 2 Communes 91480 Quincy-sous-Sénart',
+        },
+      },
+    ]))
+
+    expect(await frenchStreetExists('6 rue des Deux Communes', '91480')).toBe(true)
+    expect(await frenchCityMatchesPostalCode('Quincy-sous-Sénart', '91480')).toBe(true)
+    expect(await findStreetSuggestions('6 rue des Deux', '91480', 'Quincy-sous-Sénart')).toEqual([
+      '6 Rue des 2 Communes',
+    ])
   })
 
   it('échoue silencieusement si le service est indisponible', async () => {

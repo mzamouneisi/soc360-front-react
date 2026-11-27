@@ -36,6 +36,27 @@ export function normalize(value: string): string {
     .trim()
 }
 
+// La BAN écrit souvent les nombres en chiffres (« Rue des 2 Communes ») alors que l'utilisateur
+// peut les saisir en lettres : on harmonise les deux formes pour la comparaison.
+const NUMBER_WORDS: Record<string, string> = {
+  zero: '0', un: '1', une: '1', deux: '2', trois: '3', quatre: '4', cinq: '5', six: '6',
+  sept: '7', huit: '8', neuf: '9', dix: '10', onze: '11', douze: '12', treize: '13',
+  quatorze: '14', quinze: '15', seize: '16', 'dix-sept': '17', 'dix-huit': '18',
+  'dix-neuf': '19', vingt: '20', trente: '30', quarante: '40', cinquante: '50',
+  soixante: '60', cent: '100', cents: '100', mille: '1000',
+}
+const NUMBER_WORDS_PATTERN = new RegExp(
+  `\\b(${Object.keys(NUMBER_WORDS)
+    .sort((first, second) => second.length - first.length)
+    .join('|')})\\b`,
+  'g',
+)
+
+/** Normalisation dédiée aux libellés d'adresse (accents, casse et nombres en lettres/chiffres). */
+export function normalizeAddressText(value: string): string {
+  return normalize(value).replace(NUMBER_WORDS_PATTERN, (word) => NUMBER_WORDS[word] ?? word)
+}
+
 /**
  * Sépare un éventuel numéro de voie du nom de rue saisi (ex. « 12 rue de Paris » →
  * { number: '12', street: 'rue de Paris' }). Le numéro peut être suivi de bis/ter/quater.
@@ -84,7 +105,7 @@ export async function frenchStreetExists(
   postalCode: string,
 ): Promise<boolean> {
   const { street } = splitStreetNumber(streetInput)
-  const streetNormalized = normalize(street)
+  const streetNormalized = normalizeAddressText(street)
   if (streetNormalized.length < 3 || !/^\d{5}$/.test(postalCode.trim())) {
     return false
   }
@@ -97,7 +118,7 @@ export async function frenchStreetExists(
     const names = [properties?.street, properties?.name, properties?.label]
       .filter((value): value is string => !!value)
     return names.some((name) => {
-      const normalized = normalize(name)
+      const normalized = normalizeAddressText(name)
       return normalized === streetNormalized
         || normalized.startsWith(streetNormalized)
         || streetNormalized.startsWith(normalized)
@@ -110,7 +131,7 @@ export async function frenchCityMatchesPostalCode(
   city: string,
   postalCode: string,
 ): Promise<boolean> {
-  const cityNormalized = normalize(city)
+  const cityNormalized = normalizeAddressText(city)
   const postal = postalCode.trim()
   if (!cityNormalized || !/^\d{5}$/.test(postal)) {
     return false
@@ -120,7 +141,7 @@ export async function frenchCityMatchesPostalCode(
     const properties = feature.properties
     const names = [properties?.city, properties?.name, properties?.label]
       .filter((value): value is string => !!value)
-    const cityMatches = names.some((name) => normalize(name) === cityNormalized)
+    const cityMatches = names.some((name) => normalizeAddressText(name) === cityNormalized)
     const postalMatches = !properties?.postcode || properties.postcode === postal
     return cityMatches && postalMatches
   })
@@ -134,7 +155,7 @@ export async function frenchAddressExists(
 ): Promise<boolean> {
   // Un éventuel numéro de voie est ignoré pour la vérification de l'existence de la rue.
   const { street } = splitStreetNumber(streetInput)
-  const streetNormalized = normalize(street)
+  const streetNormalized = normalizeAddressText(street)
   if (streetNormalized.length < 3 || !/^\d{5}$/.test(postalCode.trim())) {
     return false
   }
@@ -147,12 +168,13 @@ export async function frenchAddressExists(
     const names = [properties?.street, properties?.name, properties?.label]
       .filter((value): value is string => !!value)
     const streetMatches = names.some((name) => {
-      const normalized = normalize(name)
+      const normalized = normalizeAddressText(name)
       return normalized === streetNormalized
         || normalized.startsWith(streetNormalized)
         || streetNormalized.startsWith(normalized)
     })
-    const cityMatches = !properties?.city || normalize(properties.city) === normalize(city)
+    const cityMatches = !properties?.city
+      || normalizeAddressText(properties.city) === normalizeAddressText(city)
     return streetMatches && cityMatches
   })
 }
@@ -165,7 +187,7 @@ export async function findStreetSuggestions(
   // Saisie possible : « rue de Paris » ou « 12 rue de Paris » (le numéro est conservé dans la
   // suggestion, mais ignoré pour la recherche et le filtre « commence par »).
   const { number, street } = splitStreetNumber(query)
-  const prefix = normalize(street)
+  const prefix = normalizeAddressText(street)
   if (prefix.length < 3) return []
   const composed = [street, postalCode, city].filter((part) => !!part && !!part.trim()).join(' ')
   const features = await search(composed, {
@@ -179,7 +201,7 @@ export async function findStreetSuggestions(
   )
   const unique = Array.from(new Set(suggestions.filter((value): value is string => !!value)))
   return unique
-    .filter((value) => normalize(value).startsWith(prefix))
+    .filter((value) => normalizeAddressText(value).startsWith(prefix))
     .slice(0, 5)
     .map((value) => (number ? `${number} ${value}` : value))
 }
