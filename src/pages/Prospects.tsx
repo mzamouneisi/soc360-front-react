@@ -1,15 +1,17 @@
 import { tr } from '../i18n/translate'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { prospectsApi } from '../api/prospects'
 import { ApiError } from '../api/client'
 import { useAsync } from '../lib/useAsync'
-import { findCountrySuggestions } from '../lib/countries'
+import { findCountrySuggestions, isKnownCountry } from '../lib/countries'
+import { isValidPhone } from '../lib/validation'
 import {
   findCityByPostalCode,
   findPostalCodeByCity,
   findStreetSuggestions,
-  frenchAddressExists,
+  frenchCityMatchesPostalCode,
+  frenchStreetExists,
   isFranceCountry,
 } from '../lib/frenchAddress'
 import { Field, IconButton, Input, RefreshButton, Select, Textarea, Card } from '../components/ui'
@@ -44,14 +46,31 @@ const emptyForm: FormState = {
   country: 'FRANCE',
 }
 
-function isCompleteAddress(country: string, postalCode: string, city: string, street: string): boolean {
-  const postal = postalCode.trim()
-  if (!country.trim() || !city.trim() || !street.trim() || !postal) {
-    return false
-  }
-  return isFranceCountry(country)
-    ? /^\d{5}$/.test(postal)
-    : /^[A-Za-z0-9 \-]{2,20}$/.test(postal)
+/** Champ avec un flag vert (✓) si valide, sinon une croix rouge (X). */
+function FlagField({
+  id,
+  label,
+  valid,
+  children,
+}: {
+  id: string
+  label: string
+  valid: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <label id={id} className="block text-sm font-medium text-gray-700">{label}</label>
+        {valid ? (
+          <span id={`${id}.valid`} className="font-bold text-green-600" title={label}>✓</span>
+        ) : (
+          <span id={`${id}.invalid`} className="font-bold text-red-600" title={label}>X</span>
+        )}
+      </div>
+      {children}
+    </div>
+  )
 }
 
 function today(): string {
@@ -101,30 +120,82 @@ export function Prospects() {
   const [formError, setFormError] = useState<string | null>(null)
   const [streetSuggestions, setStreetSuggestions] = useState<string[]>([])
   const streetTimer = useRef<number | null>(null)
-  const [addressExists, setAddressExists] = useState(false)
+  const [cityValid, setCityValid] = useState(false)
+  const [streetValid, setStreetValid] = useState(false)
   const addressVerification = useRef(0)
+  const cityVerification = useRef(0)
   const countrySuggestions = findCountrySuggestions(form.country)
+  const countryValid = isKnownCountry(form.country)
+  const postalCodeValid = (() => {
+    const postalCode = form.postalCode.trim()
+    if (!postalCode) return false
+    return isFranceCountry(form.country)
+      ? /^\d{5}$/.test(postalCode)
+      : /^[A-Za-z0-9 \-]{2,20}$/.test(postalCode)
+  })()
+  const emailValid = (() => {
+    const email = form.contactEmail.trim()
+    return !!email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+  })()
+  const phoneValid = (() => {
+    const phone = form.contactPhone.trim()
+    return !!phone && isValidPhone(phone)
+  })()
+  // Le flag de la carte Adresse est vert uniquement si les 4 champs sont valides.
+  const addressGreen = countryValid && postalCodeValid && cityValid && streetValid
 
-  function resetAddressFlag() {
+  function resetAddressFlags() {
     addressVerification.current += 1
-    setAddressExists(false)
+    cityVerification.current += 1
+    setCityValid(false)
+    setStreetValid(false)
   }
 
-  /** Vérifie l'existence de l'adresse à la fin de la saisie de la rue. */
-  async function verifyAddress(streetValue?: string) {
-    const street = (streetValue ?? form.street).trim()
-    if (!isCompleteAddress(form.country, form.postalCode, form.city, street)) {
-      resetAddressFlag()
+  /** Vérifie que la ville correspond bien au code postal (France). */
+  async function verifyCity(cityValue?: string, postalValue?: string, countryValue?: string) {
+    const city = (cityValue ?? form.city).trim()
+    const postalCode = (postalValue ?? form.postalCode).trim()
+    const country = countryValue ?? form.country
+    if (!city) {
+      setCityValid(false)
       return
     }
-    if (!isFranceCountry(form.country)) {
-      setAddressExists(true)
+    if (!isFranceCountry(country)) {
+      setCityValid(true)
+      return
+    }
+    if (!/^\d{5}$/.test(postalCode)) {
+      setCityValid(false)
+      return
+    }
+    const requestId = ++cityVerification.current
+    const matches = await frenchCityMatchesPostalCode(city, postalCode)
+    if (cityVerification.current === requestId) {
+      setCityValid(matches)
+    }
+  }
+
+  /** Vérifie l'existence de la rue à la fin de la saisie. */
+  async function verifyStreet(streetValue?: string, postalValue?: string, countryValue?: string) {
+    const street = (streetValue ?? form.street).trim()
+    const postalCode = (postalValue ?? form.postalCode).trim()
+    const country = countryValue ?? form.country
+    if (!street) {
+      setStreetValid(false)
+      return
+    }
+    if (!isFranceCountry(country)) {
+      setStreetValid(true)
+      return
+    }
+    if (!/^\d{5}$/.test(postalCode)) {
+      setStreetValid(false)
       return
     }
     const requestId = ++addressVerification.current
-    const exists = await frenchAddressExists(street, form.postalCode.trim(), form.city.trim())
+    const streetOk = await frenchStreetExists(street, postalCode)
     if (addressVerification.current === requestId) {
-      setAddressExists(exists)
+      setStreetValid(streetOk)
     }
   }
 
@@ -149,6 +220,10 @@ export function Prospects() {
   }
 
   function openEdit(prospect: ProspectDto) {
+    const country = (prospect.country ?? '').toUpperCase()
+    const city = prospect.city ?? ''
+    const postalCode = prospect.postalCode ?? ''
+    const street = prospect.street ?? ''
     setForm({
       name: prospect.name,
       kind: prospect.kind,
@@ -156,48 +231,66 @@ export function Prospects() {
       contactEmail: prospect.contactEmail ?? '',
       contactPhone: prospect.contactPhone ?? '',
       address: prospect.address ?? '',
-      street: prospect.street ?? '',
-      postalCode: prospect.postalCode ?? '',
-      city: prospect.city ?? '',
-      country: (prospect.country ?? '').toUpperCase(),
+      street,
+      postalCode,
+      city,
+      country,
     })
     setEditing(prospect)
     setFormError(null)
     setModalOpen(true)
+    // Vérifie les flags ville/rue dès l'ouverture (adresse déjà enregistrée).
+    void verifyCity(city, postalCode, country)
+    void verifyStreet(street, postalCode, country)
   }
 
   async function handlePostalCodeChange(value: string) {
-    resetAddressFlag()
+    resetAddressFlags()
     setStreetSuggestions([])
     setForm((previous) => ({ ...previous, postalCode: value }))
     if (isFranceCountry(form.country) && /^\d{5}$/.test(value)) {
       const city = await findCityByPostalCode(value)
       if (city) {
         setForm((previous) => ({ ...previous, city }))
+        // Ville déduite du code postal par la BAN : elle est donc valide.
+        setCityValid(true)
       }
     }
   }
 
   async function handleCityBlur() {
     const city = form.city.trim()
-    if (!city || form.postalCode.trim() || !isFranceCountry(form.country)) {
+    if (!city) {
+      setCityValid(false)
       return
     }
-    const postalCode = await findPostalCodeByCity(city)
-    if (postalCode) {
-      resetAddressFlag()
-      setForm((previous) => ({ ...previous, postalCode }))
+    if (!isFranceCountry(form.country)) {
+      setCityValid(true)
+      return
     }
+    let postalCode = form.postalCode.trim()
+    if (!postalCode) {
+      const found = await findPostalCodeByCity(city)
+      if (found) {
+        postalCode = found
+        resetAddressFlags()
+        setForm((previous) => ({ ...previous, postalCode: found }))
+        setCityValid(true)
+        return
+      }
+    }
+    await verifyCity(city, postalCode)
   }
 
   function handleCityChange(value: string) {
-    resetAddressFlag()
+    cityVerification.current += 1
+    setCityValid(false)
     setForm((previous) => ({ ...previous, city: value }))
   }
 
   function handleCountryChange(value: string) {
     const country = value.toUpperCase()
-    resetAddressFlag()
+    resetAddressFlags()
     setForm((previous) => ({ ...previous, country }))
     if (!isFranceCountry(country)) {
       setStreetSuggestions([])
@@ -205,7 +298,8 @@ export function Prospects() {
   }
 
   function handleStreetChange(value: string) {
-    resetAddressFlag()
+    addressVerification.current += 1
+    setStreetValid(false)
     setForm((previous) => ({ ...previous, street: value }))
     if (streetTimer.current) {
       window.clearTimeout(streetTimer.current)
@@ -232,7 +326,7 @@ export function Prospects() {
       return
     }
     const phone = form.contactPhone.trim()
-    if (phone && !/^[+]?[0-9 ()\-. ]{6,30}$/.test(phone)) {
+    if (phone && !isValidPhone(phone)) {
       setFormError(tr('Prospects.phone.invalid'))
       return
     }
@@ -557,28 +651,28 @@ export function Prospects() {
                 onChange={(event) => setForm({ ...form, contactName: event.target.value })}
               />
             </Field>
-            <Field label={tr('Prospects.phone')} id="Prospects.phone">
+            <FlagField id="Prospects.phone" label={tr('Prospects.phone')} valid={phoneValid}>
               <Input
                 id="Prospects.phone.input"
                 value={form.contactPhone}
                 onChange={(event) => setForm({ ...form, contactPhone: event.target.value })}
               />
-            </Field>
+            </FlagField>
           </div>
-          <Field label={tr('Prospects.email')} id="Prospects.email">
+          <FlagField id="Prospects.email" label={tr('Prospects.email')} valid={emailValid}>
             <Input
               id="Prospects.email.input"
               type="email"
               value={form.contactEmail}
               onChange={(event) => setForm({ ...form, contactEmail: event.target.value })}
             />
-          </Field>
+          </FlagField>
           <Card id="Prospects.address.card" className="p-4">
             <div className="flex items-center gap-2">
               <h3 id="Prospects.address" className="text-sm font-semibold text-gray-900">
                 {tr('Prospects.address')}
               </h3>
-              {addressExists ? (
+              {addressGreen ? (
                 <span id="Prospects.address.valid" className="font-bold text-green-600" title={tr('Prospects.address')}>
                   ✓
                 </span>
@@ -589,7 +683,7 @@ export function Prospects() {
               )}
             </div>
             <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label={tr('Prospects.country')} id="Prospects.country">
+              <FlagField label={tr('Prospects.country')} id="Prospects.country" valid={countryValid}>
                 <Input
                   id="Prospects.country.input"
                   list="Prospects.country.suggestions"
@@ -601,34 +695,34 @@ export function Prospects() {
                     <option key={country} value={country.toUpperCase()} />
                   ))}
                 </datalist>
-              </Field>
-              <Field label={tr('Prospects.postalCode')} id="Prospects.postalCode">
+              </FlagField>
+              <FlagField label={tr('Prospects.postalCode')} id="Prospects.postalCode" valid={postalCodeValid}>
                 <Input
                   id="Prospects.postalCode.input"
                   value={form.postalCode}
                   onChange={(event) => void handlePostalCodeChange(event.target.value)}
                 />
-              </Field>
-              <Field label={tr('Prospects.city')} id="Prospects.city">
+              </FlagField>
+              <FlagField label={tr('Prospects.city')} id="Prospects.city" valid={cityValid}>
                 <Input
                   id="Prospects.city.input"
                   value={form.city}
                   onChange={(event) => handleCityChange(event.target.value)}
                   onBlur={() => void handleCityBlur()}
                 />
-              </Field>
-              <Field label={tr('Prospects.street')} id="Prospects.street">
+              </FlagField>
+              <FlagField label={tr('Prospects.street')} id="Prospects.street" valid={streetValid}>
                 <div className="relative">
                   <Input
                     id="Prospects.street.input"
                     autoComplete="off"
                     value={form.street}
                     onChange={(event) => handleStreetChange(event.target.value)}
-                    onBlur={() => void verifyAddress()}
+                    onBlur={() => void verifyStreet()}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') {
                         event.preventDefault()
-                        void verifyAddress()
+                        void verifyStreet()
                       }
                     }}
                   />
@@ -647,7 +741,7 @@ export function Prospects() {
                             onClick={() => {
                               setForm((previous) => ({ ...previous, street: suggestion }))
                               setStreetSuggestions([])
-                              void verifyAddress(suggestion)
+                              void verifyStreet(suggestion)
                             }}
                           >
                             {suggestion}
@@ -657,7 +751,7 @@ export function Prospects() {
                     </ul>
                   )}
                 </div>
-              </Field>
+              </FlagField>
             </div>
           </Card>
         </form>

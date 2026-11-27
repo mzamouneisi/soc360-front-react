@@ -78,6 +78,54 @@ export async function findPostalCodeByCity(city: string): Promise<string | null>
   return features[0]?.properties?.postcode ?? null
 }
 
+/** Vérifie que la rue existe bien pour le code postal donné (France). */
+export async function frenchStreetExists(
+  streetInput: string,
+  postalCode: string,
+): Promise<boolean> {
+  const { street } = splitStreetNumber(streetInput)
+  const streetNormalized = normalize(street)
+  if (streetNormalized.length < 3 || !/^\d{5}$/.test(postalCode.trim())) {
+    return false
+  }
+  const features = await search(
+    [street, postalCode].filter((part) => !!part && !!part.trim()).join(' '),
+    { type: 'street', limit: '10', postcode: postalCode },
+  )
+  return features.some((feature) => {
+    const properties = feature.properties
+    const names = [properties?.street, properties?.name, properties?.label]
+      .filter((value): value is string => !!value)
+    return names.some((name) => {
+      const normalized = normalize(name)
+      return normalized === streetNormalized
+        || normalized.startsWith(streetNormalized)
+        || streetNormalized.startsWith(normalized)
+    })
+  })
+}
+
+/** Vérifie que la ville correspond bien au code postal français. */
+export async function frenchCityMatchesPostalCode(
+  city: string,
+  postalCode: string,
+): Promise<boolean> {
+  const cityNormalized = normalize(city)
+  const postal = postalCode.trim()
+  if (!cityNormalized || !/^\d{5}$/.test(postal)) {
+    return false
+  }
+  const features = await search(postal, { type: 'municipality', limit: '20' })
+  return features.some((feature) => {
+    const properties = feature.properties
+    const names = [properties?.city, properties?.name, properties?.label]
+      .filter((value): value is string => !!value)
+    const cityMatches = names.some((name) => normalize(name) === cityNormalized)
+    const postalMatches = !properties?.postcode || properties.postcode === postal
+    return cityMatches && postalMatches
+  })
+}
+
 /** Vérifie que la rue existe bien pour le code postal / la ville donnés (France). */
 export async function frenchAddressExists(
   streetInput: string,

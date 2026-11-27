@@ -41,3 +41,9 @@ export function findCountrySuggestions(query: string, limit = 8): string[] {
   }
   return COUNTRY_NAMES.filter((name) => normalize(name).startsWith(prefix)).slice(0, limit)
 }
+
+/** Vrai si la valeur correspond à un pays connu (nom français, casse/accents ignorés). */
+export function isKnownCountry(value: string): boolean {
+  const normalized = normalize(value)
+  return !!normalized && COUNTRY_NAMES.some((name) => normalize(name) === normalized)
+}

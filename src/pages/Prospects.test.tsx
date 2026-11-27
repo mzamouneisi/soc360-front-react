@@ -149,6 +149,113 @@ describe('Prospects', () => {
     expect(document.getElementById('Prospects.address.card')).toBeInTheDocument()
     expect(document.getElementById('Prospects.address')).toHaveTextContent('Prospects.address')
     expect(document.getElementById('Prospects.address.invalid')).toHaveTextContent('X')
+    expect(document.getElementById('Prospects.email.invalid')).toHaveTextContent('X')
+    expect(document.getElementById('Prospects.phone.invalid')).toHaveTextContent('X')
+    expect(document.getElementById('Prospects.country.valid')).toBeInTheDocument()
+    expect(document.getElementById('Prospects.postalCode.invalid')).toBeInTheDocument()
+    expect(document.getElementById('Prospects.city.invalid')).toBeInTheDocument()
+    expect(document.getElementById('Prospects.street.invalid')).toBeInTheDocument()
+  })
+
+  it('affiche des flags pour pays, code postal, ville et rue', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        features: [{
+          properties: { city: 'Paris', postcode: '75001', street: 'Rue de Paris', name: 'Rue de Paris' },
+        }],
+      }),
+    })))
+
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+    fireEvent.change(document.getElementById('Prospects.city.input') as HTMLInputElement, {
+      target: { value: 'Paris' },
+    })
+    fireEvent.blur(document.getElementById('Prospects.city.input') as HTMLInputElement)
+    await waitFor(() => expect(document.getElementById('Prospects.city.valid')).not.toBeNull())
+
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: '1 rue de Paris' },
+    })
+    fireEvent.blur(document.getElementById('Prospects.street.input') as HTMLInputElement)
+
+    await waitFor(() => expect(document.getElementById('Prospects.street.valid')).not.toBeNull())
+    expect(document.getElementById('Prospects.postalCode.valid')).not.toBeNull()
+    expect(document.getElementById('Prospects.country.valid')).not.toBeNull()
+  })
+
+  it('ouvre un prospect existant avec les flags ville/rue vérifiés', async () => {
+    findAllMock.mockResolvedValue([prospect])
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        features: [{
+          properties: { city: 'Paris', postcode: '75001', street: 'Rue de Paris', name: 'Rue de Paris' },
+        }],
+      }),
+    })))
+
+    render(<Prospects />)
+    await screen.findByText('Société Prospective')
+    fireEvent.click(document.getElementById('Prospects.row.1.edit') as HTMLElement)
+
+    await waitFor(() => expect(document.getElementById('Prospects.city.valid')).not.toBeNull())
+    expect(document.getElementById('Prospects.street.valid')).not.toBeNull()
+    expect(document.getElementById('Prospects.address.valid')).not.toBeNull()
+  })
+
+  it('met le flag ville/rue au rouge si la ville ou la rue est incorrecte', async () => {
+    await openCreateForm()
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        features: [{
+          properties: { city: 'Paris', postcode: '75001', street: 'Rue de Paris', name: 'Rue de Paris' },
+        }],
+      }),
+    })))
+
+    fireEvent.change(document.getElementById('Prospects.postalCode.input') as HTMLInputElement, {
+      target: { value: '75001' },
+    })
+    fireEvent.change(document.getElementById('Prospects.city.input') as HTMLInputElement, {
+      target: { value: 'Marseille' },
+    })
+    fireEvent.blur(document.getElementById('Prospects.city.input') as HTMLInputElement)
+
+    await waitFor(() => expect(document.getElementById('Prospects.city.invalid')).not.toBeNull())
+
+    fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
+      target: { value: 'Rue Inexistante' },
+    })
+    fireEvent.blur(document.getElementById('Prospects.street.input') as HTMLInputElement)
+
+    await waitFor(() => expect(document.getElementById('Prospects.street.invalid')).not.toBeNull())
+    expect(document.getElementById('Prospects.address.invalid')).not.toBeNull()
+  })
+
+  it('affiche un flag vert/rouge pour l’email et le téléphone', async () => {
+    await openCreateForm()
+
+    const email = document.getElementById('Prospects.email.input') as HTMLInputElement
+    const phone = document.getElementById('Prospects.phone.input') as HTMLInputElement
+
+    fireEvent.change(email, { target: { value: 'contact@test.fr' } })
+    fireEvent.change(phone, { target: { value: '01 02 03 04 05' } })
+
+    await waitFor(() => expect(document.getElementById('Prospects.email.valid')).not.toBeNull())
+    expect(document.getElementById('Prospects.email.invalid')).toBeNull()
+    expect(document.getElementById('Prospects.phone.valid')).not.toBeNull()
+    expect(document.getElementById('Prospects.phone.invalid')).toBeNull()
+
+    fireEvent.change(email, { target: { value: 'bad' } })
+    fireEvent.change(phone, { target: { value: '------' } })
+
+    await waitFor(() => expect(document.getElementById('Prospects.email.invalid')).not.toBeNull())
+    expect(document.getElementById('Prospects.phone.invalid')).not.toBeNull()
   })
 
   it('affiche X en rouge par défaut puis le flag si l’adresse existe', async () => {
@@ -170,6 +277,7 @@ describe('Prospects', () => {
     fireEvent.change(document.getElementById('Prospects.city.input') as HTMLInputElement, {
       target: { value: 'Paris' },
     })
+    fireEvent.blur(document.getElementById('Prospects.city.input') as HTMLInputElement)
     fireEvent.change(document.getElementById('Prospects.street.input') as HTMLInputElement, {
       target: { value: 'Rue de Paris' },
     })
@@ -236,7 +344,7 @@ describe('Prospects', () => {
   it('refuse un téléphone invalide', async () => {
     await openCreateForm()
     fireEvent.change(document.getElementById('Prospects.phone.input') as HTMLInputElement, {
-      target: { value: 'abc' },
+      target: { value: '------' },
     })
     fireEvent.submit(document.getElementById('Prospects.form') as HTMLFormElement)
 
@@ -364,10 +472,14 @@ describe('Prospects', () => {
     fireEvent.change(document.getElementById('Prospects.city.input') as HTMLInputElement, {
       target: { value: 'Paris' },
     })
+    fireEvent.change(document.getElementById('Prospects.phone.input') as HTMLInputElement, {
+      target: { value: '01 02 03 04 05' },
+    })
     fireEvent.submit(document.getElementById('Prospects.form') as HTMLFormElement)
 
     await waitFor(() => expect(createMock).toHaveBeenCalled())
     expect(createMock).toHaveBeenCalledWith(expect.objectContaining({
+      contactPhone: '01 02 03 04 05',
       street: '1 rue de Paris',
       postalCode: '75001',
       city: 'Paris',
